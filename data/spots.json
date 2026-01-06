@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "lat": 32.85,
+    "lng": -79.91,
+    "title": "Holiday Lights on Oak Island",
+    "description": "Beautiful Christmas light display",
+    "type": "Christmas Spots"
+  },
+  {
+    "id": 2,
+    "lat": 32.84,
+    "lng": -79.905,
+    "title": "The Kingstide Happy Hour",
+    "description": "Great happy hour specials",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 3,
+    "lat": 32.845,
+    "lng": -79.915,
+    "title": "Daniel Island Fishing Dock",
+    "description": "Perfect spot for fishing",
+    "type": "Fishing Spots"
+  },
+  {
+    "id": 4,
+    "lat": 32.835,
+    "lng": -79.9,
+    "title": "Sunset Point Park",
+    "description": "Stunning sunset views",
+    "type": "Sunset Spots"
+  },
+  {
+    "id": 5,
+    "lat": 32.848,
+    "lng": -79.902,
+    "title": "Daniel Island Pickleball Courts",
+    "description": "Public pickleball courts",
+    "type": "Pickleball Games"
+  },
+  {
+    "id": 1767722932356,
+    "lat": 32.86943657964189,
+    "lng": -79.92626667022706,
+    "title": "Shellring happy hour",
+    "description": "Sunday funday",
+    "type": "Happy Hour"
+  }
+]
