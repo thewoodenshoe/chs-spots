@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaf
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Area, SpotType } from './FilterModal';
-import { useSpots } from '@/contexts/SpotsContext';
+import { useSpots, Spot } from '@/contexts/SpotsContext';
 
 // Fix for default marker icons in Next.js
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -13,6 +13,54 @@ L.Icon.Default.mergeOptions({
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
+
+// Emoji/icons for each spot type
+const typeIcons: Record<SpotType, string> = {
+  'Christmas Spots': '🎄',
+  'Happy Hour': '🍹',
+  'Fishing Spots': '🎣',
+  'Sunset Spots': '🌅',
+  'Pickleball Games': '🏓',
+  'Bike Routes': '🚴',
+  'Golf Cart Hacks': '🛺',
+};
+
+// Color mapping for each spot type
+const typeColors: Record<SpotType, string> = {
+  'Christmas Spots': '#f97316', // orange/coral
+  'Happy Hour': '#0d9488', // teal
+  'Fishing Spots': '#0284c7', // blue
+  'Sunset Spots': '#f59e0b', // amber
+  'Pickleball Games': '#10b981', // green
+  'Bike Routes': '#6366f1', // indigo
+  'Golf Cart Hacks': '#8b5cf6', // purple
+};
+
+// Create custom marker icon for each spot type
+function createCustomMarkerIcon(spot: Spot): L.DivIcon {
+  const emoji = typeIcons[spot.type];
+  const color = typeColors[spot.type];
+  
+  return L.divIcon({
+    className: 'custom-marker',
+    html: `<div style="
+      width: 40px;
+      height: 40px;
+      background-color: ${color};
+      border: 3px solid white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      transition: transform 0.2s;
+    ">${emoji}</div>`,
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+    popupAnchor: [0, -40],
+  });
+}
 
 // Custom icon for dropped pin (temporary pin) - using divIcon for a red marker
 const tempPinIcon = L.divIcon({
@@ -94,23 +142,26 @@ export default function MapComponent({
       style={{ height: '100%', width: '100%', zIndex: 0 }}
       scrollWheelZoom={true}
     >
+      {/* Use CyclOSM for a cleaner, more modern look */}
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Tiles style by <a href="https://www.cyclosm.org">CyclOSM</a>'
+        url="https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png"
+        maxZoom={19}
       />
       <MapClickHandler
         isSubmissionMode={isSubmissionMode}
         onMapClick={onMapClick || (() => {})}
       />
       {filteredSpots.map((spot) => (
-        <Marker key={spot.id} position={[spot.lat, spot.lng]}>
-          <Popup>
-            <div className="text-sm">
-              <div className="font-semibold text-gray-800">{spot.title}</div>
+        <Marker key={spot.id} position={[spot.lat, spot.lng]} icon={createCustomMarkerIcon(spot)}>
+          <Popup className="custom-popup">
+            <div className="text-sm min-w-[200px]">
+              <div className="font-semibold text-gray-800 mb-1">{spot.title}</div>
               {spot.description && (
-                <div className="mt-1 text-xs text-gray-600">{spot.description}</div>
+                <div className="mt-1 text-xs text-gray-600 mb-2">{spot.description}</div>
               )}
-              <div className="mt-2 flex flex-wrap gap-1">
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-base">{typeIcons[spot.type]}</span>
                 <span className="rounded-full bg-teal-100 px-2 py-0.5 text-xs font-medium text-teal-800">
                   {spot.type}
                 </span>
@@ -119,7 +170,7 @@ export default function MapComponent({
                 <img
                   src={spot.photoUrl}
                   alt={spot.title}
-                  className="mt-2 h-24 w-full rounded-lg object-cover"
+                  className="mt-2 h-32 w-full rounded-lg object-cover"
                 />
               )}
             </div>
