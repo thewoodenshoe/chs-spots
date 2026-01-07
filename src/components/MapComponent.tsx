@@ -104,6 +104,10 @@ function getAreaFromCoordinates(lat: number, lng: number): Area {
     return 'Daniel Island';
   } else if (lat >= 32.78 && lat <= 32.82 && lng >= -79.88 && lng <= -79.82) {
     return 'Mount Pleasant';
+  } else if (lat >= 32.70 && lat <= 32.75 && lng >= -79.96 && lng <= -79.90) {
+    return 'James Island';
+  } else if (lat >= 32.76 && lat <= 32.80 && lng >= -79.95 && lng <= -79.92) {
+    return 'Downtown Charleston';
   } else if (lat >= 32.75 && lat <= 32.78 && lng >= -79.85 && lng <= -79.82) {
     return 'Sullivan\'s Island';
   }
@@ -112,40 +116,48 @@ function getAreaFromCoordinates(lat: number, lng: number): Area {
 
 interface MapComponentProps {
   selectedArea: Area;
-  selectedTypes: SpotType[];
+  selectedActivity: SpotType | null;
   isSubmissionMode?: boolean;
   pinLocation?: { lat: number; lng: number } | null;
   onMapClick?: (lat: number, lng: number) => void;
+  mapCenter?: { lat: number; lng: number; zoom: number };
+  onEditSpot?: (spot: Spot) => void;
 }
 
 export default function MapComponent({
   selectedArea,
-  selectedTypes,
+  selectedActivity,
   isSubmissionMode = false,
   pinLocation,
   onMapClick,
+  mapCenter,
+  onEditSpot,
 }: MapComponentProps) {
   const { spots } = useSpots();
 
-  // Filter spots based on area and types
+  // Filter spots based on area and activity
   const filteredSpots = spots.filter((spot) => {
     const spotArea = getAreaFromCoordinates(spot.lat, spot.lng);
     const areaMatch = spotArea === selectedArea;
-    const typeMatch = selectedTypes.length === 0 || selectedTypes.includes(spot.type);
-    return areaMatch && typeMatch;
+    const activityMatch = selectedActivity === null || spot.type === selectedActivity;
+    return areaMatch && activityMatch;
   });
+
+  const center = mapCenter ? [mapCenter.lat, mapCenter.lng] : [32.845, -79.908];
+  const zoom = mapCenter?.zoom || 13;
 
   return (
     <MapContainer
-      center={[32.845, -79.908]}
-      zoom={13}
+      center={center as [number, number]}
+      zoom={zoom}
       style={{ height: '100%', width: '100%', zIndex: 0 }}
       scrollWheelZoom={true}
+      key={`${center[0]}-${center[1]}-${zoom}`}
     >
-      {/* Use CyclOSM for a cleaner, more modern look */}
+      {/* Use standard OpenStreetMap tiles - clean without blue route lines */}
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Tiles style by <a href="https://www.cyclosm.org">CyclOSM</a>'
-        url="https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         maxZoom={19}
       />
       <MapClickHandler
@@ -172,6 +184,14 @@ export default function MapComponent({
                   alt={spot.title}
                   className="mt-2 h-32 w-full rounded-lg object-cover"
                 />
+              )}
+              {onEditSpot && (
+                <button
+                  onClick={() => onEditSpot(spot)}
+                  className="mt-3 w-full rounded-lg bg-teal-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-teal-700"
+                >
+                  Edit Spot
+                </button>
               )}
             </div>
           </Popup>

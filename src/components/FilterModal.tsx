@@ -11,20 +11,16 @@ export type SpotType =
   | 'Bike Routes'
   | 'Golf Cart Hacks';
 
-export type Area = 'Daniel Island' | 'Mount Pleasant' | 'Downtown Charleston' | 'Sullivan\'s Island';
+export type Area = 'Daniel Island' | 'Mount Pleasant' | 'James Island' | 'Downtown Charleston' | 'Sullivan\'s Island';
 
 interface FilterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedArea: Area;
-  onAreaChange: (area: Area) => void;
-  selectedTypes: SpotType[];
-  onTypesChange: (types: SpotType[]) => void;
+  selectedActivity: SpotType | null;
+  onActivityChange: (activity: SpotType | null) => void;
 }
 
-const AREAS: Area[] = ['Daniel Island', 'Mount Pleasant', 'Downtown Charleston', 'Sullivan\'s Island'];
-
-const SPOT_TYPES: SpotType[] = [
+const ACTIVITIES: SpotType[] = [
   'Christmas Spots',
   'Happy Hour',
   'Fishing Spots',
@@ -37,10 +33,8 @@ const SPOT_TYPES: SpotType[] = [
 export default function FilterModal({
   isOpen,
   onClose,
-  selectedArea,
-  onAreaChange,
-  selectedTypes,
-  onTypesChange,
+  selectedActivity,
+  onActivityChange,
 }: FilterModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -62,14 +56,6 @@ export default function FilterModal({
       document.body.style.overflow = 'unset';
     };
   }, [isOpen, onClose]);
-
-  const handleTypeToggle = (type: SpotType) => {
-    if (selectedTypes.includes(type)) {
-      onTypesChange(selectedTypes.filter((t) => t !== type));
-    } else {
-      onTypesChange([...selectedTypes, type]);
-    }
-  };
 
   if (!isOpen) return null;
 
@@ -94,7 +80,7 @@ export default function FilterModal({
         <div className="px-6 pb-6">
           {/* Header */}
           <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-800">Filter Spots</h2>
+            <h2 className="text-2xl font-bold text-gray-800">Select Activity</h2>
             <button
               onClick={onClose}
               className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600 transition-colors hover:bg-gray-200"
@@ -117,58 +103,46 @@ export default function FilterModal({
             </button>
           </div>
 
-          {/* Area Dropdown */}
-          <div className="mb-8">
-            <label className="mb-3 block text-sm font-semibold text-gray-700">
-              Area
-            </label>
-            <select
-              value={selectedArea}
-              onChange={(e) => onAreaChange(e.target.value as Area)}
-              className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-base text-gray-800 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
-            >
-              {AREAS.map((area) => (
-                <option key={area} value={area}>
-                  {area}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Spot Types */}
+          {/* Activity Selection - Radio Buttons */}
           <div className="mb-6">
             <label className="mb-3 block text-sm font-semibold text-gray-700">
-              Types
+              Activity
             </label>
             <div className="space-y-3">
-              {SPOT_TYPES.map((type) => (
+              {/* All Activities option */}
+              <label
+                className="flex cursor-pointer items-center rounded-xl border-2 border-gray-200 bg-gray-50 p-4 transition-all hover:border-teal-300 hover:bg-teal-50"
+              >
+                <input
+                  type="radio"
+                  name="activity"
+                  checked={selectedActivity === null}
+                  onChange={() => onActivityChange(null)}
+                  className="h-5 w-5 cursor-pointer border-gray-300 text-teal-600 focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+                />
+                <span className="ml-3 text-base font-medium text-gray-800">
+                  All Activities
+                </span>
+              </label>
+              {ACTIVITIES.map((activity) => (
                 <label
-                  key={type}
+                  key={activity}
                   className="flex cursor-pointer items-center rounded-xl border-2 border-gray-200 bg-gray-50 p-4 transition-all hover:border-teal-300 hover:bg-teal-50"
                 >
                   <input
-                    type="checkbox"
-                    checked={selectedTypes.includes(type)}
-                    onChange={() => handleTypeToggle(type)}
-                    className="h-5 w-5 cursor-pointer rounded border-gray-300 text-teal-600 focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+                    type="radio"
+                    name="activity"
+                    checked={selectedActivity === activity}
+                    onChange={() => onActivityChange(activity)}
+                    className="h-5 w-5 cursor-pointer border-gray-300 text-teal-600 focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
                   />
                   <span className="ml-3 text-base font-medium text-gray-800">
-                    {type}
+                    {activity}
                   </span>
                 </label>
               ))}
             </div>
           </div>
-
-          {/* Clear Filters Button */}
-          {selectedTypes.length > 0 && (
-            <button
-              onClick={() => onTypesChange([])}
-              className="w-full rounded-xl border-2 border-gray-300 bg-white px-4 py-3 text-base font-semibold text-gray-700 transition-colors hover:bg-gray-50"
-            >
-              Clear All Filters
-            </button>
-          )}
         </div>
       </div>
     </>

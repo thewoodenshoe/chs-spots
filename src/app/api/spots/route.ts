@@ -138,3 +138,57 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// PUT /api/spots/[id] - Update an existing spot
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id, lat, lng, title, description, type, photoUrl } = body;
+
+    // Validate required fields
+    if (!id || !lat || !lng || !title || !type) {
+      return NextResponse.json(
+        { error: 'Missing required fields: id, lat, lng, title, type' },
+        { status: 400 }
+      );
+    }
+
+    // Read existing spots
+    const spots = await readSpots();
+
+    // Find spot by ID
+    const spotIndex = spots.findIndex((spot) => spot.id === id);
+    if (spotIndex === -1) {
+      return NextResponse.json(
+        { error: 'Spot not found' },
+        { status: 404 }
+      );
+    }
+
+    // Update spot
+    const updatedSpot: Spot = {
+      ...spots[spotIndex],
+      lat,
+      lng,
+      title,
+      description: description || '',
+      type,
+      photoUrl: photoUrl !== undefined ? photoUrl : spots[spotIndex].photoUrl, // Preserve existing if not provided
+    };
+
+    spots[spotIndex] = updatedSpot;
+
+    // Write back to file
+    await writeSpots(spots);
+
+    console.log('Spot updated:', updatedSpot);
+
+    return NextResponse.json(updatedSpot);
+  } catch (error) {
+    console.error('Error updating spot:', error);
+    return NextResponse.json(
+      { error: 'Failed to update spot' },
+      { status: 500 }
+    );
+  }
+}
+
