@@ -14,11 +14,11 @@ const AREAS: Area[] = ['Daniel Island', 'Mount Pleasant', 'James Island', 'Downt
 
 // Area center coordinates for map recentering
 const areaCenters: Record<Area, { lat: number; lng: number; zoom: number }> = {
-  'Daniel Island': { lat: 32.845, lng: -79.908, zoom: 13 },
-  'Mount Pleasant': { lat: 32.800, lng: -79.860, zoom: 13 },
-  'James Island': { lat: 32.720, lng: -79.950, zoom: 13 },
-  'Downtown Charleston': { lat: 32.776, lng: -79.931, zoom: 14 },
-  'Sullivan\'s Island': { lat: 32.760, lng: -79.840, zoom: 13 },
+  'Daniel Island': { lat: 32.845, lng: -79.908, zoom: 14 },
+  'Mount Pleasant': { lat: 32.800, lng: -79.860, zoom: 14 },
+  'James Island': { lat: 32.720, lng: -79.950, zoom: 14 },
+  'Downtown Charleston': { lat: 32.776, lng: -79.931, zoom: 15 },
+  'Sullivan\'s Island': { lat: 32.760, lng: -79.840, zoom: 14 },
 };
 
 export default function AreaSelector({ selectedArea, onAreaChange, onMapRecenter }: AreaSelectorProps) {

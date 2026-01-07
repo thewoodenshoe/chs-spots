@@ -35,28 +35,22 @@ body,
   width: 100%;
 }
 
-/* Leaflet CSS fixes for Next.js */
-.leaflet-container {
+/* Google Maps container styling */
+.map-container {
   height: 100%;
   width: 100%;
   z-index: 0;
   font-family: 'Poppins', sans-serif;
 }
 
-/* Custom popup styling */
-.leaflet-popup-content-wrapper {
+/* Google Maps InfoWindow styling */
+.gm-style .gm-style-iw-c {
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 0;
 }
 
-.leaflet-popup-tip {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Custom temp pin styling */
-.custom-temp-pin {
-  background: transparent;
-  border: none;
+.gm-style .gm-style-iw-d {
+  overflow: hidden !important;
 }
 
 /* Safe area support for iPhone notch */
@@ -92,7 +86,12 @@ body,
   display: none;
 }
 
-/* Custom marker hover effect */
-.custom-marker:hover {
-  transform: scale(1.1);
+/* Google Maps InfoWindow styling */
+.gm-style .gm-style-iw-c {
+  border-radius: 12px;
+  padding: 0;
+}
+
+.gm-style .gm-style-iw-d {
+  overflow: hidden !important;
 }

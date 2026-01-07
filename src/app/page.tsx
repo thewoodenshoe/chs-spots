@@ -9,12 +9,12 @@ import AreaSelector, { areaCenters } from '@/components/AreaSelector';
 import ActivityChip from '@/components/ActivityChip';
 import { useSpots, Spot } from '@/contexts/SpotsContext';
 
-// Dynamically import MapComponent to avoid SSR issues
+// Dynamically import MapComponent to avoid SSR issues with Google Maps
 const MapComponent = dynamic(() => import('@/components/MapComponent'), {
   ssr: false,
   loading: () => (
-    <div className="flex h-full w-full items-center justify-center bg-blue-50">
-      <div className="text-lg text-blue-600">Loading map...</div>
+    <div className="flex h-full w-full items-center justify-center bg-gray-50">
+      <div className="text-lg text-gray-600">Loading map...</div>
     </div>
   ),
 });

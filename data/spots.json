@@ -41,19 +41,11 @@
     "type": "Golf Cart Hacks"
   },
   {
-    "id": 1767724171896,
-    "lat": 32.85867,
-    "lng": -79.91203,
-    "title": "The Kingstide",
-    "description": "Happy Hour Mon-Fri 4-6 PM: $2 off drafts, wines $9-13, cocktails $13, bites like chicken BLT. Waterfront views.",
-    "type": "Happy Hour"
-  },
-  {
     "id": 1767724171898,
     "lat": 32.86146576970246,
     "lng": -79.90807324647905,
     "title": "Ristorante LIDI",
-    "description": "Happy Hour Mon, Wed, Thu, Fri 4-6 PM: Beer $1.75, wine $3, cocktails; bar bites. Pizza 3-5 PM Tue-Sat.",
+    "description": "Happy Hour Mon, Wed, Thu, Fri 4-6 PM: Beer $1.75, wine $3, cocktails; bar bites. Pizza 3-5 PM Tue-Sat. - source ristorantelidi.com\nHappy Hour Mon, Wed, Thu, Fri 4-6 PM: Beer $1.75, wine $3, cocktails; bar bites. Pizza 3-5 PM Tue-Sat. - source yelp\nHappy Hour Friday's 5-6 PM: all beers 50% off. Wine 3% - source charlestoneats-blog.com",
     "type": "Happy Hour"
   },
   {
@@ -126,14 +118,6 @@
     "lng": -79.85026359558107,
     "title": "Fjnf",
     "description": "Shirley temple $1",
-    "type": "Happy Hour"
-  },
-  {
-    "id": 1767754889512,
-    "lat": 32.869607793250225,
-    "lng": -79.92218434810638,
-    "title": "Fishing dock next to Shellring",
-    "description": "",
     "type": "Happy Hour"
   },
   {

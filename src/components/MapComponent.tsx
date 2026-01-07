@@ -1,18 +1,22 @@
 'use client';
 
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { Area, SpotType } from './FilterModal';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { GoogleMap, LoadScript, Marker, InfoWindow, MarkerClusterer } from '@react-google-maps/api';
 import { useSpots, Spot } from '@/contexts/SpotsContext';
+import { Area, SpotType } from './FilterModal';
 
-// Fix for default marker icons in Next.js
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-});
+// Google Maps API key - set in .env.local as NEXT_PUBLIC_GOOGLE_MAPS_KEY
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || '';
+
+// Default center: Daniel Island
+const DEFAULT_CENTER = { lat: 32.845, lng: -79.908 };
+const DEFAULT_ZOOM = 14;
+
+// Map container style
+const mapContainerStyle = {
+  width: '100%',
+  height: '100%',
+};
 
 // Emoji/icons for each spot type
 const typeIcons: Record<SpotType, string> = {
@@ -36,70 +40,28 @@ const typeColors: Record<SpotType, string> = {
   'Golf Cart Hacks': '#8b5cf6', // purple
 };
 
-// Create custom marker icon for each spot type
-function createCustomMarkerIcon(spot: Spot): L.DivIcon {
+// Create custom marker icon URL for each spot type
+function createMarkerIcon(spot: Spot): google.maps.Icon {
   const emoji = typeIcons[spot.type];
   const color = typeColors[spot.type];
   
-  return L.divIcon({
-    className: 'custom-marker',
-    html: `<div style="
-      width: 40px;
-      height: 40px;
-      background-color: ${color};
-      border: 3px solid white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-      transition: transform 0.2s;
-    ">${emoji}</div>`,
-    iconSize: [40, 40],
-    iconAnchor: [20, 40],
-    popupAnchor: [0, -40],
-  });
-}
-
-// Custom icon for dropped pin (temporary pin) - using divIcon for a red marker
-const tempPinIcon = L.divIcon({
-  className: 'custom-temp-pin',
-  html: `<div style="
-    width: 30px;
-    height: 30px;
-    background-color: #ef4444;
-    border: 3px solid white;
-    border-radius: 50% 50% 50% 0;
-    transform: rotate(-45deg);
-    box-shadow: 0 3px 14px rgba(0,0,0,0.4);
-  "></div>`,
-  iconSize: [30, 30],
-  iconAnchor: [15, 30],
-  popupAnchor: [0, -30],
-});
-
-// Component to handle map clicks when in submission mode
-function MapClickHandler({
-  isSubmissionMode,
-  onMapClick,
-}: {
-  isSubmissionMode: boolean;
-  onMapClick: (lat: number, lng: number) => void;
-}) {
-  useMapEvents({
-    click: (e) => {
-      if (isSubmissionMode) {
-        onMapClick(e.latlng.lat, e.latlng.lng);
-      }
-    },
-  });
-  return null;
+  // Create a data URL for the marker icon
+  const svg = `
+    <svg width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="18" fill="${color}" stroke="white" stroke-width="3"/>
+      <text x="20" y="28" font-size="20" text-anchor="middle" fill="white">${emoji}</text>
+    </svg>
+  `;
+  
+  return {
+    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+    scaledSize: new google.maps.Size(40, 40),
+    anchor: new google.maps.Point(20, 40),
+  };
 }
 
 // Helper function to determine area from coordinates
 function getAreaFromCoordinates(lat: number, lng: number): Area {
-  // Simple approximation - in production, use proper geocoding
   if (lat >= 32.83 && lat <= 32.86 && lng >= -79.92 && lng <= -79.89) {
     return 'Daniel Island';
   } else if (lat >= 32.78 && lat <= 32.82 && lng >= -79.88 && lng <= -79.82) {
@@ -134,80 +96,191 @@ export default function MapComponent({
   onEditSpot,
 }: MapComponentProps) {
   const { spots } = useSpots();
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
+  const [center, setCenter] = useState<{ lat: number; lng: number }>(DEFAULT_CENTER);
+  const [zoom, setZoom] = useState(DEFAULT_ZOOM);
+
+  // Request user geolocation on load
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userPos = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+          setUserLocation(userPos);
+          // Only center on user if they're in the Charleston area (rough bounds)
+          if (
+            userPos.lat >= 32.6 && userPos.lat <= 32.9 &&
+            userPos.lng >= -80.0 && userPos.lng <= -79.7
+          ) {
+            setCenter(userPos);
+            setZoom(14);
+          }
+        },
+        (error) => {
+          console.log('Geolocation denied or error:', error);
+          // Fallback to default center (Daniel Island)
+        }
+      );
+    }
+  }, []);
+
+  // Update center/zoom from props
+  useEffect(() => {
+    if (mapCenter) {
+      setCenter({ lat: mapCenter.lat, lng: mapCenter.lng });
+      setZoom(mapCenter.zoom);
+    }
+  }, [mapCenter]);
 
   // Filter spots based on area and activity
-  const filteredSpots = spots.filter((spot) => {
-    const spotArea = getAreaFromCoordinates(spot.lat, spot.lng);
-    const areaMatch = spotArea === selectedArea;
-    const activityMatch = selectedActivity === null || spot.type === selectedActivity;
-    return areaMatch && activityMatch;
-  });
+  const filteredSpots = useMemo(() => {
+    return spots.filter((spot) => {
+      const spotArea = getAreaFromCoordinates(spot.lat, spot.lng);
+      const areaMatch = spotArea === selectedArea;
+      const activityMatch = selectedActivity === null || spot.type === selectedActivity;
+      return areaMatch && activityMatch;
+    });
+  }, [spots, selectedArea, selectedActivity]);
 
-  const center = mapCenter ? [mapCenter.lat, mapCenter.lng] : [32.845, -79.908];
-  const zoom = mapCenter?.zoom || 13;
+  // Handle map click for submission mode
+  const handleMapClick = useCallback((e: google.maps.MapMouseEvent) => {
+    if (isSubmissionMode && e.latLng && onMapClick) {
+      onMapClick(e.latLng.lat(), e.latLng.lng());
+    }
+  }, [isSubmissionMode, onMapClick]);
+
+  // Handle marker click
+  const handleMarkerClick = useCallback((spot: Spot) => {
+    setSelectedSpot(spot);
+  }, []);
+
+  // Close info window
+  const handleInfoWindowClose = useCallback(() => {
+    setSelectedSpot(null);
+  }, []);
+
+  // Format description with bullet points
+  const formatDescription = (description: string): string => {
+    // Split by common separators and create bullet points
+    const lines = description
+      .split(/[•\n\-]/)
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
+    
+    return lines.map(line => `• ${line}`).join('\n');
+  };
+
+  if (!GOOGLE_MAPS_API_KEY) {
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <p className="text-lg font-semibold text-gray-800 mb-2">
+            Google Maps API Key Required
+          </p>
+          <p className="text-sm text-gray-600">
+            Please set NEXT_PUBLIC_GOOGLE_MAPS_KEY in your .env.local file
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <MapContainer
-      center={center as [number, number]}
-      zoom={zoom}
-      style={{ height: '100%', width: '100%', zIndex: 0 }}
-      scrollWheelZoom={true}
-      key={`${center[0]}-${center[1]}-${zoom}`}
-    >
-      {/* Use standard OpenStreetMap tiles - clean without blue route lines */}
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        maxZoom={19}
-      />
-      <MapClickHandler
-        isSubmissionMode={isSubmissionMode}
-        onMapClick={onMapClick || (() => {})}
-      />
-      {filteredSpots.map((spot) => (
-        <Marker key={spot.id} position={[spot.lat, spot.lng]} icon={createCustomMarkerIcon(spot)}>
-          <Popup className="custom-popup">
-            <div className="text-sm min-w-[200px]">
-              <div className="font-semibold text-gray-800 mb-1">{spot.title}</div>
-              {spot.description && (
-                <div className="mt-1 text-xs text-gray-600 mb-2">{spot.description}</div>
+    <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
+      <GoogleMap
+        mapContainerStyle={mapContainerStyle}
+        center={center}
+        zoom={zoom}
+        onClick={handleMapClick}
+        onLoad={(map) => setMap(map)}
+        options={{
+          fullscreenControl: false,
+          mapTypeControl: false,
+          streetViewControl: false,
+          gestureHandling: 'greedy', // Mobile-friendly touch gestures
+        }}
+      >
+        {/* Curated Spots with Clustering */}
+        {filteredSpots.length > 0 && (
+          <MarkerClusterer>
+            {(clusterer) => (
+              <>
+                {filteredSpots.map((spot) => (
+                  <Marker
+                    key={spot.id}
+                    position={{ lat: spot.lat, lng: spot.lng }}
+                    icon={createMarkerIcon(spot)}
+                    clusterer={clusterer}
+                    onClick={() => handleMarkerClick(spot)}
+                  />
+                ))}
+              </>
+            )}
+          </MarkerClusterer>
+        )}
+
+        {/* InfoWindow for selected spot */}
+        {selectedSpot && (
+          <InfoWindow
+            position={{ lat: selectedSpot.lat, lng: selectedSpot.lng }}
+            onCloseClick={handleInfoWindowClose}
+          >
+            <div className="text-sm min-w-[200px] max-w-[300px]">
+              <div className="font-semibold text-gray-800 mb-2">{selectedSpot.title}</div>
+              {selectedSpot.description && (
+                <div className="text-xs text-gray-600 mb-2 whitespace-pre-line">
+                  {formatDescription(selectedSpot.description)}
+                </div>
               )}
-              <div className="mt-2 flex items-center gap-2">
-                <span className="text-base">{typeIcons[spot.type]}</span>
+              <div className="mt-2 flex items-center gap-2 mb-2">
+                <span className="text-base">{typeIcons[selectedSpot.type]}</span>
                 <span className="rounded-full bg-teal-100 px-2 py-0.5 text-xs font-medium text-teal-800">
-                  {spot.type}
+                  {selectedSpot.type}
                 </span>
               </div>
-              {spot.photoUrl && (
+              {selectedSpot.photoUrl && (
                 <img
-                  src={spot.photoUrl}
-                  alt={spot.title}
+                  src={selectedSpot.photoUrl}
+                  alt={selectedSpot.title}
                   className="mt-2 h-32 w-full rounded-lg object-cover"
                 />
               )}
               {onEditSpot && (
                 <button
-                  onClick={() => onEditSpot(spot)}
+                  onClick={() => {
+                    onEditSpot(selectedSpot);
+                    handleInfoWindowClose();
+                  }}
                   className="mt-3 w-full rounded-lg bg-teal-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-teal-700"
                 >
                   Edit Spot
                 </button>
               )}
             </div>
-          </Popup>
-        </Marker>
-      ))}
-      {/* Temporary pin for submission */}
-      {isSubmissionMode && pinLocation && (
-        <Marker position={[pinLocation.lat, pinLocation.lng]} icon={tempPinIcon}>
-          <Popup>
-            <div className="text-sm font-medium text-gray-800">
-              New spot location
-            </div>
-          </Popup>
-        </Marker>
-      )}
-    </MapContainer>
+          </InfoWindow>
+        )}
+
+        {/* Temporary pin for submission mode */}
+        {isSubmissionMode && pinLocation && (
+          <Marker
+            position={{ lat: pinLocation.lat, lng: pinLocation.lng }}
+            icon={{
+              url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                <svg width="30" height="30" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M15 0 L15 20 L0 30 L30 30 Z" fill="#ef4444" stroke="white" stroke-width="2"/>
+                </svg>
+              `),
+              scaledSize: new google.maps.Size(30, 30),
+              anchor: new google.maps.Point(15, 30),
+            }}
+          />
+        )}
+      </GoogleMap>
+    </LoadScript>
   );
 }
-
