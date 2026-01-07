@@ -150,37 +150,32 @@ export default function Home() {
   return (
     <div className="relative h-screen w-screen overflow-hidden">
       {/* Fixed Top Bar - Redesigned */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-md safe-area-top">
-        {/* Title Row */}
-        <div className="flex h-14 items-center justify-center px-4">
-          <h1 className="text-xl font-bold text-white drop-shadow-lg">
-            Charleston spots per Area
+      <div className="fixed top-0 left-0 right-0 z-50 bg-black/70 backdrop-blur-md safe-area-top">
+        <div className="flex h-14 items-center justify-between px-4">
+          {/* Left: Title */}
+          <h1 className="text-lg font-bold text-white drop-shadow-lg">
+            Charleston Happy Hours
           </h1>
-        </div>
-        
-        {/* Activity and Area Selection Row */}
-        <div className="flex gap-3 px-4 pb-3">
-          {/* Activity Selection - Evenly sized */}
-          <div className="flex-1">
-            <ActivityChip activity={selectedActivity} onClick={handleFilter} />
+          
+          {/* Center: Area Badge */}
+          <div className="flex-1 flex justify-center">
+            <div className="rounded-full bg-teal-600 px-4 py-1.5 text-sm font-semibold text-white shadow-md">
+              {selectedArea}
+            </div>
           </div>
           
-          {/* Area Selection - Evenly sized */}
-          <div className="flex-1 flex justify-end">
-            <AreaSelector
-              selectedArea={selectedArea}
-              onAreaChange={handleAreaChange}
-              onMapRecenter={handleAreaChange}
-            />
+          {/* Right: Activity Badge with Icon */}
+          <div className="flex items-center">
+            <ActivityChip activity={selectedActivity} onClick={handleFilter} />
           </div>
         </div>
       </div>
 
       {/* Full-screen Map */}
       <div 
-        className="h-full w-full pb-20"
+        className="h-full w-full pb-24"
         style={{ 
-          paddingTop: '6.5rem' 
+          paddingTop: '3.5rem' 
         }}
       >
         <MapComponent
@@ -194,10 +189,42 @@ export default function Home() {
         />
       </div>
 
+      {/* Closest Nearby Button */}
+      <button
+        onClick={() => {
+          // This will be handled in MapComponent
+          const event = new CustomEvent('findClosestSpot');
+          window.dispatchEvent(event);
+        }}
+        className="fixed bottom-6 left-6 z-40 flex min-h-[48px] min-w-[48px] items-center gap-2 rounded-full bg-teal-600 px-4 py-3 text-sm font-semibold text-white shadow-2xl transition-all hover:scale-105 active:scale-95 hover:bg-teal-700 safe-area-bottom touch-manipulation"
+        aria-label="Find closest spot"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-5 w-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2.5}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+          />
+        </svg>
+        <span>Closest Nearby</span>
+      </button>
+
       {/* Floating Action Button - Redesigned */}
       <button
         onClick={handleAddSpot}
-        className="group fixed bottom-6 right-6 z-40 flex h-16 w-16 items-center justify-center rounded-full bg-teal-500 shadow-2xl transition-all hover:scale-110 active:scale-95 hover:bg-teal-600 safe-area-bottom"
+        className="group fixed bottom-6 right-6 z-40 flex h-16 w-16 min-h-[64px] min-w-[64px] items-center justify-center rounded-full bg-teal-500 shadow-2xl transition-all hover:scale-110 active:scale-95 hover:bg-teal-600 safe-area-bottom touch-manipulation"
         aria-label="Add new spot"
       >
         <svg

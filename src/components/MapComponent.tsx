@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { GoogleMap, LoadScript, Marker, InfoWindow, MarkerClusterer } from '@react-google-maps/api';
 import { useSpots, Spot } from '@/contexts/SpotsContext';
 import { Area, SpotType } from './FilterModal';
@@ -101,6 +101,7 @@ export default function MapComponent({
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
   const [center, setCenter] = useState<{ lat: number; lng: number }>(DEFAULT_CENTER);
   const [zoom, setZoom] = useState(DEFAULT_ZOOM);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Request user geolocation on load
   useEffect(() => {
@@ -164,16 +165,96 @@ export default function MapComponent({
     setSelectedSpot(null);
   }, []);
 
-  // Format description with bullet points
-  const formatDescription = (description: string): string => {
+  // Format description with bullet points and source attribution
+  const formatDescription = (description: string): React.ReactElement => {
     // Split by common separators and create bullet points
+    // Look for source patterns like "— source: website.com" or "source: yelp"
     const lines = description
       .split(/[•\n\-]/)
       .map(line => line.trim())
       .filter(line => line.length > 0);
     
-    return lines.map(line => `• ${line}`).join('\n');
+    return (
+      <div className="space-y-1">
+        {lines.map((line, index) => {
+          // Check if line contains source attribution
+          const sourceMatch = line.match(/(.+?)\s*—\s*source:\s*(.+)/i) || line.match(/(.+?)\s*source:\s*(.+)/i);
+          
+          if (sourceMatch) {
+            const [, content, source] = sourceMatch;
+            return (
+              <div key={index} className="text-xs text-gray-600">
+                <span>• {content.trim()}</span>
+                <span className="text-gray-500 italic"> — source: {source.trim()}</span>
+              </div>
+            );
+          }
+          
+          return (
+            <div key={index} className="text-xs text-gray-600">
+              • {line}
+            </div>
+          );
+        })}
+      </div>
+    );
   };
+
+  // Haversine formula to calculate distance between two points in miles
+  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+    const R = 3959; // Earth's radius in miles
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  // Find closest spot
+  const findClosestSpot = useCallback(() => {
+    if (!map || filteredSpots.length === 0) return;
+    
+    // Get origin from map center or user location
+    const origin = userLocation || map.getCenter()?.toJSON() || center;
+    if (!origin) return;
+    
+    // Calculate distances to all filtered spots
+    const spotsWithDistance = filteredSpots.map(spot => ({
+      spot,
+      distance: calculateDistance(origin.lat, origin.lng, spot.lat, spot.lng),
+    }));
+    
+    // Find closest
+    const closest = spotsWithDistance.reduce((prev, current) => 
+      current.distance < prev.distance ? current : prev
+    );
+    
+    // Show popup and toast
+    setSelectedSpot(closest.spot);
+    setToastMessage(`Closest: ${closest.spot.title} (${closest.distance.toFixed(1)} miles)`);
+    
+    // Center map on closest spot
+    map.setCenter({ lat: closest.spot.lat, lng: closest.spot.lng });
+    map.setZoom(15);
+    
+    // Clear toast after 3 seconds
+    setTimeout(() => setToastMessage(null), 3000);
+  }, [map, filteredSpots, userLocation, center]);
+
+  // Listen for findClosestSpot event
+  useEffect(() => {
+    const handleFindClosest = () => {
+      findClosestSpot();
+    };
+    
+    window.addEventListener('findClosestSpot', handleFindClosest);
+    return () => {
+      window.removeEventListener('findClosestSpot', handleFindClosest);
+    };
+  }, [findClosestSpot]);
 
   if (!GOOGLE_MAPS_API_KEY) {
     return (
@@ -191,20 +272,28 @@ export default function MapComponent({
   }
 
   return (
-    <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
-      <GoogleMap
-        mapContainerStyle={mapContainerStyle}
-        center={center}
-        zoom={zoom}
-        onClick={handleMapClick}
-        onLoad={(map) => setMap(map)}
-        options={{
-          fullscreenControl: false,
-          mapTypeControl: false,
-          streetViewControl: false,
-          gestureHandling: 'greedy', // Mobile-friendly touch gestures
-        }}
-      >
+    <>
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-20 left-1/2 z-[60] -translate-x-1/2 animate-slide-down rounded-lg bg-gray-900 px-4 py-3 text-sm font-medium text-white shadow-2xl safe-area-top">
+          {toastMessage}
+        </div>
+      )}
+      
+      <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
+        <GoogleMap
+          mapContainerStyle={mapContainerStyle}
+          center={center}
+          zoom={zoom}
+          onClick={handleMapClick}
+          onLoad={(map) => setMap(map)}
+          options={{
+            fullscreenControl: false,
+            mapTypeControl: false,
+            streetViewControl: false,
+            gestureHandling: 'greedy', // Mobile-friendly touch gestures
+          }}
+        >
         {/* Curated Spots with Clustering */}
         {filteredSpots.length > 0 && (
           <MarkerClusterer>
@@ -224,6 +313,23 @@ export default function MapComponent({
           </MarkerClusterer>
         )}
 
+        {/* User Location Marker (Blue Dot) */}
+        {userLocation && (
+          <Marker
+            position={{ lat: userLocation.lat, lng: userLocation.lng }}
+            icon={{
+              url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                <svg width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="10" cy="10" r="8" fill="#3b82f6" stroke="white" stroke-width="2"/>
+                </svg>
+              `),
+              scaledSize: new google.maps.Size(20, 20),
+              anchor: new google.maps.Point(10, 10),
+            }}
+            zIndex={1000}
+          />
+        )}
+
         {/* InfoWindow for selected spot */}
         {selectedSpot && (
           <InfoWindow
@@ -231,9 +337,9 @@ export default function MapComponent({
             onCloseClick={handleInfoWindowClose}
           >
             <div className="text-sm min-w-[200px] max-w-[300px]">
-              <div className="font-semibold text-gray-800 mb-2">{selectedSpot.title}</div>
+              <div className="font-bold text-gray-900 mb-2 text-base">{selectedSpot.title}</div>
               {selectedSpot.description && (
-                <div className="text-xs text-gray-600 mb-2 whitespace-pre-line">
+                <div className="mb-3">
                   {formatDescription(selectedSpot.description)}
                 </div>
               )}
@@ -256,7 +362,7 @@ export default function MapComponent({
                     onEditSpot(selectedSpot);
                     handleInfoWindowClose();
                   }}
-                  className="mt-3 w-full rounded-lg bg-teal-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-teal-700"
+                  className="mt-3 w-full rounded-lg bg-teal-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-teal-700 touch-manipulation"
                 >
                   Edit Spot
                 </button>
@@ -282,5 +388,6 @@ export default function MapComponent({
         )}
       </GoogleMap>
     </LoadScript>
+    </>
   );
 }

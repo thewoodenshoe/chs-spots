@@ -20,8 +20,8 @@ const activityIcons: Record<SpotType, typeof Martini> = {
 
 export default function ActivityChip({ activity, onClick }: ActivityChipProps) {
   const Component = onClick ? 'button' : 'div';
-  const baseClasses = 'flex items-center justify-center gap-2 rounded-full px-4 py-2 shadow-md transition-all w-full';
-  const clickableClasses = onClick ? 'cursor-pointer hover:shadow-lg active:scale-95' : '';
+  const baseClasses = 'flex items-center justify-center gap-1.5 rounded-full px-3 py-1.5 shadow-md transition-all';
+  const clickableClasses = onClick ? 'cursor-pointer hover:shadow-lg active:scale-95 touch-manipulation' : '';
 
   if (!activity) {
     return (
@@ -30,7 +30,7 @@ export default function ActivityChip({ activity, onClick }: ActivityChipProps) {
         className={`${baseClasses} ${clickableClasses} bg-gray-100`}
       >
         <Activity className="h-4 w-4 text-gray-600" />
-        <span className="text-sm font-semibold text-gray-700">All Activities</span>
+        <span className="text-xs font-semibold text-gray-700">All Activities</span>
       </Component>
     );
   }
@@ -43,7 +43,7 @@ export default function ActivityChip({ activity, onClick }: ActivityChipProps) {
       className={`${baseClasses} ${clickableClasses} bg-teal-600`}
     >
       <Icon className="h-4 w-4 text-white" />
-      <span className="text-sm font-semibold text-white">{activity}</span>
+      <span className="text-xs font-semibold text-white">{activity}</span>
     </Component>
   );
 }

@@ -62,6 +62,27 @@ body,
   margin-bottom: env(safe-area-inset-bottom);
 }
 
+/* Touch manipulation for better mobile performance */
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
+/* Toast animation */
+@keyframes slide-down {
+  from {
+    transform: translate(-50%, -100%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out;
+}
+
 /* Bottom sheet animation */
 @keyframes slide-up {
   from {
