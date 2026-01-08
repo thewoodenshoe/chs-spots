@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { SpotsProvider } from "@/contexts/SpotsContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,8 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Charleston Spots",
-  description: "Discover happy hours and spots in Charleston, SC",
+  title: "Charleston Local Spots",
+  description: "Crowdsourced map for the best of Daniel Island life",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
 };
 
 export default function RootLayout({
@@ -27,7 +29,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <SpotsProvider>
+          {children}
+        </SpotsProvider>
       </body>
     </html>
   );
