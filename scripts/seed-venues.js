@@ -1,4 +1,17 @@
-require('dotenv').config();
+// Try to load dotenv if available (check both .env and .env.local)
+try {
+  require('dotenv').config();
+  // Also try .env.local (Next.js convention)
+  try {
+    require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') });
+  } catch (e) {
+    // .env.local not found, that's ok
+  }
+} catch (e) {
+  // dotenv not installed - environment variables must be set manually
+  // Or ensure they're in your shell environment
+}
+
 const fs = require('fs');
 const path = require('path');
 
