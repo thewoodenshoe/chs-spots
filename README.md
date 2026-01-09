@@ -1,36 +1,333 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Charleston Local Spots
+
+A crowdsourced map application for discovering and sharing local hotspots in Charleston, SC areas including Daniel Island, Mount Pleasant, James Island, Downtown Charleston, and Sullivan's Island.
+
+## Features
+
+- 🗺️ **Interactive Google Maps** with curated spots
+- 🍹 **Activity Filtering** - Filter by Happy Hour, Fishing Spots, Sunset Spots, Pickleball Games, Bike Routes, Golf Cart Hacks, and more
+- 📍 **Area Selection** - Browse spots by specific Charleston area
+- ➕ **Add Your Own Spots** - Community-driven content
+- 📱 **Mobile-First Design** - Responsive layout optimized for mobile devices
+- 🔍 **Closest Nearby** - Find the nearest spot to your location
+- ✏️ **Edit & Delete** - Manage your contributed spots
+
+## Tech Stack
+
+- **Next.js 16** - React framework
+- **TypeScript** - Type safety
+- **Google Maps API** - Interactive map with markers and clustering
+- **Tailwind CSS** - Styling
+- **Playwright** - End-to-end testing
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js 18+ (for built-in fetch support)
+- Google Maps API Key
+
+### Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/thewoodenshoe/chs-spots.git
+cd chs-spots
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Create `.env.local` file:
+```bash
+NEXT_PUBLIC_GOOGLE_MAPS_KEY=your_google_maps_api_key_here
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Run the development server:
+```bash
+npm run dev
+```
 
-## Learn More
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Data Seeding Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+#### 1. Seed Venues (`scripts/seed-venues.js`)
 
-## Deploy on Vercel
+Fetches all alcohol-serving venues from Google Places API for Charleston areas.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Features:**
+- Uses Google Places Nearby Search API
+- Queries multiple venue types: bar, restaurant, night_club, cafe
+- Covers 5 areas: Daniel Island, Mount Pleasant, James Island, Downtown Charleston, Sullivan's Island
+- Extended Daniel Island coverage (8000m radius to include Clements Ferry Road)
+- Fetches website details from Google Places Details API
+- Deduplicates by place_id
+- Appends to existing `/data/venues.json` without overwriting
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Usage:**
+```bash
+node scripts/seed-venues.js
+```
+
+**Output:**
+- `/data/venues.json` - All discovered venues with name, address, coordinates, website, types, and area
+
+**Configuration:**
+- Requires `NEXT_PUBLIC_GOOGLE_MAPS_KEY` or `GOOGLE_PLACES_KEY` in environment
+- Rate limiting: 1-2 seconds between API calls
+- Automatically fetches missing website information
+
+---
+
+#### 2. Update Happy Hours (`scripts/update-happy-hours.js`)
+
+Scrapes restaurant websites to discover and extract happy hour information.
+
+**Features:**
+- **Multi-Location Detection**: Automatically detects chain/restaurant group sites
+- **Local Page Discovery**: Finds location-specific pages (e.g., "Daniel Island", "Mount Pleasant")
+- **Comprehensive Submenu Discovery**: Finds relevant pages using 30+ keywords:
+  - Menu pages: menu, menus, food-menu, drink-menu, dinner, brunch, lunch
+  - Drink pages: cocktails, wine, beer, drinks, raw-bar
+  - Happy hour pages: happy-hour, happyhour, happier-hour, specials, daily-specials, deals, promotions
+  - Event pages: event, events, bar, club, wine-club
+  - Other: pdf, overview
+- **Smart Extraction**: Extracts happy hour text snippets with context
+- **One-Time Inventory**: Creates `/data/restaurants-submenus.json` with all discovered submenu URLs
+- **Incremental Updates**: Appends to existing spots without overwriting
+
+**Usage:**
+```bash
+node scripts/update-happy-hours.js
+```
+
+**Expected Runtime:**
+- 15-30 minutes for ~400 venues
+- Rate limiting: 1.5-2.5 seconds between requests (polite to servers)
+
+**Output Files:**
+- `/data/spots.json` - Updated with happy hour spots (title, lat/lng, description with sources, activity: "Happy Hour")
+- `/data/restaurants-submenus.json` - One-time inventory of all discovered submenu URLs per restaurant
+
+**How It Works:**
+1. Loads venues from `/data/venues.json`
+2. For each venue with a website:
+   - Fetches homepage
+   - Detects if multi-location site (keywords: "locations", "choose location", etc.)
+   - If multi-location, searches for local page links matching venue area
+   - Extracts internal links matching submenu keywords (href or link text)
+   - Fetches homepage/local page + up to 10 relevant subpages
+   - Extracts happy hour text snippets (searches for "happy hour" + time patterns)
+   - Updates or creates spot in `/data/spots.json`
+3. Creates submenus inventory file with all discovered URLs
+
+**Logging:**
+The script provides detailed progress:
+- 🔍 Multi-location detection
+- 📍 Local page discovery
+- 🔗 Submenu discovery count
+- 🍹 Happy hour snippet extraction
+- ✅ Success / ❌ Error status
+- 📊 Summary statistics
+
+**Example Output:**
+```
+🍺 Starting Happy Hour Update Agent...
+
+[1/387] Processing: The Kingstide
+  🌐 https://thekingstide.com/
+  📍 Area: Daniel Island
+  🔍 Found multi-location site
+  📍 Found 2 potential local page(s)
+  ✅ Using local page: https://thekingstide.com/daniel-island
+  🔗 Discovered 5 submenu(s)
+  🍹 Found 3 happy hour snippet(s)
+  ✅ Scanned: 3 happy hour snippet(s) from 5 subpage(s)
+  ✨ Created new spot
+
+📊 Summary:
+   ✅ Processed: 387 venues
+   🍹 Found happy hour info: 45 venues
+   🏢 Multi-location sites detected: 23
+   📍 Local pages used: 18
+   🔗 Total submenus discovered: 156
+```
+
+---
+
+#### 3. Align Spots to Google (`scripts/align-spots-to-google.js`)
+
+One-time script to align existing curated spots to precise Google Maps locations.
+
+**Usage:**
+```bash
+node scripts/align-spots-to-google.js
+```
+
+**Features:**
+- Uses Google Places "Find Place" or "Text Search" API
+- Updates lat/lng coordinates for accurate positioning
+- Requires `GOOGLE_PLACES_KEY` in environment
+
+---
+
+## Data Files
+
+### `/data/venues.json`
+All alcohol-serving venues discovered from Google Places API.
+```json
+{
+  "id": "place_id",
+  "name": "Venue Name",
+  "address": "123 Main St, Charleston",
+  "lat": 32.845,
+  "lng": -79.908,
+  "website": "https://example.com",
+  "types": ["restaurant", "bar"],
+  "area": "Daniel Island"
+}
+```
+
+### `/data/spots.json`
+Curated spots with activity information.
+```json
+{
+  "title": "Venue Name",
+  "lat": 32.845,
+  "lng": -79.908,
+  "description": "• Happy hour 4-6 PM daily — source: https://example.com/menu\n• Friday specials 5-7 PM — source: https://example.com/specials",
+  "activity": "Happy Hour",
+  "area": "Daniel Island"
+}
+```
+
+### `/data/restaurants-submenus.json`
+One-time inventory of discovered submenu URLs (created by update-happy-hours.js).
+```json
+{
+  "restaurantName": "The Kingstide",
+  "website": "https://thekingstide.com/",
+  "submenus": [
+    "https://thekingstide.com/menu",
+    "https://thekingstide.com/happy-hour",
+    "https://thekingstide.com/specials"
+  ]
+}
+```
+
+## Testing
+
+### Run E2E Tests
+```bash
+npm run test:e2e
+```
+
+### Run E2E Tests with UI
+```bash
+npm run test:e2e:ui
+```
+
+### Run Unit Tests (Jest)
+```bash
+npm test
+```
+
+**Test Coverage:**
+- Page load and header visibility
+- Area selector functionality
+- Activity filter modal
+- Add spot button and submission
+- Map display
+- Mobile responsiveness
+- Error handling
+
+## Project Structure
+
+```
+chs-spots/
+├── data/                      # Data files
+│   ├── venues.json           # All venues from Google Places
+│   ├── spots.json            # Curated spots with activities
+│   └── restaurants-submenus.json  # Submenu inventory
+├── scripts/                   # Node.js scripts
+│   ├── seed-venues.js        # Seed venues from Google Places
+│   ├── update-happy-hours.js # Scrape happy hour info
+│   └── align-spots-to-google.js  # Align coordinates
+├── src/
+│   ├── app/                  # Next.js app directory
+│   │   ├── page.tsx         # Main page component
+│   │   ├── layout.tsx       # Root layout with SpotsProvider
+│   │   └── api/             # API routes
+│   ├── components/           # React components
+│   │   ├── MapComponent.tsx # Google Maps integration
+│   │   ├── FilterModal.tsx  # Activity selection
+│   │   ├── SubmissionModal.tsx  # Add new spot
+│   │   ├── EditSpotModal.tsx    # Edit/delete spot
+│   │   ├── AreaSelector.tsx     # Area dropdown
+│   │   └── ActivityChip.tsx     # Activity display
+│   └── contexts/
+│       └── SpotsContext.tsx  # Global spots state
+└── e2e/                      # Playwright E2E tests
+    └── app.spec.ts
+```
+
+## Environment Variables
+
+Create `.env.local` in the project root:
+
+```bash
+NEXT_PUBLIC_GOOGLE_MAPS_KEY=your_google_maps_api_key_here
+GOOGLE_PLACES_KEY=your_google_places_api_key_here  # Optional, can use same as Maps key
+```
+
+## Deployment
+
+The app is ready to deploy on Vercel, Netlify, or any Next.js-compatible platform.
+
+### Build for Production
+
+```bash
+npm run build
+npm start
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests: `npm run test:e2e`
+5. Commit and push
+6. Open a pull request
+
+## License
+
+MIT
+
+## Troubleshooting
+
+### SSL Certificate Issues with Git
+
+See `FIX-SSL-AND-RUN-SCRIPT.md` for solutions.
+
+### Google Maps Not Loading
+
+- Verify `NEXT_PUBLIC_GOOGLE_MAPS_KEY` is set in `.env.local`
+- Check API key has Maps JavaScript API enabled
+- Ensure billing is enabled on Google Cloud project
+
+### Script Errors
+
+- Ensure Node.js 18+ is installed: `node --version`
+- Check API keys are set in environment
+- Review rate limiting - scripts have built-in delays
+- Check network connectivity for website scraping
+
+For more details on running scripts, see:
+- `scripts/RUN-UPDATE-HAPPY-HOURS.md`
+- `FIX-SSL-AND-RUN-SCRIPT.md`

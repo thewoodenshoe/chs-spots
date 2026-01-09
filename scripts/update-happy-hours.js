@@ -12,14 +12,25 @@ if (typeof fetch !== 'function') {
 // Configuration
 const RATE_LIMIT_DELAY_MIN = 1500; // Minimum delay between requests
 const RATE_LIMIT_DELAY_MAX = 2500; // Maximum delay between requests
-const MAX_SUBPAGES = 8; // Maximum subpages to fetch per site
+const MAX_SUBPAGES = 10; // Maximum subpages to fetch per site (increased from 8)
 const MAX_LOCAL_LINKS = 3; // Maximum local page links to try
 
-// Keywords for finding relevant subpages
+// Keywords for finding relevant subpages (case-insensitive match in href or link text)
 const SUBPAGE_KEYWORDS = [
-  'menu', 'menus', 'happy-hour', 'happyhour', 'specials', 
-  'event', 'events', 'bar', 'drinks', 'food', 'dinner', 
-  'lunch', 'cocktail', 'wine', 'beer'
+  // Menu-related
+  'menu', 'menus', 'food-menu', 'drink-menu',
+  // Meal times
+  'dinner', 'brunch', 'lunch',
+  // Drinks
+  'cocktails', 'wine', 'beer', 'drinks',
+  // Happy hour variations
+  'happy-hour', 'happyhour', 'happier-hour',
+  // Specials and deals
+  'specials', 'daily-specials', 'deals', 'promotions',
+  // Other relevant pages
+  'event', 'events', 'bar', 'raw-bar',
+  // Additional content types
+  'pdf', 'overview', 'club', 'wine-club'
 ];
 
 // Multi-location detection keywords
