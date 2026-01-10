@@ -20,17 +20,17 @@ const activityIcons: Record<SpotType, typeof Martini> = {
 
 export default function ActivityChip({ activity, onClick }: ActivityChipProps) {
   const Component = onClick ? 'button' : 'div';
-  const baseClasses = 'flex items-center justify-center gap-1.5 rounded-full px-3 py-1.5 shadow-md transition-all';
-  const clickableClasses = onClick ? 'cursor-pointer hover:shadow-lg active:scale-95 touch-manipulation' : '';
+  const baseClasses = 'flex w-full items-center justify-center gap-2 rounded-full bg-teal-600 px-4 py-3 min-h-[48px] text-sm font-semibold text-white shadow-lg transition-all hover:bg-teal-700 hover:shadow-xl active:scale-95 touch-manipulation';
+  const clickableClasses = onClick ? 'cursor-pointer' : '';
 
   if (!activity) {
     return (
       <Component
         onClick={onClick}
-        className={`${baseClasses} ${clickableClasses} bg-gray-100`}
+        className={`${baseClasses} ${clickableClasses} bg-gray-100 text-gray-700 hover:bg-gray-200`}
       >
-        <Activity className="h-4 w-4 text-gray-600" />
-        <span className="text-xs font-semibold text-gray-700">All Activities</span>
+        <Activity className="h-5 w-5" />
+        <span>All Activities</span>
       </Component>
     );
   }
@@ -40,10 +40,10 @@ export default function ActivityChip({ activity, onClick }: ActivityChipProps) {
   return (
     <Component
       onClick={onClick}
-      className={`${baseClasses} ${clickableClasses} bg-teal-600`}
+      className={`${baseClasses} ${clickableClasses}`}
     >
-      <Icon className="h-4 w-4 text-white" />
-      <span className="text-xs font-semibold text-white">{activity}</span>
+      <Icon className="h-5 w-5" />
+      <span>{activity}</span>
     </Component>
   );
 }

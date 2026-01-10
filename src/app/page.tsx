@@ -151,14 +151,17 @@ export default function Home() {
     <div className="relative h-screen w-screen overflow-hidden">
       {/* Fixed Top Bar - Redesigned */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-black/70 backdrop-blur-md safe-area-top">
-        <div className="flex h-14 items-center justify-between px-4">
-          {/* Left: Title */}
-          <h1 className="text-lg font-bold text-white drop-shadow-lg">
+        {/* Title Row */}
+        <div className="flex h-14 items-center justify-center px-4">
+          <h1 className="text-2xl font-bold text-white drop-shadow-lg tracking-tight">
             Charleston Hotspots
           </h1>
-          
-          {/* Center: Area Badge */}
-          <div className="flex-1 flex justify-center">
+        </div>
+        
+        {/* Buttons Row - Same size, responsive */}
+        <div className="flex flex-col sm:flex-row items-stretch gap-3 px-4 pb-4">
+          {/* Area Selector - Equal width */}
+          <div className="flex-1 w-full">
             <AreaSelector
               selectedArea={selectedArea}
               onAreaChange={handleAreaChange}
@@ -166,8 +169,8 @@ export default function Home() {
             />
           </div>
           
-          {/* Right: Activity Badge with Icon */}
-          <div className="flex items-center">
+          {/* Activity Chip - Equal width */}
+          <div className="flex-1 w-full">
             <ActivityChip activity={selectedActivity} onClick={handleFilter} />
           </div>
         </div>
@@ -177,7 +180,7 @@ export default function Home() {
       <div 
         className="h-full w-full pb-24"
         style={{ 
-          paddingTop: '3.5rem' 
+          paddingTop: '140px' // Increased to accommodate two-row header
         }}
       >
         <MapComponent

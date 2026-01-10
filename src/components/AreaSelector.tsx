@@ -53,11 +53,11 @@ export default function AreaSelector({ selectedArea, onAreaChange, onMapRecenter
     <div className="relative w-full" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-center gap-2 rounded-full bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-md transition-all hover:bg-teal-700 hover:shadow-lg"
+        className="flex w-full items-center justify-center gap-2 rounded-full bg-teal-600 px-4 py-3 min-h-[48px] text-sm font-semibold text-white shadow-lg transition-all hover:bg-teal-700 hover:shadow-xl active:scale-95 touch-manipulation focus:outline-none focus:ring-2 focus:ring-teal-500/50"
         aria-label="Select area"
       >
         <span>{selectedArea}</span>
-        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`h-5 w-5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
@@ -66,13 +66,13 @@ export default function AreaSelector({ selectedArea, onAreaChange, onMapRecenter
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl bg-white shadow-2xl">
+          <div className="absolute left-0 right-0 top-full z-50 mt-2 w-full rounded-xl bg-white shadow-2xl sm:w-56">
             <div className="py-2">
               {AREAS.map((area) => (
                 <button
                   key={area}
                   onClick={() => handleAreaSelect(area)}
-                  className={`w-full px-4 py-3 text-left text-sm font-medium transition-colors ${
+                  className={`w-full px-4 py-3 text-left text-sm font-medium transition-colors min-h-[44px] touch-manipulation ${
                     area === selectedArea
                       ? 'bg-teal-50 text-teal-700'
                       : 'text-gray-800 hover:bg-gray-50'
