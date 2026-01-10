@@ -74,12 +74,11 @@ module.exports = {
       testMatch: ['<rootDir>/scripts/**/__tests__/**/*.test.js'],
       testEnvironment: 'node',
       transform: {
-        '^.+\\.js$': ['ts-jest', {
-          tsconfig: {
-            allowJs: true,
-          },
-        }],
+        '^.+\\.js$': 'babel-jest',
       },
+      moduleFileExtensions: ['js', 'json'],
     },
   ],
+  // Explicitly set testSequencer to avoid missing module error
+  testSequencer: undefined,
 }

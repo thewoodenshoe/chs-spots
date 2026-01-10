@@ -27,11 +27,38 @@
     ]
   },
   {
+    "restaurantName": "COAST Brewing Company",
+    "website": "http://www.coastbrewing.com/",
+    "submenus": [
+      "http://www.coastbrewing.com/beer"
+    ]
+  },
+  {
     "restaurantName": "Daniel Island Park Club",
     "website": "http://www.danielislandclub.com/",
     "submenus": [
+      "https://www.danielislandclub.com/about-us/login",
+      "https://www.danielislandclub.com/about-us/guest-infopolicies",
+      "https://www.danielislandclub.com/about-us",
+      "https://www.danielislandclub.com/golf",
+      "https://www.danielislandclub.com/tennis-fitness",
+      "https://www.danielislandclub.com/amenities",
       "https://www.danielislandclub.com/private-events",
-      "http://www.danielislandclub.com/%7BTOKEN:EVENT_ITEM:VIEW_LINK%7D"
+      "https://www.danielislandclub.com/membership",
+      "https://www.danielislandclub.com/2025danielislandwideopen",
+      "https://www.danielislandclub.com/recruitment"
+    ]
+  },
+  {
+    "restaurantName": "DIG In The Park",
+    "website": "http://diginthepark.com/",
+    "submenus": [
+      "http://diginthepark.com/our-menus-list",
+      "http://diginthepark.com/all-day-menu",
+      "http://diginthepark.com/brunch",
+      "http://diginthepark.com/about",
+      "http://diginthepark.com/events-specials",
+      "http://diginthepark.com/parties"
     ]
   },
   {
@@ -45,7 +72,9 @@
       "https://dogandduckfamilypubs.com/specialty-cocktails/",
       "https://dogandduckfamilypubs.com/wine-bubbles/",
       "https://dogandduckfamilypubs.com/specials-events/",
-      "https://dogandduckfamilypubs.com/belle-hall-location/"
+      "https://dogandduckfamilypubs.com/belle-hall-location/",
+      "https://dogandduckfamilypubs.com/park-west-location/",
+      "https://dogandduckfamilypubs.com/clements-ferry-location/"
     ]
   },
   {
@@ -53,6 +82,8 @@
     "website": "https://www.dominos.com/en/?redirect=homepage&utm_source=google&utm_medium=loclist&utm_campaign=localmaps",
     "submenus": [
       "https://www.dominos.com/menu",
+      "https://www.dominos.com/deals",
+      "https://www.dominos.com/my-deals-and-rewards",
       "https://www.dominos.com/menu/build-your-own",
       "https://www.dominos.com/menu/specialty",
       "https://www.dominos.com/menu/bread",
@@ -67,6 +98,13 @@
     "website": "http://www.dragonpalacebistro.com/",
     "submenus": [
       "http://www.dragonpalacebistro.com/#menu"
+    ]
+  },
+  {
+    "restaurantName": "EVO Pizzeria",
+    "website": "http://www.evopizza.com/",
+    "submenus": [
+      "http://www.evopizza.com/menu"
     ]
   },
   {
@@ -108,6 +146,17 @@
     ]
   },
   {
+    "restaurantName": "Holy City Brewing",
+    "website": "http://holycitybrewing.com/",
+    "submenus": [
+      "http://holycitybrewing.com/north-charleston-holy-city-brewing-food-menu",
+      "http://holycitybrewing.com/north-charleston-holy-city-brewing-happy-hours-specials",
+      "http://holycitybrewing.com/north-charleston-holy-city-brewing-events",
+      "http://holycitybrewing.com/north-charleston-holy-city-brewing-about#faq-2",
+      "http://holycitybrewing.com/north-charleston-holy-city-brewing-about#faq-5"
+    ]
+  },
+  {
     "restaurantName": "Langdon's Restaurant & Wine Bar",
     "website": "http://www.owensdininggroup.com/",
     "submenus": [
@@ -141,6 +190,14 @@
     ]
   },
   {
+    "restaurantName": "Madra Rua Irish Pub",
+    "website": "http://www.madraruapub.com/",
+    "submenus": [
+      "https://www.madraruapub.com/menu-1",
+      "https://www.madraruapub.com/events"
+    ]
+  },
+  {
     "restaurantName": "Melvin's BBQ - Mt Pleasant",
     "website": "http://www.melvinsbbq.com/",
     "submenus": [
@@ -154,8 +211,7 @@
       "http://mpishirestaurant.com/daniel-island-mpishi-restaurant-food-menu",
       "http://mpishirestaurant.com/daniel-island-mpishi-restaurant-drink-menu",
       "http://mpishirestaurant.com/daniel-island-mpishi-restaurant-specials",
-      "http://mpishirestaurant.com/daniel-island-mpishi-restaurant-events",
-      "http://static.spotapps.co/spots/6e/4fc07c8d55472d93348d731c39d667/full"
+      "http://mpishirestaurant.com/daniel-island-mpishi-restaurant-events"
     ]
   },
   {
@@ -182,7 +238,10 @@
     "restaurantName": "Publix Super Market at Daniel Island Town Center",
     "website": "https://www.publix.com/?utm_medium=maps&utm_source=google&utm_content=psm_google_override",
     "submenus": [
-      "https://www.publix.com/menu-subs-and-wraps?merch=1_hp_mod4_subvariety5"
+      "https://www.publix.com/menu-subs-and-wraps?merch=1_hp_mod4_subvariety5",
+      "https://www.publix.com/savings/weekly-ad?merch=1_hp_mg_mb_weeklyad_savings2",
+      "https://www.publix.com/savings",
+      "https://www.publix.com/savings/all-deals"
     ]
   },
   {
@@ -223,7 +282,24 @@
       "https://sauergrapeswine.com/currentmenu/",
       "http://sauergrapeswine.com/subscribe",
       "http://sauergrapeswine.com/currentmenu",
-      "http://sauergrapeswine.com/sauer-grapes-wine-shop-wine-deals/"
+      "http://sauergrapeswine.com/sauer-grapes-wine-shop-wine-deals/",
+      "http://sauergrapeswine.com/currentmenu/"
+    ]
+  },
+  {
+    "restaurantName": "Sesame Burgers & Beer",
+    "website": "https://www.sesameburgersandbeer.com/",
+    "submenus": [
+      "https://www.sesameburgersandbeer.com/careers/",
+      "https://www.sesameburgersandbeer.com/buzz-press/",
+      "https://www.sesameburgersandbeer.com/contact-us/",
+      "https://www.sesameburgersandbeer.com/catering/",
+      "https://www.sesameburgersandbeer.com/",
+      "https://www.sesameburgersandbeer.com/#menu_sec",
+      "https://www.sesameburgersandbeer.com/wp-content/uploads/2025/10/SESAME_HAPPY_HOUR_OCT_2025.pdf",
+      "https://www.sesameburgersandbeer.com/mt-pleasant-daily-specials/",
+      "https://www.sesameburgersandbeer.com/park-circle-daily-specials/",
+      "https://www.sesameburgersandbeer.com/#location_sec"
     ]
   },
   {
@@ -250,6 +326,13 @@
       "https://www.thekingstide.com/private-events/",
       "https://www.thekingstide.com/menu",
       "https://www.thekingstide.com/private-events"
+    ]
+  },
+  {
+    "restaurantName": "The Lido",
+    "website": "https://theionclub.com/",
+    "submenus": [
+      "https://theionclub.com/contact"
     ]
   },
   {
@@ -285,6 +368,16 @@
     ]
   },
   {
+    "restaurantName": "The Tattooed Moose",
+    "website": "http://www.tattooedmoose.com/",
+    "submenus": [
+      "http://www.tattooedmoose.com/s/JI-Menu-fall-2025.pdf",
+      "http://www.tattooedmoose.com/s/PC-Menu-fall-2025.pdf",
+      "http://www.tattooedmoose.com/events",
+      "http://www.tattooedmoose.com/menus-1"
+    ]
+  },
+  {
     "restaurantName": "The Whale A Craft Beer Collective",
     "website": "https://thewhalecollective.com/charleston-sc/",
     "submenus": [
@@ -295,14 +388,15 @@
       "https://thewhalecollective.com/haw-creek-nc/#events",
       "https://thewhalecollective.com/greenville-sc/#menu",
       "https://thewhalecollective.com/greenville-sc/#events",
-      "https://thewhalecollective.com/charleston-sc/#menu"
+      "https://thewhalecollective.com/charleston-sc/#menu",
+      "https://thewhalecollective.com/charleston-sc/#events",
+      "https://thewhalecollective.com/whale-on-wheels/#events"
     ]
   },
   {
     "restaurantName": "The Wonderer Charleston",
     "website": "http://www.thewonderer.com/",
     "submenus": [
-      "http://www.thewonderer.com/gather/#fandb",
       "http://www.thewonderer.com/#",
       "http://www.thewonderer.com/gather/#events"
     ]
@@ -311,7 +405,8 @@
     "restaurantName": "Verde",
     "website": "http://www.eatatverde.com/",
     "submenus": [
-      "http://www.eatatverde.com/menu"
+      "http://www.eatatverde.com/menu",
+      "http://www.eatatverde.com/s/NUTRITION-GUIDE-pe74.pdf"
     ]
   },
   {
@@ -387,12 +482,15 @@
     "website": "https://www.marriott.com/en-us/dining/restaurant-bar/chsmc-charleston-marriott/5180521-aqua-terrace-roof-top-bar.mi",
     "submenus": [
       "https://www.marriott.com/meeting-event-hotels/meeting-planning.mi",
+      "https://www.marriott.com/offers.mi",
+      "https://www.marriott.com/loyalty.mi",
       "https://www.marriott.com/en-us/dining/restaurant-bar/chsmc-charleston-marriott/5180521-aqua-terrace-roof-top-bar.mi#",
       "https://www.marriott.com/meeting-event-hotels/meetings.mi",
       "https://www.marriott.com/meeting-event-hotels/weddings.mi",
       "https://www.marriott.com/meeting-event-hotels/events.mi",
       "https://www.marriott.com/meeting-event-hotels/group-booking.mi",
-      "https://www.marriott.com/en-us/destinations/united-states/california/santa-barbara.mi"
+      "https://www.marriott.com/loyalty/myAccount/default.mi",
+      "https://www.marriott.com/loyalty/promotionCentral.mi"
     ]
   },
   {
@@ -422,7 +520,9 @@
       "https://www.chick-fil-a.com/menu/kidsmeals",
       "https://www.chick-fil-a.com/menu/family-style-meals",
       "https://www.chick-fil-a.com/menu/treats",
-      "https://www.chick-fil-a.com/menu/beverages"
+      "https://www.chick-fil-a.com/menu/beverages",
+      "https://www.chick-fil-a.com/menu/dipping-sauces-and-dressings",
+      "https://www.chick-fil-a.com/menu"
     ]
   },
   {
@@ -430,6 +530,7 @@
     "website": "https://www.famsbrewingco.com/",
     "submenus": [
       "https://www.famsbrewingco.com/menus",
+      "https://www.famsbrewingco.com/_files/ugd/46e387_5679f38527b949ac8e9a524f6c21096d.pdf",
       "https://www.famsbrewingco.com/_files/ugd/46e387_3096511a011040d1bbc61cd79c35c7b8.pdf",
       "https://www.famsbrewingco.com/beermenu",
       "https://www.famsbrewingco.com/winemenu",
@@ -465,7 +566,19 @@
       "http://genescharleston.com/charleston-west-ashley-gene-s-haufbrau-beer-menu",
       "http://genescharleston.com/charleston-west-ashley-gene-s-haufbrau-happy-hours-specials",
       "http://genescharleston.com/178427",
-      "http://genescharleston.com/178428"
+      "http://genescharleston.com/178428",
+      "http://genescharleston.com/197054"
+    ]
+  },
+  {
+    "restaurantName": "Hunley's Neighborhood Grill",
+    "website": "https://www.hunleyscharleston.com/",
+    "submenus": [
+      "https://www.hunleyscharleston.com/index.html",
+      "https://www.hunleyscharleston.com/#menu",
+      "https://www.hunleyscharleston.com/#specials",
+      "https://www.hunleyscharleston.com/#events",
+      "https://www.hunleyscharleston.com/#"
     ]
   },
   {
@@ -488,7 +601,9 @@
       "https://www.mcdonalds.com/us/en-us/full-menu/burgers.html",
       "https://www.mcdonalds.com/us/en-us/full-menu/chicken-and-fish-sandwiches.html",
       "https://www.mcdonalds.com/us/en-us/full-menu/mcnuggets-and-mccrispy-strips.html",
-      "https://www.mcdonalds.com/us/en-us/full-menu/snack-wrap.html"
+      "https://www.mcdonalds.com/us/en-us/full-menu/snack-wrap.html",
+      "https://www.mcdonalds.com/us/en-us/full-menu/fries-sides.html",
+      "https://www.mcdonalds.com/us/en-us/full-menu/happy-meal.html"
     ]
   },
   {
@@ -511,10 +626,18 @@
     "restaurantName": "Pearlz Oyster Bar",
     "website": "http://www.pearlzoysterbar.com/home",
     "submenus": [
+      "http://www.pearlzoysterbar.com/locations/",
       "http://www.pearlzoysterbar.com/west-ashley-menus/",
       "http://www.pearlzoysterbar.com/charleston-menus/",
       "http://www.pearlzoysterbar.com/columbia-menus/",
       "http://www.pearlzoysterbar.com/private-events/"
+    ]
+  },
+  {
+    "restaurantName": "Ruby Tuesday",
+    "website": "https://rubytuesday.com/",
+    "submenus": [
+      "https://rubytuesday.com/#"
     ]
   },
   {
@@ -528,10 +651,42 @@
     ]
   },
   {
+    "restaurantName": "The Kickin' Chicken",
+    "website": "https://kickinchicken.com/",
+    "submenus": [
+      "https://kickinchicken.com/menu/",
+      "https://kickinchicken.com/menu/#monthly-features",
+      "https://kickinchicken.com/menu/#starters",
+      "https://kickinchicken.com/menu/#chicken",
+      "https://kickinchicken.com/menu/#sauces",
+      "https://kickinchicken.com/menu/#signature-wraps-sandwiches",
+      "https://kickinchicken.com/menu/#kickin-burgers",
+      "https://kickinchicken.com/menu/#salads",
+      "https://kickinchicken.com/menu/#coop-favorites",
+      "https://kickinchicken.com/menu/#tacos"
+    ]
+  },
+  {
     "restaurantName": "Triangle Char & Bar",
     "website": "https://www.trianglecharandbar.com/",
     "submenus": [
       "https://www.trianglecharandbar.com/menus/brunch-menu/"
+    ]
+  },
+  {
+    "restaurantName": "Trotters Restaurant",
+    "website": "http://www.thetownandcountryinn.com/",
+    "submenus": [
+      "http://www.thetownandcountryinn.com/sidebar-contemporaryking.cfm",
+      "http://www.thetownandcountryinn.com/sidebar-contemporarytwoqueen.cfm",
+      "http://www.thetownandcountryinn.com/sidebar-contemporarytwoqueenkitchen.cfm",
+      "http://www.thetownandcountryinn.com/sidebar-kingairbathjrsuite.cfm",
+      "http://www.thetownandcountryinn.com/sidebar-kingairbathkitchen.cfm",
+      "http://www.thetownandcountryinn.com/sidebar-charlestowneboutiquesuite.cfm",
+      "http://www.thetownandcountryinn.com/sidebar-proprietorsuite.cfm",
+      "http://www.thetownandcountryinn.com/sidebar-trotters.cfm",
+      "http://www.thetownandcountryinn.com/sidebar-hours.cfm",
+      "http://www.thetownandcountryinn.com/new_menus/Weekday_Breakfast.pdf"
     ]
   },
   {
@@ -540,9 +695,7 @@
     "submenus": [
       "http://www.39ruedejean.com/39-rue-de-jean/#private-events",
       "http://www.39ruedejean.com/39-rue-de-jean/private-event-inquiry/?venue=Upstairs%20at%2039%20Rue%20De%20Jean",
-      "http://www.39ruedejean.com/coast-bar-and-grill/",
-      "http://www.39ruedejean.com/good-food-catering/",
-      "http://www.39ruedejean.com/victors-seafood-and-steak/"
+      "http://www.39ruedejean.com/coast-bar-and-grill/"
     ]
   },
   {
@@ -598,7 +751,6 @@
     "website": "https://www.barmashchs.com/?y_source=1_ODE4NDQwODEtNzE1LWxvY2F0aW9uLndlYnNpdGU%3D",
     "submenus": [
       "https://www.barmashchs.com/#cocktails-section",
-      "https://www.barmashchs.com/#good-food-section",
       "https://www.barmashchs.com/menu",
       "https://www.barmashchs.com/private-events"
     ]
@@ -631,6 +783,7 @@
     "restaurantName": "Blind Tiger Pub",
     "website": "http://blindtigerchs.com/",
     "submenus": [
+      "https://blindtigerchs.com/-events?source=header&spot_id=21751&destination=events&promotion=nfl_playoffs",
       "http://blindtigerchs.com/#",
       "http://blindtigerchs.com/blind-tiger-food-menu",
       "http://blindtigerchs.com/blind-tiger-happy-hours-specials",
@@ -683,6 +836,17 @@
     ]
   },
   {
+    "restaurantName": "Charleston Rifle Club",
+    "website": "http://www.charlestonrifleclub.com/",
+    "submenus": [
+      "https://www.charlestonrifleclub.com/",
+      "https://www.charlestonrifleclub.com/about",
+      "https://www.charlestonrifleclub.com/the-ballroom",
+      "https://www.charlestonrifleclub.com/contact-us",
+      "https://www.charlestonrifleclub.com/gunsite"
+    ]
+  },
+  {
     "restaurantName": "Citrus Club",
     "website": "https://www.thedewberrycharleston.com/drinks-dining",
     "submenus": [
@@ -713,6 +877,7 @@
     "submenus": [
       "http://cravekitchenandcocktails.com/mount-pleasant-isle-of-palms-connector-crave-kitchen-and-cocktails-food-menu",
       "http://cravekitchenandcocktails.com/mount-pleasant-isle-of-palms-connector-crave-kitchen-and-cocktails-drink-menu",
+      "http://cravekitchenandcocktails.com/16152",
       "http://cravekitchenandcocktails.com/16153",
       "http://cravekitchenandcocktails.com/16154"
     ]
@@ -748,7 +913,10 @@
     "website": "http://eatatfig.com/",
     "submenus": [
       "http://eatatfig.com/#menus",
-      "https://eatatfig.com/wp-content/uploads/2026/01/FIG-Dinner-1.08.26-3.pdf"
+      "https://eatatfig.com/wp-content/uploads/2026/01/FIG-Dinner-1.08.26-3.pdf",
+      "https://eatatfig.com/wp-content/uploads/2026/01/FIG-Dessert-1.2.26-1.pdf",
+      "https://eatatfig.com/wp-content/uploads/2026/01/FIG-Beverage-1.3.26-1.pdf",
+      "https://eatatfig.com/wp-content/uploads/2025/12/FIG-Dessert-12.30.25-2.pdf"
     ]
   },
   {
@@ -771,7 +939,6 @@
       "http://www.marketpavilion.com/events225.cfm",
       "http://www.marketpavilion.com/pavilionbar.cfm",
       "http://www.marketpavilion.com/events.cfm",
-      "http://www.marketpavilion.com/images/galleria/Shrimp_cocktail.jpg",
       "http://www.marketpavilion.com/information_request_grill.cfm"
     ]
   },
@@ -791,6 +958,7 @@
       "http://hallschophousecharleston.com/charleston-downtown-halls-chophouse-charleston-wine",
       "http://hallschophousecharleston.com/charleston-downtown-halls-chophouse-charleston-events",
       "http://hallschophousecharleston.com/6922",
+      "http://hallschophousecharleston.com/6923",
       "http://hallschophousecharleston.com/197491",
       "http://hallschophousecharleston.com/6926",
       "http://hallschophousecharleston.com/197457"
@@ -804,7 +972,6 @@
       "https://www.hanksseafoodrestaurant.com/columbus-menus/",
       "https://www.hanksseafoodrestaurant.com/charleston-private-events/",
       "https://www.hanksseafoodrestaurant.com/columbus-private-events/",
-      "https://www.hanksseafoodrestaurant.com/privacy-policy",
       "https://www.hanksseafoodrestaurant.com/charleston-private-events"
     ]
   },
@@ -812,13 +979,16 @@
     "restaurantName": "Harbour Club at WestEdge",
     "website": "http://myharbourclub.com/",
     "submenus": [
-      "https://myharbourclub.com/meetings-events/member-events/",
-      "https://myharbourclub.com/weddings/rehearsal-dinners/",
-      "https://myharbourclub.com/meetings-events/event-venues/",
-      "https://myharbourclub.com/meetings-events/business-meetings/",
-      "https://myharbourclub.com/meetings-events/social/",
-      "https://myharbourclub.com/weddings/request-for-proposal/",
-      "https://myharbourclub.com/wp-content/uploads/2021/04/Harbor-bar_29_jwb.jpg"
+      "https://myharbourclub.com/",
+      "https://myharbourclub.com/about-the-club/about-harbour-club/",
+      "https://myharbourclub.com/about-the-club/club-details/",
+      "https://myharbourclub.com/about-the-club/our-team/",
+      "https://myharbourclub.com/about-the-club/board-of-governors/",
+      "https://myharbourclub.com/about-the-club/the-club-gallery/",
+      "https://myharbourclub.com/amenities/business-services/",
+      "https://myharbourclub.com/amenities/golf/",
+      "https://myharbourclub.com/amenities/reciprocal-clubs/",
+      "https://myharbourclub.com/meetings-events/member-events/"
     ]
   },
   {
@@ -841,6 +1011,7 @@
       "http://highcottoncharleston.com/charleston-high-cotton-private-events-custom",
       "http://highcottoncharleston.com/charleston-high-cotton-events",
       "http://highcottoncharleston.com/560939",
+      "http://highcottoncharleston.com/560937",
       "http://highcottoncharleston.com/560938",
       "http://highcottoncharleston.com/560936",
       "http://highcottoncharleston.com/560943",
@@ -853,8 +1024,6 @@
     "submenus": [
       "https://www.hymanseafood.com/menus",
       "https://www.hymanseafood.com/specials",
-      "https://www.hymanseafood.com/critics",
-      "https://www.hymanseafood.com/critics/#JDNicholas",
       "https://www.hymanseafood.com/s/Hymans-ConversationCards.pdf"
     ]
   },
@@ -869,7 +1038,8 @@
       "https://www.indacorestaurant.com/private-events-atlanta/",
       "https://www.indacorestaurant.com/private-events-charleston/",
       "https://www.indacorestaurant.com/private-dining-charlotte/",
-      "https://www.indacorestaurant.com/private-events-greenville/"
+      "https://www.indacorestaurant.com/private-events-greenville/",
+      "https://www.indacorestaurant.com/charleston-menu"
     ]
   },
   {
@@ -895,13 +1065,15 @@
     "website": "http://www.kingstreetcabaret.com/",
     "submenus": [
       "https://www.kingstreetcabaret.com/",
+      "http://www.kingstreetcabaret.com/#clubtour",
       "http://www.kingstreetcabaret.com/#specials",
       "https://www.kingstreetcabaret.com/wp-content/uploads/2023/01/1.jpeg",
       "https://www.kingstreetcabaret.com/wp-content/uploads/2023/01/2.jpeg",
       "https://www.kingstreetcabaret.com/wp-content/uploads/2023/01/3.jpeg",
       "https://www.kingstreetcabaret.com/wp-content/uploads/2023/01/4.jpeg",
       "https://www.kingstreetcabaret.com/wp-content/uploads/2023/01/5.jpeg",
-      "https://www.kingstreetcabaret.com/wp-content/uploads/2023/01/6.jpeg"
+      "https://www.kingstreetcabaret.com/wp-content/uploads/2023/01/6.jpeg",
+      "https://www.kingstreetcabaret.com/wp-content/uploads/2023/01/7.jpeg"
     ]
   },
   {
@@ -915,7 +1087,9 @@
       "https://pleasant.thekingstreetgrille.com/mt-pleasant-myrtle-beach-king-street-grille-mt-pleasant-food-menu#",
       "https://pleasant.thekingstreetgrille.com/52561",
       "https://pleasant.thekingstreetgrille.com/52570",
-      "https://pleasant.thekingstreetgrille.com/52567"
+      "https://pleasant.thekingstreetgrille.com/52567",
+      "https://pleasant.thekingstreetgrille.com/52565",
+      "https://pleasant.thekingstreetgrille.com/127847"
     ]
   },
   {
@@ -952,7 +1126,6 @@
     "restaurantName": "Moe's Crosstown Tavern",
     "website": "https://moescrosstowntavern.com/",
     "submenus": [
-      "https://moescrosstowntavern.com/food/",
       "https://moescrosstowntavern.com/our-menu/",
       "https://moescrosstowntavern.com/drink/"
     ]
@@ -976,7 +1149,8 @@
       "https://www.oaksteakhouserestaurant.com/highlands-menus/",
       "https://www.oaksteakhouserestaurant.com/nashville-menus/",
       "https://www.oaksteakhouserestaurant.com/raleigh-menus/",
-      "https://www.oaksteakhouserestaurant.com/rogers-menus/"
+      "https://www.oaksteakhouserestaurant.com/rogers-menus/",
+      "https://www.oaksteakhouserestaurant.com/charleston-menus"
     ]
   },
   {
@@ -1017,6 +1191,7 @@
     "restaurantName": "Pearlz Oyster Bar",
     "website": "http://www.pearlzoysterbar.com/",
     "submenus": [
+      "http://www.pearlzoysterbar.com/locations/",
       "http://www.pearlzoysterbar.com/west-ashley-menus/",
       "http://www.pearlzoysterbar.com/charleston-menus/",
       "http://www.pearlzoysterbar.com/columbia-menus/",
@@ -1044,6 +1219,7 @@
     "restaurantName": "Post House",
     "website": "https://www.theposthouseinn.com/?y_source=1_MjAxMTIwMjEyMC03MTUtbG9jYXRpb24ud2Vic2l0ZQ%3D%3D",
     "submenus": [
+      "https://www.theposthouseinn.com/the-restaurant/",
       "https://www.theposthouseinn.com/menus/",
       "https://www.theposthouseinn.com/private-dining/"
     ]
@@ -1092,6 +1268,7 @@
     "website": "http://www.ritualchs.com/",
     "submenus": [
       "http://www.ritualchs.com/private-events",
+      "http://www.ritualchs.com/nightclub-1",
       "http://www.ritualchs.com/cocktails",
       "http://www.ritualchs.com/menus"
     ]
@@ -1122,6 +1299,7 @@
       "https://www.snobcharleston.com/charleston-slightly-north-of-broad-events",
       "https://www.snobcharleston.com/842571",
       "https://www.snobcharleston.com/842570",
+      "https://www.snobcharleston.com/842569",
       "https://www.snobcharleston.com/991408"
     ]
   },
@@ -1136,13 +1314,16 @@
       "http://www.tacoboy.net/loso-events/",
       "http://www.tacoboy.net/downtown-charleston/",
       "http://www.tacoboy.net/event/charleston-restaurant-week/",
-      "http://www.tacoboy.net/event/tequila-tuesday-5-casa-margaritas/"
+      "http://www.tacoboy.net/event/tequila-tuesday-5-casa-margaritas/",
+      "http://www.tacoboy.net/event/12-price-wing-night/",
+      "http://www.tacoboy.net/event/daily-happy-hour-southcarolina/"
     ]
   },
   {
     "restaurantName": "TBonz Gill & Grill",
     "website": "http://www.tbonzgillandgrill.com/",
     "submenus": [
+      "http://www.tbonzgillandgrill.com/hours-and-locations/",
       "http://www.tbonzgillandgrill.com/charleston-menus/",
       "http://www.tbonzgillandgrill.com/west-ashley-menus/",
       "http://www.tbonzgillandgrill.com/private-events/"
@@ -1181,8 +1362,7 @@
     "restaurantName": "The Gin Joint",
     "website": "http://www.theginjoint.com/",
     "submenus": [
-      "http://www.theginjoint.com/private-events",
-      "http://www.theginjoint.com/cocktail-classes"
+      "http://www.theginjoint.com/private-events"
     ]
   },
   {
@@ -1203,7 +1383,9 @@
     "restaurantName": "The Palmetto Cafe",
     "website": "https://charlestonplace.com/dining/?utm_source=google-gbp&utm_medium=organic&utm_campaign=gbp",
     "submenus": [
-      "https://charlestonplace.com/meetings-events/"
+      "https://charlestonplace.com/club-rooms-and-suites/",
+      "https://charlestonplace.com/meetings-events/",
+      "https://charlestonplace.com/accommodations/?type=club-level-access"
     ]
   },
   {
@@ -1224,13 +1406,15 @@
       "https://reddrumrestaurant.com/charleston-the-red-drum-gastro-happy-hours-specials",
       "https://reddrumrestaurant.com/charleston-the-red-drum-gastro-private-events",
       "https://reddrumrestaurant.com/170256",
-      "https://reddrumrestaurant.com/212820"
+      "https://reddrumrestaurant.com/212820",
+      "https://reddrumrestaurant.com/170269"
     ]
   },
   {
     "restaurantName": "The Reel Bar",
     "website": "http://www.charlestonharborresort.com/cuisine--cocktails.htm",
     "submenus": [
+      "https://www.charlestonharborresort.com/the-beach-club.htm",
       "https://www.charlestonharborresort.com/cuisine--cocktails.htm",
       "https://www.charlestonharborresort.com/cuisine--cocktails.htm#anchorFishHouse",
       "https://www.charlestonharborresort.com/cuisine--cocktails.htm#anchorBridgeBar",
@@ -1238,7 +1422,8 @@
       "https://www.charlestonharborresort.com/cuisine--cocktails.htm#anchorTikiBar",
       "https://www.charlestonharborresort.com/cuisine--cocktails.htm#anchorPrivateDining",
       "https://www.charlestonharborresort.com/weddings--events.htm",
-      "https://www.charlestonharborresort.com/weddings--events.htm#anchorIndoorVenues"
+      "https://www.charlestonharborresort.com/weddings--events.htm#anchorIndoorVenues",
+      "https://www.charlestonharborresort.com/weddings--events.htm#anchorOutdoorVenues"
     ]
   },
   {
@@ -1256,6 +1441,7 @@
       "https://thewatchcharleston.com/#menu-overlay",
       "https://thewatchcharleston.com/event-space-charleston-sc/",
       "https://thewatchcharleston.com/menu/",
+      "https://thewatchcharleston.com/brunch-charleston/",
       "https://thewatchcharleston.com/lunch-charleston-sc/",
       "https://thewatchcharleston.com/dinner-charleston-sc/",
       "https://thewatchcharleston.com/best-cocktails-in-charleston/",
@@ -1267,7 +1453,9 @@
     "restaurantName": "Thoroughbred Club",
     "website": "https://charlestonplace.com/dining/?utm_source=google-gbp&utm_medium=organic&utm_campaign=gbp",
     "submenus": [
-      "https://charlestonplace.com/meetings-events/"
+      "https://charlestonplace.com/club-rooms-and-suites/",
+      "https://charlestonplace.com/meetings-events/",
+      "https://charlestonplace.com/accommodations/?type=club-level-access"
     ]
   },
   {
@@ -1338,9 +1526,7 @@
     "submenus": [
       "http://www.virginiasonking.com/virginias-on-king/#private-events",
       "http://www.virginiasonking.com/private-event-inquiry/?venue=Upstairs%20at%20Virginia%E2%80%99s",
-      "http://www.virginiasonking.com/coast-bar-and-grill/",
-      "http://www.virginiasonking.com/good-food-catering/",
-      "http://www.virginiasonking.com/victors-seafood-and-steak/"
+      "http://www.virginiasonking.com/coast-bar-and-grill/"
     ]
   },
   {
@@ -1351,7 +1537,8 @@
       "http://waters-edge-restaurant.com/mount-pleasant-shem-creek-water-s-edge-drink-menu",
       "http://waters-edge-restaurant.com/mount-pleasant-shem-creek-water-s-edge-happy-hours-specials",
       "http://waters-edge-restaurant.com/mount-pleasant-shem-creek-water-s-edge-events",
-      "https://waters-edge-restaurant.com/menus"
+      "https://waters-edge-restaurant.com/menus",
+      "https://waters-edge-restaurant.com/wp-content/uploads/2022/08/Parking.pdf"
     ]
   },
   {
@@ -1376,6 +1563,7 @@
     "website": "https://www.sullivansfishcamp.com/",
     "submenus": [
       "https://www.sullivansfishcamp.com/menu-overview/",
+      "https://www.sullivansfishcamp.com/private-dining/",
       "https://www.sullivansfishcamp.com/events/",
       "https://www.sullivansfishcamp.com/past-events/"
     ]

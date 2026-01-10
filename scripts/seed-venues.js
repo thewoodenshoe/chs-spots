@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 // Try to load dotenv if available (check both .env and .env.local)
 try {
   require('dotenv').config();
@@ -12,9 +15,6 @@ try {
   // Or ensure they're in your shell environment
 }
 
-const fs = require('fs');
-const path = require('path');
-
 // Google Maps API Key
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || process.env.GOOGLE_PLACES_KEY;
 if (!GOOGLE_MAPS_API_KEY) {
@@ -25,6 +25,33 @@ if (!GOOGLE_MAPS_API_KEY) {
 // Paths
 const dataDir = path.join(__dirname, '..', 'data');
 const outputFile = path.join(dataDir, 'venues.json');
+const areasConfigFile = path.join(dataDir, 'areas.json');
+
+// Load areas configuration from areas.json
+// Note: areas.json should be valid JSON (no comments). If you need documentation, use a separate README.
+let AREAS_CONFIG = [];
+try {
+  if (!fs.existsSync(areasConfigFile)) {
+    throw new Error(`areas.json not found at ${areasConfigFile}`);
+  }
+  const areasConfigContent = fs.readFileSync(areasConfigFile, 'utf8');
+  // Remove any potential comments (lines starting with //)
+  const cleanedContent = areasConfigContent.replace(/^\/\/.*$/gm, '').trim();
+  AREAS_CONFIG = JSON.parse(cleanedContent);
+  
+  if (!Array.isArray(AREAS_CONFIG)) {
+    throw new Error('areas.json must contain an array of area objects');
+  }
+  
+  console.log(`✅ Loaded ${AREAS_CONFIG.length} areas from ${path.resolve(areasConfigFile)}`);
+  AREAS_CONFIG.forEach(area => {
+    console.log(`   📍 ${area.displayName || area.name}: radius ${area.radiusMeters}m`);
+  });
+} catch (error) {
+  console.error(`❌ Error loading areas.json: ${error.message}`);
+  console.error(`   Please ensure ${areasConfigFile} exists and is valid JSON.`);
+  process.exit(1);
+}
 
 // Venue types to query (alcohol-serving establishments)
 const VENUE_TYPES = [
@@ -34,21 +61,6 @@ const VENUE_TYPES = [
   'night_club',
   'wine_bar'
 ];
-
-// Expanded area configurations
-const DANIEL_ISLAND_EXTENDED = {
-  name: 'Daniel Island',
-  lat: 32.845,
-  lng: -79.908,
-  radius: 8000, // Extended to 8000m to cover Clements Ferry Road (bounds: lat 32.82 to 32.89, lng -79.96 to -79.88)
-};
-
-const JAMES_ISLAND_EXTENDED = {
-  name: 'James Island',
-  lat: 32.737,
-  lng: -79.965,
-  radius: 10000, // Extended to 10000m to cover western spots like The Harlow (bounds: lat 32.7 to 32.75, lng -79.98 to -79.9)
-};
 
 // Helper: Delay function
 function delay(ms) {
@@ -160,18 +172,22 @@ async function fetchPlaceDetails(placeId) {
   }
 }
 
-// Main seeding function - James Island and Daniel Island extended coverage
+// Main seeding function - processes all areas from areas.json
 async function seedVenuesExtended() {
-  console.log('🍺 Starting extended venue seeding for James Island and Daniel Island...\n');
-  console.log(`📍 Extended Coverage Areas:`);
-  console.log(`   Daniel Island:`);
-  console.log(`     Center: ${DANIEL_ISLAND_EXTENDED.lat}, ${DANIEL_ISLAND_EXTENDED.lng}`);
-  console.log(`     Radius: ${DANIEL_ISLAND_EXTENDED.radius}m (covers Clements Ferry Road)`);
-  console.log(`     Bounds: lat 32.82 to 32.89, lng -79.96 to -79.88`);
-  console.log(`   James Island:`);
-  console.log(`     Center: ${JAMES_ISLAND_EXTENDED.lat}, ${JAMES_ISLAND_EXTENDED.lng}`);
-  console.log(`     Radius: ${JAMES_ISLAND_EXTENDED.radius}m (covers western spots like The Harlow)`);
-  console.log(`     Bounds: lat 32.7 to 32.75, lng -79.98 to -79.9\n`);
+  console.log('🍺 Starting venue seeding using areas from areas.json...\n');
+  console.log(`📍 Processing ${AREAS_CONFIG.length} areas:`);
+  AREAS_CONFIG.forEach(area => {
+    console.log(`   ${area.displayName || area.name}:`);
+    console.log(`     Center: ${area.center.lat}, ${area.center.lng}`);
+    console.log(`     Radius: ${area.radiusMeters}m`);
+    if (area.bounds) {
+      console.log(`     Bounds: lat ${area.bounds.south} to ${area.bounds.north}, lng ${area.bounds.west} to ${area.bounds.east}`);
+    }
+    if (area.description) {
+      console.log(`     ${area.description}`);
+    }
+  });
+  console.log('');
   
   // Load existing venues if file exists
   let existingVenues = [];
@@ -200,34 +216,34 @@ async function seedVenuesExtended() {
   }
   
   const newVenues = [];
-  const areaNewVenues = {
-    'Daniel Island': [],
-    'James Island': []
-  };
+  const areaNewVenues = {};
+  // Initialize area counters
+  AREAS_CONFIG.forEach(area => {
+    areaNewVenues[area.name] = [];
+  });
+  
   let totalQueries = 0;
   let successfulQueries = 0;
   let failedQueries = 0;
   
-  // Areas to process with extended coverage
-  const areasToProcess = [DANIEL_ISLAND_EXTENDED, JAMES_ISLAND_EXTENDED];
-  
-  // Query both areas with extended coverage
-  for (const areaConfig of areasToProcess) {
-    console.log(`\n📍 Processing ${areaConfig.name}...`);
+  // Process all areas from config
+  for (const areaConfig of AREAS_CONFIG) {
+    const areaName = areaConfig.name;
+    console.log(`\n📍 Processing ${areaConfig.displayName || areaName}...`);
     
     for (const venueType of VENUE_TYPES) {
       totalQueries++;
-      const queryName = `${areaConfig.name} Extended (${venueType})`;
+      const queryName = `${areaName} (${venueType})`;
       
       try {
         console.log(`🔍 Querying ${queryName}...`);
         
         const results = await fetchAllPages(
-          areaConfig.name,
+          areaName,
           venueType,
-          areaConfig.lat,
-          areaConfig.lng,
-          areaConfig.radius
+          areaConfig.center.lat,
+          areaConfig.center.lng,
+          areaConfig.radiusMeters
         );
         
         let addedCount = 0;
@@ -235,9 +251,9 @@ async function seedVenuesExtended() {
         for (const result of results) {
           if (!seenPlaceIds.has(result.place_id)) {
             seenPlaceIds.add(result.place_id);
-            const venue = extractVenueData(result, areaConfig.name);
+            const venue = extractVenueData(result, areaName);
             newVenues.push(venue);
-            areaNewVenues[areaConfig.name].push(venue);
+            areaNewVenues[areaName].push(venue);
             addedNames.push(venue.name);
             addedCount++;
           }
@@ -264,13 +280,10 @@ async function seedVenuesExtended() {
   for (const [areaName, venues] of Object.entries(areaNewVenues)) {
     if (venues.length > 0) {
       console.log(`   ${areaName}: Added ${venues.length} new venues`);
-      // Log notable venues like "The Harlow" if found
-      const notableVenues = venues.filter(v => 
-        v.name.toLowerCase().includes('harlow') || 
-        v.name.toLowerCase().includes('clements')
-      );
-      if (notableVenues.length > 0) {
-        console.log(`     Notable: ${notableVenues.map(v => v.name).join(', ')}`);
+      // Log notable venues if found (sample first 3)
+      if (venues.length > 0) {
+        const sampleNames = venues.slice(0, 3).map(v => v.name);
+        console.log(`     Sample: ${sampleNames.join(', ')}${venues.length > 3 ? ` and ${venues.length - 3} more` : ''}`);
       }
     } else {
       console.log(`   ${areaName}: No new venues`);
@@ -344,9 +357,13 @@ async function seedVenuesExtended() {
   try {
     fs.writeFileSync(outputFile, JSON.stringify(allVenues, null, 2), 'utf8');
     console.log(`\n📝 Successfully wrote ${allVenues.length} total venues to ${path.resolve(outputFile)}`);
-    console.log(`   ✨ Added ${newVenues.length} new venues from extended coverage`);
-    console.log(`      - Daniel Island: ${areaNewVenues['Daniel Island'].length} new venues`);
-    console.log(`      - James Island: ${areaNewVenues['James Island'].length} new venues`);
+    console.log(`   ✨ Added ${newVenues.length} new venues across ${AREAS_CONFIG.length} areas`);
+    for (const areaConfig of AREAS_CONFIG) {
+      const areaName = areaConfig.name;
+      if (areaNewVenues[areaName] && areaNewVenues[areaName].length > 0) {
+        console.log(`      - ${areaConfig.displayName || areaName}: ${areaNewVenues[areaName].length} new venues`);
+      }
+    }
   } catch (error) {
     console.error(`\n❌ Error writing to file: ${error.message}`);
     process.exit(1);
@@ -419,7 +436,7 @@ async function seedVenuesExtended() {
     }
   }
   
-  console.log(`\n✨ Extended coverage complete for James Island and Daniel Island!`);
+  console.log(`\n✨ Venue seeding complete for all areas from areas.json!`);
 }
 
 // Run the seeding
