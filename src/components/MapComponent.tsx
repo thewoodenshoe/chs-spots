@@ -78,7 +78,7 @@ function getAreaFromCoordinates(lat: number, lng: number): Area {
 
 interface MapComponentProps {
   selectedArea: Area;
-  selectedActivity: SpotType | null;
+  selectedActivity: SpotType;
   isSubmissionMode?: boolean;
   pinLocation?: { lat: number; lng: number } | null;
   onMapClick?: (lat: number, lng: number) => void;
@@ -143,7 +143,7 @@ export default function MapComponent({
     return spots.filter((spot) => {
       const spotArea = getAreaFromCoordinates(spot.lat, spot.lng);
       const areaMatch = spotArea === selectedArea;
-      const activityMatch = selectedActivity === null || spot.type === selectedActivity;
+      const activityMatch = spot.type === selectedActivity;
       return areaMatch && activityMatch;
     });
   }, [spots, selectedArea, selectedActivity]);

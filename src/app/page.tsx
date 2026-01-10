@@ -25,7 +25,7 @@ export default function Home() {
   const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedArea, setSelectedArea] = useState<Area>('Daniel Island');
-  const [selectedActivity, setSelectedActivity] = useState<SpotType | null>('Happy Hour');
+  const [selectedActivity, setSelectedActivity] = useState<SpotType>('Happy Hour');
   const [pinLocation, setPinLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [editingSpot, setEditingSpot] = useState<Spot | null>(null);
   const [editPinLocation, setEditPinLocation] = useState<{ lat: number; lng: number } | null>(null);

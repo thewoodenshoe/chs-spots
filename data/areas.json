@@ -32,14 +32,6 @@
     "bounds": { "south": 32.75, "west": -79.87, "north": 32.77, "east": -79.83 }
   },
   {
-    "name": "Park Circle",
-    "displayName": "Park Circle",
-    "description": "Park Circle neighborhood in North Charleston",
-    "center": { "lat": 32.878, "lng": -80.010 },
-    "radiusMeters": 4000,
-    "bounds": { "south": 32.86, "west": -80.03, "north": 32.89, "east": -79.99 }
-  },
-  {
     "name": "North Charleston",
     "displayName": "North Charleston",
     "description": "North Charleston area including Tanger Outlets and airport area",

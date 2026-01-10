@@ -18,8 +18,8 @@ export type Area = 'Daniel Island' | 'Mount Pleasant' | 'James Island' | 'Downto
 interface FilterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedActivity: SpotType | null;
-  onActivityChange: (activity: SpotType | null) => void;
+  selectedActivity: SpotType;
+  onActivityChange: (activity: SpotType) => void;
 }
 
 const ACTIVITIES: SpotType[] = [
@@ -111,21 +111,6 @@ export default function FilterModal({
               Activity
             </label>
             <div className="space-y-3">
-              {/* All Activities option */}
-              <label
-                className="flex cursor-pointer items-center rounded-xl border-2 border-gray-200 bg-gray-50 p-4 transition-all hover:border-teal-300 hover:bg-teal-50"
-              >
-                <input
-                  type="radio"
-                  name="activity"
-                  checked={selectedActivity === null}
-                  onChange={() => onActivityChange(null)}
-                  className="h-5 w-5 cursor-pointer border-gray-300 text-teal-600 focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-                />
-                <span className="ml-3 text-base font-medium text-gray-800">
-                  All Activities
-                </span>
-              </label>
               {ACTIVITIES.map((activity) => (
                 <label
                   key={activity}
