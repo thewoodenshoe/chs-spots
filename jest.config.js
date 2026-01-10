@@ -60,7 +60,13 @@ module.exports = {
             allowSyntheticDefaultImports: true,
           },
         }],
+        '^.+\\.js$': ['ts-jest', {
+          tsconfig: {
+            allowJs: true,
+          },
+        }],
       },
+      moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
     },
     // Node.js script tests
     {
