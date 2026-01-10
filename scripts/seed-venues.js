@@ -359,35 +359,62 @@ async function seedVenuesExtended() {
   console.log(`   🍺 Total venues: ${allVenues.length} (${existingVenues.length} existing + ${newVenues.length} new)`);
   
   const venuesWithWebsites = allVenues.filter(v => v.website && v.website.trim() !== '').length;
-  console.log(`   🌐 Venues with websites: ${venuesWithWebsites}/${allVenues.length} (${Math.round(venuesWithWebsites / allVenues.length * 100)}%)`);
+  const websitePercentage = allVenues.length > 0 ? Math.round((venuesWithWebsites / allVenues.length) * 100) : 0;
+  console.log(`   🌐 Venues with websites: ${venuesWithWebsites}/${allVenues.length} (${websitePercentage}%)`);
   
-  // Show breakdown by area
+  // Show breakdown by area (all areas)
   const areaCounts = {};
   for (const venue of allVenues) {
-    areaCounts[venue.area] = (areaCounts[venue.area] || 0) + 1;
+    const area = venue.area || 'Unknown';
+    areaCounts[area] = (areaCounts[area] || 0) + 1;
   }
   
   console.log(`\n📍 Venues by area:`);
-  for (const [area, count] of Object.entries(areaCounts)) {
+  const sortedAreas = Object.entries(areaCounts).sort((a, b) => b[1] - a[1]);
+  for (const [area, count] of sortedAreas) {
     console.log(`   ${area}: ${count} venues`);
   }
   
-  // Show breakdown by type for expanded areas
-  for (const areaName of ['Daniel Island', 'James Island']) {
-    const areaVenues = allVenues.filter(v => v.area === areaName);
+  // Show breakdown by type (all areas, aggregated)
+  const typeCounts = {};
+  for (const venue of allVenues) {
+    if (venue.types && Array.isArray(venue.types)) {
+      for (const type of venue.types) {
+        if (VENUE_TYPES.includes(type)) {
+          typeCounts[type] = (typeCounts[type] || 0) + 1;
+        }
+      }
+    }
+  }
+  
+  console.log(`\n🏢 Venues by type (all areas):`);
+  const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
+  for (const [type, count] of sortedTypes) {
+    console.log(`   ${type}: ${count} venues`);
+  }
+  
+  // Show breakdown by area and type (detailed)
+  console.log(`\n📋 Detailed breakdown by area and type:`);
+  for (const [area, count] of sortedAreas) {
+    const areaVenues = allVenues.filter(v => (v.area || 'Unknown') === area);
     if (areaVenues.length > 0) {
-      const typeCounts = {};
+      const areaTypeCounts = {};
       for (const venue of areaVenues) {
-        for (const type of venue.types) {
-          if (VENUE_TYPES.includes(type)) {
-            typeCounts[type] = (typeCounts[type] || 0) + 1;
+        if (venue.types && Array.isArray(venue.types)) {
+          for (const type of venue.types) {
+            if (VENUE_TYPES.includes(type)) {
+              areaTypeCounts[type] = (areaTypeCounts[type] || 0) + 1;
+            }
           }
         }
       }
       
-      console.log(`\n🏢 ${areaName} venues by type:`);
-      for (const [type, count] of Object.entries(typeCounts).sort((a, b) => b[1] - a[1])) {
-        console.log(`   ${type}: ${count} venues`);
+      if (Object.keys(areaTypeCounts).length > 0) {
+        console.log(`\n   ${area} (${count} total):`);
+        const sortedAreaTypes = Object.entries(areaTypeCounts).sort((a, b) => b[1] - a[1]);
+        for (const [type, typeCount] of sortedAreaTypes) {
+          console.log(`     ${type}: ${typeCount}`);
+        }
       }
     }
   }

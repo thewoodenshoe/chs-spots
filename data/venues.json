@@ -287,6 +287,22 @@
     "area": "Daniel Island"
   },
   {
+    "id": "ChIJUejkYNxk_ogRiVD3XjsB06U",
+    "name": "COAST Brewing Company",
+    "address": "1250 2nd Street North, North Charleston",
+    "lat": 32.8736274,
+    "lng": -79.97210849999999,
+    "website": "http://www.coastbrewing.com/",
+    "types": [
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "Daniel Island"
+  },
+  {
     "id": "ChIJddWLdtBx_ogROU68jW1TRmA",
     "name": "Coastal Therapeutics PA",
     "address": "570 Long Point Road, Mount Pleasant",
@@ -461,6 +477,22 @@
     "area": "Daniel Island"
   },
   {
+    "id": "ChIJyUgfhuhk_ogR-v2Ca01_6Us",
+    "name": "DIG In The Park",
+    "address": "1049 East Montague Avenue, North Charleston",
+    "lat": 32.88120999999999,
+    "lng": -79.975903,
+    "website": "http://diginthepark.com/",
+    "types": [
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "Daniel Island"
+  },
+  {
     "id": "ChIJKxFmrt5x_ogRQ1vLWQfHSng",
     "name": "Dog and Duck",
     "address": "624 Long Point Road Unit A, Mount Pleasant",
@@ -519,6 +551,21 @@
       "doctor",
       "point_of_interest",
       "health",
+      "establishment"
+    ],
+    "area": "Daniel Island"
+  },
+  {
+    "id": "ChIJ6Qu90Dh6_ogRNEYdq9GxVh8",
+    "name": "Dr. Martin A. Smith, MD",
+    "address": "1670 Dry Dock Avenue, North Charleston",
+    "lat": 32.8605654,
+    "lng": -79.9657383,
+    "website": "http://hfmc.org/",
+    "types": [
+      "doctor",
+      "health",
+      "point_of_interest",
       "establishment"
     ],
     "area": "Daniel Island"
@@ -584,6 +631,21 @@
     "area": "Daniel Island"
   },
   {
+    "id": "ChIJS79_9uhk_ogRXzmiDtLKcjo",
+    "name": "EVO Pizzeria",
+    "address": "1075 East Montague Avenue, North Charleston",
+    "lat": 32.88139819999999,
+    "lng": -79.97696859999999,
+    "website": "http://www.evopizza.com/",
+    "types": [
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "Daniel Island"
+  },
+  {
     "id": "ChIJs4WH9V9w_ogR15cBDPfL9oM",
     "name": "Extended Stay America Suites- Charleston - Mt. Pleasant",
     "address": "304 Wingo Way, Mount Pleasant",
@@ -607,6 +669,21 @@
     "types": [
       "restaurant",
       "food",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "Daniel Island"
+  },
+  {
+    "id": "ChIJbxvpivwo_IgRRHWyb2HA7-Y",
+    "name": "Firefly Distillery",
+    "address": "4201 Spruill Avenue, North Charleston",
+    "lat": 32.8707243,
+    "lng": -79.9829097,
+    "website": "https://www.fireflydistillery.com/",
+    "types": [
+      "tourist_attraction",
+      "bar",
       "point_of_interest",
       "establishment"
     ],
@@ -805,6 +882,22 @@
     "area": "Daniel Island"
   },
   {
+    "id": "ChIJXZV_WlF7_ogRy1myXw3d-ME",
+    "name": "Holy City Brewing",
+    "address": "1021 Aragon Avenue, Charleston",
+    "lat": 32.872673,
+    "lng": -79.97842399999999,
+    "website": "http://holycitybrewing.com/",
+    "types": [
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "Daniel Island"
+  },
+  {
     "id": "ChIJ84dX5opw_ogRKxaT9poZS8I",
     "name": "Irions Jr Eddie L MD",
     "address": "180 Wingo Way # 305, Mount Pleasant",
@@ -949,6 +1042,22 @@
     "website": "http://www.macsdi.com/",
     "types": [
       "bar",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "Daniel Island"
+  },
+  {
+    "id": "ChIJ9xlmJ-Zk_ogRGst7T3-fsfY",
+    "name": "Madra Rua Irish Pub",
+    "address": "1034 East Montague Avenue, North Charleston",
+    "lat": 32.8817026,
+    "lng": -79.9751575,
+    "website": "http://www.madraruapub.com/",
+    "types": [
+      "bar",
+      "restaurant",
+      "food",
       "point_of_interest",
       "establishment"
     ],
@@ -1144,6 +1253,21 @@
     "types": [
       "locality",
       "political"
+    ],
+    "area": "Daniel Island"
+  },
+  {
+    "id": "ChIJV5zZn5Vx_ogR8gRWs3rHIi4",
+    "name": "Novant Health East Cooper Medical Center",
+    "address": "2000 Hospital Drive, Mount Pleasant",
+    "lat": 32.8213794,
+    "lng": -79.850751,
+    "website": "http://www.novanthealth.org/locations/medical-centers/east-cooper-medical-center/?utm_source=maps.google.com&utm_medium=organic&utm_campaign=GBP&utm_content=EastCooperMedicalCenter",
+    "types": [
+      "hospital",
+      "health",
+      "point_of_interest",
+      "establishment"
     ],
     "area": "Daniel Island"
   },
@@ -1442,6 +1566,22 @@
     "area": "Daniel Island"
   },
   {
+    "id": "ChIJl1_vmulk_ogROpCvs6ao7n0",
+    "name": "Sesame Burgers & Beer",
+    "address": "4726 Spruill Avenue, North Charleston",
+    "lat": 32.8807774,
+    "lng": -79.9800052,
+    "website": "https://www.sesameburgersandbeer.com/",
+    "types": [
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "Daniel Island"
+  },
+  {
     "id": "ChIJycJQWPVw_ogR8zf77tvRv0w",
     "name": "Sleep Inn Mt. Pleasant - Charleston",
     "address": "299 Wingo Way, Mount Pleasant",
@@ -1480,6 +1620,19 @@
     "types": [
       "restaurant",
       "food",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "Daniel Island"
+  },
+  {
+    "id": "ChIJrbf4e45w_ogR8NQ2gj4ThRI",
+    "name": "Spirit Line Cruises",
+    "address": "40 Patriots Point Road, Mount Pleasant",
+    "lat": 32.7905534,
+    "lng": -79.90592720000001,
+    "website": "https://www.spiritlinecruises.com/",
+    "types": [
       "point_of_interest",
       "establishment"
     ],
@@ -1559,6 +1712,22 @@
     "lat": 32.8429998,
     "lng": -79.8548579,
     "website": "https://restaurants.subway.com/united-states/sc/mount-pleasant/528-belle-station-blvd?utm_source=yxt-goog&utm_medium=local&utm_term=acq&utm_content=22320&utm_campaign=evergreen-2020&y_source=1_MTQ5MTEzNTQtNzE1LWxvY2F0aW9uLndlYnNpdGU%3D",
+    "types": [
+      "meal_takeaway",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "Daniel Island"
+  },
+  {
+    "id": "ChIJK9R2Zcxk_ogRrHnU2mJwiHw",
+    "name": "Subway",
+    "address": "2000 McMillan Avenue, North Charleston",
+    "lat": 32.8597544,
+    "lng": -79.9792889,
+    "website": "https://restaurants.subway.com/united-states/sc/north-charleston/2000-mcmillan-ave?utm_source=yxt-goog&utm_medium=local&utm_term=acq&utm_content=16761&utm_campaign=evergreen-2020&y_source=1_MTQ5MDExNDktNzE1LWxvY2F0aW9uLndlYnNpdGU%3D",
     "types": [
       "meal_takeaway",
       "restaurant",
@@ -1707,6 +1876,37 @@
     "website": "http://embassycharleston.com/",
     "types": [
       "bar",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "Daniel Island"
+  },
+  {
+    "id": "ChIJ2bKdUPZ6_ogRSgOtbHC9i4A",
+    "name": "The Tattooed Moose",
+    "address": "4845 Chateau Avenue, North Charleston",
+    "lat": 32.8824813,
+    "lng": -79.9771682,
+    "website": "http://www.tattooedmoose.com/",
+    "types": [
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "Daniel Island"
+  },
+  {
+    "id": "ChIJX3xiIq5x_ogR3X8o2FoMXr4",
+    "name": "The UPS Store",
+    "address": "1000 Johnnie Dodds Boulevard #103, Mount Pleasant",
+    "lat": 32.81289,
+    "lng": -79.8680741,
+    "website": "https://locations.theupsstore.com/sc/mount-pleasant/1000-johnnie-dodds-blvd?utm_source=Yext&utm_medium=organic&utm_campaign=Listings",
+    "types": [
+      "finance",
+      "store",
       "point_of_interest",
       "establishment"
     ],
@@ -1902,6 +2102,29 @@
     "area": "Daniel Island"
   },
   {
+    "id": "ChIJdV3v35Bx_ogRQSpNdsoXlFY",
+    "name": "Walmart Supercenter",
+    "address": "1481 U.S. 17, Mount Pleasant",
+    "lat": 32.814167,
+    "lng": -79.8450241,
+    "website": "https://www.walmart.com/store/632-mount-pleasant-sc/?veh=seo_loc",
+    "types": [
+      "department_store",
+      "hardware_store",
+      "electronics_store",
+      "bakery",
+      "grocery_or_supermarket",
+      "furniture_store",
+      "home_goods_store",
+      "clothing_store",
+      "store",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "Daniel Island"
+  },
+  {
     "id": "ChIJQw1cZe9v_ogRcvBdGFJHNv0",
     "name": "Wasabi of Daniel Island",
     "address": "194 Seven Farms Drive, Charleston",
@@ -2066,6 +2289,21 @@
     "area": "James Island"
   },
   {
+    "id": "ChIJSfrzyAt8_ogR7cyt91IylUU",
+    "name": "Bessinger's BBQ",
+    "address": "1602 Savannah Highway, Charleston",
+    "lat": 32.7869264,
+    "lng": -80.0115869,
+    "website": "https://bessingersbbq.com/?utm_source=google",
+    "types": [
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "James Island"
+  },
+  {
     "id": "ChIJqczVGAp8_ogR1vj31OBKsTo",
     "name": "Best Western Charleston Inn",
     "address": "1540 Savannah Highway, Charleston",
@@ -2140,6 +2378,22 @@
     "area": "James Island"
   },
   {
+    "id": "ChIJqeFDNEd8_ogRMtiqu5zdXv4",
+    "name": "China Fun",
+    "address": "3025 Ashley Town Center Drive #101, Charleston",
+    "lat": 32.7925295,
+    "lng": -80.03652509999999,
+    "website": "https://www.chinafunllc1.com/",
+    "types": [
+      "meal_delivery",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "James Island"
+  },
+  {
     "id": "ChIJGSXz9BR6_ogRmdXU8TGJ_yI",
     "name": "CofC Radio",
     "address": "66 George Street, Charleston",
@@ -2161,6 +2415,20 @@
     "website": "https://charleston.edu/",
     "types": [
       "university",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "James Island"
+  },
+  {
+    "id": "ChIJX4-jTT58_ogRjha0rSoEu9o",
+    "name": "Comfort Suites Charleston West Ashley",
+    "address": "2080 Savannah Highway, Charleston",
+    "lat": 32.790713,
+    "lng": -80.03336,
+    "website": "https://www.choicehotels.com/south-carolina/charleston/comfort-suites-hotels/sc369?mc=llgoxxpx",
+    "types": [
+      "lodging",
       "point_of_interest",
       "establishment"
     ],
@@ -2263,12 +2531,56 @@
     "area": "James Island"
   },
   {
+    "id": "ChIJ93L4Ej98_ogR7g2eL3XdYtk",
+    "name": "Hampton Inn & Suites Charleston/West Ashley",
+    "address": "678 Citadel Haven Drive, Charleston",
+    "lat": 32.79168500000001,
+    "lng": -80.0343221,
+    "website": "https://www.hilton.com/en/hotels/chswahx-hampton-suites-charleston-west-ashley/?SEO_id=GMB-AMER-HX-CHSWAHX&y_source=1_MjA4NDc5OS03MTUtbG9jYXRpb24ud2Vic2l0ZQ%3D%3D",
+    "types": [
+      "lodging",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "James Island"
+  },
+  {
+    "id": "ChIJPcUPNxR8_ogRZzs-oDVBtu4",
+    "name": "Holiday Inn Express Charleston US Hwy 17 & I-526 by IHG",
+    "address": "1943 Savannah Highway, Charleston",
+    "lat": 32.7886126,
+    "lng": -80.0277438,
+    "website": "https://www.ihg.com/holidayinnexpress/hotels/us/en/charleston/chssh/hoteldetail?cm_mmc=GoogleMaps-_-EX-_-US-_-CHSSH",
+    "types": [
+      "lodging",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "James Island"
+  },
+  {
     "id": "ChIJl8xvHY57_ogRFen4y39sFos",
     "name": "Home Team BBQ",
     "address": "1205 Ashley River Road, Charleston",
     "lat": 32.7969521,
     "lng": -79.9976498,
     "website": "http://www.hometeambbq.com/",
+    "types": [
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "James Island"
+  },
+  {
+    "id": "ChIJ7bl_jQ18_ogR4n7zDOmfjHQ",
+    "name": "Hunley's Neighborhood Grill",
+    "address": "1750 Savannah Highway, Charleston",
+    "lat": 32.788346,
+    "lng": -80.01912,
+    "website": "https://www.hunleyscharleston.com/",
     "types": [
       "bar",
       "restaurant",
@@ -2288,6 +2600,22 @@
     "types": [
       "meal_delivery",
       "meal_takeaway",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "James Island"
+  },
+  {
+    "id": "ChIJ66UoMcDX_YgRZlmESKHY7gM",
+    "name": "Loggerhead's Beach Grill",
+    "address": "123 West Ashley Avenue, Folly Beach",
+    "lat": 32.6544248,
+    "lng": -79.9427195,
+    "website": "http://loggerheadsbg.com/",
+    "types": [
+      "bar",
       "restaurant",
       "food",
       "point_of_interest",
@@ -2420,6 +2748,50 @@
     "area": "James Island"
   },
   {
+    "id": "ChIJ-RZD5Hd7_ogRCRPnkW1cPVI",
+    "name": "Player's Place Billiards & Sports Pub",
+    "address": "1934 Ashley River Road, Charleston",
+    "lat": 32.80749749999999,
+    "lng": -80.02277260000001,
+    "website": "https://www.playersplace.com/",
+    "types": [
+      "bar",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "James Island"
+  },
+  {
+    "id": "ChIJ5-eDnHp8_ogRZFBza8ajeIA",
+    "name": "R Pub",
+    "address": "1836 Ashley River Road Ste H, Charleston",
+    "lat": 32.8038898,
+    "lng": -80.0181271,
+    "website": "https://www.facebook.com/R-PUB-126466520238/",
+    "types": [
+      "night_club",
+      "bar",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "James Island"
+  },
+  {
+    "id": "ChIJ1yipyhV8_ogRmvCsMFEoQuk",
+    "name": "Ruby Tuesday",
+    "address": "1953 Savannah Highway, Charleston",
+    "lat": 32.788922,
+    "lng": -80.02834299999999,
+    "website": "https://rubytuesday.com/",
+    "types": [
+      "restaurant",
+      "point_of_interest",
+      "food",
+      "establishment"
+    ],
+    "area": "James Island"
+  },
+  {
     "id": "ChIJsygKiXJ6_ogROOqeTcH7VG4",
     "name": "Saffron Cafe & Bakery",
     "address": "333 East Bay Street, Charleston",
@@ -2481,6 +2853,22 @@
     "area": "James Island"
   },
   {
+    "id": "ChIJgQFsu3l8_ogRIM-1QMFaarA",
+    "name": "Subway",
+    "address": "1704 Sam Rittenberg Boulevard, Charleston",
+    "lat": 32.8051042,
+    "lng": -80.0127425,
+    "website": "https://restaurants.subway.com/united-states/sc/charleston/1704-sam-rittenberg-blvd?utm_source=yxt-goog&utm_medium=local&utm_term=acq&utm_content=10296&utm_campaign=evergreen-2020&y_source=1_MTQ5MTI3MjUtNzE1LWxvY2F0aW9uLndlYnNpdGU%3D",
+    "types": [
+      "meal_takeaway",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "James Island"
+  },
+  {
     "id": "ChIJH8jJAwt5_ogRI3gAF-Rs--Y",
     "name": "The Break",
     "address": "778 Folly Road Unit f, Charleston",
@@ -2525,6 +2913,36 @@
     "area": "James Island"
   },
   {
+    "id": "ChIJ2Qc3OnJ7_ogRBaM7wXn1cUc",
+    "name": "The Kickin' Chicken",
+    "address": "1179 Sam Rittenberg Boulevard, Charleston",
+    "lat": 32.8216592,
+    "lng": -79.9913057,
+    "website": "https://kickinchicken.com/",
+    "types": [
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "James Island"
+  },
+  {
+    "id": "ChIJ50EuYerX_YgRAzxoqOHhEyk",
+    "name": "Tides Folly Beach, Charleston's Oceanfront Hotel",
+    "address": "1 Center Street, Folly Beach",
+    "lat": 32.654355,
+    "lng": -79.9407147,
+    "website": "https://www.tidesfollybeach.com/",
+    "types": [
+      "lodging",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "James Island"
+  },
+  {
     "id": "ChIJJeHx3Ol7_ogRrCtrfhV6HCQ",
     "name": "Triangle Char & Bar",
     "address": "828 Savannah Highway, Charleston",
@@ -2541,6 +2959,21 @@
     "area": "James Island"
   },
   {
+    "id": "ChIJ9Q3V_RR8_ogRbSbM-3bIGXQ",
+    "name": "Trotters Restaurant",
+    "address": "2008 Savannah Highway, Charleston",
+    "lat": 32.790519,
+    "lng": -80.02823839999999,
+    "website": "http://www.thetownandcountryinn.com/",
+    "types": [
+      "restaurant",
+      "point_of_interest",
+      "food",
+      "establishment"
+    ],
+    "area": "James Island"
+  },
+  {
     "id": "ChIJJfIA88x7_ogRQXrqPJZCsnU",
     "name": "Waffle House",
     "address": "325 Savannah Highway, Charleston",
@@ -2551,6 +2984,20 @@
       "meal_takeaway",
       "restaurant",
       "food",
+      "point_of_interest",
+      "establishment"
+    ],
+    "area": "James Island"
+  },
+  {
+    "id": "ChIJV_b_1T98_ogR9JJU2QRqU2I",
+    "name": "West Ashley Inn",
+    "address": "2058 Savannah Highway, Charleston",
+    "lat": 32.7910603,
+    "lng": -80.031185,
+    "website": "http://www.thewestashleyinn.com/",
+    "types": [
+      "lodging",
       "point_of_interest",
       "establishment"
     ],
