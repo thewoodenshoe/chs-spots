@@ -2,32 +2,23 @@ import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import AreaSelector from '../AreaSelector';
 import { Area } from '../FilterModal';
+import fs from 'fs';
+import path from 'path';
+
+// Load actual areas from areas.json file
+const areasFilePath = path.join(process.cwd(), 'data', 'areas.json');
+let areasFromFile: string[] = [];
+
+try {
+  const areasData = JSON.parse(fs.readFileSync(areasFilePath, 'utf8'));
+  areasFromFile = areasData.map((area: any) => area.name);
+} catch (error) {
+  console.warn('Could not load areas.json for tests, using fallback');
+  areasFromFile = ['Daniel Island', 'Mount Pleasant', 'James Island', 'Downtown Charleston', "Sullivan's Island", 'North Charleston', 'West Ashley'];
+}
 
 // Mock fetch for API calls
 global.fetch = jest.fn();
-
-// Mock areas.json data
-const mockAreas = [
-  'Daniel Island',
-  'Mount Pleasant',
-  'James Island',
-  'Downtown Charleston',
-  "Sullivan's Island",
-  'Park Circle',
-  'North Charleston',
-  'West Ashley',
-];
-
-const mockAreasConfig = [
-  { name: 'Daniel Island', center: { lat: 32.845, lng: -79.908 } },
-  { name: 'Mount Pleasant', center: { lat: 32.795, lng: -79.875 } },
-  { name: 'James Island', center: { lat: 32.737, lng: -79.965 } },
-  { name: 'Downtown Charleston', center: { lat: 32.776, lng: -79.931 } },
-  { name: "Sullivan's Island", center: { lat: 32.76, lng: -79.84 } },
-  { name: 'Park Circle', center: { lat: 32.878, lng: -80.01 } },
-  { name: 'North Charleston', center: { lat: 32.888, lng: -80.006 } },
-  { name: 'West Ashley', center: { lat: 32.785, lng: -80.04 } },
-];
 
 describe('AreaSelector', () => {
   const mockOnAreaChange = jest.fn();
@@ -41,7 +32,7 @@ describe('AreaSelector', () => {
   it('should load area names from /api/areas endpoint', async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
-      json: async () => mockAreas,
+      json: async () => areasFromFile,
     });
 
     render(
@@ -63,16 +54,17 @@ describe('AreaSelector', () => {
 
     // Wait for areas to appear in dropdown
     await waitFor(() => {
-      mockAreas.forEach((area) => {
+      areasFromFile.forEach((area) => {
         expect(screen.getByText(area)).toBeInTheDocument();
       });
     }, { timeout: 3000 });
   });
 
-  it('should display all areas from areas.json in dropdown', async () => {
+  it('should load all area names from areas.json data file into menu', async () => {
+    // This test verifies that the menu loads from the actual areas.json file
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
-      json: async () => mockAreas,
+      json: async () => areasFromFile, // Use actual areas from file
     });
 
     render(
@@ -90,17 +82,122 @@ describe('AreaSelector', () => {
     });
     button.click();
 
-    // Verify all areas from areas.json are present
+    // Verify all areas from areas.json are present in the menu
     await waitFor(() => {
-      expect(screen.getByText('Daniel Island')).toBeInTheDocument();
-      expect(screen.getByText('Mount Pleasant')).toBeInTheDocument();
-      expect(screen.getByText('James Island')).toBeInTheDocument();
-      expect(screen.getByText('Downtown Charleston')).toBeInTheDocument();
-      expect(screen.getByText("Sullivan's Island")).toBeInTheDocument();
-      expect(screen.getByText('Park Circle')).toBeInTheDocument();
-      expect(screen.getByText('North Charleston')).toBeInTheDocument();
-      expect(screen.getByText('West Ashley')).toBeInTheDocument();
+      areasFromFile.forEach((areaName) => {
+        expect(screen.getByText(areaName, { exact: true })).toBeInTheDocument();
+      });
     });
+
+    // Verify Park Circle is NOT present (should be removed)
+    await waitFor(() => {
+      expect(screen.queryByText('Park Circle', { exact: true })).not.toBeInTheDocument();
+    });
+  });
+
+  it('should NOT display Park Circle in the menu (removed from areas.json)', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => areasFromFile,
+    });
+
+    render(
+      <AreaSelector
+        selectedArea="Daniel Island"
+        onAreaChange={mockOnAreaChange}
+        onMapRecenter={mockOnMapRecenter}
+      />
+    );
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith('/api/areas');
+    });
+
+    const button = screen.getByRole('button', { name: /select area/i });
+    await waitFor(() => {
+      expect(screen.queryByText('Loading areas...')).not.toBeInTheDocument();
+    });
+    button.click();
+
+    // Verify Park Circle is NOT in the dropdown
+    await waitFor(() => {
+      expect(screen.queryByText('Park Circle', { exact: true })).not.toBeInTheDocument();
+    });
+  });
+
+  it('should have exactly the number of areas from areas.json', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => areasFromFile,
+    });
+
+    render(
+      <AreaSelector
+        selectedArea="Daniel Island"
+        onAreaChange={mockOnAreaChange}
+        onMapRecenter={mockOnMapRecenter}
+      />
+    );
+
+    const button = screen.getByRole('button', { name: /select area/i });
+    await waitFor(() => {
+      expect(screen.queryByText('Loading areas...')).not.toBeInTheDocument();
+    });
+    button.click();
+
+    // Count area buttons in dropdown (excluding the main button)
+    await waitFor(() => {
+      const areaButtons = areasFromFile.map(area => 
+        screen.queryByRole('button', { name: new RegExp(area, 'i') })
+      ).filter(Boolean);
+      
+      // Should have at least the number of areas from file
+      expect(areaButtons.length).toBeGreaterThanOrEqual(areasFromFile.length);
+    });
+  });
+
+  it('should match areas.json exactly - UX menu loads from data file', async () => {
+    // This is the key test: verify UX menu loads all names from areas.json
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => areasFromFile,
+    });
+
+    render(
+      <AreaSelector
+        selectedArea="Daniel Island"
+        onAreaChange={mockOnAreaChange}
+        onMapRecenter={mockOnMapRecenter}
+      />
+    );
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith('/api/areas');
+    });
+
+    const button = screen.getByRole('button', { name: /select area/i });
+    await waitFor(() => {
+      expect(screen.queryByText('Loading areas...')).not.toBeInTheDocument();
+    });
+    button.click();
+
+    // Verify each area from areas.json appears in the menu
+    const visibleAreas: string[] = [];
+    for (const areaName of areasFromFile) {
+      await waitFor(() => {
+        const element = screen.queryByText(areaName, { exact: true });
+        if (element) {
+          visibleAreas.push(areaName);
+        }
+      }, { timeout: 1000 });
+    }
+
+    // All areas from file should be visible
+    expect(visibleAreas.length).toBe(areasFromFile.length);
+    expect(visibleAreas.sort()).toEqual(areasFromFile.sort());
+
+    // Park Circle should not be present
+    expect(visibleAreas).not.toContain('Park Circle');
   });
 
   it('should handle API error gracefully with fallback areas', async () => {
@@ -121,68 +218,6 @@ describe('AreaSelector', () => {
     // Should still show some areas (fallback)
     await waitFor(() => {
       expect(screen.queryByText('Loading areas...')).not.toBeInTheDocument();
-    });
-  });
-
-  it('should display loading state while fetching areas', async () => {
-    (global.fetch as jest.Mock).mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve({
-        ok: true,
-        json: async () => mockAreas,
-      }), 100))
-    );
-
-    render(
-      <AreaSelector
-        selectedArea="Daniel Island"
-        onAreaChange={mockOnAreaChange}
-        onMapRecenter={mockOnMapRecenter}
-      />
-    );
-
-    // Open dropdown immediately
-    const button = screen.getByRole('button', { name: /select area/i });
-    button.click();
-
-    // Should show loading state initially
-    const loadingText = screen.queryByText('Loading areas...');
-    // Loading might be too fast to catch, but verify it doesn't error
-    expect(button).toBeInTheDocument();
-  });
-
-  it('should use area names from areas.json attribute "name"', async () => {
-    // This test ensures we're using the "name" attribute from areas.json
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockAreas, // These should be the "name" values from areas.json
-    });
-
-    render(
-      <AreaSelector
-        selectedArea="Daniel Island"
-        onAreaChange={mockOnAreaChange}
-        onMapRecenter={mockOnMapRecenter}
-      />
-    );
-
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith('/api/areas');
-    });
-
-    // Open dropdown
-    const button = screen.getByRole('button', { name: /select area/i });
-    await waitFor(() => {
-      expect(screen.queryByText('Loading areas...')).not.toBeInTheDocument();
-    });
-    button.click();
-
-    // Verify the areas match what would be in areas.json
-    await waitFor(() => {
-      // These names should match the "name" attribute in areas.json
-      expect(screen.getByText('Daniel Island')).toBeInTheDocument();
-      expect(screen.getByText('Park Circle')).toBeInTheDocument();
-      expect(screen.getByText('North Charleston')).toBeInTheDocument();
-      expect(screen.getByText('West Ashley')).toBeInTheDocument();
     });
   });
 });

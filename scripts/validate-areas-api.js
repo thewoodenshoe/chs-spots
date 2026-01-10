@@ -30,13 +30,12 @@ try {
   
   console.log('\n✅ Validation Results:');
   
-  // Validate all required areas are present
+  // Validate all required areas are present (excluding Park Circle - removed)
   const expectedAreas = [
     'Daniel Island',
     'Mount Pleasant',
     'Downtown Charleston',
     "Sullivan's Island",
-    'Park Circle',
     'North Charleston',
     'West Ashley',
     'James Island',
@@ -51,6 +50,14 @@ try {
       allPresent = false;
     }
   });
+  
+  // Verify Park Circle is NOT present (should be removed)
+  if (areaNames.includes('Park Circle')) {
+    console.log(`   ❌ Park Circle - Should NOT be present (removed)`);
+    allPresent = false;
+  } else {
+    console.log(`   ✅ Park Circle - Correctly removed (not present)`);
+  }
   
   // Validate all areas have required fields
   console.log('\n🔍 Validating area structure:');

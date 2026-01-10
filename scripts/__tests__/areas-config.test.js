@@ -114,21 +114,24 @@ describe('Areas Configuration Validation', () => {
       expect(names.length).toBe(uniqueNames.size);
     });
 
-    test('should have expected areas', () => {
+    test('should have expected areas (excluding Park Circle)', () => {
       const names = areasData.map(area => area.name);
       const expectedAreas = [
         'Daniel Island',
         'Mount Pleasant',
         'Downtown Charleston',
         "Sullivan's Island",
-        'Park Circle',
         'North Charleston',
-        'West Ashley'
+        'West Ashley',
+        'James Island'
       ];
       
       expectedAreas.forEach(expectedArea => {
         expect(names).toContain(expectedArea);
       });
+
+      // Verify Park Circle is NOT present (should be removed)
+      expect(names).not.toContain('Park Circle');
     });
   });
 
