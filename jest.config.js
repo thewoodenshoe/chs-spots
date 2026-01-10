@@ -71,12 +71,20 @@ module.exports = {
     // Node.js script tests
     {
       displayName: 'node',
-      testMatch: ['<rootDir>/scripts/**/__tests__/**/*.test.js'],
+      testMatch: [
+        '<rootDir>/scripts/**/__tests__/**/*.test.js',
+        '<rootDir>/__tests__/**/*.test.ts',
+      ],
       testEnvironment: 'node',
       transform: {
         '^.+\\.js$': 'babel-jest',
+        '^.+\\.ts$': ['ts-jest', {
+          tsconfig: {
+            allowJs: true,
+          },
+        }],
       },
-      moduleFileExtensions: ['js', 'json'],
+      moduleFileExtensions: ['js', 'ts', 'json'],
     },
   ],
   // Explicitly set testSequencer to avoid missing module error

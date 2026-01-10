@@ -8,10 +8,21 @@
     "start": "next start",
     "lint": "eslint",
     "test": "jest",
+    "test:areas": "jest __tests__/areas-config.test.ts",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
-    "test:e2e:debug": "playwright test --debug"
+    "test:e2e:debug": "playwright test --debug",
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "jest --findRelatedTests"
+    ],
+    "data/areas.json": [
+      "jest __tests__/areas-config.test.ts"
+    ]
   },
   "dependencies": {
     "@react-google-maps/api": "^2.19.4",
@@ -36,9 +47,11 @@
     "dotenv": "^17.2.3",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
+    "husky": "^9.1.7",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
+    "lint-staged": "^16.2.7",
     "playwright": "^1.57.0",
     "tailwindcss": "^4",
     "ts-jest": "^29.4.6",

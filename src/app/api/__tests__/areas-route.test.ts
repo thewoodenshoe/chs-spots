@@ -1,3 +1,14 @@
+// Mock Next.js modules before importing
+jest.mock('next/server', () => ({
+  NextResponse: {
+    json: jest.fn((data, init) => ({
+      json: async () => data,
+      status: init?.status || 200,
+      ok: (init?.status || 200) < 400,
+    })),
+  },
+}));
+
 import { GET } from '../areas/route';
 import fs from 'fs';
 import path from 'path';

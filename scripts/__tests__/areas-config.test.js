@@ -42,11 +42,11 @@ describe('Areas Configuration Validation', () => {
   describe('Area Structure Validation', () => {
     test('each area should have required fields', () => {
       areasData.forEach((area, index) => {
-        expect(area).toHaveProperty('name', `Area at index ${index} missing 'name'`);
-        expect(area).toHaveProperty('displayName', `Area at index ${index} missing 'displayName'`);
-        expect(area).toHaveProperty('center', `Area at index ${index} missing 'center'`);
-        expect(area).toHaveProperty('radiusMeters', `Area at index ${index} missing 'radiusMeters'`);
-        expect(area).toHaveProperty('bounds', `Area at index ${index} missing 'bounds'`);
+        expect(area).toHaveProperty('name');
+        expect(area).toHaveProperty('displayName');
+        expect(area).toHaveProperty('center');
+        expect(area).toHaveProperty('radiusMeters');
+        expect(area).toHaveProperty('bounds');
       });
     });
 

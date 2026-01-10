@@ -55,7 +55,9 @@ describe('AreaSelector', () => {
     // Wait for areas to appear in dropdown
     await waitFor(() => {
       areasFromFile.forEach((area) => {
-        expect(screen.getByText(area)).toBeInTheDocument();
+        // Use getAllByText since area name appears in both button and dropdown
+        const elements = screen.getAllByText(area);
+        expect(elements.length).toBeGreaterThan(0);
       });
     }, { timeout: 3000 });
   });
@@ -85,7 +87,9 @@ describe('AreaSelector', () => {
     // Verify all areas from areas.json are present in the menu
     await waitFor(() => {
       areasFromFile.forEach((areaName) => {
-        expect(screen.getByText(areaName, { exact: true })).toBeInTheDocument();
+        // Use getAllByText since area name appears multiple times
+        const elements = screen.getAllByText(areaName, { exact: true });
+        expect(elements.length).toBeGreaterThan(0);
       });
     });
 
