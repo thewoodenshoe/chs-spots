@@ -11,7 +11,9 @@ export type SpotType =
   | 'Bike Routes'
   | 'Golf Cart Hacks';
 
-export type Area = 'Daniel Island' | 'Mount Pleasant' | 'James Island' | 'Downtown Charleston' | 'Sullivan\'s Island';
+// Area type - should match names in data/areas.json
+// All areas from areas.json: Daniel Island, Mount Pleasant, Downtown Charleston, Sullivan's Island, Park Circle, North Charleston, West Ashley, James Island
+export type Area = 'Daniel Island' | 'Mount Pleasant' | 'James Island' | 'Downtown Charleston' | 'Sullivan\'s Island' | 'Park Circle' | 'North Charleston' | 'West Ashley';
 
 interface FilterModalProps {
   isOpen: boolean;

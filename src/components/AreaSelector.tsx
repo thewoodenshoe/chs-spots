@@ -10,20 +10,72 @@ interface AreaSelectorProps {
   onMapRecenter?: (area: Area) => void;
 }
 
-const AREAS: Area[] = ['Daniel Island', 'Mount Pleasant', 'James Island', 'Downtown Charleston', 'Sullivan\'s Island'];
+// Area center coordinates for map recentering - loaded from areas.json
+let areaCentersCache: Record<string, { lat: number; lng: number; zoom: number }> | null = null;
 
-// Area center coordinates for map recentering
-const areaCenters: Record<Area, { lat: number; lng: number; zoom: number }> = {
-  'Daniel Island': { lat: 32.845, lng: -79.908, zoom: 14 },
-  'Mount Pleasant': { lat: 32.800, lng: -79.860, zoom: 14 },
-  'James Island': { lat: 32.720, lng: -79.950, zoom: 14 },
-  'Downtown Charleston': { lat: 32.776, lng: -79.931, zoom: 15 },
-  'Sullivan\'s Island': { lat: 32.760, lng: -79.840, zoom: 14 },
-};
+async function loadAreaCenters(): Promise<Record<string, { lat: number; lng: number; zoom: number }>> {
+  if (areaCentersCache) {
+    return areaCentersCache;
+  }
+  
+  try {
+    const response = await fetch('/api/areas/config');
+    const areasConfig = await response.json();
+    
+    const centers: Record<string, { lat: number; lng: number; zoom: number }> = {};
+    areasConfig.forEach((area: any) => {
+      centers[area.name] = {
+        lat: area.center.lat,
+        lng: area.center.lng,
+        zoom: 14, // Default zoom, can be made configurable in areas.json if needed
+      };
+    });
+    
+    areaCentersCache = centers;
+    return centers;
+  } catch (error) {
+    console.error('Error loading area centers:', error);
+    // Fallback to hardcoded values if API fails
+    return {
+      'Daniel Island': { lat: 32.845, lng: -79.908, zoom: 14 },
+      'Mount Pleasant': { lat: 32.800, lng: -79.860, zoom: 14 },
+      'James Island': { lat: 32.720, lng: -79.950, zoom: 14 },
+      'Downtown Charleston': { lat: 32.776, lng: -79.931, zoom: 15 },
+      'Sullivan\'s Island': { lat: 32.760, lng: -79.840, zoom: 14 },
+    };
+  }
+}
 
 export default function AreaSelector({ selectedArea, onAreaChange, onMapRecenter }: AreaSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [areas, setAreas] = useState<Area[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Load areas from API on component mount
+  useEffect(() => {
+    async function fetchAreas() {
+      try {
+        const response = await fetch('/api/areas');
+        if (response.ok) {
+          const areaNames = await response.json();
+          setAreas(areaNames as Area[]);
+        } else {
+          console.error('Failed to fetch areas');
+          // Fallback to default areas
+          setAreas(['Daniel Island', 'Mount Pleasant', 'James Island', 'Downtown Charleston', 'Sullivan\'s Island']);
+        }
+      } catch (error) {
+        console.error('Error fetching areas:', error);
+        // Fallback to default areas
+        setAreas(['Daniel Island', 'Mount Pleasant', 'James Island', 'Downtown Charleston', 'Sullivan\'s Island']);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchAreas();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -68,19 +120,25 @@ export default function AreaSelector({ selectedArea, onAreaChange, onMapRecenter
           />
           <div className="absolute left-0 right-0 top-full z-50 mt-2 w-full rounded-xl bg-white shadow-2xl sm:w-56">
             <div className="py-2">
-              {AREAS.map((area) => (
-                <button
-                  key={area}
-                  onClick={() => handleAreaSelect(area)}
-                  className={`w-full px-4 py-3 text-left text-sm font-medium transition-colors min-h-[44px] touch-manipulation ${
-                    area === selectedArea
-                      ? 'bg-teal-50 text-teal-700'
-                      : 'text-gray-800 hover:bg-gray-50'
-                  }`}
-                >
-                  {area}
-                </button>
-              ))}
+              {isLoading ? (
+                <div className="px-4 py-3 text-sm text-gray-500">Loading areas...</div>
+              ) : areas.length === 0 ? (
+                <div className="px-4 py-3 text-sm text-gray-500">No areas available</div>
+              ) : (
+                areas.map((area) => (
+                  <button
+                    key={area}
+                    onClick={() => handleAreaSelect(area)}
+                    className={`w-full px-4 py-3 text-left text-sm font-medium transition-colors min-h-[44px] touch-manipulation ${
+                      area === selectedArea
+                        ? 'bg-teal-50 text-teal-700'
+                        : 'text-gray-800 hover:bg-gray-50'
+                    }`}
+                  >
+                    {area}
+                  </button>
+                ))
+              )}
             </div>
           </div>
         </>
@@ -89,5 +147,31 @@ export default function AreaSelector({ selectedArea, onAreaChange, onMapRecenter
   );
 }
 
-export { areaCenters };
+// Export function to get area centers (async, loads from API)
+export async function getAreaCenters(): Promise<Record<string, { lat: number; lng: number; zoom: number }>> {
+  return await loadAreaCenters();
+}
+
+// Export synchronous getter for backward compatibility (returns cached or default)
+export function getAreaCentersSync(): Record<string, { lat: number; lng: number; zoom: number }> {
+  if (areaCentersCache) {
+    return areaCentersCache;
+  }
+  // Return default if not loaded yet
+  return {
+    'Daniel Island': { lat: 32.845, lng: -79.908, zoom: 14 },
+    'Mount Pleasant': { lat: 32.800, lng: -79.860, zoom: 14 },
+    'James Island': { lat: 32.720, lng: -79.950, zoom: 14 },
+    'Downtown Charleston': { lat: 32.776, lng: -79.931, zoom: 15 },
+    'Sullivan\'s Island': { lat: 32.760, lng: -79.840, zoom: 14 },
+  };
+}
+
+// For backward compatibility, export areaCenters as a getter
+export const areaCenters = new Proxy({} as Record<string, { lat: number; lng: number; zoom: number }>, {
+  get(target, prop) {
+    const sync = getAreaCentersSync();
+    return sync[prop as string] || sync['Daniel Island'];
+  },
+});
 

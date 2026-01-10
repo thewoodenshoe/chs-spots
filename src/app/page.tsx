@@ -1,11 +1,11 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import FilterModal, { Area, SpotType } from '@/components/FilterModal';
 import SubmissionModal from '@/components/SubmissionModal';
 import EditSpotModal from '@/components/EditSpotModal';
-import AreaSelector, { areaCenters } from '@/components/AreaSelector';
+import AreaSelector, { getAreaCentersSync } from '@/components/AreaSelector';
 import ActivityChip from '@/components/ActivityChip';
 import { useSpots, Spot } from '@/contexts/SpotsContext';
 
@@ -29,7 +29,45 @@ export default function Home() {
   const [pinLocation, setPinLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [editingSpot, setEditingSpot] = useState<Spot | null>(null);
   const [editPinLocation, setEditPinLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [mapCenter, setMapCenter] = useState(areaCenters['Daniel Island']);
+  // Default center for Daniel Island (will be updated when area centers load)
+  const defaultCenter = { lat: 32.845, lng: -79.908, zoom: 14 };
+  const [mapCenter, setMapCenter] = useState(defaultCenter);
+  const [areaCenters, setAreaCenters] = useState<Record<string, { lat: number; lng: number; zoom: number }>>({});
+
+  // Load area centers on mount
+  useEffect(() => {
+    async function loadCenters() {
+      try {
+        const response = await fetch('/api/areas/config');
+        if (response.ok) {
+          const areasConfig = await response.json();
+          const centers: Record<string, { lat: number; lng: number; zoom: number }> = {};
+          areasConfig.forEach((area: any) => {
+            centers[area.name] = {
+              lat: area.center.lat,
+              lng: area.center.lng,
+              zoom: 14,
+            };
+          });
+          setAreaCenters(centers);
+        }
+      } catch (error) {
+        console.error('Error loading area centers:', error);
+        // Fallback to sync version
+        const syncCenters = getAreaCentersSync();
+        setAreaCenters(syncCenters);
+      }
+    }
+    loadCenters();
+  }, []); // Only load once on mount
+
+  // Update map center when selectedArea changes
+  useEffect(() => {
+    const centers = Object.keys(areaCenters).length > 0 ? areaCenters : getAreaCentersSync();
+    if (centers[selectedArea]) {
+      setMapCenter(centers[selectedArea]);
+    }
+  }, [selectedArea, areaCenters]);
 
   const handleAddSpot = () => {
     setIsSubmissionOpen(true);
@@ -42,7 +80,14 @@ export default function Home() {
 
   const handleAreaChange = (area: Area) => {
     setSelectedArea(area);
-    setMapCenter(areaCenters[area]);
+    // Use loaded area centers or fallback to sync version
+    const centers = Object.keys(areaCenters).length > 0 ? areaCenters : getAreaCentersSync();
+    if (centers[area]) {
+      setMapCenter(centers[area]);
+    } else {
+      // Fallback to default
+      setMapCenter(defaultCenter);
+    }
   };
 
   const handleMapClick = (lat: number, lng: number) => {
