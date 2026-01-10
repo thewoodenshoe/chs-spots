@@ -9,6 +9,8 @@
     "lint": "eslint",
     "test": "jest",
     "test:areas": "jest __tests__/areas-config.test.ts",
+    "test:incremental": "jest __tests__/seed-incremental.test.js",
+    "seed:incremental": "node scripts/seed-incremental.js",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",

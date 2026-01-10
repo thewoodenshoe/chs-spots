@@ -74,6 +74,7 @@ module.exports = {
       testMatch: [
         '<rootDir>/scripts/**/__tests__/**/*.test.js',
         '<rootDir>/__tests__/**/*.test.ts',
+        '<rootDir>/__tests__/**/*.test.js',
       ],
       testEnvironment: 'node',
       transform: {
