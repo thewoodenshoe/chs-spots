@@ -1,6 +1,64 @@
 const fs = require('fs');
 const path = require('path');
 
+// Logging setup
+const logDir = path.join(__dirname, '..', 'logs');
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir, { recursive: true });
+}
+const logPath = path.join(logDir, 'seed-venues.log');
+
+// Overwrite log file on each run
+fs.writeFileSync(logPath, '', 'utf8');
+
+/**
+ * Logger function: logs to console (with emojis) and file (without emojis, with timestamp)
+ */
+function log(message) {
+  // Log to console (with emojis/colors)
+  console.log(message);
+  
+  // Format timestamp as [YYYY-MM-DD HH:mm:ss]
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const timestamp = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}]`;
+  
+  // Strip emojis from message for file logging
+  // Emoji ranges: \u{1F300}-\u{1F5FF} (Misc Symbols), \u{1F600}-\u{1F64F} (Emoticons), 
+  // \u{1F680}-\u{1F6FF} (Transport), \u{2600}-\u{26FF} (Misc symbols), \u{2700}-\u{27BF} (Dingbats)
+  const messageWithoutEmojis = message.replace(/[\u{1F300}-\u{1F5FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+  
+  // Append to log file
+  fs.appendFileSync(logPath, `${timestamp} ${messageWithoutEmojis}\n`, 'utf8');
+}
+
+/**
+ * Verbose logger: writes detailed information to log file only (not to console)
+ * Use for --vvv level detailed logging
+ */
+function logVerbose(message) {
+  // Format timestamp as [YYYY-MM-DD HH:mm:ss]
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const timestamp = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}]`;
+  
+  // Strip emojis from message
+  const messageWithoutEmojis = message.replace(/[\u{1F300}-\u{1F5FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+  
+  // Append to log file (verbose details only in file)
+  fs.appendFileSync(logPath, `${timestamp} ${messageWithoutEmojis}\n`, 'utf8');
+}
+
 // Try to load dotenv if available (check both .env and .env.local)
 try {
   require('dotenv').config();
@@ -18,7 +76,7 @@ try {
 // Google Maps API Key
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || process.env.GOOGLE_PLACES_KEY;
 if (!GOOGLE_MAPS_API_KEY) {
-  console.error('❌ Error: NEXT_PUBLIC_GOOGLE_MAPS_KEY or GOOGLE_PLACES_KEY must be set in .env');
+  log('❌ Error: NEXT_PUBLIC_GOOGLE_MAPS_KEY or GOOGLE_PLACES_KEY must be set in .env');
   process.exit(1);
 }
 
@@ -43,13 +101,13 @@ try {
     throw new Error('areas.json must contain an array of area objects');
   }
   
-  console.log(`✅ Loaded ${AREAS_CONFIG.length} areas from ${path.resolve(areasConfigFile)}`);
+  log(`✅ Loaded ${AREAS_CONFIG.length} areas from ${path.resolve(areasConfigFile)}`);
   AREAS_CONFIG.forEach(area => {
-    console.log(`   📍 ${area.displayName || area.name}: radius ${area.radiusMeters}m`);
+    log(`   📍 ${area.displayName || area.name}: radius ${area.radiusMeters}m`);
   });
 } catch (error) {
-  console.error(`❌ Error loading areas.json: ${error.message}`);
-  console.error(`   Please ensure ${areasConfigFile} exists and is valid JSON.`);
+  log(`❌ Error loading areas.json: ${error.message}`);
+  log(`   Please ensure ${areasConfigFile} exists and is valid JSON.`);
   process.exit(1);
 }
 
@@ -59,7 +117,8 @@ const VENUE_TYPES = [
   'restaurant',
   'brewery',
   'night_club',
-  'wine_bar'
+  'wine_bar',
+  'breakfast'
 ];
 
 // Helper: Delay function
@@ -131,7 +190,7 @@ async function fetchAllPages(areaName, venueType, lat, lng, radius, maxPages = 1
     
     return allResults;
   } catch (error) {
-    console.error(`   ⚠️  Error fetching pages: ${error.message}`);
+    log(`   ⚠️  Error fetching pages: ${error.message}`);
     return allResults;
   }
 }
@@ -174,20 +233,20 @@ async function fetchPlaceDetails(placeId) {
 
 // Main seeding function - processes all areas from areas.json
 async function seedVenuesExtended() {
-  console.log('🍺 Starting venue seeding using areas from areas.json...\n');
-  console.log(`📍 Processing ${AREAS_CONFIG.length} areas:`);
+  log('🍺 Starting venue seeding using areas from areas.json...\n');
+  log(`📍 Processing ${AREAS_CONFIG.length} areas:`);
   AREAS_CONFIG.forEach(area => {
-    console.log(`   ${area.displayName || area.name}:`);
-    console.log(`     Center: ${area.center.lat}, ${area.center.lng}`);
-    console.log(`     Radius: ${area.radiusMeters}m`);
+    log(`   ${area.displayName || area.name}:`);
+    log(`     Center: ${area.center.lat}, ${area.center.lng}`);
+    log(`     Radius: ${area.radiusMeters}m`);
     if (area.bounds) {
-      console.log(`     Bounds: lat ${area.bounds.south} to ${area.bounds.north}, lng ${area.bounds.west} to ${area.bounds.east}`);
+      log(`     Bounds: lat ${area.bounds.south} to ${area.bounds.north}, lng ${area.bounds.west} to ${area.bounds.east}`);
     }
     if (area.description) {
-      console.log(`     ${area.description}`);
+      log(`     ${area.description}`);
     }
   });
-  console.log('');
+  log('');
   
   // Load existing venues if file exists
   let existingVenues = [];
@@ -200,14 +259,14 @@ async function seedVenuesExtended() {
       existingVenues.forEach(v => {
         if (v.id) seenPlaceIds.add(v.id);
       });
-      console.log(`📖 Loaded ${existingVenues.length} existing venues from ${path.resolve(outputFile)}`);
-      console.log(`   (will append new venues without overwriting)\n`);
+      log(`📖 Loaded ${existingVenues.length} existing venues from ${path.resolve(outputFile)}`);
+      log(`   (will append new venues without overwriting)\n`);
     } catch (error) {
-      console.error(`⚠️  Error loading existing venues: ${error.message}`);
-      console.log(`   (starting fresh)\n`);
+      log(`⚠️  Error loading existing venues: ${error.message}`);
+      log(`   (starting fresh)\n`);
     }
   } else {
-    console.log(`📄 No existing venues.json found, creating new file\n`);
+    log(`📄 No existing venues.json found, creating new file\n`);
   }
   
   // Ensure data directory exists
@@ -229,14 +288,17 @@ async function seedVenuesExtended() {
   // Process all areas from config
   for (const areaConfig of AREAS_CONFIG) {
     const areaName = areaConfig.name;
-    console.log(`\n📍 Processing ${areaConfig.displayName || areaName}...`);
+    log(`\n📍 Processing ${areaConfig.displayName || areaName}...`);
     
     for (const venueType of VENUE_TYPES) {
       totalQueries++;
       const queryName = `${areaName} (${venueType})`;
       
       try {
-        console.log(`🔍 Querying ${queryName}...`);
+        // Terminal: Simple message
+        log(`🔍 Querying ${queryName}...`);
+        // File: Detailed query information
+        logVerbose(`Query details: Area=${areaName} | Type=${venueType} | Center=(${areaConfig.center.lat}, ${areaConfig.center.lng}) | Radius=${areaConfig.radiusMeters}m`);
         
         const results = await fetchAllPages(
           areaName,
@@ -256,37 +318,42 @@ async function seedVenuesExtended() {
             areaNewVenues[areaName].push(venue);
             addedNames.push(venue.name);
             addedCount++;
+            // Verbose: Log each venue found
+            logVerbose(`  Found venue: ${venue.name} | Place ID: ${venue.id} | Location: (${venue.lat}, ${venue.lng}) | Address: ${venue.address} | Types: ${venue.types?.join(', ') || 'N/A'}`);
           }
         }
         
-        console.log(`   ✅ Found ${results.length} results (${addedCount} new venues)`);
+        // Terminal: Simple message
+        log(`   ✅ Found ${results.length} results (${addedCount} new venues)`);
         if (addedCount > 0 && addedNames.length <= 5) {
-          console.log(`   📝 Added: ${addedNames.join(', ')}`);
+          log(`   📝 Added: ${addedNames.join(', ')}`);
         } else if (addedCount > 0) {
-          console.log(`   📝 Added: ${addedNames.slice(0, 5).join(', ')} and ${addedCount - 5} more`);
+          log(`   📝 Added: ${addedNames.slice(0, 5).join(', ')} and ${addedCount - 5} more`);
         }
+        // File: Detailed summary
+        logVerbose(`  Query complete: Total results=${results.length} | New venues=${addedCount} | Area=${areaName} | Type=${venueType}`);
         successfulQueries++;
         
         await delay(1000);
       } catch (error) {
-        console.error(`   ❌ Error querying ${queryName}: ${error.message}`);
+        log(`   ❌ Error querying ${queryName}: ${error.message}`);
         failedQueries++;
       }
     }
   }
   
   // Log summary by area
-  console.log(`\n📊 New Venues by Area:`);
+  log(`\n📊 New Venues by Area:`);
   for (const [areaName, venues] of Object.entries(areaNewVenues)) {
     if (venues.length > 0) {
-      console.log(`   ${areaName}: Added ${venues.length} new venues`);
+      log(`   ${areaName}: Added ${venues.length} new venues`);
       // Log notable venues if found (sample first 3)
       if (venues.length > 0) {
         const sampleNames = venues.slice(0, 3).map(v => v.name);
-        console.log(`     Sample: ${sampleNames.join(', ')}${venues.length > 3 ? ` and ${venues.length - 3} more` : ''}`);
+        log(`     Sample: ${sampleNames.join(', ')}${venues.length > 3 ? ` and ${venues.length - 3} more` : ''}`);
       }
     } else {
-      console.log(`   ${areaName}: No new venues`);
+      log(`   ${areaName}: No new venues`);
     }
   }
   
@@ -303,7 +370,7 @@ async function seedVenuesExtended() {
   
   // Fetch website details for new venues missing websites
   if (newVenues.length > 0) {
-    console.log(`\n🌐 Fetching website details for new venues...\n`);
+    log(`\n🌐 Fetching website details for new venues...\n`);
     const venuesNeedingWebsites = newVenues.filter(v => !v.website || v.website.trim() === '');
     const totalNeedingWebsites = venuesNeedingWebsites.length;
     let detailsFetched = 0;
@@ -316,6 +383,9 @@ async function seedVenuesExtended() {
         const progress = `[${i + 1}/${totalNeedingWebsites}]`;
         
         try {
+          // Verbose: Log search details
+          logVerbose(`Searching website for: ${venue.name} | Place ID: ${venue.id} | Area: ${venue.area} | Location: (${venue.lat}, ${venue.lng}) | Address: ${venue.address || 'N/A'}`);
+          
           const details = await fetchPlaceDetails(venue.id);
           detailsFetched++;
           
@@ -327,13 +397,22 @@ async function seedVenuesExtended() {
               venue.address = details.formatted_address;
             }
             
-            console.log(`${progress} ✅ ${venue.name}: Found website`);
+            // Terminal: Simple message
+            log(`${progress} ✅ ${venue.name}: Found website`);
+            // File: Detailed message
+            logVerbose(`  -> Website found: ${details.website} | Updated address: ${venue.address} | Area: ${venue.area} | Coordinates: (${venue.lat}, ${venue.lng})`);
           } else {
-            console.log(`${progress} ⬜ ${venue.name}: No website available`);
+            // Terminal: Simple message
+            log(`${progress} ⬜ ${venue.name}: No website available`);
+            // File: Detailed message
+            logVerbose(`  -> Website not found | Searched Place ID: ${venue.id} | Area: ${venue.area} | Location: (${venue.lat}, ${venue.lng}) | Address: ${venue.address || 'N/A'}`);
           }
         } catch (error) {
           detailsErrors++;
-          console.log(`${progress} ❌ ${venue.name}: ${error.message}`);
+          // Terminal: Simple message
+          log(`${progress} ❌ ${venue.name}: ${error.message}`);
+          // File: Detailed message
+          logVerbose(`  -> Error fetching website | Place ID: ${venue.id} | Area: ${venue.area} | Location: (${venue.lat}, ${venue.lng}) | Error: ${error.message}`);
         }
         
         if (i < venuesNeedingWebsites.length - 1) {
@@ -342,42 +421,42 @@ async function seedVenuesExtended() {
         }
         
         if ((i + 1) % 10 === 0 || i === venuesNeedingWebsites.length - 1) {
-          console.log(`   📊 Progress: Fetched details for ${detailsFetched}/${i + 1} venues, found ${websitesFound} websites\n`);
+          log(`   📊 Progress: Fetched details for ${detailsFetched}/${i + 1} venues, found ${websitesFound} websites\n`);
         }
       }
       
-      console.log(`\n🌐 Website fetching complete:`);
-      console.log(`   ✅ Fetched details for ${detailsFetched}/${totalNeedingWebsites} venues`);
-      console.log(`   🌐 Found ${websitesFound} websites`);
-      console.log(`   ❌ Errors: ${detailsErrors}\n`);
+      log(`\n🌐 Website fetching complete:`);
+      log(`   ✅ Fetched details for ${detailsFetched}/${totalNeedingWebsites} venues`);
+      log(`   🌐 Found ${websitesFound} websites`);
+      log(`   ❌ Errors: ${detailsErrors}\n`);
     }
   }
   
   // Write to file
   try {
     fs.writeFileSync(outputFile, JSON.stringify(allVenues, null, 2), 'utf8');
-    console.log(`\n📝 Successfully wrote ${allVenues.length} total venues to ${path.resolve(outputFile)}`);
-    console.log(`   ✨ Added ${newVenues.length} new venues across ${AREAS_CONFIG.length} areas`);
+    log(`\n📝 Successfully wrote ${allVenues.length} total venues to ${path.resolve(outputFile)}`);
+    log(`   ✨ Added ${newVenues.length} new venues across ${AREAS_CONFIG.length} areas`);
     for (const areaConfig of AREAS_CONFIG) {
       const areaName = areaConfig.name;
       if (areaNewVenues[areaName] && areaNewVenues[areaName].length > 0) {
-        console.log(`      - ${areaConfig.displayName || areaName}: ${areaNewVenues[areaName].length} new venues`);
+        log(`      - ${areaConfig.displayName || areaName}: ${areaNewVenues[areaName].length} new venues`);
       }
     }
   } catch (error) {
-    console.error(`\n❌ Error writing to file: ${error.message}`);
+    log(`\n❌ Error writing to file: ${error.message}`);
     process.exit(1);
   }
   
   // Summary
-  console.log(`\n📊 Summary:`);
-  console.log(`   ✅ Successful queries: ${successfulQueries}/${totalQueries}`);
-  console.log(`   ❌ Failed queries: ${failedQueries}/${totalQueries}`);
-  console.log(`   🍺 Total venues: ${allVenues.length} (${existingVenues.length} existing + ${newVenues.length} new)`);
+  log(`\n📊 Summary:`);
+  log(`   ✅ Successful queries: ${successfulQueries}/${totalQueries}`);
+  log(`   ❌ Failed queries: ${failedQueries}/${totalQueries}`);
+  log(`   🍺 Total venues: ${allVenues.length} (${existingVenues.length} existing + ${newVenues.length} new)`);
   
   const venuesWithWebsites = allVenues.filter(v => v.website && v.website.trim() !== '').length;
   const websitePercentage = allVenues.length > 0 ? Math.round((venuesWithWebsites / allVenues.length) * 100) : 0;
-  console.log(`   🌐 Venues with websites: ${venuesWithWebsites}/${allVenues.length} (${websitePercentage}%)`);
+  log(`   🌐 Venues with websites: ${venuesWithWebsites}/${allVenues.length} (${websitePercentage}%)`);
   
   // Show breakdown by area (all areas)
   const areaCounts = {};
@@ -386,10 +465,10 @@ async function seedVenuesExtended() {
     areaCounts[area] = (areaCounts[area] || 0) + 1;
   }
   
-  console.log(`\n📍 Venues by area:`);
+  log(`\n📍 Venues by area:`);
   const sortedAreas = Object.entries(areaCounts).sort((a, b) => b[1] - a[1]);
   for (const [area, count] of sortedAreas) {
-    console.log(`   ${area}: ${count} venues`);
+    log(`   ${area}: ${count} venues`);
   }
   
   // Show breakdown by type (all areas, aggregated)
@@ -404,14 +483,14 @@ async function seedVenuesExtended() {
     }
   }
   
-  console.log(`\n🏢 Venues by type (all areas):`);
+  log(`\n🏢 Venues by type (all areas):`);
   const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
   for (const [type, count] of sortedTypes) {
-    console.log(`   ${type}: ${count} venues`);
+    log(`   ${type}: ${count} venues`);
   }
   
   // Show breakdown by area and type (detailed)
-  console.log(`\n📋 Detailed breakdown by area and type:`);
+  log(`\n📋 Detailed breakdown by area and type:`);
   for (const [area, count] of sortedAreas) {
     const areaVenues = allVenues.filter(v => (v.area || 'Unknown') === area);
     if (areaVenues.length > 0) {
@@ -427,21 +506,22 @@ async function seedVenuesExtended() {
       }
       
       if (Object.keys(areaTypeCounts).length > 0) {
-        console.log(`\n   ${area} (${count} total):`);
+        log(`\n   ${area} (${count} total):`);
         const sortedAreaTypes = Object.entries(areaTypeCounts).sort((a, b) => b[1] - a[1]);
         for (const [type, typeCount] of sortedAreaTypes) {
-          console.log(`     ${type}: ${typeCount}`);
+          log(`     ${type}: ${typeCount}`);
         }
       }
     }
   }
   
-  console.log(`\n✨ Venue seeding complete for all areas from areas.json!`);
+  log(`\n✨ Venue seeding complete for all areas from areas.json!`);
+  log(`Done! Log saved to logs/seed-venues.log`);
 }
 
 // Run the seeding
-console.log('🔑 Using API key:', GOOGLE_MAPS_API_KEY.substring(0, 10) + '...\n');
+log('🔑 Using API key: ' + GOOGLE_MAPS_API_KEY.substring(0, 10) + '...\n');
 seedVenuesExtended().catch((error) => {
-  console.error('❌ Fatal error during seeding:', error);
+  log('❌ Fatal error during seeding: ' + (error.message || error));
   process.exit(1);
 });

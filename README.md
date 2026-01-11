@@ -52,11 +52,168 @@ npm run dev
 
 5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-## Scripts
+## Initial Setup: Running Scripts in Sequence
+
+The project requires running scripts in a specific order to generate the necessary data files. Follow these steps sequentially:
+
+### Step 1: Create Areas Configuration
+
+**Script:** `scripts/create-areas.js`
+
+**What it does:**
+- Creates the `data/areas.json` file with area definitions
+- Defines 7 Charleston areas: Daniel Island, Mount Pleasant, Downtown Charleston, Sullivan's Island, North Charleston, West Ashley, and James Island
+- Each area includes center coordinates, radius, bounds, and description
+- This file is required by all subsequent scripts
+
+**Run:**
+```bash
+node scripts/create-areas.js
+```
+
+**Output:**
+- `data/areas.json` - Area configuration file used by the app and scripts
+
+---
+
+### Step 2: Seed Venues from Google Places
+
+**Script:** `scripts/seed-venues.js`
+
+**What it does:**
+- Fetches alcohol-serving venues from Google Places API for all areas defined in `areas.json`
+- Queries multiple venue types: bar, restaurant, brewery, night_club, wine_bar
+- Uses the area centers and radii from `areas.json` to search each area
+- Fetches website URLs from Google Places Details API
+- Deduplicates venues by place_id
+- Appends new venues to existing `venues.json` without overwriting (safe to run multiple times)
+
+**Requirements:**
+- `areas.json` must exist (created in Step 1)
+- `NEXT_PUBLIC_GOOGLE_MAPS_KEY` or `GOOGLE_PLACES_KEY` environment variable
+
+**Run:**
+```bash
+node scripts/seed-venues.js
+```
+
+**Expected Runtime:**
+- 10-30 minutes depending on number of areas and venues
+- Rate limiting: 1-2 seconds between API calls
+
+**Output:**
+- `data/venues.json` - All discovered venues with name, address, coordinates, website, types, and area assignment
+
+---
+
+### Step 3: Update Happy Hour Information (Optional)
+
+**Script:** `scripts/update-happy-hours.js`
+
+**What it does:**
+- Scrapes restaurant websites to discover and extract happy hour information
+- Detects multi-location/chain restaurant sites and finds location-specific pages
+- Discovers relevant subpages (menus, specials, happy hour pages) using 30+ keywords
+- Extracts happy hour text snippets with context
+- Creates or updates spots in `spots.json` with happy hour information
+- Generates `restaurants-submenus.json` inventory of discovered submenu URLs
+
+**Requirements:**
+- `venues.json` must exist (created in Step 2)
+- Venues with websites are processed
+- Optionally uses `GOOGLE_SEARCH_API_KEY` and `GOOGLE_SEARCH_ENGINE_ID` for fallback search (not required)
+
+**Run:**
+```bash
+node scripts/update-happy-hours.js
+```
+
+**Expected Runtime:**
+- 15-30 minutes for ~400 venues
+- Rate limiting: 1.5-2.5 seconds between requests (polite to servers)
+
+**Output:**
+- `data/spots.json` - Updated with happy hour spots (title, lat/lng, description with sources, activity: "Happy Hour")
+- `data/restaurants-submenus.json` - One-time inventory of all discovered submenu URLs per restaurant
+- `logs/update-happy-hours.log` - Detailed log file with timestamps
+
+**Note:** This script creates detailed logs in `logs/update-happy-hours.log` for debugging and monitoring.
+
+---
+
+### Step 4: Incremental Updates (Optional, Run Periodically)
+
+**Script:** `scripts/seed-incremental.js`
+
+**What it does:**
+- Designed to run nightly or on-demand for ongoing maintenance
+- Appends new venues from Google Places API (finds venues not already in `venues.json`)
+- Enriches missing website URLs using Google Text Search API
+- Generates CSV file for venues without websites for manual review
+- Safe to run multiple times (only adds new venues, doesn't overwrite)
+
+**Requirements:**
+- `areas.json` and `venues.json` must exist (created in Steps 1-2)
+- `NEXT_PUBLIC_GOOGLE_MAPS_KEY` or `GOOGLE_PLACES_KEY` environment variable
+
+**Run:**
+```bash
+node scripts/seed-incremental.js
+```
+
+**Output:**
+- `data/venues.json` - Updated with new venues and enriched website information
+- `data/venue-website-not-found.csv` - CSV file of venues without websites for manual review
+
+---
+
+### Quick Start Summary
+
+For a fresh setup, run these commands in order:
+
+```bash
+# Step 1: Create areas configuration
+node scripts/create-areas.js
+
+# Step 2: Seed venues (requires Google Maps API key)
+node scripts/seed-venues.js
+
+# Step 3: Update happy hours (optional, takes 15-30 minutes)
+node scripts/update-happy-hours.js
+
+# Step 4: Run development server
+npm run dev
+```
+
+## Scripts (Detailed Documentation)
+
+**Note:** For initial setup, follow the sequential steps above. This section provides detailed documentation for each script.
 
 ### Data Seeding Scripts
 
-#### 1. Seed Venues (`scripts/seed-venues.js`)
+#### 1. Create Areas (`scripts/create-areas.js`)
+
+**Purpose:** Initial setup script to create the areas configuration file.
+
+Creates `data/areas.json` with area definitions for all Charleston areas. This file must be created before running `seed-venues.js` or `seed-incremental.js`.
+
+**Usage:**
+```bash
+node scripts/create-areas.js
+```
+
+**Output:**
+- `data/areas.json` - Area configuration with center coordinates, radius, bounds, and descriptions for 7 Charleston areas
+
+**What it does:**
+- Defines 7 Charleston areas: Daniel Island, Mount Pleasant, Downtown Charleston, Sullivan's Island, North Charleston, West Ashley, and James Island
+- Each area includes center coordinates, radius in meters, bounding box coordinates, and description
+- Validates that Park Circle is not included in the areas list
+- Creates the `data/` directory if it doesn't exist
+
+---
+
+#### 2. Seed Venues (`scripts/seed-venues.js`)
 
 Fetches all alcohol-serving venues from Google Places API for Charleston areas.
 
@@ -84,7 +241,7 @@ node scripts/seed-venues.js
 
 ---
 
-#### 2. Update Happy Hours (`scripts/update-happy-hours.js`)
+#### 3. Update Happy Hours (`scripts/update-happy-hours.js`)
 
 Scrapes restaurant websites to discover and extract happy hour information.
 
@@ -160,7 +317,34 @@ The script provides detailed progress:
 
 ---
 
-#### 3. Align Spots to Google (`scripts/align-spots-to-google.js`)
+#### 4. Seed Incremental (`scripts/seed-incremental.js`)
+
+**Purpose:** Ongoing maintenance script to add new venues and enrich existing data.
+
+Designed to run periodically (nightly or on-demand) to keep venue data up-to-date.
+
+**Usage:**
+```bash
+node scripts/seed-incremental.js
+```
+
+**What it does:**
+- Appends new venues from Google Places API (finds venues not already in `venues.json`)
+- Enriches missing website URLs using Google Text Search API
+- Generates CSV file for venues without websites for manual review
+- Safe to run multiple times (only adds new venues, doesn't overwrite)
+
+**Requirements:**
+- `areas.json` and `venues.json` must exist (created in Steps 1-2)
+- `NEXT_PUBLIC_GOOGLE_MAPS_KEY` or `GOOGLE_PLACES_KEY` environment variable
+
+**Output:**
+- `data/venues.json` - Updated with new venues and enriched website information
+- `data/venue-website-not-found.csv` - CSV file of venues without websites for manual review
+
+---
+
+#### 5. Align Spots to Google (`scripts/align-spots-to-google.js`)
 
 One-time script to align existing curated spots to precise Google Maps locations.
 

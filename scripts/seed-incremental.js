@@ -12,6 +12,64 @@
 const fs = require('fs');
 const path = require('path');
 
+// Logging setup
+const logDir = path.join(__dirname, '..', 'logs');
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir, { recursive: true });
+}
+const logPath = path.join(logDir, 'seed-incremental.log');
+
+// Overwrite log file on each run
+fs.writeFileSync(logPath, '', 'utf8');
+
+/**
+ * Logger function: logs to console (with emojis) and file (without emojis, with timestamp)
+ */
+function log(message) {
+  // Log to console (with emojis/colors)
+  console.log(message);
+  
+  // Format timestamp as [YYYY-MM-DD HH:mm:ss]
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const timestamp = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}]`;
+  
+  // Strip emojis from message for file logging
+  // Emoji ranges: \u{1F300}-\u{1F5FF} (Misc Symbols), \u{1F600}-\u{1F64F} (Emoticons), 
+  // \u{1F680}-\u{1F6FF} (Transport), \u{2600}-\u{26FF} (Misc symbols), \u{2700}-\u{27BF} (Dingbats)
+  const messageWithoutEmojis = message.replace(/[\u{1F300}-\u{1F5FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+  
+  // Append to log file
+  fs.appendFileSync(logPath, `${timestamp} ${messageWithoutEmojis}\n`, 'utf8');
+}
+
+/**
+ * Verbose logger: writes detailed information to log file only (not to console)
+ * Use for --vvv level detailed logging
+ */
+function logVerbose(message) {
+  // Format timestamp as [YYYY-MM-DD HH:mm:ss]
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const timestamp = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}]`;
+  
+  // Strip emojis from message
+  const messageWithoutEmojis = message.replace(/[\u{1F300}-\u{1F5FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+  
+  // Append to log file (verbose details only in file)
+  fs.appendFileSync(logPath, `${timestamp} ${messageWithoutEmojis}\n`, 'utf8');
+}
+
 // Try to load dotenv if available
 try {
   require('dotenv').config();
@@ -27,7 +85,7 @@ try {
 // Google Maps API Key
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || process.env.GOOGLE_PLACES_KEY;
 if (!GOOGLE_MAPS_API_KEY) {
-  console.error('❌ Error: NEXT_PUBLIC_GOOGLE_MAPS_KEY or GOOGLE_PLACES_KEY must be set in .env');
+  log('❌ Error: NEXT_PUBLIC_GOOGLE_MAPS_KEY or GOOGLE_PLACES_KEY must be set in .env');
   process.exit(1);
 }
 
@@ -60,9 +118,9 @@ try {
     throw new Error('areas.json must contain an array of area objects');
   }
   
-  console.log(`✅ Loaded ${AREAS_CONFIG.length} areas from ${path.resolve(areasConfigFile)}`);
+  log(`✅ Loaded ${AREAS_CONFIG.length} areas from ${path.resolve(areasConfigFile)}`);
 } catch (error) {
-  console.error(`❌ Error loading areas.json: ${error.message}`);
+  log(`❌ Error loading areas.json: ${error.message}`);
   process.exit(1);
 }
 
@@ -135,7 +193,7 @@ async function fetchAllPages(areaName, venueType, lat, lng, radius, maxPages = 1
     
     return allResults;
   } catch (error) {
-    console.error(`   ⚠️  Error fetching pages: ${error.message}`);
+    log(`   ⚠️  Error fetching pages: ${error.message}`);
     return allResults;
   }
 }
@@ -194,7 +252,7 @@ async function searchWebsite(name, address) {
     
     return null;
   } catch (error) {
-    console.error(`   ⚠️  Error searching website for ${name}: ${error.message}`);
+    log(`   ⚠️  Error searching website for ${name}: ${error.message}`);
     return null;
   }
 }
@@ -217,12 +275,12 @@ function writeMissingWebsitesCSV(venues) {
   });
   
   fs.writeFileSync(missingWebsitesFile, csvLines.join('\n'), 'utf8');
-  console.log(`📄 Wrote ${venues.length} venues with missing websites to ${path.resolve(missingWebsitesFile)}`);
+  log(`📄 Wrote ${venues.length} venues with missing websites to ${path.resolve(missingWebsitesFile)}`);
 }
 
 // Main incremental seeding function
 async function seedIncremental() {
-  console.log('🔄 Starting incremental venue seeding and website enrichment...\n');
+  log('🔄 Starting incremental venue seeding and website enrichment...\n');
   
   // Load existing venues
   let existingVenues = [];
@@ -237,13 +295,13 @@ async function seedIncremental() {
           seenPlaceIds.add(v.id);
         }
       });
-      console.log(`📖 Loaded ${existingVenues.length} existing venues from ${path.resolve(venuesFile)}`);
+      log(`📖 Loaded ${existingVenues.length} existing venues from ${path.resolve(venuesFile)}`);
     } catch (error) {
-      console.error(`⚠️  Error loading existing venues: ${error.message}`);
-      console.log(`   (starting fresh)\n`);
+      log(`⚠️  Error loading existing venues: ${error.message}`);
+      log(`   (starting fresh)\n`);
     }
   } else {
-    console.log(`📄 No existing venues.json found, creating new file\n`);
+    log(`📄 No existing venues.json found, creating new file\n`);
   }
   
   // Ensure data directory exists
@@ -259,18 +317,21 @@ async function seedIncremental() {
   let websitesEnriched = 0;
   
   // Process each area from areas.json
-  console.log(`📍 Processing ${AREAS_CONFIG.length} areas:\n`);
+  log(`📍 Processing ${AREAS_CONFIG.length} areas:\n`);
   
   for (const areaConfig of AREAS_CONFIG) {
     const areaName = areaConfig.name;
-    console.log(`\n📍 Processing ${areaConfig.displayName || areaName}...`);
+    log(`\n📍 Processing ${areaConfig.displayName || areaName}...`);
     
     for (const venueType of VENUE_TYPES) {
       totalQueries++;
       const queryName = `${areaName} (${venueType})`;
       
       try {
-        console.log(`🔍 Querying ${queryName}...`);
+        // Terminal: Simple message
+        log(`🔍 Querying ${queryName}...`);
+        // File: Detailed query information
+        logVerbose(`Query details: Area=${areaName} | Type=${venueType} | Center=(${areaConfig.center.lat}, ${areaConfig.center.lng}) | Radius=${areaConfig.radiusMeters}m`);
         
         const results = await fetchAllPages(
           areaName,
@@ -293,29 +354,35 @@ async function seedIncremental() {
           newVenues.push(venue);
           addedCount++;
           
+          // Verbose: Log each venue found
+          logVerbose(`  Found venue: ${venue.name} | Place ID: ${venue.id} | Location: (${venue.lat}, ${venue.lng}) | Address: ${venue.address} | Website: ${venue.website || 'N/A'} | Types: ${venue.types?.join(', ') || 'N/A'}`);
+          
           // Track venues needing website
           if (!venue.website || venue.website.trim() === '') {
             venuesNeedingWebsite.push(venue);
           }
         }
         
-        console.log(`   ✅ Found ${results.length} results (${addedCount} new venues)`);
+        // Terminal: Simple message
+        log(`   ✅ Found ${results.length} results (${addedCount} new venues)`);
+        // File: Detailed summary
+        logVerbose(`  Query complete: Total results=${results.length} | New venues=${addedCount} | Area=${areaName} | Type=${venueType}`);
         successfulQueries++;
         
         await delay(1000); // Delay between queries
       } catch (error) {
-        console.error(`   ❌ Error querying ${queryName}: ${error.message}`);
+        log(`   ❌ Error querying ${queryName}: ${error.message}`);
         failedQueries++;
       }
     }
   }
   
-  console.log(`\n📊 Processed ${AREAS_CONFIG.length} areas`);
-  console.log(`   ✅ Added ${newVenues.length} new venues`);
+  log(`\n📊 Processed ${AREAS_CONFIG.length} areas`);
+  log(`   ✅ Added ${newVenues.length} new venues`);
   
   // Enrich missing websites for new venues
   if (venuesNeedingWebsite.length > 0) {
-    console.log(`\n🌐 Enriching missing websites for ${venuesNeedingWebsite.length} venues...\n`);
+    log(`\n🌐 Enriching missing websites for ${venuesNeedingWebsite.length} venues...\n`);
     
     for (let i = 0; i < venuesNeedingWebsite.length; i++) {
       const venue = venuesNeedingWebsite[i];
@@ -327,7 +394,7 @@ async function seedIncremental() {
         if (details.website) {
           venue.website = details.website;
           websitesEnriched++;
-          console.log(`${progress} ✅ ${venue.name}: Found website via Place Details`);
+          log(`${progress} ✅ ${venue.name}: Found website via Place Details`);
         } else {
           // Try Text Search API
           await delay(2000); // 2s delay between searches
@@ -335,13 +402,13 @@ async function seedIncremental() {
           if (website) {
             venue.website = website;
             websitesEnriched++;
-            console.log(`${progress} ✅ ${venue.name}: Found website via Text Search`);
+            log(`${progress} ✅ ${venue.name}: Found website via Text Search`);
           } else {
-            console.log(`${progress} ⬜ ${venue.name}: No website found`);
+            log(`${progress} ⬜ ${venue.name}: No website found`);
           }
         }
       } catch (error) {
-        console.log(`${progress} ❌ ${venue.name}: ${error.message}`);
+        log(`${progress} ❌ ${venue.name}: ${error.message}`);
       }
       
       // Delay between venue processing
@@ -350,8 +417,8 @@ async function seedIncremental() {
       }
     }
     
-    console.log(`\n🌐 Website enrichment complete:`);
-    console.log(`   ✅ Enriched ${websitesEnriched} missing websites`);
+    log(`\n🌐 Website enrichment complete:`);
+    log(`   ✅ Enriched ${websitesEnriched} missing websites`);
   }
   
   // Find remaining venues with missing websites (after enrichment)
@@ -370,9 +437,9 @@ async function seedIncremental() {
   // Write CSV for venues with missing websites
   if (stillMissingWebsites.length > 0) {
     writeMissingWebsitesCSV(stillMissingWebsites);
-    console.log(`📄 Wrote ${stillMissingWebsites.length} venues with missing websites to CSV for manual review`);
+    log(`📄 Wrote ${stillMissingWebsites.length} venues with missing websites to CSV for manual review`);
   } else {
-    console.log(`✅ All venues have websites - no CSV file needed`);
+    log(`✅ All venues have websites - no CSV file needed`);
   }
   
   // Combine existing and new venues, deduplicate by id
@@ -405,36 +472,37 @@ async function seedIncremental() {
   // Write to file
   try {
     fs.writeFileSync(venuesFile, JSON.stringify(allVenues, null, 2), 'utf8');
-    console.log(`\n📝 Successfully wrote ${allVenues.length} total venues to ${path.resolve(venuesFile)}`);
-    console.log(`   ✨ Added ${newVenues.length} new venues`);
-    console.log(`   🌐 Enriched ${websitesEnriched} missing websites`);
+    log(`\n📝 Successfully wrote ${allVenues.length} total venues to ${path.resolve(venuesFile)}`);
+    log(`   ✨ Added ${newVenues.length} new venues`);
+    log(`   🌐 Enriched ${websitesEnriched} missing websites`);
   } catch (error) {
-    console.error(`\n❌ Error writing to file: ${error.message}`);
+    log(`\n❌ Error writing to file: ${error.message}`);
     process.exit(1);
   }
   
   // Summary
-  console.log(`\n📊 Summary:`);
-  console.log(`   ✅ Processed ${AREAS_CONFIG.length} areas`);
-  console.log(`   ✅ Added ${newVenues.length} new venues`);
-  console.log(`   ✅ Enriched ${websitesEnriched} missing websites`);
+  log(`\n📊 Summary:`);
+  log(`   ✅ Processed ${AREAS_CONFIG.length} areas`);
+  log(`   ✅ Added ${newVenues.length} new venues`);
+  log(`   ✅ Enriched ${websitesEnriched} missing websites`);
   if (stillMissingWebsites.length > 0) {
-    console.log(`   📄 Wrote ${stillMissingWebsites.length} missing to CSV for manual review`);
+    log(`   📄 Wrote ${stillMissingWebsites.length} missing to CSV for manual review`);
   }
-  console.log(`   ✅ Successful queries: ${successfulQueries}/${totalQueries}`);
-  console.log(`   ❌ Failed queries: ${failedQueries}/${totalQueries}`);
-  console.log(`   🍺 Total venues: ${allVenues.length} (${existingVenues.length} existing + ${newVenues.length} new)`);
+  log(`   ✅ Successful queries: ${successfulQueries}/${totalQueries}`);
+  log(`   ❌ Failed queries: ${failedQueries}/${totalQueries}`);
+  log(`   🍺 Total venues: ${allVenues.length} (${existingVenues.length} existing + ${newVenues.length} new)`);
   
   const venuesWithWebsites = allVenues.filter(v => v.website && v.website.trim() !== '').length;
   const websitePercentage = allVenues.length > 0 ? Math.round((venuesWithWebsites / allVenues.length) * 100) : 0;
-  console.log(`   🌐 Venues with websites: ${venuesWithWebsites}/${allVenues.length} (${websitePercentage}%)`);
+  log(`   🌐 Venues with websites: ${venuesWithWebsites}/${allVenues.length} (${websitePercentage}%)`);
   
-  console.log(`\n✨ Incremental seeding complete!`);
+  log(`\n✨ Incremental seeding complete!`);
+  log(`Done! Log saved to logs/seed-incremental.log`);
 }
 
 // Run the seeding
-console.log('🔑 Using API key:', GOOGLE_MAPS_API_KEY.substring(0, 10) + '...\n');
+log('🔑 Using API key: ' + GOOGLE_MAPS_API_KEY.substring(0, 10) + '...\n');
 seedIncremental().catch((error) => {
-  console.error('❌ Fatal error during seeding:', error);
+  log('❌ Fatal error during seeding: ' + (error.message || error));
   process.exit(1);
 });

@@ -3,6 +3,64 @@ const path = require('path');
 const cheerio = require('cheerio');
 const { URL } = require('url');
 
+// Logging setup
+const logDir = path.join(__dirname, '..', 'logs');
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir, { recursive: true });
+}
+const logPath = path.join(logDir, 'update-happy-hours.log');
+
+// Overwrite log file on each run
+fs.writeFileSync(logPath, '', 'utf8');
+
+/**
+ * Logger function: logs to console (with emojis) and file (without emojis, with timestamp)
+ */
+function log(message) {
+  // Log to console (with emojis/colors)
+  console.log(message);
+  
+  // Format timestamp as [YYYY-MM-DD HH:mm:ss]
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const timestamp = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}]`;
+  
+  // Strip emojis from message for file logging
+  // Emoji ranges: \u{1F300}-\u{1F5FF} (Misc Symbols), \u{1F600}-\u{1F64F} (Emoticons), 
+  // \u{1F680}-\u{1F6FF} (Transport), \u{2600}-\u{26FF} (Misc symbols), \u{2700}-\u{27BF} (Dingbats)
+  const messageWithoutEmojis = message.replace(/[\u{1F300}-\u{1F5FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+  
+  // Append to log file
+  fs.appendFileSync(logPath, `${timestamp} ${messageWithoutEmojis}\n`, 'utf8');
+}
+
+/**
+ * Verbose logger: writes detailed information to log file only (not to console)
+ * Use for --vvv level detailed logging
+ */
+function logVerbose(message) {
+  // Format timestamp as [YYYY-MM-DD HH:mm:ss]
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const timestamp = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}]`;
+  
+  // Strip emojis from message
+  const messageWithoutEmojis = message.replace(/[\u{1F300}-\u{1F5FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+  
+  // Append to log file (verbose details only in file)
+  fs.appendFileSync(logPath, `${timestamp} ${messageWithoutEmojis}\n`, 'utf8');
+}
+
 // Use built-in fetch (Node 18+) - redirect: 'follow' is the default behavior
 const fetch = globalThis.fetch || global.fetch;
 if (typeof fetch !== 'function') {
@@ -152,29 +210,68 @@ function detectMultiLocation(html, baseUrl) {
 }
 
 /**
+ * Generate area name variations including close matches
+ */
+function generateAreaVariations(areaName) {
+  if (!areaName) return [];
+  
+  const areaLower = areaName.toLowerCase().trim();
+  const variations = new Set();
+  
+  // Add exact match first (highest priority)
+  variations.add(areaLower);
+  
+  // Standard variations
+  variations.add(areaLower.replace(/\s+/g, '-'));
+  variations.add(areaLower.replace(/\s+/g, ''));
+  variations.add(areaLower.replace(/'/g, ''));
+  
+  // Close matches for common patterns
+  // "north charleston" -> "n charleston", "n. charleston", "nc", "n charleston"
+  if (areaLower.includes('north charleston')) {
+    variations.add('north charleston');
+    variations.add('n charleston');
+    variations.add('n. charleston');
+    variations.add('nc');
+    variations.add('northcharleston');
+    variations.add('n-charleston');
+  }
+  // "mount pleasant" -> "mt pleasant", "mt. pleasant", "mountpleasant"
+  if (areaLower.includes('mount pleasant')) {
+    variations.add('mount pleasant');
+    variations.add('mt pleasant');
+    variations.add('mt. pleasant');
+    variations.add('mountpleasant');
+    variations.add('mt-pleasant');
+  }
+  // "daniel island" -> "daniel island", "danielisland"
+  if (areaLower.includes('daniel island')) {
+    variations.add('daniel island');
+    variations.add('danielisland');
+    variations.add('daniel-island');
+  }
+  
+  return Array.from(variations);
+}
+
+/**
  * Find local page links for multi-location sites
+ * Prioritizes exact venue.area matches over other areas
  */
 function findLocalPageLinks(html, baseUrl, venueArea) {
   const $ = cheerio.load(html);
-  const areaLower = (venueArea || '').toLowerCase();
+  const areaLower = (venueArea || '').toLowerCase().trim();
   const links = [];
   
-  // Normalize area name for matching
-  const areaVariations = [];
-  if (areaLower) {
-    areaVariations.push(areaLower);
-    areaVariations.push(areaLower.replace(/\s+/g, '-'));
-    areaVariations.push(areaLower.replace(/\s+/g, ''));
-    areaVariations.push(areaLower.replace(/'/g, ''));
-  }
+  // Generate variations for the venue's specific area (highest priority)
+  const primaryAreaVariations = generateAreaVariations(venueArea);
   
-  // Also check all Charleston areas
+  // Generate variations for other Charleston areas (lower priority)
+  const otherAreaVariations = [];
   CHARLESTON_AREAS.forEach(area => {
-    const areaLower = area.toLowerCase();
-    areaVariations.push(areaLower);
-    areaVariations.push(areaLower.replace(/\s+/g, '-'));
-    areaVariations.push(areaLower.replace(/\s+/g, ''));
-    areaVariations.push(areaLower.replace(/'/g, ''));
+    if (area.toLowerCase() !== areaLower) {
+      otherAreaVariations.push(...generateAreaVariations(area));
+    }
   });
   
   $('a[href]').each((i, elem) => {
@@ -184,30 +281,79 @@ function findLocalPageLinks(html, baseUrl, venueArea) {
     
     const hrefLower = href.toLowerCase();
     let score = 0;
+    let matchedArea = null;
+    let isExactMatch = false;
     
-    // Score based on area match
-    areaVariations.forEach((variation, index) => {
+    // First check primary area (venue.area) - highest priority
+    primaryAreaVariations.forEach((variation, index) => {
       // Exact match in link text (highest score)
       if (linkText.includes(variation)) {
-        score = Math.max(score, 100 - index);
+        const newScore = 1000 - index; // Much higher score for primary area
+        const isExact = linkText === variation || 
+                       linkText.includes(' ' + variation + ' ') || 
+                       linkText.startsWith(variation + ' ') || 
+                       linkText.endsWith(' ' + variation) ||
+                       linkText.startsWith(variation + '-') ||
+                       linkText.endsWith('-' + variation);
+        if (newScore > score) {
+          score = newScore;
+          matchedArea = venueArea;
+          isExactMatch = isExact || isExactMatch;
+        }
       }
       // Match in URL
       if (hrefLower.includes(variation)) {
-        score = Math.max(score, 50 - index);
+        const newScore = 500 - index; // Higher score for primary area URL matches
+        if (newScore > score) {
+          score = newScore;
+          matchedArea = venueArea;
+        }
       }
     });
+    
+    // Then check other Charleston areas (lower priority, but still valid)
+    if (score === 0) {
+      otherAreaVariations.forEach((variation, index) => {
+        if (linkText.includes(variation)) {
+          const newScore = 100 - index; // Lower score for other areas
+          if (newScore > score) {
+            score = newScore;
+            matchedArea = variation;
+          }
+        }
+        if (hrefLower.includes(variation)) {
+          const newScore = 50 - index;
+          if (newScore > score) {
+            score = newScore;
+            matchedArea = variation;
+          }
+        }
+      });
+    }
     
     if (score > 0) {
       const resolvedUrl = resolveUrl(href, baseUrl);
       if (resolvedUrl) {
-        links.push({ url: resolvedUrl, score, text: linkText });
+        links.push({ 
+          url: resolvedUrl, 
+          score, 
+          text: linkText,
+          matchedArea: matchedArea || 'unknown',
+          isExactMatch
+        });
       }
     }
   });
   
   // Sort by score (highest first) and limit
-  links.sort((a, b) => b.score - a.score);
-  return links.slice(0, MAX_LOCAL_LINKS).map(l => l.url);
+  links.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    // If scores are equal, prefer exact matches
+    if (a.isExactMatch !== b.isExactMatch) return b.isExactMatch - a.isExactMatch;
+    return 0;
+  });
+  
+  return links.slice(0, MAX_LOCAL_LINKS);
 }
 
 /**
@@ -280,6 +426,70 @@ async function fetchUrl(url, retries = 2) {
 }
 
 /**
+ * Google search fallback for finding local pages
+ * Uses Google Custom Search API (requires GOOGLE_SEARCH_API_KEY and GOOGLE_SEARCH_ENGINE_ID)
+ * Falls back gracefully if API keys are not available
+ */
+async function googleSearchFallback(venueName, venueArea) {
+  const GOOGLE_SEARCH_API_KEY = process.env.GOOGLE_SEARCH_API_KEY;
+  const GOOGLE_SEARCH_ENGINE_ID = process.env.GOOGLE_SEARCH_ENGINE_ID;
+  
+  if (!GOOGLE_SEARCH_API_KEY || !GOOGLE_SEARCH_ENGINE_ID) {
+    // API keys not configured - skip search
+    return null;
+  }
+  
+  try {
+    const query = `${venueName} ${venueArea} happy hour site`;
+    const encodedQuery = encodeURIComponent(query);
+    const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_SEARCH_API_KEY}&cx=${GOOGLE_SEARCH_ENGINE_ID}&q=${encodedQuery}&num=3`;
+    
+    const response = await fetch(url);
+    if (!response.ok) {
+      return null;
+    }
+    
+    const data = await response.json();
+    
+    if (data.items && data.items.length > 0) {
+      // Filter results to menu/specials/happy hour pages
+      for (const item of data.items) {
+        const link = item.link;
+        const title = (item.title || '').toLowerCase();
+        const snippet = (item.snippet || '').toLowerCase();
+        const linkLower = link.toLowerCase();
+        
+        // Check if result looks like a menu/specials page
+        const isMenuPage = linkLower.includes('menu') || 
+                          linkLower.includes('specials') || 
+                          linkLower.includes('happy-hour') ||
+                          linkLower.includes('happyhour') ||
+                          title.includes('menu') ||
+                          title.includes('specials') ||
+                          title.includes('happy hour') ||
+                          snippet.includes('happy hour') ||
+                          snippet.includes('menu') ||
+                          snippet.includes('specials');
+        
+        if (isMenuPage) {
+          log(`  🔍 Google search fallback found potential page: ${link}`);
+          return link;
+        }
+      }
+      
+      // If no menu page found, return first result anyway
+      log(`  🔍 Google search fallback found page (not menu-specific): ${data.items[0].link}`);
+      return data.items[0].link;
+    }
+    
+    return null;
+  } catch (error) {
+    log(`  ⚠️  Google search fallback failed: ${error.message}`);
+    return null;
+  }
+}
+
+/**
  * Extract happy hour information from text
  */
 function extractHappyHourInfo(text, sourceUrl) {
@@ -337,11 +547,16 @@ function extractHappyHourInfo(text, sourceUrl) {
  * Process a single venue
  */
 async function processVenue(venue, submenusInventory) {
+  // Verbose: Log venue processing start
+  logVerbose(`Processing venue: ${venue.name} | Website: ${venue.website || 'N/A'} | Area: ${venue.area || 'N/A'} | Location: (${venue.lat || 'N/A'}, ${venue.lng || 'N/A'}) | Address: ${venue.address || 'N/A'}`);
+  
   if (!venue.website) {
+    logVerbose(`  -> Skipped: No website available`);
     return { venue: venue.name, matches: [], subpages: [], skipped: 'no website' };
   }
   
   if (!isAlcoholVenue(venue)) {
+    logVerbose(`  -> Skipped: Not an alcohol venue | Types: ${venue.types?.join(', ') || 'N/A'}`);
     return { venue: venue.name, matches: [], subpages: [], skipped: 'not alcohol venue' };
   }
   
@@ -349,7 +564,9 @@ async function processVenue(venue, submenusInventory) {
   
   try {
     // Fetch homepage
+    logVerbose(`  -> Fetching homepage: ${venue.website}`);
     const homepageHtml = await fetchUrl(venue.website);
+    logVerbose(`  -> Homepage fetched successfully | Size: ${homepageHtml.length} bytes`);
     const isMultiLocation = detectMultiLocation(homepageHtml, venue.website);
     
     let contentHtml = homepageHtml;
@@ -358,34 +575,78 @@ async function processVenue(venue, submenusInventory) {
     
     // If multi-location detected, try to find local page
     if (isMultiLocation) {
-      console.log(`  🔍 Found multi-location site for ${venue.name}`);
+      log(`  🔍 Chain detection: Multi-location site detected for ${venue.name}`);
+      if (venue.area) {
+        log(`  📍 Searching for local page matching area: ${venue.area}`);
+      }
+      
       const localPageLinks = findLocalPageLinks(homepageHtml, venue.website, venue.area);
       
       if (localPageLinks.length > 0) {
-        console.log(`  📍 Found ${localPageLinks.length} potential local page(s)`);
+        log(`  📍 Found ${localPageLinks.length} potential local page(s):`);
+        localPageLinks.forEach((link, index) => {
+          log(`    ${index + 1}. ${link.url} (score: ${link.score}, area: ${link.matchedArea}, exact: ${link.isExactMatch})`);
+        });
         
         // Try each local page link until one succeeds
-        for (const localPageUrl of localPageLinks) {
+        for (const linkInfo of localPageLinks) {
+          const localPageUrl = linkInfo.url;
           try {
             const localHtml = await fetchUrl(localPageUrl);
             contentHtml = localHtml;
             contentUrl = localPageUrl;
             localPageUsed = true;
-            console.log(`  ✅ Using local page: ${localPageUrl}`);
+            log(`  ✅ Matched local page: ${localPageUrl} for area ${linkInfo.matchedArea}`);
             break;
           } catch (error) {
-            console.log(`  ⚠️  Failed to fetch local page ${localPageUrl}: ${error.message}`);
+            log(`  ⚠️  Failed to fetch local page ${localPageUrl}: ${error.message}`);
             // Continue to next link
           }
         }
+        
+        // If none of the local pages worked, try Google search fallback
+        if (!localPageUsed) {
+          log(`  ⚠️  All local page links failed, trying Google search fallback...`);
+          const searchResult = await googleSearchFallback(venue.name, venue.area);
+          if (searchResult) {
+            try {
+              const searchHtml = await fetchUrl(searchResult);
+              contentHtml = searchHtml;
+              contentUrl = searchResult;
+              localPageUsed = true;
+              log(`  ✅ Using Google search result: ${searchResult}`);
+            } catch (error) {
+              log(`  ⚠️  Failed to fetch Google search result: ${error.message}`);
+            }
+          }
+        }
       } else {
-        console.log(`  ℹ️  No local page links found, using homepage`);
+        // No local page links found - try Google search fallback
+        log(`  ⚠️  No local page for ${venue.area || 'venue area'} on chain site ${venue.name}`);
+        log(`  🔍 Trying Google search fallback...`);
+        logVerbose(`  -> No local page links found | Venue: ${venue.name} | Area: ${venue.area || 'N/A'} | Website: ${venue.website} | Attempting Google search fallback`);
+        const searchResult = await googleSearchFallback(venue.name, venue.area);
+        if (searchResult) {
+          logVerbose(`  -> Google search fallback successful | Result URL: ${searchResult} | Venue: ${venue.name} | Area: ${venue.area || 'N/A'}`);
+          try {
+            const searchHtml = await fetchUrl(searchResult);
+            contentHtml = searchHtml;
+            contentUrl = searchResult;
+            localPageUsed = true;
+            log(`  ✅ Using Google search result: ${searchResult}`);
+          } catch (error) {
+            log(`  ⚠️  Failed to fetch Google search result: ${error.message}`);
+            log(`  ℹ️  Falling back to homepage`);
+          }
+        } else {
+          log(`  ℹ️  Google search fallback unavailable or no results, using homepage`);
+        }
       }
     }
     
     // Extract subpage links from the content page (homepage or local page)
     const subpageUrls = findRelevantSubpageLinks(contentHtml, contentUrl);
-    console.log(`  🔗 Discovered ${subpageUrls.length} submenu(s)`);
+    log(`  🔗 Discovered ${subpageUrls.length} submenu(s)`);
     
     // Add to inventory
     if (subpageUrls.length > 0) {
@@ -408,7 +669,7 @@ async function processVenue(venue, submenusInventory) {
         // Rate limiting between subpages
         await new Promise(resolve => setTimeout(resolve, getRandomDelay()));
       } catch (error) {
-        console.error(`  ❌ Failed to fetch subpage ${subpageUrl}: ${error.message}`);
+        log(`  ❌ Failed to fetch subpage ${subpageUrl}: ${error.message}`);
       }
     }
     
@@ -439,7 +700,17 @@ async function processVenue(venue, submenusInventory) {
       }
     });
     
-    console.log(`  🍹 Found ${uniqueMatches.length} happy hour snippet(s)`);
+    // Terminal: Simple message
+    log(`  🍹 Found ${uniqueMatches.length} happy hour snippet(s)`);
+    // File: Detailed message
+    if (uniqueMatches.length > 0) {
+      logVerbose(`  -> Happy hour matches found: ${uniqueMatches.length} unique snippet(s)`);
+      uniqueMatches.forEach((match, index) => {
+        logVerbose(`    Match ${index + 1}: Source="${match.source}" | Text="${match.text.substring(0, 200)}${match.text.length > 200 ? '...' : ''}"`);
+      });
+    } else {
+      logVerbose(`  -> No happy hour matches found | Content URL: ${contentUrl} | Subpages processed: ${subpageTexts.length} | Total text sources: ${allTexts.length}`);
+    }
     
     return {
       venue: venue.name,
@@ -449,7 +720,7 @@ async function processVenue(venue, submenusInventory) {
       localPageUsed
     };
   } catch (error) {
-    console.error(`  ❌ Error processing ${venue.name}: ${error.message}`);
+    log(`  ❌ Error processing ${venue.name}: ${error.message}`);
     return { venue: venue.name, matches: [], subpages: [], error: error.message };
   }
 }
@@ -473,29 +744,29 @@ function formatDescription(matches) {
  * Main function
  */
 async function main() {
-  console.log('🍺 Starting Happy Hour Update Agent...\n');
+  log('🍺 Starting Happy Hour Update Agent...\n');
   
   // Log paths
-  console.log(`📁 Project root: ${path.resolve(__dirname, '..')}`);
-  console.log(`📁 Data directory: ${path.resolve(path.dirname(VENUES_PATH))}`);
-  console.log(`📄 Venues file: ${path.resolve(VENUES_PATH)}`);
-  console.log(`📄 Spots file: ${path.resolve(SPOTS_PATH)}`);
-  console.log(`📄 Submenus inventory: ${path.resolve(SUBMENUS_INVENTORY_PATH)}\n`);
+  log(`📁 Project root: ${path.resolve(__dirname, '..')}`);
+  log(`📁 Data directory: ${path.resolve(path.dirname(VENUES_PATH))}`);
+  log(`📄 Venues file: ${path.resolve(VENUES_PATH)}`);
+  log(`📄 Spots file: ${path.resolve(SPOTS_PATH)}`);
+  log(`📄 Submenus inventory: ${path.resolve(SUBMENUS_INVENTORY_PATH)}\n`);
   
   // Load venues
   const venues = JSON.parse(fs.readFileSync(VENUES_PATH, 'utf8'));
-  console.log(`📖 Loaded ${venues.length} venues from ${path.resolve(VENUES_PATH)}`);
+  log(`📖 Loaded ${venues.length} venues from ${path.resolve(VENUES_PATH)}`);
   
   // Load existing spots or create empty array
   let spots = [];
   if (fs.existsSync(SPOTS_PATH)) {
     spots = JSON.parse(fs.readFileSync(SPOTS_PATH, 'utf8'));
-    console.log(`📖 Loaded ${spots.length} existing spots`);
+    log(`📖 Loaded ${spots.length} existing spots`);
   }
   
   // Filter venues with websites and alcohol types
   const venuesToProcess = venues.filter(v => v.website && isAlcoholVenue(v));
-  console.log(`🌐 Found ${venuesToProcess.length} venues with websites\n`);
+  log(`🌐 Found ${venuesToProcess.length} venues with websites\n`);
   
   // Submenus inventory (one-time collection)
   const submenusInventory = [];
@@ -507,18 +778,21 @@ async function main() {
   let totalSubmenus = 0;
   
   for (const venue of venuesToProcess) {
-    console.log(`\n[${processed + 1}/${venuesToProcess.length}] Processing: ${venue.name}`);
-    console.log(`  🌐 ${venue.website}`);
+    // Terminal: Simple message
+    log(`\n[${processed + 1}/${venuesToProcess.length}] Processing: ${venue.name}`);
+    log(`  🌐 ${venue.website}`);
     if (venue.area) {
-      console.log(`  📍 Area: ${venue.area}`);
+      log(`  📍 Area: ${venue.area}`);
     }
+    // File: Detailed message
+    logVerbose(`Processing venue [${processed + 1}/${venuesToProcess.length}]: ${venue.name} | Website: ${venue.website} | Area: ${venue.area || 'N/A'} | Location: (${venue.lat || 'N/A'}, ${venue.lng || 'N/A'}) | Address: ${venue.address || 'N/A'}`);
     
     const result = await processVenue(venue, submenusInventory);
     
     if (result.skipped) {
-      console.log(`  ⏭️  Skipped: ${result.skipped}`);
+      log(`  ⏭️  Skipped: ${result.skipped}`);
     } else if (result.error) {
-      console.log(`  ❌ Error: ${result.error}`);
+      log(`  ❌ Error: ${result.error}`);
     } else {
       const matchCount = result.matches.length;
       const subpageCount = result.subpages.length;
@@ -533,7 +807,7 @@ async function main() {
       
       totalSubmenus += subpageCount;
       
-      console.log(`  ✅ Scanned: ${matchCount} happy hour snippet(s) from ${subpageCount} subpage(s)`);
+      log(`  ✅ Scanned: ${matchCount} happy hour snippet(s) from ${subpageCount} subpage(s)`);
       
       if (matchCount > 0) {
         // Find existing spot or create new one
@@ -551,7 +825,7 @@ async function main() {
             activity: 'Happy Hour'
           });
           found++;
-          console.log(`  ✨ Created new spot`);
+          log(`  ✨ Created new spot`);
         } else {
           // Update existing spot - append new sources
           const existing = spots[spotIndex];
@@ -565,7 +839,7 @@ async function main() {
           if (!spots[spotIndex].lat) spots[spotIndex].lat = venue.lat;
           if (!spots[spotIndex].lng) spots[spotIndex].lng = venue.lng;
           found++;
-          console.log(`  🔄 Updated existing spot`);
+          log(`  🔄 Updated existing spot`);
         }
       }
     }
@@ -580,28 +854,29 @@ async function main() {
   }
   
   // Save spots
-  console.log(`\n\n💾 Saving ${spots.length} spots to ${path.resolve(SPOTS_PATH)}...`);
+  log(`\n\n💾 Saving ${spots.length} spots to ${path.resolve(SPOTS_PATH)}...`);
   fs.writeFileSync(SPOTS_PATH, JSON.stringify(spots, null, 2), 'utf8');
-  console.log(`✅ Spots saved`);
+  log(`✅ Spots saved`);
   
   // Save submenus inventory (one-time)
-  console.log(`\n💾 Writing submenus inventory to ${path.resolve(SUBMENUS_INVENTORY_PATH)}...`);
+  log(`\n💾 Writing submenus inventory to ${path.resolve(SUBMENUS_INVENTORY_PATH)}...`);
   fs.writeFileSync(SUBMENUS_INVENTORY_PATH, JSON.stringify(submenusInventory, null, 2), 'utf8');
-  console.log(`✅ Submenus inventory saved (${submenusInventory.length} restaurants, ${totalSubmenus} total submenus)`);
+  log(`✅ Submenus inventory saved (${submenusInventory.length} restaurants, ${totalSubmenus} total submenus)`);
   
   // Summary
-  console.log(`\n📊 Summary:`);
-  console.log(`   ✅ Processed: ${processed} venues`);
-  console.log(`   🍹 Found happy hour info: ${found} venues`);
-  console.log(`   🏢 Multi-location sites detected: ${multiLocationCount}`);
-  console.log(`   📍 Local pages used: ${localPageCount}`);
-  console.log(`   🔗 Total submenus discovered: ${totalSubmenus}`);
-  console.log(`   📄 Total spots in file: ${spots.length}`);
-  console.log(`\n✨ Done!`);
+  log(`\n📊 Summary:`);
+  log(`   ✅ Processed: ${processed} venues`);
+  log(`   🍹 Found happy hour info: ${found} venues`);
+  log(`   🏢 Multi-location sites detected: ${multiLocationCount}`);
+  log(`   📍 Local pages used: ${localPageCount}`);
+  log(`   🔗 Total submenus discovered: ${totalSubmenus}`);
+  log(`   📄 Total spots in file: ${spots.length}`);
+  log(`\n✨ Done!`);
+  log(`Done! Log saved to logs/update-happy-hours.log`);
 }
 
 // Run main function
 main().catch(error => {
-  console.error('❌ Fatal error:', error);
+  log(`❌ Fatal error: ${error.message || error}`);
   process.exit(1);
 });

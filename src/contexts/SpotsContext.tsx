@@ -34,12 +34,15 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
       const response = await fetch('/api/spots');
       if (response.ok) {
         const data = await response.json();
-        setSpots(data);
+        // Ensure data is an array, default to empty array if not
+        setSpots(Array.isArray(data) ? data : []);
       } else {
-        console.error('Failed to load spots');
+        console.error('Failed to load spots', { status: response.status, statusText: response.statusText });
+        setSpots([]); // Set empty array on error to prevent crashes
       }
     } catch (error) {
       console.error('Error loading spots:', error);
+      setSpots([]); // Set empty array on error to prevent crashes
     } finally {
       setLoading(false);
     }
@@ -64,13 +67,34 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
       });
 
       if (response.ok) {
-        const newSpot = await response.json();
-        // Refresh spots from API to get the latest data
-        await refreshSpots();
-        return;
+        // Try to parse response, but handle empty responses gracefully
+        try {
+          const newSpot = await response.json();
+          // Refresh spots from API to get the latest data
+          await refreshSpots();
+          return;
+        } catch (parseError) {
+          // Response was OK but empty/invalid JSON - that's fine, just refresh
+          await refreshSpots();
+          return;
+        }
       } else {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to add spot');
+        // Handle error response - check if it has JSON body
+        let errorMessage = 'Failed to add spot';
+        try {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const error = await response.json();
+            errorMessage = error.error || errorMessage;
+          } else {
+            // Non-JSON error response, use status text
+            errorMessage = response.statusText || errorMessage;
+          }
+        } catch (jsonError) {
+          // Failed to parse error response, use status text
+          errorMessage = response.statusText || `HTTP ${response.status}`;
+        }
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error('Error adding spot:', error);
@@ -93,8 +117,20 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
         await refreshSpots();
         return;
       } else {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to update spot');
+        // Handle error response - check if it has JSON body
+        let errorMessage = 'Failed to update spot';
+        try {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const error = await response.json();
+            errorMessage = error.error || errorMessage;
+          } else {
+            errorMessage = response.statusText || errorMessage;
+          }
+        } catch (jsonError) {
+          errorMessage = response.statusText || `HTTP ${response.status}`;
+        }
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error('Error updating spot:', error);
@@ -113,8 +149,20 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
         await refreshSpots();
         return;
       } else {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to delete spot');
+        // Handle error response - check if it has JSON body
+        let errorMessage = 'Failed to delete spot';
+        try {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const error = await response.json();
+            errorMessage = error.error || errorMessage;
+          } else {
+            errorMessage = response.statusText || errorMessage;
+          }
+        } catch (jsonError) {
+          errorMessage = response.statusText || `HTTP ${response.status}`;
+        }
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error('Error deleting spot:', error);

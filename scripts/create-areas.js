@@ -7,6 +7,64 @@
 const fs = require('fs');
 const path = require('path');
 
+// Logging setup
+const logDir = path.join(__dirname, '..', 'logs');
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir, { recursive: true });
+}
+const logPath = path.join(logDir, 'create-areas.log');
+
+// Overwrite log file on each run
+fs.writeFileSync(logPath, '', 'utf8');
+
+/**
+ * Logger function: logs to console (with emojis) and file (without emojis, with timestamp)
+ */
+function log(message) {
+  // Log to console (with emojis/colors)
+  console.log(message);
+  
+  // Format timestamp as [YYYY-MM-DD HH:mm:ss]
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const timestamp = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}]`;
+  
+  // Strip emojis from message for file logging
+  // Emoji ranges: \u{1F300}-\u{1F5FF} (Misc Symbols), \u{1F600}-\u{1F64F} (Emoticons), 
+  // \u{1F680}-\u{1F6FF} (Transport), \u{2600}-\u{26FF} (Misc symbols), \u{2700}-\u{27BF} (Dingbats)
+  const messageWithoutEmojis = message.replace(/[\u{1F300}-\u{1F5FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+  
+  // Append to log file
+  fs.appendFileSync(logPath, `${timestamp} ${messageWithoutEmojis}\n`, 'utf8');
+}
+
+/**
+ * Verbose logger: writes detailed information to log file only (not to console)
+ * Use for --vvv level detailed logging
+ */
+function logVerbose(message) {
+  // Format timestamp as [YYYY-MM-DD HH:mm:ss]
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const timestamp = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}]`;
+  
+  // Strip emojis from message
+  const messageWithoutEmojis = message.replace(/[\u{1F300}-\u{1F5FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+  
+  // Append to log file (verbose details only in file)
+  fs.appendFileSync(logPath, `${timestamp} ${messageWithoutEmojis}\n`, 'utf8');
+}
+
 const dataDir = path.join(__dirname, '..', 'data');
 const areasFile = path.join(dataDir, 'areas.json');
 
@@ -73,31 +131,44 @@ const areas = [
 // Ensure data directory exists
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
-  console.log(`📁 Created data directory: ${dataDir}`);
+  log(`📁 Created data directory: ${dataDir}`);
 }
 
 // Write areas.json
 try {
+  logVerbose(`Writing areas.json to: ${path.resolve(areasFile)}`);
+  logVerbose(`Total areas to write: ${areas.length}`);
+  
   fs.writeFileSync(areasFile, JSON.stringify(areas, null, 2), 'utf8');
-  console.log(`✅ Successfully created/updated ${path.resolve(areasFile)}`);
-  console.log(`\n📍 Generated ${areas.length} areas:`);
+  // Terminal: Simple message
+  log(`✅ Successfully created/updated ${path.resolve(areasFile)}`);
+  log(`\n📍 Generated ${areas.length} areas:`);
+  
   areas.forEach((area, index) => {
-    console.log(`   ${index + 1}. ${area.displayName || area.name}`);
-    console.log(`      Center: (${area.center.lat}, ${area.center.lng})`);
-    console.log(`      Radius: ${area.radiusMeters}m\n`);
+    // Terminal: Simple message
+    log(`   ${index + 1}. ${area.displayName || area.name}`);
+    log(`      Center: (${area.center.lat}, ${area.center.lng})`);
+    log(`      Radius: ${area.radiusMeters}m\n`);
+    // File: Detailed information
+    logVerbose(`Area ${index + 1}: Name="${area.name}" | DisplayName="${area.displayName || area.name}" | Center=(${area.center.lat}, ${area.center.lng}) | Radius=${area.radiusMeters}m | Bounds=(${area.bounds.south}, ${area.bounds.west}) to (${area.bounds.north}, ${area.bounds.east}) | Description="${area.description || 'N/A'}"`);
   });
   
   // Validate no Park Circle
   const hasParkCircle = areas.some(area => area.name === 'Park Circle' || area.name.includes('Park Circle'));
   if (hasParkCircle) {
-    console.warn('⚠️  WARNING: Park Circle found in areas list!');
+    log(`⚠️  WARNING: Park Circle found in areas list!`);
+    logVerbose(`Validation failed: Park Circle found in areas list. Areas: ${areas.map(a => a.name).join(', ')}`);
     process.exit(1);
   } else {
-    console.log('✅ Verified: Park Circle is NOT included in areas list');
+    log('✅ Verified: Park Circle is NOT included in areas list');
+    logVerbose(`Validation passed: Park Circle not found. Areas: ${areas.map(a => a.name).join(', ')}`);
   }
   
-  console.log(`\n✨ Areas configuration file created successfully!`);
+  logVerbose(`File write successful. Output file: ${path.resolve(areasFile)} | File size: ${fs.statSync(areasFile).size} bytes`);
+  log(`\n✨ Areas configuration file created successfully!`);
+  log(`Done! Log saved to logs/create-areas.log`);
 } catch (error) {
-  console.error(`❌ Error writing areas.json: ${error.message}`);
+  log(`❌ Error writing areas.json: ${error.message}`);
+  logVerbose(`Error details: Message="${error.message}" | Stack="${error.stack || 'N/A'}" | Output file="${areasFile}"`);
   process.exit(1);
 }
