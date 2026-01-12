@@ -35,21 +35,22 @@ describe('Step 1: Areas Configuration (data/areas.json)', () => {
       expect(Array.isArray(areasData)).toBe(true);
     });
 
-    test('should have exactly 7 areas', () => {
-      expect(areasData.length).toBe(7);
+    test('should have exactly 8 areas', () => {
+      expect(areasData.length).toBe(8);
     });
   });
 
   describe('Test 2: All required areas present (no duplicates or extras)', () => {
-    const requiredAreas = [
-      'Daniel Island',
-      'Mount Pleasant',
-      'James Island',
-      'Downtown Charleston',
-      "Sullivan's Island",
-      'North Charleston',
-      'West Ashley',
-    ];
+      const requiredAreas = [
+        'Daniel Island',
+        'Mount Pleasant',
+        'James Island',
+        'Downtown Charleston',
+        "Sullivan's Island",
+        'North Charleston',
+        'West Ashley',
+        'Isle of Palms'
+      ];
 
     test('should contain all required areas', () => {
       const areaNames = areasData.map(area => area.name);
