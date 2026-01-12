@@ -1,0 +1,25 @@
+{
+  "venueId": "ChIJZVeaxBVj_ogRBEcnMfRk6kg",
+  "venueName": "Charleston Beer Works",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:12.757Z",
+  "happyHour": {
+    "found": true,
+    "reason": null,
+    "times": "4pm - 7pm, 4pm - 7pm",
+    "days": "Wednesday, Thursday, Monday, Sunday",
+    "content": "Happy Hour House Liquor, House Wine and Local Draughts all $6 each Wednesday RUN CBW Every Wednesday at 7pm$5 Local Brews for all runners Thursday Bar + Music Bingo Bar Bingo Every 3rd Thursday + Musi",
+    "specials": [],
+    "source": "http://charlestonbeerworks.com/"
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0.95,
+  "notes": [
+    "Explicit happy hour text found with valid time patterns"
+  ],
+  "needsLLM": false
+}

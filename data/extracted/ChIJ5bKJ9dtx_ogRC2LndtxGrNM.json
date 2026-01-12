@@ -1,0 +1,23 @@
+{
+  "venueId": "ChIJ5bKJ9dtx_ogRC2LndtxGrNM",
+  "venueName": "Verde",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:10.827Z",
+  "happyHour": {
+    "found": false,
+    "reason": "No happy hour mentions found in scraped content",
+    "times": null,
+    "days": null,
+    "content": null,
+    "specials": [],
+    "source": null
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0,
+  "notes": [],
+  "needsLLM": true
+}

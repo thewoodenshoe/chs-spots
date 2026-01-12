@@ -1,0 +1,25 @@
+{
+  "venueId": "ChIJYfnNmQ56_ogRvl4-qFjG3go",
+  "venueName": "The Rooftop at the Vendue",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:12.705Z",
+  "happyHour": {
+    "found": true,
+    "reason": null,
+    "times": "4PM - 6PM",
+    "days": "Sunday, Thursday",
+    "content": "Happy Hour Late Night Eats Select a tab to display Drinks Food Happy Hour Late Night Eats",
+    "specials": [],
+    "source": "https://www.rooftopcharleston.com/menus/#/happyhour"
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0.95,
+  "notes": [
+    "Explicit happy hour text found with valid time patterns"
+  ],
+  "needsLLM": false
+}

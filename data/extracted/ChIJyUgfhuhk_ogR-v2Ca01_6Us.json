@@ -1,0 +1,28 @@
+{
+  "venueId": "ChIJyUgfhuhk_ogR-v2Ca01_6Us",
+  "venueName": "DIG In The Park",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:13.742Z",
+  "happyHour": {
+    "found": true,
+    "reason": null,
+    "times": "4pm - 7pm, 4pm - 7pm",
+    "days": "Sunday, Mon, daily, Monday, Saturday, Tuesday, Wednesday, Thursday, Friday",
+    "content": "happy hour, dinner, and Sunday brunch Contact Information Address DIG In the Park 1049 East Montague Ave N",
+    "specials": [
+      "$1 off",
+      "$1 off"
+    ],
+    "source": "http://diginthepark.com/brunch"
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0.9,
+  "notes": [
+    "Both texts found, but times are happy hour (1-5 hour spans)"
+  ],
+  "needsLLM": false
+}

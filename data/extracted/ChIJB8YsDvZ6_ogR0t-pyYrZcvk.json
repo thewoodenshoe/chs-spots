@@ -1,0 +1,25 @@
+{
+  "venueId": "ChIJB8YsDvZ6_ogR0t-pyYrZcvk",
+  "venueName": "Edmund's Original (Formerly Edmund's Oast)",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:11.060Z",
+  "happyHour": {
+    "found": false,
+    "reason": "Happy hour text found but no valid time patterns extracted",
+    "times": null,
+    "days": null,
+    "content": null,
+    "specials": [],
+    "source": null
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0.3,
+  "notes": [
+    "Happy hour mentioned but times unclear - may need LLM"
+  ],
+  "needsLLM": true
+}

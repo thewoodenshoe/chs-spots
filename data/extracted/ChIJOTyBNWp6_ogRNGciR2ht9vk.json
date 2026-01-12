@@ -1,0 +1,25 @@
+{
+  "venueId": "ChIJOTyBNWp6_ogRNGciR2ht9vk",
+  "venueName": "Silver Dollar",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:11.725Z",
+  "happyHour": {
+    "found": true,
+    "reason": null,
+    "times": "6 - 8pm",
+    "days": "Monday, Friday, Sunday",
+    "content": "Happy Hour: $5 Local Drafts + $5 House Liquors & Wines",
+    "specials": [],
+    "source": "http://silverdollarchs.com/charleston-upper-king-silver-dollar-happy-hours-specials"
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0.95,
+  "notes": [
+    "Explicit happy hour text found with valid time patterns"
+  ],
+  "needsLLM": false
+}

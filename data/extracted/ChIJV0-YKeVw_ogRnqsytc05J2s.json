@@ -1,0 +1,25 @@
+{
+  "venueId": "ChIJV0-YKeVw_ogRnqsytc05J2s",
+  "venueName": "Vickery's Bar & Grill",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:12.027Z",
+  "happyHour": {
+    "found": true,
+    "reason": null,
+    "times": "4 - 7pm",
+    "days": "Mon, Fri",
+    "content": "HAPPY HOUR Mon",
+    "specials": [],
+    "source": "https://vickerysshemcreek.com/mount-pleasant-shem-creek-vickery-s-bar-and-grill-happy-hours-specials"
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0.95,
+  "notes": [
+    "Explicit happy hour text found with valid time patterns"
+  ],
+  "needsLLM": false
+}

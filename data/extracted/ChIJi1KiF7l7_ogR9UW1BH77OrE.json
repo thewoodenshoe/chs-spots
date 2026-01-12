@@ -1,0 +1,25 @@
+{
+  "venueId": "ChIJi1KiF7l7_ogR9UW1BH77OrE",
+  "venueName": "Bar Mash",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:13.033Z",
+  "happyHour": {
+    "found": true,
+    "reason": null,
+    "times": "4PM - 6PM, 4PM - 6PM",
+    "days": "Daily, Monday, Saturday, MON, SAT",
+    "content": "Happy Hour Daily from 4 - 6 p",
+    "specials": [],
+    "source": "https://www.barmashchs.com/?y_source=1_ODE4NDQwODEtNzE1LWxvY2F0aW9uLndlYnNpdGU%3D"
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0.95,
+  "notes": [
+    "Explicit happy hour text found with valid time patterns"
+  ],
+  "needsLLM": false
+}

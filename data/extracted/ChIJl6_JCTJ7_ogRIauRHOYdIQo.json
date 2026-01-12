@@ -1,0 +1,25 @@
+{
+  "venueId": "ChIJl6_JCTJ7_ogRIauRHOYdIQo",
+  "venueName": "Park & Grove",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:13.115Z",
+  "happyHour": {
+    "found": true,
+    "reason": null,
+    "times": "3 - 6pm, 3 - 6pm",
+    "days": "TUESDAY, WEDNESDAY, weekdays",
+    "content": "Happy Hour • 3-6 pmTUESDAY 1/2 price select wine bottlesWEDNESDAY Neighborhood Burger Night$10 smash burgers // $6 kid's burger",
+    "specials": [],
+    "source": "http://www.parkandgrovechs.com/menus/"
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0.95,
+  "notes": [
+    "Explicit happy hour text found with valid time patterns"
+  ],
+  "needsLLM": false
+}

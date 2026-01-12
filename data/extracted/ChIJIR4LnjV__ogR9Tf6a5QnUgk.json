@@ -1,0 +1,23 @@
+{
+  "venueId": "ChIJIR4LnjV__ogR9Tf6a5QnUgk",
+  "venueName": "Tacos La Familia",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:11.276Z",
+  "happyHour": {
+    "found": false,
+    "reason": "No happy hour mentions found in scraped content",
+    "times": null,
+    "days": null,
+    "content": null,
+    "specials": [],
+    "source": null
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0,
+  "notes": [],
+  "needsLLM": true
+}

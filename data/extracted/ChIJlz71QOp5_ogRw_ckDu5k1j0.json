@@ -1,0 +1,25 @@
+{
+  "venueId": "ChIJlz71QOp5_ogRw_ckDu5k1j0",
+  "venueName": "Grumpy Goat Seafood Cantina",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:13.128Z",
+  "happyHour": {
+    "found": true,
+    "reason": null,
+    "times": "04:00PM - 07:00PM, 04:00PM - 07:00PM, 04:00PM - 07:00PM, 04:00PM - 07:00PM",
+    "days": "Tuesday, Thursday",
+    "content": "Happy Hour 04:00 PM - 07:00 PM Tuesday January 13th Happy H",
+    "specials": [],
+    "source": "http://grumpygoatcantina.com/charleston-grumpy-goat-seafood-cantina-happy-hours-specials"
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0.95,
+  "notes": [
+    "Explicit happy hour text found with valid time patterns"
+  ],
+  "needsLLM": false
+}

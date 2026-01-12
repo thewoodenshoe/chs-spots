@@ -108,9 +108,12 @@ const CHARLESTON_AREAS = [
 // Paths
 const VENUES_PATH = path.join(__dirname, '../data/venues.json');
 const SCRAPED_DIR = path.join(__dirname, '../data/scraped');
+const ARCHIVE_DIR = path.join(__dirname, '../data/scraped/archive');
+const EXTRACTED_DIR = path.join(__dirname, '../data/extracted');
 const URL_PATTERNS_PATH = path.join(__dirname, '../data/url-patterns.json');
 const SUBMENUS_PATH = path.join(__dirname, '../data/restaurants-submenus.json');
 const CACHE_DIR = path.join(__dirname, '../data/cache');
+const crypto = require('crypto');
 
 /**
  * Get random delay between min and max
@@ -696,6 +699,162 @@ function getScrapedFilePath(venueId) {
 }
 
 /**
+ * Get archived file path for a venue on a specific date
+ */
+function getArchivedFilePath(venueId, date) {
+  const archiveDateDir = path.join(ARCHIVE_DIR, date);
+  return path.join(archiveDateDir, `${venueId}.json`);
+}
+
+/**
+ * Compute content hash from scraped data
+ * Normalizes text content and creates SHA-256 hash
+ */
+function computeContentHash(scrapedData) {
+  if (!scrapedData || !scrapedData.sources || !Array.isArray(scrapedData.sources)) {
+    return null;
+  }
+  
+  // Extract and normalize text content from all sources
+  const textContent = scrapedData.sources
+    .map(s => (s.text || '').trim())
+    .join(' ')
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .trim();
+  
+  if (!textContent) {
+    return null;
+  }
+  
+  // Create SHA-256 hash
+  return crypto.createHash('sha256').update(textContent).digest('hex');
+}
+
+/**
+ * Archive previous day's scraped data
+ */
+function archivePreviousDay(previousDate) {
+  try {
+    const archiveDateDir = path.join(ARCHIVE_DIR, previousDate);
+    
+    // Check if scraped directory exists
+    if (!fs.existsSync(SCRAPED_DIR)) {
+      log(`⚠️  No scraped directory found, nothing to archive`);
+      return false;
+    }
+    
+    // Get all scraped files
+    const files = fs.readdirSync(SCRAPED_DIR).filter(f => f.endsWith('.json'));
+    
+    if (files.length === 0) {
+      log(`⚠️  No scraped files found to archive`);
+      return false;
+    }
+    
+    // Create archive directory
+    if (!fs.existsSync(archiveDateDir)) {
+      fs.mkdirSync(archiveDateDir, { recursive: true });
+    }
+    
+    // Copy files to archive
+    let archivedCount = 0;
+    for (const file of files) {
+      const sourcePath = path.join(SCRAPED_DIR, file);
+      const destPath = path.join(archiveDateDir, file);
+      
+      try {
+        fs.copyFileSync(sourcePath, destPath);
+        archivedCount++;
+      } catch (error) {
+        logVerbose(`  ⚠️  Failed to archive ${file}: ${error.message}`);
+      }
+    }
+    
+    log(`📦 Archived ${archivedCount} file(s) from previous day (${previousDate})`);
+    return true;
+  } catch (error) {
+    log(`❌ Error archiving previous day: ${error.message}`);
+    return false;
+  }
+}
+
+/**
+ * Compare current scraped data with previous day's data
+ * Returns: { changed: boolean, previousHash: string|null, currentHash: string|null }
+ */
+function compareWithPrevious(venueId, currentData, previousDate) {
+  try {
+    // Compute current hash
+    const currentHash = computeContentHash(currentData);
+    if (!currentHash) {
+      // No content to compare, treat as new/changed
+      return { changed: true, previousHash: null, currentHash: null, reason: 'no_content' };
+    }
+    
+    // Try to load previous day's data
+    const archivedPath = getArchivedFilePath(venueId, previousDate);
+    if (!fs.existsSync(archivedPath)) {
+      // No previous data = new venue = changed
+      return { changed: true, previousHash: null, currentHash, reason: 'new_venue' };
+    }
+    
+    // Load previous data
+    const previousData = loadScrapedData(archivedPath);
+    if (!previousData) {
+      return { changed: true, previousHash: null, currentHash, reason: 'failed_to_load_previous' };
+    }
+    
+    // Compute previous hash
+    const previousHash = computeContentHash(previousData);
+    if (!previousHash) {
+      return { changed: true, previousHash: null, currentHash, reason: 'previous_no_content' };
+    }
+    
+    // Compare hashes
+    const changed = previousHash !== currentHash;
+    return {
+      changed,
+      previousHash,
+      currentHash,
+      reason: changed ? 'content_changed' : 'no_change'
+    };
+  } catch (error) {
+    logVerbose(`  ⚠️  Error comparing ${venueId} with previous: ${error.message}`);
+    // On error, treat as changed to be safe
+    return { changed: true, previousHash: null, currentHash: null, reason: 'comparison_error' };
+  }
+}
+
+/**
+ * Generate delta report
+ */
+function generateDeltaReport(deltaData, outputPath) {
+  try {
+    const report = {
+      date: deltaData.date,
+      previousDate: deltaData.previousDate,
+      changed: deltaData.changed || [],
+      unchanged: deltaData.unchanged || [],
+      new: deltaData.new || [],
+      removed: deltaData.removed || [],
+      summary: {
+        total: deltaData.changed.length + deltaData.unchanged.length + deltaData.new.length,
+        changed: deltaData.changed.length,
+        unchanged: deltaData.unchanged.length,
+        new: deltaData.new.length,
+        removed: deltaData.removed.length
+      }
+    };
+    
+    fs.writeFileSync(outputPath, JSON.stringify(report, null, 2), 'utf8');
+    return report;
+  } catch (error) {
+    log(`❌ Error generating delta report: ${error.message}`);
+    return null;
+  }
+}
+
+/**
  * Check if scraped file exists and was created today
  */
 function isScrapedFileValid(scrapedFilePath) {
@@ -803,7 +962,8 @@ async function processVenue(venue) {
         fromCache: true,
         urlPatterns: cachedData.urlPatterns || [],
         matches: (cachedData.rawMatches || []).length,
-        subpages: (cachedData.sources || []).filter(s => s.pageType === 'subpage').length
+        subpages: (cachedData.sources || []).filter(s => s.pageType === 'subpage').length,
+        scrapedData: cachedData // Include for delta comparison
       };
     }
   }
@@ -1016,7 +1176,8 @@ async function processVenue(venue) {
       subpages: subpageUrls.length,
       urlPatterns: scrapedData.urlPatterns,
       success: true,
-      localPageUsed
+      localPageUsed,
+      scrapedData: scrapedData // Include for delta comparison
     };
   } catch (error) {
     log(`  ❌ Error processing ${venue.name}: ${error.message}`);
@@ -1066,8 +1227,29 @@ async function main() {
   if (!fs.existsSync(SCRAPED_DIR)) {
     fs.mkdirSync(SCRAPED_DIR, { recursive: true });
   }
+  if (!fs.existsSync(ARCHIVE_DIR)) {
+    fs.mkdirSync(ARCHIVE_DIR, { recursive: true });
+  }
+  if (!fs.existsSync(EXTRACTED_DIR)) {
+    fs.mkdirSync(EXTRACTED_DIR, { recursive: true });
+  }
   if (!fs.existsSync(CACHE_DIR)) {
     fs.mkdirSync(CACHE_DIR, { recursive: true });
+  }
+  
+  // Delta system: Archive previous day before scraping
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const previousDate = yesterday.toISOString().split('T')[0]; // YYYY-MM-DD
+  const currentDate = today.toISOString().split('T')[0];
+  
+  log(`📦 Delta System: Archiving previous day (${previousDate})...`);
+  const archived = archivePreviousDay(previousDate);
+  if (archived) {
+    log(`   ✅ Previous day archived successfully\n`);
+  } else {
+    log(`   ℹ️  No previous data to archive (first run or no data)\n`);
   }
   
   // Log paths
@@ -1141,6 +1323,16 @@ async function main() {
     errors: 0
   };
   
+  // Delta tracking
+  const deltaData = {
+    date: currentDate,
+    previousDate: previousDate,
+    changed: [],
+    unchanged: [],
+    new: [],
+    removed: []
+  };
+  
   // Worker pool for parallel processing
   async function processVenueWithStats(venue, index) {
     // Terminal: Simple message
@@ -1164,6 +1356,25 @@ async function main() {
         log(`  ❌ Error: ${result.error}`);
         stats.errors++;
       } else {
+        // Delta comparison: Check if content changed
+        let deltaResult = null;
+        if (result.scrapedData) {
+          deltaResult = compareWithPrevious(venue.id, result.scrapedData, previousDate);
+          
+          // Track in delta data (thread-safe - arrays are fine for append-only operations)
+          if (deltaResult.changed) {
+            if (deltaResult.reason === 'new_venue') {
+              deltaData.new.push(venue.id);
+            } else {
+              deltaData.changed.push(venue.id);
+            }
+            log(`  🔄 Content changed (${deltaResult.reason}) - will extract`);
+          } else {
+            deltaData.unchanged.push(venue.id);
+            log(`  ✅ Content unchanged - skipping extraction`);
+          }
+        }
+        
         if (result.fromCache) {
           stats.cached++;
           log(`  ✅ Using cached data (from today)`);
@@ -1257,6 +1468,19 @@ async function main() {
   const finalSubmenus = Array.from(allSubmenusSet).sort();
   fs.writeFileSync(SUBMENUS_PATH, JSON.stringify(finalSubmenus, null, 2), 'utf8');
   
+  // Generate delta report
+  const deltaReportPath = path.join(SCRAPED_DIR, `delta-${currentDate}.json`);
+  const deltaReport = generateDeltaReport(deltaData, deltaReportPath);
+  
+  // Save list of changed venue IDs for extract-happy-hours-rule-based.js
+  const changedVenuesPath = path.join(EXTRACTED_DIR, `changed-venues-${currentDate}.json`);
+  const changedVenues = {
+    date: currentDate,
+    previousDate: previousDate,
+    venueIds: [...deltaData.changed, ...deltaData.new] // Both changed and new venues need extraction
+  };
+  fs.writeFileSync(changedVenuesPath, JSON.stringify(changedVenues, null, 2), 'utf8');
+  
   // Summary
   log(`\n📊 Summary:`);
   log(`   ✅ Processed: ${stats.processed} venues`);
@@ -1268,12 +1492,20 @@ async function main() {
   log(`   🔗 Total URL patterns discovered: ${finalPatterns.length} (${sortedPatterns.length} new)`);
   log(`   🍽️  Submenu patterns discovered: ${finalSubmenus.length} (${submenuPatterns.length} new)`);
   log(`   ❌ Errors: ${stats.errors}`);
+  log(`\n🔄 Delta System Summary:`);
+  if (deltaReport) {
+    log(`   📦 Changed: ${deltaReport.summary.changed} venues`);
+    log(`   ✅ Unchanged: ${deltaReport.summary.unchanged} venues`);
+    log(`   🆕 New: ${deltaReport.summary.new} venues`);
+    log(`   📄 Delta report: ${path.resolve(deltaReportPath)}`);
+    log(`   📄 Changed venues list: ${path.resolve(changedVenuesPath)}`);
+  }
   log(`   📁 Scraped data saved to: ${path.resolve(SCRAPED_DIR)}`);
   log(`   📄 URL patterns saved to: ${path.resolve(URL_PATTERNS_PATH)}`);
   log(`   📄 Submenu patterns saved to: ${path.resolve(SUBMENUS_PATH)}`);
   
   log(`\n✨ Done!`);
-  log(`   Next step: Run extract-happy-hours.js to extract structured data from scraped content`);
+  log(`   Next step: Run extract-happy-hours-rule-based.js to extract structured data from changed venues only`);
   logToFileAndConsole(`Done! Log saved to ${logPath}`, logPath);
 }
 

@@ -1,0 +1,25 @@
+{
+  "venueId": "ChIJDbSCy_54_ogRsajnAWDjJ2E",
+  "venueName": "Fam's Brewing Co. featuring Famulari's Pizzeria",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:11.202Z",
+  "happyHour": {
+    "found": true,
+    "reason": null,
+    "times": "4PM - 7pm, 4PM - 7pm",
+    "days": "Monday, Friday, Tuesday",
+    "content": "Happy Hour Monday - Friday 4 PM - 7 pm $5 FBC Drafts (under 7% ABV) $5 Glasses of House Red or White Wine $5 House Liquor Drinks $5 House Draft Margaritas (dine-in only) Tuesdays1",
+    "specials": [],
+    "source": "https://www.famsbrewingco.com/specials"
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0.95,
+  "notes": [
+    "Explicit happy hour text found with valid time patterns"
+  ],
+  "needsLLM": false
+}

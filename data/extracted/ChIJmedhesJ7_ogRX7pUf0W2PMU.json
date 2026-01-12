@@ -1,0 +1,25 @@
+{
+  "venueId": "ChIJmedhesJ7_ogRX7pUf0W2PMU",
+  "venueName": "Gene's Haufbrau",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:13.219Z",
+  "happyHour": {
+    "found": true,
+    "reason": null,
+    "times": "04:00PM - 07:00PM, 04:00PM - 07:00PM, 04:00PM - 07:00PM, 04:00PM - 07:00PM, 04:00PM - 07:00PM, 04:00PM - 07:00PM, 04:00PM - 07:00PM",
+    "days": "Tuesday, Wednesday, Thursday, Friday, Saturday, Fri",
+    "content": "Happy Hour! 04:00 PM - 07:00 PM Tuesday January 13th Blue P",
+    "specials": [],
+    "source": "http://genescharleston.com/charleston-west-ashley-gene-s-haufbrau-happy-hours-specials"
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0.95,
+  "notes": [
+    "Explicit happy hour text found with valid time patterns"
+  ],
+  "needsLLM": false
+}

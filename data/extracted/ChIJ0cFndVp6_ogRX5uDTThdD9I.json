@@ -1,0 +1,25 @@
+{
+  "venueId": "ChIJ0cFndVp6_ogRX5uDTThdD9I",
+  "venueName": "Moe's Crosstown Tavern",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:10.637Z",
+  "happyHour": {
+    "found": true,
+    "reason": null,
+    "times": "4 - 7pm",
+    "days": "Monday, Friday",
+    "content": "happy hour deals! If you’re looking for a regular sports bar and grill in Charleston, SC, get ready to call Moe’s Crosstown Tavern home",
+    "specials": [],
+    "source": "https://moescrosstowntavern.com/"
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0.95,
+  "notes": [
+    "Explicit happy hour text found with valid time patterns"
+  ],
+  "needsLLM": false
+}

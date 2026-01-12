@@ -1,0 +1,25 @@
+{
+  "venueId": "ChIJxyKLuw16_ogRPnMyVsir2eo",
+  "venueName": "Henry's On The Market",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:13.731Z",
+  "happyHour": {
+    "found": true,
+    "reason": null,
+    "times": "04:00PM - 06:00PM, 04:00PM - 06:00PM, 04:00PM - 06:00PM, 04:00PM - 06:00PM",
+    "days": "Tuesday, Wednesday, mon, Thursday, Monday",
+    "content": "HAPPY HOUR $4 Domestic Beers/ $6 Well Liquor04:00 PM - 06:00 PMTuesdayJanuary 13thHenry’s Margarita: Lunazul Blanco Tequila, lime juice, orange liqueur11:00 AM - 10:00 PMTuesdayJanuary 13thTaco Tuesda",
+    "specials": [],
+    "source": "http://www.henrysonthemarket.com/charleston-henry-s-on-the-market-happy-hours-specials"
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0.95,
+  "notes": [
+    "Explicit happy hour text found with valid time patterns"
+  ],
+  "needsLLM": false
+}

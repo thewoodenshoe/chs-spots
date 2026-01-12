@@ -1,0 +1,25 @@
+{
+  "venueId": "ChIJT2PTq2B6_ogRIrWFtaGTRrU",
+  "venueName": "Taco Boy Charleston",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:12.012Z",
+  "happyHour": {
+    "found": true,
+    "reason": null,
+    "times": "3 - 6pm, 3 - 6pm, 3 - 6pm, 3 - 6pm",
+    "days": "Friday, Saturday, Daily, Tuesday",
+    "content": "Happy Hour, 3 – 6pm Happenings & Events",
+    "specials": [],
+    "source": "http://www.tacoboy.net/location/downtown-taco-boy/"
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0.95,
+  "notes": [
+    "Explicit happy hour text found with valid time patterns"
+  ],
+  "needsLLM": false
+}

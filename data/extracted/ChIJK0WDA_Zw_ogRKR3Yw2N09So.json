@@ -1,0 +1,25 @@
+{
+  "venueId": "ChIJK0WDA_Zw_ogRKR3Yw2N09So",
+  "venueName": "Graze Restaurant",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:11.499Z",
+  "happyHour": {
+    "found": true,
+    "reason": null,
+    "times": "05:00PM - 07:00PM",
+    "days": "Monday, Thursday",
+    "content": "Happy Hour: Monday-Thursday every week",
+    "specials": [],
+    "source": "http://www.grazecharleston.com/mount-pleasant-graze-happy-hours-specials"
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0.95,
+  "notes": [
+    "Explicit happy hour text found with valid time patterns"
+  ],
+  "needsLLM": false
+}

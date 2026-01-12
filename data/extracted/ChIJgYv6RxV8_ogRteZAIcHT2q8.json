@@ -1,0 +1,28 @@
+{
+  "venueId": "ChIJgYv6RxV8_ogRteZAIcHT2q8",
+  "venueName": "Zen Asian Fusion",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:13.025Z",
+  "happyHour": {
+    "found": true,
+    "reason": null,
+    "times": "4PM - 6PM, 4pm - 6pm, 4PM - 6PM, 4pm - 6pm",
+    "days": "Monday, Friday",
+    "content": "Happy Hour 4 PM - 6 PM Monday - Friday $1 off ALL beer, $3 Well Liquors, $5 House Wine, $5 Large Hot Sake Happy Hour Specials Monday: 4pm - 6pm $6 - S",
+    "specials": [
+      "$1 off",
+      "$1 off"
+    ],
+    "source": "https://zenasianrestaurant.com/drinks/"
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0.95,
+  "notes": [
+    "Explicit happy hour text found with valid time patterns"
+  ],
+  "needsLLM": false
+}

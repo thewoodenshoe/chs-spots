@@ -403,16 +403,57 @@ async function main() {
     process.exit(1);
   }
   
+  // Check for changed venues list (delta system)
+  const today = new Date().toISOString().split('T')[0];
+  const changedVenuesPath = path.join(EXTRACTED_DIR, `changed-venues-${today}.json`);
+  let changedVenueIds = null;
+  
+  if (fs.existsSync(changedVenuesPath)) {
+    try {
+      const changedVenuesData = JSON.parse(fs.readFileSync(changedVenuesPath, 'utf8'));
+      changedVenueIds = new Set(changedVenuesData.venueIds || []);
+      log(`🔄 Delta System: Found ${changedVenueIds.size} changed/new venue(s) to process`);
+      log(`   📄 Changed venues list: ${path.resolve(changedVenuesPath)}\n`);
+    } catch (error) {
+      log(`⚠️  Could not load changed venues list: ${error.message}`);
+      log(`   Processing all venues (backward compatible mode)\n`);
+    }
+  } else {
+    log(`ℹ️  No changed venues list found. Processing all venues (backward compatible mode)\n`);
+  }
+  
+  // Filter scraped files to only process changed venues (if delta system is active)
+  const filesToProcess = changedVenueIds 
+    ? scrapedFiles.filter(filename => {
+        const venueId = filename.replace('.json', '');
+        return changedVenueIds.has(venueId);
+      })
+    : scrapedFiles;
+  
+  if (filesToProcess.length === 0) {
+    log(`✅ No changed venues to process. All venues are up to date!`);
+    process.exit(0);
+  }
+  
+  log(`📊 Processing ${filesToProcess.length} venue(s) (${changedVenueIds ? 'delta mode' : 'full mode'})\n`);
+  
   let processed = 0;
   let happyHourFound = 0;
   let businessHoursFound = 0;
   let needsLLM = 0;
   let noInfo = 0;
   let highConfidence = 0;
+  let skipped = 0;
   
-  for (const filename of scrapedFiles) {
+  for (const filename of filesToProcess) {
     const filePath = path.join(SCRAPED_DIR, filename);
     const venueId = filename.replace('.json', '');
+    
+    // Skip if not in changed list (when delta system is active)
+    if (changedVenueIds && !changedVenueIds.has(venueId)) {
+      skipped++;
+      continue;
+    }
     
     try {
       const scrapedContent = fs.readFileSync(filePath, 'utf8');
@@ -427,7 +468,7 @@ async function main() {
       };
       
       if (processed % 100 === 0 && processed > 0) {
-        log(`\n[${processed}/${scrapedFiles.length}] Processing: ${venue.name}...`);
+        log(`\n[${processed}/${filesToProcess.length}] Processing: ${venue.name}...`);
       }
       
       const extracted = extractStructuredInfo(scrapedData);
@@ -456,14 +497,24 @@ async function main() {
   
   // Summary
   log(`\n\n📊 Summary:`);
-  log(`   ✅ Processed: ${processed} venues`);
-  log(`   🍹 Happy Hour Found: ${happyHourFound} (${(happyHourFound/processed*100).toFixed(1)}%)`);
-  log(`   📅 Business Hours Found: ${businessHoursFound} (${(businessHoursFound/processed*100).toFixed(1)}%)`);
-  log(`   🤖 Needs LLM: ${needsLLM} (${(needsLLM/processed*100).toFixed(1)}%)`);
-  log(`   ⬜ No Info: ${noInfo} (${(noInfo/processed*100).toFixed(1)}%)`);
-  log(`   ⭐ High Confidence (≥0.8): ${highConfidence} (${(highConfidence/happyHourFound*100).toFixed(1)}% of happy hours)`);
+  log(`   ✅ Processed: ${processed} venue(s)`);
+  if (skipped > 0) {
+    log(`   ⏭️  Skipped (unchanged): ${skipped} venue(s)`);
+  }
+  if (processed > 0) {
+    log(`   🍹 Happy Hour Found: ${happyHourFound} (${(happyHourFound/processed*100).toFixed(1)}%)`);
+    log(`   📅 Business Hours Found: ${businessHoursFound} (${(businessHoursFound/processed*100).toFixed(1)}%)`);
+    log(`   🤖 Needs LLM: ${needsLLM} (${(needsLLM/processed*100).toFixed(1)}%)`);
+    log(`   ⬜ No Info: ${noInfo} (${(noInfo/processed*100).toFixed(1)}%)`);
+    if (happyHourFound > 0) {
+      log(`   ⭐ High Confidence (≥0.8): ${highConfidence} (${(highConfidence/happyHourFound*100).toFixed(1)}% of happy hours)`);
+    }
+  }
   log(`\n   📁 Extracted data saved to: ${path.resolve(EXTRACTED_DIR)}`);
   log(`\n✨ Done!`);
+  if (changedVenueIds) {
+    log(`   💡 Delta System: Only processed changed/new venues (${processed} of ${scrapedFiles.length} total)`);
+  }
   log(`   Next: Review needsLLM cases and apply LLM if needed`);
 }
 

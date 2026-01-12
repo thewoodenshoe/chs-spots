@@ -1,0 +1,25 @@
+{
+  "venueId": "ChIJKUGCaF9w_ogRdu2Shl5g5zU",
+  "venueName": "Grace & Grit",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:11.502Z",
+  "happyHour": {
+    "found": true,
+    "reason": null,
+    "times": "04:00PM - 06:30PM, 04:00PM - 06:30PM, 04:00PM - 06:30PM",
+    "days": "Thursday",
+    "content": "Happy Hour 04:00 PM - 06:30 PM Thursday January 15th Happy",
+    "specials": [],
+    "source": "http://gracegrit.com/mount-pleasant-grace-and-grit-happy-hours-specials"
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0.95,
+  "notes": [
+    "Explicit happy hour text found with valid time patterns"
+  ],
+  "needsLLM": false
+}

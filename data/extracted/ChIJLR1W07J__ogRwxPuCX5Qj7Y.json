@@ -1,0 +1,25 @@
+{
+  "venueId": "ChIJLR1W07J__ogRwxPuCX5Qj7Y",
+  "venueName": "Tattooed Moose, Johns Island, SC",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:11.613Z",
+  "happyHour": {
+    "found": true,
+    "reason": null,
+    "times": "4PM - 7PM, 4PM - 7PM",
+    "days": "MON, SAT, FRI, SUNDAY, THU",
+    "content": "HAPPY HOUR: MON- SAT 4PM - 7PMLATE NIGHT EATS: FRI / SAT ‘TIL 1AMSUNDAY - THURS ‘TIL 12AM Subscribe Sign up with your email addr",
+    "specials": [],
+    "source": "http://www.tattooedmoose.com/"
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0.95,
+  "notes": [
+    "Explicit happy hour text found with valid time patterns"
+  ],
+  "needsLLM": false
+}

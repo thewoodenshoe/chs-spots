@@ -1,0 +1,25 @@
+{
+  "venueId": "ChIJLd-Pkm95_ogRoeaA6vbP4Z8",
+  "venueName": "The James",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:11.616Z",
+  "happyHour": {
+    "found": true,
+    "reason": null,
+    "times": "5pm - 6pm, 4pm - 6pm, 5pm - 6pm, 4pm - 6pm, 5pm - 6pm, 4pm - 6pm",
+    "days": "Mon, Tue, Wed, Fri, Sat, Sun",
+    "content": "Happy Hour (Bar & Lounge Only) Mon & Tue: 5pm – 6pm, Wed – Fri: 4pm – 6pm",
+    "specials": [],
+    "source": "http://www.thejameschs.com/"
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0.95,
+  "notes": [
+    "Explicit happy hour text found with valid time patterns"
+  ],
+  "needsLLM": false
+}

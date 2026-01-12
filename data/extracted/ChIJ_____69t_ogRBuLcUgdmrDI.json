@@ -1,0 +1,25 @@
+{
+  "venueId": "ChIJ_____69t_ogRBuLcUgdmrDI",
+  "venueName": "Bricco Bracco",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:12.765Z",
+  "happyHour": {
+    "found": false,
+    "reason": "Happy hour mentioned but only business hours times found (6+ hour spans)",
+    "times": null,
+    "days": null,
+    "content": null,
+    "specials": [],
+    "source": null
+  },
+  "businessHours": {
+    "found": true,
+    "times": "03:00pm - 09:00pm, 03:00pm - 09:00pm, 03:00pm - 09:30pm, 03:00pm - 09:00pm, 03:00pm - 09:00pm",
+    "source": "http://bricco-bracco.com/"
+  },
+  "confidence": 0.9,
+  "notes": [
+    "Both happy hour and business hours text found, but times are business hours"
+  ],
+  "needsLLM": false
+}

@@ -1,0 +1,25 @@
+{
+  "venueId": "ChIJZ21LMAx6_ogRO1cje2Ji56c",
+  "venueName": "Amen Street Fish & Raw Bar",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:12.707Z",
+  "happyHour": {
+    "found": true,
+    "reason": null,
+    "times": "04:00PM - 07:00PM, 04:00PM - 07:00PM, 04:00PM - 07:00PM, 04:00PM - 07:00PM",
+    "days": "Daily, Tuesday, Thursday",
+    "content": "Happy HourBar BitesFresh Catch and Daily Oyster ListKid's MenuRaw BarPremium Oysters$21",
+    "specials": [],
+    "source": "http://amenstreet.com/charleston-east-bay-amen-street-food-menu"
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0.95,
+  "notes": [
+    "Explicit happy hour text found with valid time patterns"
+  ],
+  "needsLLM": false
+}

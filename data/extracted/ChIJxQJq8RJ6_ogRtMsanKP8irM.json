@@ -1,0 +1,25 @@
+{
+  "venueId": "ChIJxQJq8RJ6_ogRtMsanKP8irM",
+  "venueName": "Élevé Rooftop Restaurant & Lounge",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:13.723Z",
+  "happyHour": {
+    "found": true,
+    "reason": null,
+    "times": "2:00pm - 5:00pm, 2:00pm - 5:00pm",
+    "days": "Monday, Friday, Sunday",
+    "content": "Happy Hour: Monday - Friday, 2:00 pm – 5:00 pm Our Creations Artful & Inspired Handcrafted delicacies and a su",
+    "specials": [],
+    "source": "https://www.elevecharleston.com/"
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0.95,
+  "notes": [
+    "Explicit happy hour text found with valid time patterns"
+  ],
+  "needsLLM": false
+}

@@ -1,0 +1,25 @@
+{
+  "venueId": "ChIJT0AAmVZw_ogR4jRTh9lQg7o",
+  "venueName": "Five Loaves Cafe",
+  "dateAdded": "2026-01-12",
+  "extractedAt": "2026-01-12T17:25:12.011Z",
+  "happyHour": {
+    "found": true,
+    "reason": null,
+    "times": "3 - 5pm, 3 - 5pm",
+    "days": "Monday, Friday",
+    "content": "Happy Hour (Summerville location only) 3-5pm – Enjoy discounted wine, cocktails, and small plates",
+    "specials": [],
+    "source": "https://www.fiveloavescafe.com/events/"
+  },
+  "businessHours": {
+    "found": false,
+    "times": null,
+    "source": null
+  },
+  "confidence": 0.95,
+  "notes": [
+    "Explicit happy hour text found with valid time patterns"
+  ],
+  "needsLLM": false
+}
