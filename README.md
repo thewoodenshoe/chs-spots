@@ -2,6 +2,17 @@
 
 A crowdsourced map application for discovering and sharing local hotspots in Charleston, SC areas including Daniel Island, Mount Pleasant, James Island, Downtown Charleston, and Sullivan's Island.
 
+## Quick Start (TLDR)
+
+1. **Create Areas Config**: `node scripts/create-areas.js`
+2. **Seed Venues**: `node scripts/seed-venues.js` (requires Google Maps API key)
+3. **Download Raw HTML**: `node scripts/download-raw-html.js`
+4. **Merge Raw Files**: `node scripts/merge-raw-files.js`
+5. **Filter Happy Hour**: `node scripts/filter-happy-hour.js`
+6. **Extract Happy Hours** (Optional): `npm run extract:incremental` or bulk LLM extraction
+
+That's it! Run `npm run dev` to start the website.
+
 ## Features
 
 - 🗺️ **Interactive Google Maps** with curated spots
@@ -53,39 +64,15 @@ npm run dev
 
 5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-## UI Features
+## Data Pipeline
 
-### Show All Venues Toggle
-
-A debugging/testing feature that displays all venues from `venues.json` as **red markers** on the map.
-
-**Location:** Bottom left, next to "Closest Nearby" button
-
-**Features:**
-- **Toggle On/Off**: Click to show/hide all venues
-- **Red Markers**: Venues display as red circular markers (32px)
-- **Area Filtering**: Automatically filters by selected area
-- **InfoWindow**: Click venue marker to see name, area, address, website (no happy hour info)
-- **Overlay**: Venues overlay with spots (spots appear on top)
-- **Mobile/Desktop**: Responsive button layout
-  - Mobile: Icon only, buttons stack vertically
-  - Desktop: Icon + text, buttons side-by-side
-
-**Purpose:** Visualize all discovered venues per area for testing and debugging venue assignment accuracy.
-
-## Initial Setup: Running Scripts in Sequence
-
-The project requires running scripts in a specific order to generate the necessary data files. Follow these steps sequentially:
+The application uses a multi-stage data pipeline to discover venues and extract happy hour information:
 
 ### Step 1: Create Areas Configuration
 
 **Script:** `scripts/create-areas.js`
 
-**What it does:**
-- Creates the `data/areas.json` file with area definitions
-- Defines 7 Charleston areas: Daniel Island, Mount Pleasant, Downtown Charleston, Sullivan's Island, North Charleston, West Ashley, and James Island
-- Each area includes center coordinates, radius, bounds, and description
-- This file is required by all subsequent scripts
+Creates `data/areas.json` with area definitions for all Charleston areas. This file must be created before running venue seeding scripts.
 
 **Run:**
 ```bash
@@ -93,7 +80,7 @@ node scripts/create-areas.js
 ```
 
 **Output:**
-- `data/areas.json` - Area configuration file used by the app and scripts
+- `data/areas.json` - Area configuration with center coordinates, radius, bounds, and descriptions for 8 Charleston areas
 
 ---
 
@@ -101,170 +88,7 @@ node scripts/create-areas.js
 
 **Script:** `scripts/seed-venues.js`
 
-**What it does:**
-- Fetches alcohol-serving venues from Google Places API for all areas defined in `areas.json`
-- Queries multiple venue types: bar, restaurant, brewery, night_club, wine_bar
-- Uses the area centers and radii from `areas.json` to search each area
-- Fetches website URLs from Google Places Details API
-- Deduplicates venues by place_id
-- Appends new venues to existing `venues.json` without overwriting (safe to run multiple times)
-
-**Requirements:**
-- `areas.json` must exist (created in Step 1)
-- `NEXT_PUBLIC_GOOGLE_MAPS_KEY` or `GOOGLE_PLACES_KEY` environment variable
-
-**Run:**
-```bash
-node scripts/seed-venues.js
-```
-
-**Expected Runtime:**
-- 10-30 minutes depending on number of areas and venues
-- Rate limiting: 1-2 seconds between API calls
-
-**Output:**
-- `data/venues.json` - All discovered venues with name, address, coordinates, website, types, and area assignment
-
----
-
-### Step 3: Scrape Happy Hour Data (Optional)
-
-**Script:** `scripts/update-happy-hours.js`
-
-**What it does:**
-- Scrapes restaurant websites to collect raw happy hour data
-- **Decoupled Architecture**: Only saves raw scraped data, does NOT modify `venues.json` or `spots.json`
-- Detects multi-location/chain restaurant sites and finds location-specific pages
-- Discovers relevant subpages (menus, specials, happy hour pages) using 30+ keywords
-- Extracts raw happy hour text snippets
-- Saves per-venue scraped data to `data/scraped/<venue-id>.json`
-- Collects URL patterns for learning (`data/url-patterns.json`)
-- **Parallel Processing**: 8 workers for fast execution
-
-**Requirements:**
-- `venues.json` must exist (created in Step 2)
-- Venues with websites are processed
-- Optionally uses `GOOGLE_SEARCH_API_KEY` and `GOOGLE_SEARCH_ENGINE_ID` for website finding (not required)
-
-**Run:**
-```bash
-node scripts/update-happy-hours.js
-```
-
-**Expected Runtime:**
-- ~8 minutes for 741 venues (with 8 parallel workers)
-- ~3-4 minutes on subsequent runs the same day (uses per-venue cache)
-- Rate limiting: 1.5-2.5 seconds between requests (only for fresh fetches)
-
-**Output:**
-- `data/scraped/<venue-id>.json` - Raw scraped data per venue (one file per venue)
-- `data/url-patterns.json` - All discovered URL path patterns
-- `data/cache/*.html` - Daily cached HTML content from venue websites
-- `logs/update-happy-hours.log` - Detailed log file with timestamps
-
-**Note:** This script uses per-venue daily caching. See the [Caching Strategy](#caching-strategy) section for details.
-
----
-
-### Step 4: Extract Happy Hour Information (Optional)
-
-**Script:** `scripts/extract-happy-hours.js`
-
-**What it does:**
-- Reads raw scraped data from `data/scraped/`
-- Extracts structured happy hour information
-- Creates or updates spots in `spots.json`
-
-**Requirements:**
-- `data/scraped/` directory with scraped venue files (created in Step 3)
-
-**Run:**
-```bash
-node scripts/extract-happy-hours.js
-```
-
-**Output:**
-- `data/spots.json` - Updated with structured happy hour spots
-
----
-
-### Step 4: Incremental Updates (Optional, Run Periodically)
-
-**Script:** `scripts/seed-incremental.js`
-
-**What it does:**
-- Designed to run nightly or on-demand for ongoing maintenance
-- Appends new venues from Google Places API (finds venues not already in `venues.json`)
-- Enriches missing website URLs using Google Text Search API
-- Generates CSV file for venues without websites for manual review
-- Safe to run multiple times (only adds new venues, doesn't overwrite)
-
-**Requirements:**
-- `areas.json` and `venues.json` must exist (created in Steps 1-2)
-- `NEXT_PUBLIC_GOOGLE_MAPS_KEY` or `GOOGLE_PLACES_KEY` environment variable
-
-**Run:**
-```bash
-node scripts/seed-incremental.js
-```
-
-**Output:**
-- `data/venues.json` - Updated with new venues and enriched website information
-- `data/venue-website-not-found.csv` - CSV file of venues without websites for manual review
-
----
-
-### Quick Start Summary
-
-For a fresh setup, run these commands in order:
-
-```bash
-# Step 1: Create areas configuration
-node scripts/create-areas.js
-
-# Step 2: Seed venues (requires Google Maps API key)
-node scripts/seed-venues.js
-
-# Step 3: Update happy hours - scrape raw data (optional, ~8 min with parallel processing)
-node scripts/update-happy-hours.js
-
-# Step 4: Extract happy hours - process scraped data (optional)
-node scripts/extract-happy-hours.js
-
-# Step 5: Run development server
-npm run dev
-```
-
-## Scripts (Detailed Documentation)
-
-**Note:** For initial setup, follow the sequential steps above. This section provides detailed documentation for each script.
-
-### Data Seeding Scripts
-
-#### 1. Create Areas (`scripts/create-areas.js`)
-
-**Purpose:** Initial setup script to create the areas configuration file.
-
-Creates `data/areas.json` with area definitions for all Charleston areas. This file must be created before running `seed-venues.js` or `seed-incremental.js`.
-
-**Usage:**
-```bash
-node scripts/create-areas.js
-```
-
-**Output:**
-- `data/areas.json` - Area configuration with center coordinates, radius, bounds, and descriptions for 7 Charleston areas
-
-**What it does:**
-- Defines 7 Charleston areas: Daniel Island, Mount Pleasant, Downtown Charleston, Sullivan's Island, North Charleston, West Ashley, and James Island
-- Each area includes center coordinates, radius in meters, bounding box coordinates, and description
-- Creates the `data/` directory if it doesn't exist
-
----
-
-#### 2. Seed Venues (`scripts/seed-venues.js`)
-
-Fetches all alcohol-serving venues from Google Places API for Charleston areas.
+Fetches alcohol-serving venues from Google Places API for all areas defined in `areas.json`.
 
 **Features:**
 - Uses Google Places Nearby Search API with grid-based search (4 overlapping quadrants per area)
@@ -279,7 +103,12 @@ Fetches all alcohol-serving venues from Google Places API for Charleston areas.
 - Deduplicates by place_id
 - Appends to existing `/data/venues.json` without overwriting
 
-**Usage:**
+**Requirements:**
+- `areas.json` must exist (created in Step 1)
+- `NEXT_PUBLIC_GOOGLE_MAPS_KEY` or `GOOGLE_PLACES_KEY` environment variable
+- Optional: `GOOGLE_SEARCH_API_KEY` and `GOOGLE_SEARCH_ENGINE_ID` for website fallback (free tier available)
+
+**Run:**
 ```bash
 # Run for all areas
 node scripts/seed-venues.js
@@ -288,183 +117,156 @@ node scripts/seed-venues.js
 node scripts/seed-venues.js "Isle of Palms"
 ```
 
-**Output:**
-- `/data/venues.json` - All discovered venues with name, address, coordinates, website, types, and area
-- `/data/backup/venues-YYYY-MM-DDTHH-MM-SS.json` - Timestamped backup before each write
-
-**Configuration:**
-- Requires `NEXT_PUBLIC_GOOGLE_MAPS_KEY` or `GOOGLE_PLACES_KEY` in environment
-- Optional: `GOOGLE_SEARCH_API_KEY` and `GOOGLE_SEARCH_ENGINE_ID` for website fallback (free tier available)
-- Rate limiting: 1-2 seconds between API calls
-- Parallel workers: 5 concurrent website fetches (configurable)
-
-**Performance:**
+**Expected Runtime:**
 - ~8-10 minutes for all areas (with parallel processing)
 - Website success rate: ~89% (Places API) + ~6% (Google search fallback) = ~95% total
 
+**Output:**
+- `data/venues.json` - All discovered venues with name, address, coordinates, website, types, and area assignment
+- `data/backup/venues-YYYY-MM-DDTHH-MM-SS.json` - Timestamped backup before each write
+
 ---
 
-#### 3. Update Happy Hours (`scripts/update-happy-hours.js`)
+### Step 3: Download Raw HTML
 
-Scrapes restaurant websites to discover and extract happy hour information. **Decoupled architecture** - only scrapes raw data, does not modify `venues.json` or `spots.json`.
+**Script:** `scripts/download-raw-html.js`
+
+Downloads raw HTML from venue websites and subpages. This is the first step in the happy hour extraction pipeline.
 
 **Features:**
-- **Parallel Processing**: 8 parallel workers for fast execution (~8 minutes for 741 venues)
-- **Multi-Location Detection**: Automatically detects chain/restaurant group sites
-- **Local Page Discovery**: Finds location-specific pages (e.g., "Daniel Island", "Mount Pleasant")
-- **Comprehensive Submenu Discovery**: Finds relevant pages using 30+ keywords:
-  - Menu pages: menu, menus, food-menu, drink-menu, dinner, brunch, lunch
-  - Drink pages: cocktails, wine, beer, drinks, raw-bar
-  - Happy hour pages: happy-hour, happyhour, happier-hour, specials, daily-specials, deals, promotions
-  - Event pages: event, events, bar, club, wine-club
-  - Other: pdf, overview
-- **Per-Venue Caching**: Daily cache per venue (`data/scraped/<venue-id>.json`)
-- **URL Pattern Extraction**: Discovers common URL patterns for learning (`data/url-patterns.json`)
-- **Website Discovery**: Attempts to find missing websites (free Google search, then Places API)
-- **Decoupled Design**: Saves raw scraped data only, extraction handled by separate script
+- Downloads raw, untouched HTML (source of truth)
+- Downloads homepage + relevant subpages (menu, happy hour, specials, etc.)
+- **Daily Caching**: Per-venue daily cache (skips re-download if already downloaded today)
+- **Previous Day Archive**: Archives previous day's downloads for diff comparison
+- Extracts URL patterns for learning
+- Handles multi-location sites (finds location-specific pages)
 
-**Usage:**
+**Requirements:**
+- `venues.json` must exist (created in Step 2)
+- Venues with websites are processed
+
+**Run:**
 ```bash
-# Run for all venues
-node scripts/update-happy-hours.js
-
-# Run with custom worker count
-node scripts/update-happy-hours.js --workers 10
-
-# Run for specific area
-node scripts/update-happy-hours.js "Daniel Island"
+node scripts/download-raw-html.js
 ```
 
 **Expected Runtime:**
-- ~8 minutes for 741 venues (with 8 parallel workers)
-- ~3-4 minutes on subsequent runs the same day (uses per-venue cache)
-- Rate limiting: 1.5-2.5 seconds between requests (only for fresh fetches)
-
-**Output Files:**
-- `/data/scraped/<venue-id>.json` - Raw scraped data per venue (sources, rawMatches, urlPatterns)
-- `/data/url-patterns.json` - All discovered URL path patterns (for learning)
-- `/data/cache/*.html` - Daily cached HTML content (refreshed daily)
-
-**How It Works:**
-1. Loads venues from `/data/venues.json` (read-only)
-2. For each venue with a website:
-   - Checks if scraped file exists for today (uses cache if available)
-   - Fetches homepage
-   - Detects if multi-location site
-   - If multi-location, searches for local page links matching venue area
-   - Extracts internal links matching submenu keywords
-   - Fetches homepage/local page + up to 10 relevant subpages
-   - Extracts happy hour text snippets (raw matches)
-   - Extracts URL patterns from all pages
-   - Saves raw data to `/data/scraped/<venue-id>.json`
-3. Aggregates all URL patterns into `/data/url-patterns.json`
-
-**Note:** This script does NOT update `spots.json`. Use `extract-happy-hours.js` to process scraped data.
-
-**Logging:**
-The script provides detailed progress:
-- 🔍 Multi-location detection
-- 📍 Local page discovery
-- 🔗 Submenu discovery count
-- 🍹 Happy hour snippet extraction
-- ✅ Success / ❌ Error status
-- 📊 Summary statistics
-
-**Example Output:**
-```
-🍺 Starting Happy Hour Update Agent...
-
-[1/387] Processing: The Kingstide
-  🌐 https://thekingstide.com/
-  📍 Area: Daniel Island
-  🔍 Found multi-location site
-  📍 Found 2 potential local page(s)
-  ✅ Using local page: https://thekingstide.com/daniel-island
-  🔗 Discovered 5 submenu(s)
-  🍹 Found 3 happy hour snippet(s)
-  ✅ Scanned: 3 happy hour snippet(s) from 5 subpage(s)
-  ✨ Created new spot
-
-📊 Summary:
-   ✅ Processed: 387 venues
-   🍹 Found happy hour info: 45 venues
-   🏢 Multi-location sites detected: 23
-   📍 Local pages used: 18
-   🔗 Total submenus discovered: 156
-```
-
----
-
-## Caching Strategy
-
-The `update-happy-hours.js` script uses **per-venue daily caching** to improve performance and reduce network load:
-
-### How It Works
-
-- **Scraped Data Cache:** `data/scraped/<venue-id>.json` (one file per venue)
-- **HTML Cache:** `data/cache/` directory (created automatically)
-- **Cache Key:** Venue ID for scraped data, safe filename for HTML (e.g., `thekingstide-com.html`)
-- **Cache Duration:** One day (cache is valid until midnight)
-- **Cache Behavior:**
-  - If scraped file exists and was created today → skip scraping (use cached data)
-  - If HTML cache file exists and was modified today → use cached HTML
-  - If cache file is missing or from previous day → fetch fresh HTML and save to cache
-  - Cache files are overwritten daily (no history kept)
-
-### Benefits
-
-- **Speed:** Subsequent runs the same day are 5-10x faster
-- **Network Load:** Reduces HTTP requests by reusing cached content
-- **Reliability:** Less dependency on external websites being available
-- **Cost:** Reduces API usage if using paid services
-- **Reprocessing:** Can re-run extraction without re-scraping
-
-### Cache Files
-
-- **Scraped Data:** `data/scraped/<venue-id>.json` - Complete raw data per venue
-- **HTML Cache:** `data/cache/{safe-domain-name}.html` - Raw HTML text (UTF-8 encoding, no images/CSS/JS/assets)
-- **Lifecycle:** Automatically refreshed daily
-- **Cleanup:** Manual deletion if needed (script will recreate)
-
----
-
-#### 4. Extract Happy Hours (`scripts/extract-happy-hours.js`)
-
-**Purpose:** Extracts structured happy hour information from raw scraped data.
-
-Processes the raw scraped data from `update-happy-hours.js` and creates structured spots in `spots.json`.
-
-**Usage:**
-```bash
-node scripts/extract-happy-hours.js
-```
-
-**What it does:**
-- Reads all scraped files from `/data/scraped/`
-- Extracts structured happy hour information using NLP/regex
-- Creates or updates spots in `/data/spots.json`
-- Handles deduplication and formatting
-
-**Requirements:**
-- `/data/scraped/` directory with scraped venue files (created by `update-happy-hours.js`)
+- ~10-15 minutes for 741 venues (first run)
+- ~1-2 minutes on subsequent runs the same day (uses cache)
 
 **Output:**
-- `/data/spots.json` - Updated with structured happy hour spots
+- `data/raw/<venue-id>/` - Raw HTML files per venue (one directory per venue)
+- `data/raw/<venue-id>/*.html` - Individual HTML files (hashed filenames)
+- `data/raw/<venue-id>/metadata.json` - URL to hash mapping
+- `data/raw/previous/` - Previous day's downloads (for diff comparison)
 
 ---
 
-#### 5. Seed Incremental (`scripts/seed-incremental.js`)
+### Step 4: Merge Raw Files
 
-**Purpose:** Ongoing maintenance script to add new venues and enrich existing data.
+**Script:** `scripts/merge-raw-files.js`
 
-Designed to run periodically (nightly or on-demand) to keep venue data up-to-date.
+Merges all raw HTML files per venue into single JSON files. This is the second step in the pipeline.
 
-**Usage:**
+**Features:**
+- Combines all HTML files per venue into a single merged JSON file
+- Preserves metadata (URLs, download timestamps, hashes)
+- One file per venue
+
+**Requirements:**
+- `data/raw/` directory with raw HTML files (created in Step 3)
+
+**Run:**
 ```bash
-node scripts/seed-incremental.js
+node scripts/merge-raw-files.js
 ```
 
-**What it does:**
+**Expected Runtime:**
+- ~1-2 minutes for 741 venues
+
+**Output:**
+- `data/silver_merged/<venue-id>.json` - Merged JSON file per venue (all pages combined with metadata)
+
+---
+
+### Step 5: Filter Happy Hour
+
+**Script:** `scripts/filter-happy-hour.js`
+
+Filters merged files that contain "happy hour" text patterns. This is the third step in the pipeline.
+
+**Features:**
+- Searches for "happy hour" patterns (case-insensitive, with/without spaces, plural forms)
+- Copies matching venues to `silver_matched/` directory
+- Preserves all data from merged files
+
+**Requirements:**
+- `data/silver_merged/` directory with merged files (created in Step 4)
+
+**Run:**
+```bash
+node scripts/filter-happy-hour.js
+```
+
+**Expected Runtime:**
+- ~30 seconds for 741 venues
+
+**Output:**
+- `data/silver_matched/<venue-id>.json` - Only venues with "happy hour" text (copied from silver_merged)
+
+---
+
+### Step 6: Extract Happy Hours (LLM)
+
+**Script:** `scripts/extract-happy-hours.js`
+
+Extracts structured happy hour data from `silver_matched` files using LLM. This is the final step in the pipeline.
+
+**Workflow:**
+
+#### Bulk Extraction (One-Time Manual)
+
+1. **Prepare bulk data:**
+```bash
+npm run extract:bulk:prepare
+```
+Creates `data/gold/bulk-input.json` for manual Grok UI extraction.
+
+2. **Manual extraction:** Copy-paste into Grok UI, extract, save results to `data/gold/bulk-results.json`
+
+3. **Process bulk results:**
+```bash
+npm run extract:bulk:process
+```
+Creates `data/gold/<venue-id>.json` for each venue and marks bulk as complete.
+
+#### Incremental Extraction (Daily Automated)
+
+```bash
+npm run extract:incremental
+```
+
+Extracts structured happy hour data using LLM API.
+- Only processes new/changed venues (compares timestamps)
+- Requires `.bulk-complete` flag to exist (bulk must be done first)
+- Uses LLM API for extraction
+
+**Requirements:**
+- `data/silver_matched/` directory with filtered files (created in Step 5)
+- Bulk extraction must be completed first (for incremental mode)
+
+**Output:**
+- `data/gold/<venue-id>.json` - Extracted structured happy hour data per venue
+
+---
+
+### Step 7: Incremental Venue Updates (Optional, Run Periodically)
+
+**Script:** `scripts/seed-incremental.js`
+
+Designed to run nightly or on-demand for ongoing maintenance. Finds new venues and enriches missing data.
+
+**Features:**
 - Appends new venues from Google Places API (finds venues not already in `venues.json`)
 - Uses efficient Strategy 3: Only searches `bar`, `restaurant`, `brewery` types
 - Uses 50% reduced radius for faster execution
@@ -476,25 +278,55 @@ node scripts/seed-incremental.js
 - `areas.json` and `venues.json` must exist (created in Steps 1-2)
 - `NEXT_PUBLIC_GOOGLE_MAPS_KEY` or `GOOGLE_PLACES_KEY` environment variable
 
+**Run:**
+```bash
+npm run seed:incremental
+```
+
 **Output:**
 - `data/venues.json` - Updated with new venues and enriched website information
-- `data/venue-website-not-found.csv` - CSV file of venues without websites for manual review
 
 ---
 
-#### 5. Align Spots to Google (`scripts/align-spots-to-google.js`)
+## Complete Pipeline Summary
 
-One-time script to align existing curated spots to precise Google Maps locations.
-
-**Usage:**
-```bash
-node scripts/align-spots-to-google.js
+```
+1. create-areas.js        → data/areas.json
+2. seed-venues.js         → data/venues.json
+3. download-raw-html.js   → data/raw/<venue-id>/
+4. merge-raw-files.js     → data/silver_merged/<venue-id>.json
+5. filter-happy-hour.js   → data/silver_matched/<venue-id>.json
+6. extract-happy-hours.js → data/gold/<venue-id>.json
 ```
 
-**Features:**
-- Uses Google Places "Find Place" or "Text Search" API
-- Updates lat/lng coordinates for accurate positioning
-- Requires `GOOGLE_PLACES_KEY` in environment
+**For a fresh setup, run these commands in order:**
+
+```bash
+# Step 1: Create areas configuration
+node scripts/create-areas.js
+
+# Step 2: Seed venues (requires Google Maps API key)
+node scripts/seed-venues.js
+
+# Step 3: Download raw HTML
+node scripts/download-raw-html.js
+
+# Step 4: Merge raw files
+node scripts/merge-raw-files.js
+
+# Step 5: Filter happy hour
+node scripts/filter-happy-hour.js
+
+# Step 6: Extract happy hours (bulk + incremental)
+npm run extract:bulk:prepare
+# ... manual Grok UI extraction ...
+npm run extract:bulk:process
+# ... then for daily updates ...
+npm run extract:incremental
+
+# Step 7: Run development server
+npm run dev
+```
 
 ---
 
@@ -522,55 +354,48 @@ Curated spots with activity information.
   "title": "Venue Name",
   "lat": 32.845,
   "lng": -79.908,
-  "description": "• Happy hour 4-6 PM daily — source: https://example.com/menu\n• Friday specials 5-7 PM — source: https://example.com/specials",
-  "activity": "Happy Hour",
+  "description": "• Happy hour 4-6 PM daily — source: https://example.com/menu",
+  "type": "Happy Hour",
   "area": "Daniel Island"
 }
 ```
 
-### `/data/scraped/<venue-id>.json`
-Raw scraped data per venue (created by update-happy-hours.js).
-```json
-{
-  "venueId": "ChIJ1...",
-  "venueName": "The Kingstide",
-  "venueArea": "Daniel Island",
-  "website": "https://thekingstide.com/",
-  "scrapedAt": "2026-01-12T15:14:47.886Z",
-  "sources": [
-    {
-      "url": "https://thekingstide.com/daniel-island",
-      "text": "Happy hour 4-6 PM daily...",
-      "pageType": "location-page",
-      "scrapedAt": "2026-01-12T15:14:48.314Z"
-    }
-  ],
-  "rawMatches": [
-    {
-      "text": "Happy hour 4-6 PM daily",
-      "source": "https://thekingstide.com/daniel-island"
-    }
-  ],
-  "urlPatterns": ["menu", "happy-hour", "specials"]
-}
+### Pipeline Data Structure
+
+```
+data/
+├── areas.json              # Area configuration
+├── venues.json             # All discovered venues
+├── spots.json              # Curated spots with activities
+├── backup/                 # Timestamped backups
+├── raw/                    # Raw HTML files (Step 3)
+│   └── <venue-id>/
+│       ├── <hash>.html     # Individual HTML files
+│       └── metadata.json   # URL to hash mapping
+├── silver_merged/          # Merged JSON per venue (Step 4)
+│   └── <venue-id>.json     # All pages combined
+├── silver_matched/         # Only venues with "happy hour" (Step 5)
+│   └── <venue-id>.json     # Copied from silver_merged
+└── gold/                   # LLM extracted structured data (Step 6)
+    ├── <venue-id>.json     # Extracted happy hour data
+    ├── .bulk-complete      # Flag: Bulk extraction done
+    ├── bulk-input.json     # For manual Grok UI
+    └── bulk-results.json   # From manual Grok UI
 ```
 
-### `/data/url-patterns.json`
-All discovered URL path patterns (for learning and improving submenu detection).
-```json
-[
-  "menu",
-  "happy-hour",
-  "specials",
-  "drink-menu",
-  "food-menu"
-]
-```
-
-### `/data/backup/venues-*.json`
-Timestamped backups of venues.json (created automatically before each write).
+---
 
 ## Testing
+
+### Run Unit Tests (Jest)
+```bash
+npm test
+```
+
+### Run Pipeline Validation Tests
+```bash
+npm run test:pipeline
+```
 
 ### Run E2E Tests
 ```bash
@@ -582,23 +407,13 @@ npm run test:e2e
 npm run test:e2e:ui
 ```
 
-### Run Unit Tests (Jest)
-```bash
-npm test
-```
-
 **Test Coverage:**
-- Page load and header visibility
-- Area selector functionality
-- Activity filter modal
-- Add spot button and submission
-- Map display
-- Venues toggle functionality (mobile/desktop)
-- Mobile responsiveness
-- Error handling
-- API routes (spots, venues, areas)
-- Context providers (SpotsContext, VenuesContext)
-- Component interactions
+- **Seed Venues**: 4 test files, ~70+ test cases, runs on git push
+- **Raw Layer**: 4 test files, ~73+ test cases, runs on git push
+- **Silver Layer**: 5 test files, ~110+ test cases, runs on git push
+- **Total**: 13+ test files, 250+ test cases, all run on git push via GitHub Actions
+
+---
 
 ## Project Structure
 
@@ -609,18 +424,21 @@ chs-spots/
 │   ├── spots.json            # Curated spots with activities
 │   ├── areas.json            # Area configuration
 │   ├── backup/               # Timestamped backups
-│   │   └── venues-*.json    # Auto-generated backups
-│   ├── cache/                # Daily cached HTML
-│   ├── scraped/              # Raw scraped data per venue
-│   │   └── <venue-id>.json  # One file per venue
-│   ├── url-patterns.json     # Discovered URL patterns
-│   └── restaurants-submenus.json  # Legacy submenu inventory
+│   ├── raw/                  # Raw HTML files
+│   ├── silver_merged/        # Merged JSON per venue
+│   ├── silver_matched/       # Only venues with "happy hour"
+│   └── gold/                 # LLM extracted structured data
 ├── scripts/                   # Node.js scripts
 │   ├── create-areas.js       # Create areas.json
 │   ├── seed-venues.js        # Seed venues (with parallel processing)
 │   ├── seed-incremental.js   # Incremental venue updates
-│   ├── update-happy-hours.js # Scrape raw data (decoupled)
-│   ├── extract-happy-hours.js # Extract structured data
+│   ├── download-raw-html.js  # Download raw HTML (pipeline Step 1)
+│   ├── merge-raw-files.js    # Merge raw files (pipeline Step 2)
+│   ├── filter-happy-hour.js  # Filter happy hour (pipeline Step 3)
+│   ├── extract-happy-hours.js # Extract structured data (pipeline Step 4)
+│   ├── prepare-bulk-llm-extraction.js # Bulk LLM preparation
+│   ├── process-bulk-llm-results.js    # Process bulk LLM results
+│   ├── compare-raw-files.js  # Compare raw files for diffs
 │   └── __tests__/            # Script unit tests
 ├── src/
 │   ├── app/                  # Next.js app directory
@@ -628,11 +446,11 @@ chs-spots/
 │   │   ├── layout.tsx       # Root layout with providers
 │   │   └── api/             # API routes
 │   │       ├── spots/       # Spots CRUD
-│   │       ├── venues/      # Venues GET (new)
+│   │       ├── venues/      # Venues GET
 │   │       └── areas/       # Areas config
 │   ├── components/           # React components
 │   │   ├── MapComponent.tsx # Google Maps integration
-│   │   ├── VenuesToggle.tsx # Show/hide venues toggle (new)
+│   │   ├── VenuesToggle.tsx # Show/hide venues toggle
 │   │   ├── FilterModal.tsx  # Activity selection
 │   │   ├── SubmissionModal.tsx  # Add new spot
 │   │   ├── EditSpotModal.tsx    # Edit/delete spot
@@ -640,10 +458,12 @@ chs-spots/
 │   │   └── ActivityChip.tsx     # Activity display
 │   └── contexts/
 │       ├── SpotsContext.tsx  # Global spots state
-│       └── VenuesContext.tsx # Global venues state (new)
+│       └── VenuesContext.tsx # Global venues state
 └── e2e/                      # Playwright E2E tests
     └── app.spec.ts
 ```
+
+---
 
 ## Environment Variables
 
@@ -661,6 +481,8 @@ GOOGLE_SEARCH_API_KEY=your_google_search_api_key_here
 GOOGLE_SEARCH_ENGINE_ID=your_search_engine_id_here
 ```
 
+---
+
 ## Deployment
 
 The app is ready to deploy on Vercel, Netlify, or any Next.js-compatible platform.
@@ -672,6 +494,8 @@ npm run build
 npm start
 ```
 
+---
+
 ## Contributing
 
 1. Fork the repository
@@ -681,9 +505,13 @@ npm start
 5. Commit and push
 6. Open a pull request
 
+---
+
 ## License
 
 MIT
+
+---
 
 ## Troubleshooting
 
