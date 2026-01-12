@@ -1,3 +1,17 @@
+/**
+ * Update Happy Hours - Scraping Script
+ * 
+ * This script scrapes venue websites and saves raw data to data/scraped/<venue-id>.json
+ * It is completely decoupled from venues.json and spots.json
+ * 
+ * Features:
+ * - Daily caching per venue (checks if scraped file exists for today)
+ * - Extracts all URL path patterns for learning
+ * - Saves raw scraped content (HTML text) for later extraction
+ * 
+ * Run with: node scripts/update-happy-hours.js [area-filter]
+ */
+
 const fs = require('fs');
 const path = require('path');
 const cheerio = require('cheerio');
@@ -14,52 +28,27 @@ const logPath = path.join(logDir, 'update-happy-hours.log');
 fs.writeFileSync(logPath, '', 'utf8');
 
 /**
- * Logger function: logs to console (with emojis) and file (without emojis, with timestamp)
+ * Shared logger function: logs to console and file with ISO timestamp
  */
-function log(message) {
-  // Log to console (with emojis/colors)
+function logToFileAndConsole(message, logPath) {
+  const ts = new Date().toISOString();
   console.log(message);
-  
-  // Format timestamp as [YYYY-MM-DD HH:mm:ss]
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
-  const timestamp = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}]`;
-  
-  // Strip emojis from message for file logging
-  // Emoji ranges: \u{1F300}-\u{1F5FF} (Misc Symbols), \u{1F600}-\u{1F64F} (Emoticons), 
-  // \u{1F680}-\u{1F6FF} (Transport), \u{2600}-\u{26FF} (Misc symbols), \u{2700}-\u{27BF} (Dingbats)
-  const messageWithoutEmojis = message.replace(/[\u{1F300}-\u{1F5FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
-  
-  // Append to log file
-  fs.appendFileSync(logPath, `${timestamp} ${messageWithoutEmojis}\n`, 'utf8');
+  fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
 }
 
 /**
- * Verbose logger: writes detailed information to log file only (not to console)
- * Use for --vvv level detailed logging
+ * File-only logger: logs verbose details only to file, not console
  */
-function logVerbose(message) {
-  // Format timestamp as [YYYY-MM-DD HH:mm:ss]
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
-  const timestamp = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}]`;
-  
-  // Strip emojis from message
-  const messageWithoutEmojis = message.replace(/[\u{1F300}-\u{1F5FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
-  
-  // Append to log file (verbose details only in file)
-  fs.appendFileSync(logPath, `${timestamp} ${messageWithoutEmojis}\n`, 'utf8');
+function logToFileOnly(message, logPath) {
+  const ts = new Date().toISOString();
+  fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
 }
+
+// Alias for backward compatibility - console output + file
+const log = (message) => logToFileAndConsole(message, logPath);
+
+// Verbose logging - file only (for detailed diagnostics)
+const logVerbose = (message) => logToFileOnly(message, logPath);
 
 // Use built-in fetch (Node 18+) - redirect: 'follow' is the default behavior
 const fetch = globalThis.fetch || global.fetch;
@@ -70,8 +59,9 @@ if (typeof fetch !== 'function') {
 // Configuration
 const RATE_LIMIT_DELAY_MIN = 1500; // Minimum delay between requests
 const RATE_LIMIT_DELAY_MAX = 2500; // Maximum delay between requests
-const MAX_SUBPAGES = 10; // Maximum subpages to fetch per site (increased from 8)
+const MAX_SUBPAGES = 10; // Maximum subpages to fetch per site
 const MAX_LOCAL_LINKS = 3; // Maximum local page links to try
+const PARALLEL_WORKERS = 8; // Number of parallel workers for venue processing
 
 // Keywords for finding relevant subpages (case-insensitive match in href or link text)
 const SUBPAGE_KEYWORDS = [
@@ -106,21 +96,26 @@ const CHARLESTON_AREAS = [
   'mount pleasant',
   'james island',
   'downtown charleston',
-  'sullivan\'s island',
+  "sullivan's island",
   'sullivans island',
+  'isle of palms',
+  'iop',
+  'west ashley',
+  'north charleston',
   'charleston'
 ];
 
 // Paths
 const VENUES_PATH = path.join(__dirname, '../data/venues.json');
-const SPOTS_PATH = path.join(__dirname, '../data/spots.json');
-const SUBMENUS_INVENTORY_PATH = path.join(__dirname, '../data/restaurants-submenus.json');
+const SCRAPED_DIR = path.join(__dirname, '../data/scraped');
+const URL_PATTERNS_PATH = path.join(__dirname, '../data/url-patterns.json');
+const CACHE_DIR = path.join(__dirname, '../data/cache');
 
 /**
  * Get random delay between min and max
  */
 function getRandomDelay() {
-  return Math.floor(Math.random() * (RATE_LIMIT_DELAY_MAX - RATE_LIMIT_DELAY_MIN + 1)) + RATE_LIMIT_DELAY_MIN;
+  return Math.floor(Math.random() * (RATE_LIMIT_DELAY_MAX - RATE_LIMIT_DELAY_MIN + 1) + RATE_LIMIT_DELAY_MIN);
 }
 
 /**
@@ -180,6 +175,64 @@ function extractText(html) {
 }
 
 /**
+ * Extract all URL path patterns from HTML (for learning)
+ * Returns array of distinct path segments (without domain)
+ */
+function extractUrlPatterns(html, baseUrl) {
+  const $ = cheerio.load(html);
+  const patterns = new Set();
+  
+  try {
+    const baseUrlObj = new URL(baseUrl);
+    const baseHostname = baseUrlObj.hostname;
+    
+    $('a[href]').each((i, elem) => {
+      const href = $(elem).attr('href');
+      if (!href) return;
+      
+      try {
+        const resolvedUrl = resolveUrl(href, baseUrl);
+        if (!resolvedUrl) return;
+        
+        const urlObj = new URL(resolvedUrl);
+        
+        // Only include links from the same domain
+        if (urlObj.hostname === baseHostname) {
+          // Extract pathname (remove leading slash, trailing slash)
+          let pathname = urlObj.pathname;
+          if (pathname.startsWith('/')) {
+            pathname = pathname.substring(1);
+          }
+          if (pathname.endsWith('/')) {
+            pathname = pathname.substring(0, pathname.length - 1);
+          }
+          
+          // Split into segments and add each segment
+          if (pathname) {
+            // Add full path
+            patterns.add(pathname);
+            
+            // Add individual segments
+            const segments = pathname.split('/');
+            segments.forEach(segment => {
+              if (segment && segment.length > 0) {
+                patterns.add(segment);
+              }
+            });
+          }
+        }
+      } catch (e) {
+        // Skip invalid URLs
+      }
+    });
+  } catch (e) {
+    logVerbose(`  ⚠️  Error extracting URL patterns: ${e.message}`);
+  }
+  
+  return Array.from(patterns).sort();
+}
+
+/**
  * Detect if page is a multi-location/chain site
  */
 function detectMultiLocation(html, baseUrl) {
@@ -227,7 +280,6 @@ function generateAreaVariations(areaName) {
   variations.add(areaLower.replace(/'/g, ''));
   
   // Close matches for common patterns
-  // "north charleston" -> "n charleston", "n. charleston", "nc", "n charleston"
   if (areaLower.includes('north charleston')) {
     variations.add('north charleston');
     variations.add('n charleston');
@@ -236,7 +288,6 @@ function generateAreaVariations(areaName) {
     variations.add('northcharleston');
     variations.add('n-charleston');
   }
-  // "mount pleasant" -> "mt pleasant", "mt. pleasant", "mountpleasant"
   if (areaLower.includes('mount pleasant')) {
     variations.add('mount pleasant');
     variations.add('mt pleasant');
@@ -244,7 +295,6 @@ function generateAreaVariations(areaName) {
     variations.add('mountpleasant');
     variations.add('mt-pleasant');
   }
-  // "daniel island" -> "daniel island", "danielisland"
   if (areaLower.includes('daniel island')) {
     variations.add('daniel island');
     variations.add('danielisland');
@@ -288,7 +338,7 @@ function findLocalPageLinks(html, baseUrl, venueArea) {
     primaryAreaVariations.forEach((variation, index) => {
       // Exact match in link text (highest score)
       if (linkText.includes(variation)) {
-        const newScore = 1000 - index; // Much higher score for primary area
+        const newScore = 1000 - index;
         const isExact = linkText === variation || 
                        linkText.includes(' ' + variation + ' ') || 
                        linkText.startsWith(variation + ' ') || 
@@ -303,7 +353,7 @@ function findLocalPageLinks(html, baseUrl, venueArea) {
       }
       // Match in URL
       if (hrefLower.includes(variation)) {
-        const newScore = 500 - index; // Higher score for primary area URL matches
+        const newScore = 500 - index;
         if (newScore > score) {
           score = newScore;
           matchedArea = venueArea;
@@ -315,7 +365,7 @@ function findLocalPageLinks(html, baseUrl, venueArea) {
     if (score === 0) {
       otherAreaVariations.forEach((variation, index) => {
         if (linkText.includes(variation)) {
-          const newScore = 100 - index; // Lower score for other areas
+          const newScore = 100 - index;
           if (newScore > score) {
             score = newScore;
             matchedArea = variation;
@@ -348,7 +398,6 @@ function findLocalPageLinks(html, baseUrl, venueArea) {
   // Sort by score (highest first) and limit
   links.sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
-    // If scores are equal, prefer exact matches
     if (a.isExactMatch !== b.isExactMatch) return b.isExactMatch - a.isExactMatch;
     return 0;
   });
@@ -390,9 +439,100 @@ function findRelevantSubpageLinks(html, baseUrl) {
 }
 
 /**
- * Fetch URL with error handling and redirect following
+ * Generate safe cache file path from URL
  */
-async function fetchUrl(url, retries = 2) {
+function getCachePath(url) {
+  try {
+    const urlObj = new URL(url);
+    let cacheName = urlObj.hostname + urlObj.pathname;
+    cacheName = cacheName.replace(/\//g, '-');
+    cacheName = cacheName.replace(/\.(com|org|net|io|co|edu|gov)/g, '-$1');
+    cacheName = cacheName.replace(/[^a-zA-Z0-9-_]/g, '-');
+    cacheName = cacheName.replace(/-+/g, '-');
+    cacheName = cacheName.replace(/^-+|-+$/g, '');
+    if (cacheName.length > 200) {
+      cacheName = cacheName.substring(0, 200);
+    }
+    return path.join(CACHE_DIR, `${cacheName}.html`);
+  } catch (e) {
+    const safeName = url.replace(/[^a-zA-Z0-9]/g, '-').substring(0, 200);
+    return path.join(CACHE_DIR, `${safeName}.html`);
+  }
+}
+
+/**
+ * Check if cache file exists and was modified today
+ */
+function isCacheValid(cachePath) {
+  try {
+    if (!fs.existsSync(cachePath)) {
+      return false;
+    }
+    
+    const stats = fs.statSync(cachePath);
+    const cacheDate = new Date(stats.mtime);
+    const today = new Date();
+    
+    return cacheDate.getDate() === today.getDate() &&
+           cacheDate.getMonth() === today.getMonth() &&
+           cacheDate.getFullYear() === today.getFullYear();
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * Read HTML from cache file
+ */
+function readCache(cachePath) {
+  try {
+    return fs.readFileSync(cachePath, 'utf8');
+  } catch (e) {
+    throw new Error(`Failed to read cache: ${e.message}`);
+  }
+}
+
+/**
+ * Save HTML to cache file
+ */
+function saveCache(cachePath, html) {
+  try {
+    if (!fs.existsSync(CACHE_DIR)) {
+      fs.mkdirSync(CACHE_DIR, { recursive: true });
+    }
+    fs.writeFileSync(cachePath, html, 'utf8');
+  } catch (e) {
+    log(`  ⚠️  Cache write failed for ${cachePath}: ${e.message}`);
+  }
+}
+
+/**
+ * Fetch URL with error handling, redirect following, and daily caching
+ * Returns { html, fromCache } - fromCache indicates if cache was used
+ */
+async function fetchUrl(url, retries = 2, useCache = true) {
+  // Check cache first if enabled
+  if (useCache) {
+    const cachePath = getCachePath(url);
+    const cacheExists = fs.existsSync(cachePath);
+    if (cacheExists) {
+      if (isCacheValid(cachePath)) {
+        try {
+          const cachedHtml = readCache(cachePath);
+          logVerbose(`  💾 Using cache for ${url}`);
+          return { html: cachedHtml, fromCache: true };
+        } catch (e) {
+          logVerbose(`  ⚠️  Cache read failed, fetching fresh: ${e.message}`);
+        }
+      } else {
+        logVerbose(`  🔄 Cache expired (not from today), fetching fresh for ${url}`);
+      }
+    } else {
+      logVerbose(`  🔄 No cache found, fetching fresh for ${url}`);
+    }
+  }
+  
+  // Fetch fresh content
   for (let i = 0; i <= retries; i++) {
     try {
       const controller = new AbortController();
@@ -412,7 +552,16 @@ async function fetchUrl(url, retries = 2) {
         throw new Error(`HTTP ${response.status}`);
       }
       
-      return await response.text();
+      const html = await response.text();
+      
+      // Save to cache if enabled
+      if (useCache) {
+        const cachePath = getCachePath(url);
+        saveCache(cachePath, html);
+        logVerbose(`  🔄 Fetched fresh for ${url}`);
+      }
+      
+      return { html, fromCache: false };
     } catch (error) {
       if (error.name === 'AbortError') {
         throw new Error('Request timeout');
@@ -428,14 +577,12 @@ async function fetchUrl(url, retries = 2) {
 /**
  * Google search fallback for finding local pages
  * Uses Google Custom Search API (requires GOOGLE_SEARCH_API_KEY and GOOGLE_SEARCH_ENGINE_ID)
- * Falls back gracefully if API keys are not available
  */
 async function googleSearchFallback(venueName, venueArea) {
   const GOOGLE_SEARCH_API_KEY = process.env.GOOGLE_SEARCH_API_KEY;
   const GOOGLE_SEARCH_ENGINE_ID = process.env.GOOGLE_SEARCH_ENGINE_ID;
   
   if (!GOOGLE_SEARCH_API_KEY || !GOOGLE_SEARCH_ENGINE_ID) {
-    // API keys not configured - skip search
     return null;
   }
   
@@ -452,14 +599,12 @@ async function googleSearchFallback(venueName, venueArea) {
     const data = await response.json();
     
     if (data.items && data.items.length > 0) {
-      // Filter results to menu/specials/happy hour pages
       for (const item of data.items) {
         const link = item.link;
         const title = (item.title || '').toLowerCase();
         const snippet = (item.snippet || '').toLowerCase();
         const linkLower = link.toLowerCase();
         
-        // Check if result looks like a menu/specials page
         const isMenuPage = linkLower.includes('menu') || 
                           linkLower.includes('specials') || 
                           linkLower.includes('happy-hour') ||
@@ -477,7 +622,6 @@ async function googleSearchFallback(venueName, venueArea) {
         }
       }
       
-      // If no menu page found, return first result anyway
       log(`  🔍 Google search fallback found page (not menu-specific): ${data.items[0].link}`);
       return data.items[0].link;
     }
@@ -544,29 +688,147 @@ function extractHappyHourInfo(text, sourceUrl) {
 }
 
 /**
+ * Get scraped file path for a venue
+ */
+function getScrapedFilePath(venueId) {
+  return path.join(SCRAPED_DIR, `${venueId}.json`);
+}
+
+/**
+ * Check if scraped file exists and was created today
+ */
+function isScrapedFileValid(scrapedFilePath) {
+  try {
+    if (!fs.existsSync(scrapedFilePath)) {
+      return false;
+    }
+    
+    const stats = fs.statSync(scrapedFilePath);
+    const fileDate = new Date(stats.mtime);
+    const today = new Date();
+    
+    return fileDate.getDate() === today.getDate() &&
+           fileDate.getMonth() === today.getMonth() &&
+           fileDate.getFullYear() === today.getFullYear();
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * Load existing scraped data for a venue
+ */
+function loadScrapedData(scrapedFilePath) {
+  try {
+    const content = fs.readFileSync(scrapedFilePath, 'utf8');
+    return JSON.parse(content);
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * Save scraped data for a venue
+ */
+function saveScrapedData(scrapedFilePath, data) {
+  try {
+    if (!fs.existsSync(SCRAPED_DIR)) {
+      fs.mkdirSync(SCRAPED_DIR, { recursive: true });
+    }
+    fs.writeFileSync(scrapedFilePath, JSON.stringify(data, null, 2), 'utf8');
+  } catch (e) {
+    log(`  ⚠️  Failed to save scraped data: ${e.message}`);
+  }
+}
+
+/**
+ * Load or initialize URL patterns file
+ */
+function loadUrlPatterns() {
+  try {
+    if (fs.existsSync(URL_PATTERNS_PATH)) {
+      const content = fs.readFileSync(URL_PATTERNS_PATH, 'utf8');
+      return JSON.parse(content);
+    }
+  } catch (e) {
+    logVerbose(`  ⚠️  Error loading URL patterns: ${e.message}`);
+  }
+  return [];
+}
+
+/**
+ * Save URL patterns (append new patterns, keep distinct)
+ */
+function saveUrlPatterns(patterns) {
+  try {
+    const existing = loadUrlPatterns();
+    const allPatterns = new Set(existing);
+    
+    // Add new patterns
+    patterns.forEach(pattern => allPatterns.add(pattern));
+    
+    const sortedPatterns = Array.from(allPatterns).sort();
+    fs.writeFileSync(URL_PATTERNS_PATH, JSON.stringify(sortedPatterns, null, 2), 'utf8');
+  } catch (e) {
+    log(`  ⚠️  Failed to save URL patterns: ${e.message}`);
+  }
+}
+
+/**
  * Process a single venue
  */
-async function processVenue(venue, submenusInventory) {
-  // Verbose: Log venue processing start
+async function processVenue(venue) {
   logVerbose(`Processing venue: ${venue.name} | Website: ${venue.website || 'N/A'} | Area: ${venue.area || 'N/A'} | Location: (${venue.lat || 'N/A'}, ${venue.lng || 'N/A'}) | Address: ${venue.address || 'N/A'}`);
   
   if (!venue.website) {
     logVerbose(`  -> Skipped: No website available`);
-    return { venue: venue.name, matches: [], subpages: [], skipped: 'no website' };
+    return { venue: venue.name, skipped: 'no website' };
   }
   
   if (!isAlcoholVenue(venue)) {
     logVerbose(`  -> Skipped: Not an alcohol venue | Types: ${venue.types?.join(', ') || 'N/A'}`);
-    return { venue: venue.name, matches: [], subpages: [], skipped: 'not alcohol venue' };
+    return { venue: venue.name, skipped: 'not alcohol venue' };
   }
   
-  const venueSubmenus = [];
+  // Check if scraped file exists for today
+  const scrapedFilePath = getScrapedFilePath(venue.id);
+  if (isScrapedFileValid(scrapedFilePath)) {
+    log(`  💾 Using cached scraped data (from today)`);
+    const cachedData = loadScrapedData(scrapedFilePath);
+    if (cachedData) {
+      return {
+        venue: venue.name,
+        success: true,
+        fromCache: true,
+        urlPatterns: cachedData.urlPatterns || [],
+        matches: (cachedData.rawMatches || []).length,
+        subpages: (cachedData.sources || []).filter(s => s.pageType === 'subpage').length
+      };
+    }
+  }
+  
+  const scrapedData = {
+    venueId: venue.id,
+    venueName: venue.name,
+    venueArea: venue.area || null,
+    website: venue.website,
+    scrapedAt: new Date().toISOString(),
+    sources: [],
+    rawMatches: [],
+    urlPatterns: []
+  };
   
   try {
     // Fetch homepage
     logVerbose(`  -> Fetching homepage: ${venue.website}`);
-    const homepageHtml = await fetchUrl(venue.website);
+    const homepageResult = await fetchUrl(venue.website);
+    const homepageHtml = homepageResult.html;
     logVerbose(`  -> Homepage fetched successfully | Size: ${homepageHtml.length} bytes`);
+    
+    // Extract URL patterns from homepage
+    const homepagePatterns = extractUrlPatterns(homepageHtml, venue.website);
+    scrapedData.urlPatterns.push(...homepagePatterns);
+    
     const isMultiLocation = detectMultiLocation(homepageHtml, venue.website);
     
     let contentHtml = homepageHtml;
@@ -583,24 +845,28 @@ async function processVenue(venue, submenusInventory) {
       const localPageLinks = findLocalPageLinks(homepageHtml, venue.website, venue.area);
       
       if (localPageLinks.length > 0) {
-        log(`  📍 Found ${localPageLinks.length} potential local page(s):`);
+        logVerbose(`  📍 Found ${localPageLinks.length} potential local page(s):`);
         localPageLinks.forEach((link, index) => {
-          log(`    ${index + 1}. ${link.url} (score: ${link.score}, area: ${link.matchedArea}, exact: ${link.isExactMatch})`);
+          logVerbose(`    ${index + 1}. ${link.url} (score: ${link.score}, area: ${link.matchedArea}, exact: ${link.isExactMatch})`);
         });
         
         // Try each local page link until one succeeds
         for (const linkInfo of localPageLinks) {
           const localPageUrl = linkInfo.url;
           try {
-            const localHtml = await fetchUrl(localPageUrl);
-            contentHtml = localHtml;
+            const localResult = await fetchUrl(localPageUrl);
+            contentHtml = localResult.html;
             contentUrl = localPageUrl;
             localPageUsed = true;
-            log(`  ✅ Matched local page: ${localPageUrl} for area ${linkInfo.matchedArea}`);
+            logVerbose(`  ✅ Matched local page: ${localPageUrl} for area ${linkInfo.matchedArea}`);
+            
+            // Extract URL patterns from local page
+            const localPatterns = extractUrlPatterns(localResult.html, localPageUrl);
+            scrapedData.urlPatterns.push(...localPatterns);
+            
             break;
           } catch (error) {
             log(`  ⚠️  Failed to fetch local page ${localPageUrl}: ${error.message}`);
-            // Continue to next link
           }
         }
         
@@ -610,11 +876,15 @@ async function processVenue(venue, submenusInventory) {
           const searchResult = await googleSearchFallback(venue.name, venue.area);
           if (searchResult) {
             try {
-              const searchHtml = await fetchUrl(searchResult);
-              contentHtml = searchHtml;
+              const searchResult_fetch = await fetchUrl(searchResult);
+              contentHtml = searchResult_fetch.html;
               contentUrl = searchResult;
               localPageUsed = true;
               log(`  ✅ Using Google search result: ${searchResult}`);
+              
+              // Extract URL patterns from search result
+              const searchPatterns = extractUrlPatterns(searchResult_fetch.html, searchResult);
+              scrapedData.urlPatterns.push(...searchPatterns);
             } catch (error) {
               log(`  ⚠️  Failed to fetch Google search result: ${error.message}`);
             }
@@ -624,16 +894,19 @@ async function processVenue(venue, submenusInventory) {
         // No local page links found - try Google search fallback
         log(`  ⚠️  No local page for ${venue.area || 'venue area'} on chain site ${venue.name}`);
         log(`  🔍 Trying Google search fallback...`);
-        logVerbose(`  -> No local page links found | Venue: ${venue.name} | Area: ${venue.area || 'N/A'} | Website: ${venue.website} | Attempting Google search fallback`);
         const searchResult = await googleSearchFallback(venue.name, venue.area);
         if (searchResult) {
-          logVerbose(`  -> Google search fallback successful | Result URL: ${searchResult} | Venue: ${venue.name} | Area: ${venue.area || 'N/A'}`);
+          logVerbose(`  -> Google search fallback successful | Result URL: ${searchResult}`);
           try {
-            const searchHtml = await fetchUrl(searchResult);
-            contentHtml = searchHtml;
+            const searchResult_fetch = await fetchUrl(searchResult);
+            contentHtml = searchResult_fetch.html;
             contentUrl = searchResult;
             localPageUsed = true;
             log(`  ✅ Using Google search result: ${searchResult}`);
+            
+            // Extract URL patterns from search result
+            const searchPatterns = extractUrlPatterns(searchResult_fetch.html, searchResult);
+            scrapedData.urlPatterns.push(...searchPatterns);
           } catch (error) {
             log(`  ⚠️  Failed to fetch Google search result: ${error.message}`);
             log(`  ℹ️  Falling back to homepage`);
@@ -644,37 +917,50 @@ async function processVenue(venue, submenusInventory) {
       }
     }
     
-    // Extract subpage links from the content page (homepage or local page)
+    // Extract text from content page
+    const contentText = extractText(contentHtml);
+    
+    // Save homepage/local page as source
+    scrapedData.sources.push({
+      url: contentUrl,
+      text: contentText,
+      pageType: localPageUsed ? 'location-page' : 'homepage',
+      scrapedAt: new Date().toISOString()
+    });
+    
+    // Extract subpage links from the content page
     const subpageUrls = findRelevantSubpageLinks(contentHtml, contentUrl);
     log(`  🔗 Discovered ${subpageUrls.length} submenu(s)`);
-    
-    // Add to inventory
-    if (subpageUrls.length > 0) {
-      venueSubmenus.push(...subpageUrls);
-      submenusInventory.push({
-        restaurantName: venue.name,
-        website: venue.website,
-        submenus: subpageUrls
-      });
-    }
     
     // Fetch subpages
     const subpageTexts = [];
     for (const subpageUrl of subpageUrls) {
       try {
-        const subpageHtml = await fetchUrl(subpageUrl);
+        const subpageResult = await fetchUrl(subpageUrl);
+        const subpageHtml = subpageResult.html;
         const subpageText = extractText(subpageHtml);
         subpageTexts.push({ text: subpageText, url: subpageUrl });
         
-        // Rate limiting between subpages
-        await new Promise(resolve => setTimeout(resolve, getRandomDelay()));
+        // Extract URL patterns from subpage
+        const subpagePatterns = extractUrlPatterns(subpageResult.html, subpageUrl);
+        scrapedData.urlPatterns.push(...subpagePatterns);
+        
+        // Save subpage as source
+        scrapedData.sources.push({
+          url: subpageUrl,
+          text: subpageText,
+          pageType: 'subpage',
+          scrapedAt: new Date().toISOString()
+        });
+        
+        // Rate limiting between subpages - only if we fetched fresh (not from cache)
+        if (!subpageResult.fromCache) {
+          await new Promise(resolve => setTimeout(resolve, getRandomDelay()));
+        }
       } catch (error) {
         log(`  ❌ Failed to fetch subpage ${subpageUrl}: ${error.message}`);
       }
     }
-    
-    // Extract text from content page
-    const contentText = extractText(contentHtml);
     
     // Combine all text for happy hour extraction
     const allTexts = [
@@ -700,179 +986,265 @@ async function processVenue(venue, submenusInventory) {
       }
     });
     
+    scrapedData.rawMatches = uniqueMatches;
+    
+    // Deduplicate URL patterns
+    scrapedData.urlPatterns = Array.from(new Set(scrapedData.urlPatterns)).sort();
+    
     // Terminal: Simple message
     log(`  🍹 Found ${uniqueMatches.length} happy hour snippet(s)`);
+    log(`  🔗 Found ${scrapedData.urlPatterns.length} URL pattern(s)`);
+    
     // File: Detailed message
     if (uniqueMatches.length > 0) {
       logVerbose(`  -> Happy hour matches found: ${uniqueMatches.length} unique snippet(s)`);
       uniqueMatches.forEach((match, index) => {
-        logVerbose(`    Match ${index + 1}: Source="${match.source}" | Text="${match.text.substring(0, 200)}${match.text.length > 200 ? '...' : ''}"`);
+        log(`    Match ${index + 1}: Source="${match.source}" | Text="${match.text.substring(0, 200)}${match.text.length > 200 ? '...' : ''}"`);
       });
     } else {
       logVerbose(`  -> No happy hour matches found | Content URL: ${contentUrl} | Subpages processed: ${subpageTexts.length} | Total text sources: ${allTexts.length}`);
     }
     
+    // Save scraped data to file
+    saveScrapedData(scrapedFilePath, scrapedData);
+    
+    // Return URL patterns (don't save here - will be collected and saved at end)
     return {
       venue: venue.name,
-      matches: uniqueMatches,
-      subpages: subpageUrls,
+      matches: uniqueMatches.length,
+      subpages: subpageUrls.length,
+      urlPatterns: scrapedData.urlPatterns,
       success: true,
       localPageUsed
     };
   } catch (error) {
     log(`  ❌ Error processing ${venue.name}: ${error.message}`);
-    return { venue: venue.name, matches: [], subpages: [], error: error.message };
+    return { venue: venue.name, error: error.message };
   }
-}
-
-/**
- * Format description from matches
- */
-function formatDescription(matches) {
-  if (!matches || matches.length === 0) {
-    return null;
-  }
-  
-  const bullets = matches.map(match => {
-    return `• ${match.text} — source: ${match.source}`;
-  });
-  
-  return bullets.join('\n');
 }
 
 /**
  * Main function
  */
 async function main() {
-  log('🍺 Starting Happy Hour Update Agent...\n');
+  // Parse command-line arguments
+  const args = process.argv.slice(2);
+  let areaFilter = null;
+  let parallelWorkers = PARALLEL_WORKERS;
+  
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg === '--workers' || arg === '-w') {
+      const workers = parseInt(args[i + 1], 10);
+      if (!isNaN(workers) && workers > 0 && workers <= 50) {
+        parallelWorkers = workers;
+        i++; // Skip next arg
+      } else {
+        log(`⚠️  Invalid --workers value, using default: ${PARALLEL_WORKERS}`);
+      }
+    } else if (!arg.startsWith('-')) {
+      // First non-flag argument is area filter
+      if (!areaFilter) {
+        areaFilter = arg.trim();
+      }
+    }
+  }
+  
+  if (areaFilter) {
+    log(`🔍 Area filter specified: "${areaFilter}"\n`);
+  }
+  if (parallelWorkers !== PARALLEL_WORKERS) {
+    log(`⚙️  Parallel workers: ${parallelWorkers} (default: ${PARALLEL_WORKERS})\n`);
+  }
+  
+  log('🍺 Starting Happy Hour Scraping Agent...\n');
+  log('   This script scrapes venues and saves raw data to data/scraped/<venue-id>.json\n');
+  log('   It does NOT modify venues.json or spots.json\n');
+  
+  // Ensure directories exist
+  if (!fs.existsSync(SCRAPED_DIR)) {
+    fs.mkdirSync(SCRAPED_DIR, { recursive: true });
+  }
+  if (!fs.existsSync(CACHE_DIR)) {
+    fs.mkdirSync(CACHE_DIR, { recursive: true });
+  }
   
   // Log paths
   log(`📁 Project root: ${path.resolve(__dirname, '..')}`);
-  log(`📁 Data directory: ${path.resolve(path.dirname(VENUES_PATH))}`);
-  log(`📄 Venues file: ${path.resolve(VENUES_PATH)}`);
-  log(`📄 Spots file: ${path.resolve(SPOTS_PATH)}`);
-  log(`📄 Submenus inventory: ${path.resolve(SUBMENUS_INVENTORY_PATH)}\n`);
+  log(`📁 Scraped directory: ${path.resolve(SCRAPED_DIR)}`);
+  log(`📁 Cache directory: ${path.resolve(CACHE_DIR)}`);
+  log(`📄 URL patterns file: ${path.resolve(URL_PATTERNS_PATH)}\n`);
   
-  // Load venues
-  const venues = JSON.parse(fs.readFileSync(VENUES_PATH, 'utf8'));
-  log(`📖 Loaded ${venues.length} venues from ${path.resolve(VENUES_PATH)}`);
+  // Load venues (read-only, for filtering)
+  let venues = [];
+  try {
+    const venuesContent = fs.readFileSync(VENUES_PATH, 'utf8');
+    venues = JSON.parse(venuesContent);
+    log(`📖 Loaded ${venues.length} venues from ${path.resolve(VENUES_PATH)} (read-only)`);
+  } catch (error) {
+    log(`❌ Error loading venues.json: ${error.message}`);
+    log(`   This script requires venues.json to exist`);
+    process.exit(1);
+  }
   
-  // Load existing spots or create empty array
-  let spots = [];
-  if (fs.existsSync(SPOTS_PATH)) {
-    spots = JSON.parse(fs.readFileSync(SPOTS_PATH, 'utf8'));
-    log(`📖 Loaded ${spots.length} existing spots`);
+  // Filter by area if area filter is specified
+  if (areaFilter) {
+    const filterLower = areaFilter.toLowerCase();
+    const originalCount = venues.length;
+    venues = venues.filter(venue => {
+      const venueArea = (venue.area || '').toLowerCase();
+      return venueArea.includes(filterLower);
+    });
+    
+    if (venues.length === 0) {
+      log(`❌ Error: No venues found for area "${areaFilter}"`);
+      log(`   Available areas: ${[...new Set(JSON.parse(fs.readFileSync(VENUES_PATH, 'utf8')).map(v => v.area).filter(Boolean))].join(', ')}`);
+      process.exit(1);
+    }
+    
+    log(`✅ Filtered to ${venues.length} venue(s) for area "${areaFilter}" (from ${originalCount} total)\n`);
   }
   
   // Filter venues with websites and alcohol types
   const venuesToProcess = venues.filter(v => v.website && isAlcoholVenue(v));
   log(`🌐 Found ${venuesToProcess.length} venues with websites\n`);
   
-  // Submenus inventory (one-time collection)
-  const submenusInventory = [];
+  // Log venues per area
+  const venuesPerArea = {};
+  const skippedPerArea = { noWebsite: 0, notAlcohol: 0 };
+  for (const venue of venues) {
+    const area = venue.area || 'Unknown';
+    venuesPerArea[area] = (venuesPerArea[area] || 0) + 1;
+    if (!venue.website) {
+      skippedPerArea.noWebsite++;
+    }
+    if (!isAlcoholVenue(venue)) {
+      skippedPerArea.notAlcohol++;
+    }
+  }
+  log(`Venues per area:`);
+  for (const [area, count] of Object.entries(venuesPerArea).sort((a, b) => b[1] - a[1])) {
+    log(`   ${area}: ${count} venues`);
+  }
+  log(`Skipped: ${skippedPerArea.noWebsite} (no website), ${skippedPerArea.notAlcohol} (not alcohol venue)\n`);
   
-  let processed = 0;
-  let found = 0;
-  let multiLocationCount = 0;
-  let localPageCount = 0;
-  let totalSubmenus = 0;
+  // Parallel processing setup
+  const allUrlPatterns = new Set();
+  const stats = {
+    processed: 0,
+    found: 0,
+    cached: 0,
+    multiLocationCount: 0,
+    localPageCount: 0,
+    totalSubmenus: 0,
+    errors: 0
+  };
   
-  for (const venue of venuesToProcess) {
+  // Worker pool for parallel processing
+  async function processVenueWithStats(venue, index) {
     // Terminal: Simple message
-    log(`\n[${processed + 1}/${venuesToProcess.length}] Processing: ${venue.name}`);
+    log(`\n[${index + 1}/${venuesToProcess.length}] Processing: ${venue.name}`);
     log(`  🌐 ${venue.website}`);
     if (venue.area) {
       log(`  📍 Area: ${venue.area}`);
     }
     // File: Detailed message
-    logVerbose(`Processing venue [${processed + 1}/${venuesToProcess.length}]: ${venue.name} | Website: ${venue.website} | Area: ${venue.area || 'N/A'} | Location: (${venue.lat || 'N/A'}, ${venue.lng || 'N/A'}) | Address: ${venue.address || 'N/A'}`);
+    logVerbose(`Processing venue [${index + 1}/${venuesToProcess.length}]: ${venue.name} | Website: ${venue.website} | Area: ${venue.area || 'N/A'} | Location: (${venue.lat || 'N/A'}, ${venue.lng || 'N/A'}) | Address: ${venue.address || 'N/A'}`);
     
-    const result = await processVenue(venue, submenusInventory);
-    
-    if (result.skipped) {
-      log(`  ⏭️  Skipped: ${result.skipped}`);
-    } else if (result.error) {
-      log(`  ❌ Error: ${result.error}`);
-    } else {
-      const matchCount = result.matches.length;
-      const subpageCount = result.subpages.length;
+    try {
+      const result = await processVenue(venue);
       
-      if (result.localPageUsed) {
-        localPageCount++;
-        multiLocationCount++;
-      } else if (result.localPageUsed === false && result.matches.length > 0) {
-        // Check if it was detected as multi-location but no local page found
-        multiLocationCount++;
-      }
+      // Thread-safe stats update
+      stats.processed++;
       
-      totalSubmenus += subpageCount;
-      
-      log(`  ✅ Scanned: ${matchCount} happy hour snippet(s) from ${subpageCount} subpage(s)`);
-      
-      if (matchCount > 0) {
-        // Find existing spot or create new one
-        let spotIndex = spots.findIndex(s => s.title === venue.name);
-        
-        const description = formatDescription(result.matches);
-        
-        if (spotIndex === -1) {
-          // Create new spot
-          spots.push({
-            title: venue.name,
-            lat: venue.lat,
-            lng: venue.lng,
-            description: description,
-            activity: 'Happy Hour'
-          });
-          found++;
-          log(`  ✨ Created new spot`);
+      if (result.skipped) {
+        log(`  ⏭️  Skipped: ${result.skipped}`);
+      } else if (result.error) {
+        log(`  ❌ Error: ${result.error}`);
+        stats.errors++;
+      } else {
+        if (result.fromCache) {
+          stats.cached++;
+          log(`  ✅ Using cached data (from today)`);
         } else {
-          // Update existing spot - append new sources
-          const existing = spots[spotIndex];
-          if (existing.description && existing.description !== description) {
-            spots[spotIndex].description = `${existing.description}\n\n${description}`;
-          } else {
-            spots[spotIndex].description = description;
+          log(`  ✅ Scraped: ${result.matches} happy hour snippet(s) from ${result.subpages} subpage(s)`);
+          log(`  🔗 Discovered ${result.urlPatterns.length} URL pattern(s)`);
+          
+          if (result.matches > 0) {
+            stats.found++;
           }
-          spots[spotIndex].activity = 'Happy Hour';
-          // Update lat/lng if not set
-          if (!spots[spotIndex].lat) spots[spotIndex].lat = venue.lat;
-          if (!spots[spotIndex].lng) spots[spotIndex].lng = venue.lng;
-          found++;
-          log(`  🔄 Updated existing spot`);
+          
+          if (result.localPageUsed) {
+            stats.localPageCount++;
+            stats.multiLocationCount++;
+          } else if (result.localPageUsed === false && result.matches > 0) {
+            stats.multiLocationCount++;
+          }
+          
+          stats.totalSubmenus += result.subpages;
+          
+          // Collect URL patterns (thread-safe - Set operations are atomic)
+          if (result.urlPatterns && Array.isArray(result.urlPatterns)) {
+            result.urlPatterns.forEach(pattern => allUrlPatterns.add(pattern));
+          }
         }
       }
-    }
-    
-    processed++;
-    
-    // Rate limiting
-    if (processed < venuesToProcess.length) {
-      const delay = getRandomDelay();
-      await new Promise(resolve => setTimeout(resolve, delay));
+    } catch (error) {
+      stats.processed++;
+      stats.errors++;
+      log(`  ❌ Fatal error processing ${venue.name}: ${error.message}`);
     }
   }
   
-  // Save spots
-  log(`\n\n💾 Saving ${spots.length} spots to ${path.resolve(SPOTS_PATH)}...`);
-  fs.writeFileSync(SPOTS_PATH, JSON.stringify(spots, null, 2), 'utf8');
-  log(`✅ Spots saved`);
+  // Process venues in parallel batches using a simple worker pool
+  log(`🚀 Processing ${venuesToProcess.length} venues with ${parallelWorkers} parallel workers...\n`);
   
-  // Save submenus inventory (one-time)
-  log(`\n💾 Writing submenus inventory to ${path.resolve(SUBMENUS_INVENTORY_PATH)}...`);
-  fs.writeFileSync(SUBMENUS_INVENTORY_PATH, JSON.stringify(submenusInventory, null, 2), 'utf8');
-  log(`✅ Submenus inventory saved (${submenusInventory.length} restaurants, ${totalSubmenus} total submenus)`);
+  const workers = [];
+  for (let i = 0; i < venuesToProcess.length; i++) {
+    const venue = venuesToProcess[i];
+    
+    // Start worker
+    const workerPromise = processVenueWithStats(venue, i).finally(() => {
+      // Remove self from workers array when done
+      const index = workers.indexOf(workerPromise);
+      if (index > -1) {
+        workers.splice(index, 1);
+      }
+    });
+    workers.push(workerPromise);
+    
+    // Wait if we have too many active workers
+    if (workers.length >= parallelWorkers) {
+      await Promise.race(workers);
+    }
+  }
+  
+  // Wait for all remaining workers to complete
+  await Promise.all(workers);
+  
+  // Save all collected URL patterns at once (thread-safe)
+  const sortedPatterns = Array.from(allUrlPatterns).sort();
+  const existingPatterns = loadUrlPatterns();
+  const allPatternsSet = new Set([...existingPatterns, ...sortedPatterns]);
+  const finalPatterns = Array.from(allPatternsSet).sort();
+  fs.writeFileSync(URL_PATTERNS_PATH, JSON.stringify(finalPatterns, null, 2), 'utf8');
   
   // Summary
   log(`\n📊 Summary:`);
-  log(`   ✅ Processed: ${processed} venues`);
-  log(`   🍹 Found happy hour info: ${found} venues`);
-  log(`   🏢 Multi-location sites detected: ${multiLocationCount}`);
-  log(`   📍 Local pages used: ${localPageCount}`);
-  log(`   🔗 Total submenus discovered: ${totalSubmenus}`);
-  log(`   📄 Total spots in file: ${spots.length}`);
+  log(`   ✅ Processed: ${stats.processed} venues`);
+  log(`   💾 Cached (from today): ${stats.cached} venues`);
+  log(`   🍹 Found happy hour info: ${stats.found} venues`);
+  log(`   🏢 Multi-location sites detected: ${stats.multiLocationCount}`);
+  log(`   📍 Local pages used: ${stats.localPageCount}`);
+  log(`   🔗 Total submenus discovered: ${stats.totalSubmenus}`);
+  log(`   🔗 Total URL patterns discovered: ${finalPatterns.length} (${sortedPatterns.length} new)`);
+  log(`   ❌ Errors: ${stats.errors}`);
+  log(`   📁 Scraped data saved to: ${path.resolve(SCRAPED_DIR)}`);
+  log(`   📄 URL patterns saved to: ${path.resolve(URL_PATTERNS_PATH)}`);
+  
   log(`\n✨ Done!`);
-  log(`Done! Log saved to logs/update-happy-hours.log`);
+  log(`   Next step: Run extract-happy-hours.js to extract structured data from scraped content`);
+  logToFileAndConsole(`Done! Log saved to ${logPath}`, logPath);
 }
 
 // Run main function

@@ -69,11 +69,6 @@ describe('Step 1: Areas Configuration (data/areas.json)', () => {
       const extraAreas = areaNames.filter(name => !requiredAreas.includes(name));
       expect(extraAreas).toHaveLength(0);
     });
-
-    test('should NOT contain Park Circle (removed)', () => {
-      const areaNames = areasData.map(area => area.name);
-      expect(areaNames).not.toContain('Park Circle');
-    });
   });
 
   describe('Test 3: Each area has all required fields', () => {
@@ -138,6 +133,18 @@ describe('Step 1: Areas Configuration (data/areas.json)', () => {
       areasData.forEach((area) => {
         expect(area.bounds.south).toBeLessThan(area.bounds.north);
         expect(area.bounds.west).toBeLessThan(area.bounds.east);
+      });
+    });
+
+    test('each area should have zipCodes array with at least one zip code', () => {
+      areasData.forEach((area) => {
+        expect(area).toHaveProperty('zipCodes');
+        expect(Array.isArray(area.zipCodes)).toBe(true);
+        expect(area.zipCodes.length).toBeGreaterThan(0);
+        area.zipCodes.forEach((zipCode) => {
+          expect(typeof zipCode).toBe('string');
+          expect(zipCode).toMatch(/^\d{5}$/); // 5-digit zip code
+        });
       });
     });
   });

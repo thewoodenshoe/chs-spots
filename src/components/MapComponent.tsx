@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { GoogleMap, LoadScript, Marker, InfoWindow, MarkerClusterer } from '@react-google-maps/api';
 import { useSpots, Spot } from '@/contexts/SpotsContext';
+import { useVenues, Venue } from '@/contexts/VenuesContext';
 import { Area, SpotType } from './FilterModal';
 
 // Google Maps API key - set in .env.local as NEXT_PUBLIC_GOOGLE_MAPS_KEY
@@ -60,6 +61,22 @@ function createMarkerIcon(spot: Spot): google.maps.Icon {
   };
 }
 
+// Create red marker icon for venues (debugging/visualization)
+function createVenueMarkerIcon(): google.maps.Icon {
+  const svg = `
+    <svg width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="16" cy="16" r="14" fill="#ef4444" stroke="white" stroke-width="2"/>
+      <circle cx="16" cy="16" r="6" fill="white"/>
+    </svg>
+  `;
+  
+  return {
+    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+    scaledSize: new google.maps.Size(32, 32),
+    anchor: new google.maps.Point(16, 32),
+  };
+}
+
 // Helper function to determine area from coordinates
 function getAreaFromCoordinates(lat: number, lng: number): Area {
   if (lat >= 32.83 && lat <= 32.86 && lng >= -79.92 && lng <= -79.89) {
@@ -84,6 +101,7 @@ interface MapComponentProps {
   onMapClick?: (lat: number, lng: number) => void;
   mapCenter?: { lat: number; lng: number; zoom: number };
   onEditSpot?: (spot: Spot) => void;
+  showAllVenues?: boolean;
 }
 
 export default function MapComponent({
@@ -94,11 +112,14 @@ export default function MapComponent({
   onMapClick,
   mapCenter,
   onEditSpot,
+  showAllVenues = false,
 }: MapComponentProps) {
   const { spots } = useSpots();
+  const { venues } = useVenues();
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
+  const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [center, setCenter] = useState<{ lat: number; lng: number }>(DEFAULT_CENTER);
   const [zoom, setZoom] = useState(DEFAULT_ZOOM);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -148,6 +169,18 @@ export default function MapComponent({
     });
   }, [spots, selectedArea, selectedActivity]);
 
+  // Filter venues based on selected area
+  const filteredVenues = useMemo(() => {
+    if (!showAllVenues) return [];
+    return venues.filter((venue) => {
+      if (!venue.area) return false;
+      // Normalize area names for comparison
+      const venueArea = venue.area.toLowerCase();
+      const selectedAreaLower = selectedArea.toLowerCase();
+      return venueArea === selectedAreaLower || venueArea.includes(selectedAreaLower);
+    });
+  }, [venues, selectedArea, showAllVenues]);
+
   // Handle map click for submission mode
   const handleMapClick = useCallback((e: google.maps.MapMouseEvent) => {
     if (isSubmissionMode && e.latLng && onMapClick) {
@@ -158,11 +191,19 @@ export default function MapComponent({
   // Handle marker click
   const handleMarkerClick = useCallback((spot: Spot) => {
     setSelectedSpot(spot);
+    setSelectedVenue(null); // Close venue info window if open
+  }, []);
+
+  // Handle venue marker click
+  const handleVenueMarkerClick = useCallback((venue: Venue) => {
+    setSelectedVenue(venue);
+    setSelectedSpot(null); // Close spot info window if open
   }, []);
 
   // Close info window
   const handleInfoWindowClose = useCallback(() => {
     setSelectedSpot(null);
+    setSelectedVenue(null);
   }, []);
 
   // Format description with bullet points and source attribution
@@ -306,6 +347,27 @@ export default function MapComponent({
                     icon={createMarkerIcon(spot)}
                     clusterer={clusterer}
                     onClick={() => handleMarkerClick(spot)}
+                    zIndex={1000} // Spots appear above venues
+                  />
+                ))}
+              </>
+            )}
+          </MarkerClusterer>
+        )}
+
+        {/* All Venues (Red Markers) - Debugging/Visualization */}
+        {showAllVenues && filteredVenues.length > 0 && (
+          <MarkerClusterer>
+            {(clusterer) => (
+              <>
+                {filteredVenues.map((venue) => (
+                  <Marker
+                    key={venue.id}
+                    position={{ lat: venue.lat, lng: venue.lng }}
+                    icon={createVenueMarkerIcon()}
+                    clusterer={clusterer}
+                    onClick={() => handleVenueMarkerClick(venue)}
+                    zIndex={500} // Venues appear below spots
                   />
                 ))}
               </>
@@ -367,6 +429,37 @@ export default function MapComponent({
                   Edit Spot
                 </button>
               )}
+            </div>
+          </InfoWindow>
+        )}
+
+        {/* InfoWindow for selected venue (red marker) */}
+        {selectedVenue && (
+          <InfoWindow
+            position={{ lat: selectedVenue.lat, lng: selectedVenue.lng }}
+            onCloseClick={handleInfoWindowClose}
+          >
+            <div className="text-sm min-w-[200px] max-w-[300px]">
+              <div className="font-bold text-gray-900 mb-2 text-base">{selectedVenue.name}</div>
+              {selectedVenue.area && (
+                <p className="text-xs text-gray-600 mb-1">📍 {selectedVenue.area}</p>
+              )}
+              {selectedVenue.address && (
+                <p className="text-xs text-gray-600 mb-2">{selectedVenue.address}</p>
+              )}
+              {selectedVenue.website && (
+                <a
+                  href={selectedVenue.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-blue-600 hover:underline break-all"
+                >
+                  {selectedVenue.website}
+                </a>
+              )}
+              <div className="mt-2 text-xs text-gray-500 italic">
+                (Venue - No happy hour info)
+              </div>
             </div>
           </InfoWindow>
         )}

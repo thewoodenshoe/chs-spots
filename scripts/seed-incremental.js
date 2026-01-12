@@ -1,10 +1,11 @@
 /**
- * Step 2: Incremental venue seeding and website enrichment
+ * Incremental venue seeding (Strategy 3: Optimized Full Search)
  * 
- * This script runs nightly or on-demand to:
- * - Append new venues from Google Places API
- * - Enrich missing websites using Google Text Search
- * - Write missing websites to CSV for manual review
+ * This script runs nightly to:
+ * - Find new venues using optimized search (50% radius, 3 venue types)
+ * - Use accurate area assignment logic from seed-venues.js
+ * - Skip venues that already exist with websites
+ * - Early exit if too many consecutive duplicates
  * 
  * Run with: node scripts/seed-incremental.js
  */
@@ -26,10 +27,7 @@ fs.writeFileSync(logPath, '', 'utf8');
  * Logger function: logs to console (with emojis) and file (without emojis, with timestamp)
  */
 function log(message) {
-  // Log to console (with emojis/colors)
   console.log(message);
-  
-  // Format timestamp as [YYYY-MM-DD HH:mm:ss]
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -38,22 +36,14 @@ function log(message) {
   const minutes = String(now.getMinutes()).padStart(2, '0');
   const seconds = String(now.getSeconds()).padStart(2, '0');
   const timestamp = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}]`;
-  
-  // Strip emojis from message for file logging
-  // Emoji ranges: \u{1F300}-\u{1F5FF} (Misc Symbols), \u{1F600}-\u{1F64F} (Emoticons), 
-  // \u{1F680}-\u{1F6FF} (Transport), \u{2600}-\u{26FF} (Misc symbols), \u{2700}-\u{27BF} (Dingbats)
   const messageWithoutEmojis = message.replace(/[\u{1F300}-\u{1F5FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
-  
-  // Append to log file
   fs.appendFileSync(logPath, `${timestamp} ${messageWithoutEmojis}\n`, 'utf8');
 }
 
 /**
- * Verbose logger: writes detailed information to log file only (not to console)
- * Use for --vvv level detailed logging
+ * Verbose logger: writes detailed information to log file only
  */
 function logVerbose(message) {
-  // Format timestamp as [YYYY-MM-DD HH:mm:ss]
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -62,11 +52,7 @@ function logVerbose(message) {
   const minutes = String(now.getMinutes()).padStart(2, '0');
   const seconds = String(now.getSeconds()).padStart(2, '0');
   const timestamp = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}]`;
-  
-  // Strip emojis from message
   const messageWithoutEmojis = message.replace(/[\u{1F300}-\u{1F5FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
-  
-  // Append to log file (verbose details only in file)
   fs.appendFileSync(logPath, `${timestamp} ${messageWithoutEmojis}\n`, 'utf8');
 }
 
@@ -93,15 +79,12 @@ if (!GOOGLE_MAPS_API_KEY) {
 const dataDir = path.join(__dirname, '..', 'data');
 const venuesFile = path.join(dataDir, 'venues.json');
 const areasConfigFile = path.join(dataDir, 'areas.json');
-const missingWebsitesFile = path.join(dataDir, 'venue-website-not-found.csv');
 
-// Venue types to query (alcohol-serving establishments)
+// Strategy 3: Only search for bar, restaurant, brewery (3 types)
 const VENUE_TYPES = [
   'bar',
   'restaurant',
-  'brewery',
-  'night_club',
-  'wine_bar'
+  'brewery'
 ];
 
 // Load areas configuration from areas.json
@@ -145,6 +128,293 @@ async function makeRequest(url, retries = 3) {
   }
 }
 
+/**
+ * Check if a venue serves alcohol (restaurant, bar, cafe, night_club, brewery, breakfast place, hotel with bar/restaurant)
+ */
+function isAlcoholServingVenue(result) {
+  if (!result.types || !Array.isArray(result.types)) {
+    return false;
+  }
+  
+  const types = result.types;
+  const primaryTypes = types.slice(0, 3);
+  
+  const hasFoodOrLodgingType = primaryTypes.some(type => 
+    ['restaurant', 'bar', 'cafe', 'night_club', 'brewery', 'wine_bar', 'breakfast', 'lodging'].includes(type)
+  );
+  
+  if (!hasFoodOrLodgingType) {
+    return false;
+  }
+  
+  const excludeTypes = ['store', 'supermarket', 'grocery_or_supermarket', 
+    'convenience_store', 'hospital', 'university', 'school', 'locality', 'political',
+    'electronics_store', 'department_store', 'hardware_store', 'clothing_store'];
+  const isExcluded = types.some(type => excludeTypes.includes(type));
+  
+  return !isExcluded;
+}
+
+/**
+ * Extract zip code from address string or address_components
+ */
+function extractZipCode(address, addressComponents) {
+  if (addressComponents && Array.isArray(addressComponents)) {
+    const postalCode = addressComponents.find(comp => 
+      comp.types && comp.types.includes('postal_code')
+    );
+    if (postalCode && postalCode.long_name) {
+      return postalCode.long_name;
+    }
+  }
+  
+  if (address) {
+    const zipMatch = address.match(/\b(\d{5})\b/);
+    return zipMatch ? zipMatch[1] : null;
+  }
+  
+  return null;
+}
+
+/**
+ * Extract sublocality from Google's address_components
+ */
+function extractSublocality(addressComponents) {
+  if (!addressComponents || !Array.isArray(addressComponents)) {
+    return null;
+  }
+  
+  const sublocality1 = addressComponents.find(comp => 
+    comp.types && comp.types.includes('sublocality_level_1')
+  );
+  if (sublocality1 && sublocality1.long_name) {
+    return sublocality1.long_name;
+  }
+  
+  const sublocality = addressComponents.find(comp => 
+    comp.types && comp.types.includes('sublocality')
+  );
+  if (sublocality && sublocality.long_name) {
+    return sublocality.long_name;
+  }
+  
+  return null;
+}
+
+/**
+ * Map Google's sublocality names to our area names
+ */
+function mapGoogleSublocalityToArea(googleSublocality) {
+  if (!googleSublocality) return null;
+  
+  const normalized = googleSublocality.toLowerCase().trim();
+  
+  const mapping = {
+    'mount pleasant': 'Mount Pleasant',
+    'mt pleasant': 'Mount Pleasant',
+    'mt. pleasant': 'Mount Pleasant',
+    'downtown charleston': 'Downtown Charleston',
+    'downtown': 'Downtown Charleston',
+    'historic district': 'Downtown Charleston',
+    'french quarter': 'Downtown Charleston',
+    'james island': 'James Island',
+    "sullivan's island": "Sullivan's Island",
+    'sullivans island': "Sullivan's Island",
+    'north charleston': 'North Charleston',
+    'n charleston': 'North Charleston',
+    'west ashley': 'West Ashley',
+    'daniel island': 'Daniel Island',
+  };
+  
+  return mapping[normalized] || null;
+}
+
+/**
+ * Extract area name from address string
+ */
+function extractAreaFromAddress(address) {
+  if (!address) return null;
+  
+  const addressLower = address.toLowerCase();
+  
+  const explicitAreaKeywords = {
+    'north charleston': 'North Charleston',
+    'n charleston': 'North Charleston',
+    'downtown': 'Downtown Charleston',
+    'downtown charleston': 'Downtown Charleston',
+    'mount pleasant': 'Mount Pleasant',
+    'mt pleasant': 'Mount Pleasant',
+    'mt. pleasant': 'Mount Pleasant',
+    'west ashley': 'West Ashley',
+    'james island': 'James Island',
+    "sullivan's island": "Sullivan's Island",
+    'sullivans island': "Sullivan's Island",
+    'daniel island': 'Daniel Island',
+  };
+  
+  const sortedExplicit = Object.keys(explicitAreaKeywords).sort((a, b) => b.length - a.length);
+  for (const keyword of sortedExplicit) {
+    if (addressLower.includes(keyword)) {
+      return explicitAreaKeywords[keyword];
+    }
+  }
+  
+  // King Street: 1-2000 = Downtown, 2000+ = West Ashley
+  if (addressLower.includes('king street')) {
+    const numberMatch = address.match(/(\d+)\s+king street/i);
+    if (numberMatch) {
+      const streetNumber = parseInt(numberMatch[1]);
+      if (streetNumber >= 1 && streetNumber <= 2000) {
+        return 'Downtown Charleston';
+      } else if (streetNumber > 2000) {
+        return 'West Ashley';
+      }
+    }
+  }
+  
+  // East Bay Street: Downtown Charleston
+  if (addressLower.includes('east bay street') || addressLower.includes('east bay st')) {
+    return 'Downtown Charleston';
+  }
+  
+  // Meeting Street: 1-400 = Downtown, 400+ = North Charleston
+  if (addressLower.includes('meeting street')) {
+    const numberMatch = address.match(/(\d+)\s+meeting street/i);
+    if (numberMatch) {
+      const streetNumber = parseInt(numberMatch[1]);
+      if (streetNumber >= 1 && streetNumber <= 400) {
+        return 'Downtown Charleston';
+      } else if (streetNumber >= 400) {
+        return 'North Charleston';
+      }
+    }
+  }
+  
+  // Pittsburgh Avenue: North Charleston
+  if (addressLower.includes('pittsburgh avenue') || addressLower.includes('pittsburgh ave')) {
+    return 'North Charleston';
+  }
+  
+  // Clements Ferry Road: Daniel Island (when zip 29492)
+  if (addressLower.includes('clements ferry') || addressLower.includes('clements ferry road')) {
+    return 'Daniel Island';
+  }
+  
+  // Island Park Drive: Daniel Island
+  if (addressLower.includes('island park') || addressLower.includes('island park drive')) {
+    return 'Daniel Island';
+  }
+  
+  // Seven Farms Drive: Daniel Island
+  if (addressLower.includes('seven farms') || addressLower.includes('seven farms drive')) {
+    return 'Daniel Island';
+  }
+  
+  return null;
+}
+
+/**
+ * Validate if coordinates fall within area bounds
+ */
+function isInBounds(lat, lng, area) {
+  if (!area.bounds || !lat || !lng) return false;
+  const { south, west, north, east } = area.bounds;
+  return lat >= south && lat <= north && lng >= west && lng <= east;
+}
+
+/**
+ * Find which area a venue belongs to using accurate logic from seed-venues.js
+ */
+function findAreaForVenue(lat, lng, address, addressComponents, areasConfig) {
+  // Priority 1: Use Google's sublocality
+  const googleSublocality = extractSublocality(addressComponents);
+  if (googleSublocality) {
+    const mappedArea = mapGoogleSublocalityToArea(googleSublocality);
+    if (mappedArea) {
+      const areaExists = areasConfig.find(a => a.name === mappedArea);
+      if (areaExists) {
+        logVerbose(`  ✅ Area from Google sublocality: ${googleSublocality} → ${mappedArea}`);
+        return mappedArea;
+      }
+    }
+  }
+  
+  // Priority 2: Parse address string
+  const addressArea = extractAreaFromAddress(address);
+  if (addressArea) {
+    const areaExists = areasConfig.find(a => a.name === addressArea);
+    if (areaExists) {
+      const isStreetNumberBased = (address.toLowerCase().includes('king street') || 
+                                   address.toLowerCase().includes('meeting street'));
+      const isEastBayStreet = address.toLowerCase().includes('east bay street') || 
+                              address.toLowerCase().includes('east bay st');
+      const isClementsFerry = address.toLowerCase().includes('clements ferry');
+      
+      if (isStreetNumberBased || isEastBayStreet) {
+        logVerbose(`  ✅ Area from address string: "${addressArea}" (street-based, authoritative)`);
+        return addressArea;
+      }
+      
+      if (isClementsFerry && addressArea === 'Daniel Island') {
+        const zipCode = extractZipCode(address, addressComponents);
+        if (zipCode === '29492') {
+          logVerbose(`  ✅ Area from address string: "${addressArea}" (Clements Ferry Road with zip 29492, authoritative)`);
+          return addressArea;
+        }
+      }
+      
+      if (isInBounds(lat, lng, areaExists)) {
+        logVerbose(`  ✅ Area from address string: "${addressArea}" (validated with coordinates)`);
+        return addressArea;
+      }
+    }
+  }
+  
+  // Priority 3: Check zip codes
+  const zipCode = extractZipCode(address, addressComponents);
+  if (zipCode) {
+    for (const area of areasConfig) {
+      if (area.zipCodes && Array.isArray(area.zipCodes) && area.zipCodes.includes(zipCode)) {
+        if (area.name === 'Daniel Island' && zipCode === '29492') {
+          const buffer = 0.05;
+          const { south, west, north, east } = area.bounds;
+          const inBufferedBounds = lat >= (south - buffer) && lat <= (north + buffer) && 
+                                   lng >= (west - buffer) && lng <= (east + buffer);
+          if (inBufferedBounds) {
+            logVerbose(`  ✅ Area from zip code ${zipCode}: ${area.name} (zip code 29492 is definitive for Daniel Island)`);
+            return area.name;
+          }
+        } else {
+          if (isInBounds(lat, lng, area)) {
+            logVerbose(`  ✅ Area from zip code ${zipCode}: ${area.name} (validated with coordinates)`);
+            return area.name;
+          }
+        }
+      }
+    }
+  }
+  
+  // Priority 4: Bounds checking (sorted by size)
+  const sortedAreas = [...areasConfig].sort((a, b) => {
+    const areaA = (a.bounds ? (a.bounds.north - a.bounds.south) * (a.bounds.east - a.bounds.west) : Infinity);
+    const areaB = (b.bounds ? (b.bounds.north - b.bounds.south) * (b.bounds.east - b.bounds.west) : Infinity);
+    return areaA - areaB;
+  });
+  
+  if (!lat || !lng) {
+    return null;
+  }
+  
+  for (const area of sortedAreas) {
+    if (area.bounds && isInBounds(lat, lng, area)) {
+      logVerbose(`  ⚠️  Area from bounds check: ${area.name} (fallback - no sublocality/address/zip match)`);
+      return area.name;
+    }
+  }
+  
+  return null;
+}
+
 // Fetch all pages of results for a query
 async function fetchAllPages(areaName, venueType, lat, lng, radius, maxPages = 10) {
   const allResults = [];
@@ -155,10 +425,8 @@ async function fetchAllPages(areaName, venueType, lat, lng, radius, maxPages = 1
     do {
       let url;
       if (nextPageToken) {
-        // Use next_page_token for pagination
         url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?pagetoken=${nextPageToken}&key=${GOOGLE_MAPS_API_KEY}`;
       } else {
-        // Initial request
         url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=${radius}&type=${venueType}&key=${GOOGLE_MAPS_API_KEY}`;
       }
       
@@ -185,7 +453,6 @@ async function fetchAllPages(areaName, venueType, lat, lng, radius, maxPages = 1
         throw new Error(`API returned status: ${response.status} - ${response.error_message || ''}`);
       }
       
-      // Wait between requests to handle next_page_token (2s delay)
       if (nextPageToken) {
         await delay(2000);
       }
@@ -198,23 +465,9 @@ async function fetchAllPages(areaName, venueType, lat, lng, radius, maxPages = 1
   }
 }
 
-// Extract venue data from Google Places result
-function extractVenueData(result, areaName) {
-  return {
-    id: result.place_id,
-    name: result.name || 'Unknown',
-    address: result.vicinity || result.formatted_address || 'Address not available',
-    lat: result.geometry?.location?.lat || null,
-    lng: result.geometry?.location?.lng || null,
-    website: result.website || null,
-    types: result.types || [],
-    area: areaName,
-  };
-}
-
-// Fetch place details from Google Places Details API
+// Fetch place details from Google Places Details API (with address_components)
 async function fetchPlaceDetails(placeId) {
-  const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,website,formatted_address&key=${GOOGLE_MAPS_API_KEY}`;
+  const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,website,formatted_address,address_components&key=${GOOGLE_MAPS_API_KEY}`;
   
   try {
     const response = await makeRequest(url);
@@ -223,9 +476,10 @@ async function fetchPlaceDetails(placeId) {
       return {
         website: response.result.website || null,
         formatted_address: response.result.formatted_address || null,
+        address_components: response.result.address_components || null,
       };
     } else if (response.status === 'NOT_FOUND') {
-      return { website: null, formatted_address: null };
+      return { website: null, formatted_address: null, address_components: null };
     } else {
       throw new Error(`API returned status: ${response.status} - ${response.error_message || ''}`);
     }
@@ -234,57 +488,33 @@ async function fetchPlaceDetails(placeId) {
   }
 }
 
-// Search for website using Google Text Search API
-async function searchWebsite(name, address) {
-  // Use Google Places Text Search API to find the venue's website
-  const query = encodeURIComponent(`${name} ${address} official website`);
-  const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&key=${GOOGLE_MAPS_API_KEY}`;
+// Extract venue data from Google Places result
+function extractVenueData(result, areaName) {
+  const addressComponents = result.address_components || null;
+  const address = result.vicinity || result.formatted_address || 'Address not available';
   
-  try {
-    const response = await makeRequest(url);
-    
-    if (response.status === 'OK' && response.results && response.results.length > 0) {
-      // Get the first result's place_id and fetch details
-      const placeId = response.results[0].place_id;
-      const details = await fetchPlaceDetails(placeId);
-      return details.website;
-    }
-    
-    return null;
-  } catch (error) {
-    log(`   ⚠️  Error searching website for ${name}: ${error.message}`);
-    return null;
-  }
-}
-
-// Write CSV file for venues with missing websites
-function writeMissingWebsitesCSV(venues) {
-  if (venues.length === 0) {
-    return;
-  }
-  
-  // CSV header
-  const csvLines = ['name,address,area'];
-  
-  // Add data rows
-  venues.forEach(venue => {
-    const name = (venue.name || '').replace(/,/g, ';'); // Replace commas in name
-    const address = (venue.address || '').replace(/,/g, ';'); // Replace commas in address
-    const area = (venue.area || '').replace(/,/g, ';'); // Replace commas in area
-    csvLines.push(`${name},${address},${area}`);
-  });
-  
-  fs.writeFileSync(missingWebsitesFile, csvLines.join('\n'), 'utf8');
-  log(`📄 Wrote ${venues.length} venues with missing websites to ${path.resolve(missingWebsitesFile)}`);
+  return {
+    id: result.place_id,
+    name: result.name || 'Unknown',
+    address: address,
+    addressComponents: addressComponents,
+    lat: result.geometry?.location?.lat || null,
+    lng: result.geometry?.location?.lng || null,
+    website: result.website || null,
+    types: result.types || [],
+    area: areaName, // Will be reassigned using findAreaForVenue
+  };
 }
 
 // Main incremental seeding function
 async function seedIncremental() {
-  log('🔄 Starting incremental venue seeding and website enrichment...\n');
+  log('🔄 Starting incremental venue seeding (Strategy 3: Optimized Full Search)...\n');
+  log('   Strategy: 50% radius, 3 venue types (bar, restaurant, brewery), accurate area assignment\n');
   
   // Load existing venues
   let existingVenues = [];
-  const seenPlaceIds = new Set();
+  const seenPlaceIds = new Set(); // Track ALL existing venue IDs (whether they have websites or not)
+  const existingVenuesWithWebsites = new Set(); // Track venues that already have websites (for reporting only)
   
   if (fs.existsSync(venuesFile)) {
     try {
@@ -292,10 +522,16 @@ async function seedIncremental() {
       existingVenues = JSON.parse(existingData);
       existingVenues.forEach(v => {
         if (v.id) {
+          // Add ALL existing venues to seenPlaceIds (not just those with websites)
           seenPlaceIds.add(v.id);
+          // Track venues that already have websites (for reporting only)
+          if (v.website && v.website.trim() !== '') {
+            existingVenuesWithWebsites.add(v.id);
+          }
         }
       });
       log(`📖 Loaded ${existingVenues.length} existing venues from ${path.resolve(venuesFile)}`);
+      log(`   ${existingVenuesWithWebsites.size} venues already have websites\n`);
     } catch (error) {
       log(`⚠️  Error loading existing venues: ${error.message}`);
       log(`   (starting fresh)\n`);
@@ -315,58 +551,130 @@ async function seedIncremental() {
   let successfulQueries = 0;
   let failedQueries = 0;
   let websitesEnriched = 0;
+  let skippedExisting = 0;
   
-  // Process each area from areas.json
-  log(`📍 Processing ${AREAS_CONFIG.length} areas:\n`);
+  // Strategy 3: Process each area with 50% radius
+  log(`📍 Processing ${AREAS_CONFIG.length} areas with 50% radius:\n`);
   
   for (const areaConfig of AREAS_CONFIG) {
     const areaName = areaConfig.name;
+    // Strategy 3: Reduce radius to 50%
+    const reducedRadius = Math.floor(areaConfig.radiusMeters * 0.5);
+    
     log(`\n📍 Processing ${areaConfig.displayName || areaName}...`);
+    log(`   Original radius: ${areaConfig.radiusMeters}m → Reduced radius: ${reducedRadius}m (50%)`);
     
     for (const venueType of VENUE_TYPES) {
       totalQueries++;
       const queryName = `${areaName} (${venueType})`;
       
       try {
-        // Terminal: Simple message
         log(`🔍 Querying ${queryName}...`);
-        // File: Detailed query information
-        logVerbose(`Query details: Area=${areaName} | Type=${venueType} | Center=(${areaConfig.center.lat}, ${areaConfig.center.lng}) | Radius=${areaConfig.radiusMeters}m`);
+        logVerbose(`Query details: Area=${areaName} | Type=${venueType} | Center=(${areaConfig.center.lat}, ${areaConfig.center.lng}) | Radius=${reducedRadius}m (50% of original)`);
+        
+        // Strategy 3: Early exit - track consecutive duplicates
+        let consecutiveDuplicates = 0;
+        const EARLY_EXIT_THRESHOLD = 20; // Exit if 20 consecutive results are duplicates
         
         const results = await fetchAllPages(
           areaName,
           venueType,
           areaConfig.center.lat,
           areaConfig.center.lng,
-          areaConfig.radiusMeters
+          reducedRadius,
+          5 // Limit to 5 pages max for efficiency
         );
         
         let addedCount = 0;
+        let duplicateCount = 0;
+        
         for (const result of results) {
-          // Skip if already exists (deduplicate by googlePlaceId)
+          // Skip if venue already exists (check seenPlaceIds which includes ALL existing venues)
           if (seenPlaceIds.has(result.place_id)) {
+            consecutiveDuplicates++;
+            duplicateCount++;
+            if (consecutiveDuplicates >= EARLY_EXIT_THRESHOLD) {
+              log(`   ⏭️  Early exit: ${consecutiveDuplicates} consecutive duplicates found (likely no new venues)`);
+              break;
+            }
             continue;
           }
           
-          // Add new venue
-          seenPlaceIds.add(result.place_id);
+          // Reset consecutive duplicates counter when we find a new venue
+          consecutiveDuplicates = 0;
+          
+          // Filter for alcohol-serving venues
+          if (!isAlcoholServingVenue(result)) {
+            continue;
+          }
+          
+          // Extract venue data
           const venue = extractVenueData(result, areaName);
-          newVenues.push(venue);
-          addedCount++;
           
-          // Verbose: Log each venue found
-          logVerbose(`  Found venue: ${venue.name} | Place ID: ${venue.id} | Location: (${venue.lat}, ${venue.lng}) | Address: ${venue.address} | Website: ${venue.website || 'N/A'} | Types: ${venue.types?.join(', ') || 'N/A'}`);
-          
-          // Track venues needing website
-          if (!venue.website || venue.website.trim() === '') {
-            venuesNeedingWebsite.push(venue);
+          // Fetch Place Details to get address_components for accurate area assignment
+          try {
+            const details = await fetchPlaceDetails(venue.id);
+            if (details.formatted_address) {
+              venue.address = details.formatted_address;
+            }
+            if (details.address_components) {
+              venue.addressComponents = details.address_components;
+            }
+            if (details.website && !venue.website) {
+              venue.website = details.website;
+            }
+            
+            // Use accurate area assignment logic
+            const actualArea = findAreaForVenue(
+              venue.lat,
+              venue.lng,
+              venue.address,
+              venue.addressComponents,
+              AREAS_CONFIG
+            );
+            
+            if (!actualArea) {
+              logVerbose(`  Skipped (no area match): ${venue.name} at (${venue.lat}, ${venue.lng}) - ${venue.address}`);
+              continue;
+            }
+            
+            venue.area = actualArea;
+            
+            // Add new venue
+            seenPlaceIds.add(venue.id);
+            newVenues.push(venue);
+            addedCount++;
+            
+            logVerbose(`  Found venue: ${venue.name} | Place ID: ${venue.id} | Location: (${venue.lat}, ${venue.lng}) | Area: ${actualArea} | Address: ${venue.address} | Website: ${venue.website || 'N/A'}`);
+            
+            // Track venues needing website
+            if (!venue.website || venue.website.trim() === '') {
+              venuesNeedingWebsite.push(venue);
+            }
+            
+            // Small delay between venue processing
+            await delay(500);
+          } catch (error) {
+            logVerbose(`  Error fetching details for ${venue.name}: ${error.message}`);
+            // Still add venue but without address_components
+            const actualArea = findAreaForVenue(
+              venue.lat,
+              venue.lng,
+              venue.address,
+              null,
+              AREAS_CONFIG
+            );
+            if (actualArea) {
+              venue.area = actualArea;
+              seenPlaceIds.add(venue.id);
+              newVenues.push(venue);
+              addedCount++;
+            }
           }
         }
         
-        // Terminal: Simple message
-        log(`   ✅ Found ${results.length} results (${addedCount} new venues)`);
-        // File: Detailed summary
-        logVerbose(`  Query complete: Total results=${results.length} | New venues=${addedCount} | Area=${areaName} | Type=${venueType}`);
+        log(`   ✅ Found ${results.length} results (${addedCount} new, ${duplicateCount} duplicates, ${skippedExisting} skipped existing)`);
+        logVerbose(`  Query complete: Total results=${results.length} | New venues=${addedCount} | Duplicates=${duplicateCount} | Area=${areaName} | Type=${venueType}`);
         successfulQueries++;
         
         await delay(1000); // Delay between queries
@@ -379,41 +687,31 @@ async function seedIncremental() {
   
   log(`\n📊 Processed ${AREAS_CONFIG.length} areas`);
   log(`   ✅ Added ${newVenues.length} new venues`);
+  log(`   ⏭️  Skipped ${skippedExisting} existing venues with websites`);
   
   // Enrich missing websites for new venues
   if (venuesNeedingWebsite.length > 0) {
-    log(`\n🌐 Enriching missing websites for ${venuesNeedingWebsite.length} venues...\n`);
+    log(`\n🌐 Enriching missing websites for ${venuesNeedingWebsite.length} new venues...\n`);
     
     for (let i = 0; i < venuesNeedingWebsite.length; i++) {
       const venue = venuesNeedingWebsite[i];
       const progress = `[${i + 1}/${venuesNeedingWebsite.length}]`;
       
       try {
-        // First try Place Details API
         const details = await fetchPlaceDetails(venue.id);
         if (details.website) {
           venue.website = details.website;
           websitesEnriched++;
-          log(`${progress} ✅ ${venue.name}: Found website via Place Details`);
+          log(`${progress} ✅ ${venue.name}: Found website`);
         } else {
-          // Try Text Search API
-          await delay(2000); // 2s delay between searches
-          const website = await searchWebsite(venue.name, venue.address);
-          if (website) {
-            venue.website = website;
-            websitesEnriched++;
-            log(`${progress} ✅ ${venue.name}: Found website via Text Search`);
-          } else {
-            log(`${progress} ⬜ ${venue.name}: No website found`);
-          }
+          log(`${progress} ⬜ ${venue.name}: No website found`);
         }
       } catch (error) {
         log(`${progress} ❌ ${venue.name}: ${error.message}`);
       }
       
-      // Delay between venue processing
       if (i < venuesNeedingWebsite.length - 1) {
-        await delay(2000); // 2s delay
+        await delay(2000);
       }
     }
     
@@ -421,38 +719,18 @@ async function seedIncremental() {
     log(`   ✅ Enriched ${websitesEnriched} missing websites`);
   }
   
-  // Find remaining venues with missing websites (after enrichment)
-  const stillMissingWebsites = [];
-  
-  // Check new venues
-  newVenues.forEach(venue => {
-    if (!venue.website || venue.website.trim() === '') {
-      stillMissingWebsites.push(venue);
-    }
-  });
-  
-  // Check existing venues that might need enrichment (optional - can be enabled)
-  // For now, only check new venues
-  
-  // Write CSV for venues with missing websites
-  if (stillMissingWebsites.length > 0) {
-    writeMissingWebsitesCSV(stillMissingWebsites);
-    log(`📄 Wrote ${stillMissingWebsites.length} venues with missing websites to CSV for manual review`);
-  } else {
-    log(`✅ All venues have websites - no CSV file needed`);
-  }
+  // Find remaining venues with missing websites
+  const stillMissingWebsites = newVenues.filter(v => !v.website || v.website.trim() === '');
   
   // Combine existing and new venues, deduplicate by id
   const allVenuesMap = new Map();
   
-  // Add existing venues first
   existingVenues.forEach(venue => {
     if (venue.id) {
       allVenuesMap.set(venue.id, venue);
     }
   });
   
-  // Add/update with new venues
   newVenues.forEach(venue => {
     if (venue.id) {
       allVenuesMap.set(venue.id, venue);
@@ -485,9 +763,7 @@ async function seedIncremental() {
   log(`   ✅ Processed ${AREAS_CONFIG.length} areas`);
   log(`   ✅ Added ${newVenues.length} new venues`);
   log(`   ✅ Enriched ${websitesEnriched} missing websites`);
-  if (stillMissingWebsites.length > 0) {
-    log(`   📄 Wrote ${stillMissingWebsites.length} missing to CSV for manual review`);
-  }
+  log(`   ⏭️  Skipped ${skippedExisting} existing venues with websites`);
   log(`   ✅ Successful queries: ${successfulQueries}/${totalQueries}`);
   log(`   ❌ Failed queries: ${failedQueries}/${totalQueries}`);
   log(`   🍺 Total venues: ${allVenues.length} (${existingVenues.length} existing + ${newVenues.length} new)`);
@@ -496,8 +772,27 @@ async function seedIncremental() {
   const websitePercentage = allVenues.length > 0 ? Math.round((venuesWithWebsites / allVenues.length) * 100) : 0;
   log(`   🌐 Venues with websites: ${venuesWithWebsites}/${allVenues.length} (${websitePercentage}%)`);
   
+  // Show breakdown by area
+  const areaCounts = {};
+  for (const venue of allVenues) {
+    const area = venue.area || 'Unknown';
+    areaCounts[area] = (areaCounts[area] || 0) + 1;
+  }
+  
+  log(`\n📍 Venues by area:`);
+  const sortedAreas = Object.entries(areaCounts).sort((a, b) => b[1] - a[1]);
+  for (const [area, count] of sortedAreas) {
+    const newCount = newVenues.filter(v => v.area === area).length;
+    log(`   ${area}: ${count} venues${newCount > 0 ? ` (+${newCount} new)` : ''}`);
+  }
+  
   log(`\n✨ Incremental seeding complete!`);
   log(`Done! Log saved to logs/seed-incremental.log`);
+  
+  return {
+    newVenuesCount: newVenues.length,
+    newVenues: newVenues
+  };
 }
 
 // Run the seeding

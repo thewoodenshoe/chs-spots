@@ -8,6 +8,7 @@ import EditSpotModal from '@/components/EditSpotModal';
 import AreaSelector, { getAreaCentersSync } from '@/components/AreaSelector';
 import ActivityChip from '@/components/ActivityChip';
 import { useSpots, Spot } from '@/contexts/SpotsContext';
+import VenuesToggle from '@/components/VenuesToggle';
 
 // Dynamically import MapComponent to avoid SSR issues with Google Maps
 const MapComponent = dynamic(() => import('@/components/MapComponent'), {
@@ -29,6 +30,7 @@ export default function Home() {
   const [pinLocation, setPinLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [editingSpot, setEditingSpot] = useState<Spot | null>(null);
   const [editPinLocation, setEditPinLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [showAllVenues, setShowAllVenues] = useState(false);
   // Default center for Daniel Island (will be updated when area centers load)
   const defaultCenter = { lat: 32.845, lng: -79.908, zoom: 14 };
   const [mapCenter, setMapCenter] = useState(defaultCenter);
@@ -236,40 +238,50 @@ export default function Home() {
           onMapClick={handleMapClick}
           mapCenter={mapCenter}
           onEditSpot={handleEditSpot}
+          showAllVenues={showAllVenues}
         />
       </div>
 
-      {/* Closest Nearby Button */}
-      <button
-        onClick={() => {
-          // This will be handled in MapComponent
-          const event = new CustomEvent('findClosestSpot');
-          window.dispatchEvent(event);
-        }}
-        className="fixed bottom-6 left-6 z-40 flex min-h-[48px] min-w-[48px] items-center gap-2 rounded-full bg-teal-600 px-4 py-3 text-sm font-semibold text-white shadow-2xl transition-all hover:scale-105 active:scale-95 hover:bg-teal-700 safe-area-bottom touch-manipulation"
-        aria-label="Find closest spot"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2.5}
+      {/* Bottom Left Button Group */}
+      <div className="fixed bottom-6 left-6 z-40 flex flex-col sm:flex-row gap-3 safe-area-bottom">
+        {/* Closest Nearby Button */}
+        <button
+          onClick={() => {
+            // This will be handled in MapComponent
+            const event = new CustomEvent('findClosestSpot');
+            window.dispatchEvent(event);
+          }}
+          className="flex min-h-[48px] min-w-[48px] items-center gap-2 rounded-full bg-teal-600 px-4 py-3 text-sm font-semibold text-white shadow-2xl transition-all hover:scale-105 active:scale-95 hover:bg-teal-700 touch-manipulation"
+          aria-label="Find closest spot"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-          />
-        </svg>
-        <span>Closest Nearby</span>
-      </button>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2.5}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+            />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+            />
+          </svg>
+          <span className="hidden sm:inline">Closest Nearby</span>
+        </button>
+
+        {/* Venues Toggle Button */}
+        <VenuesToggle
+          showVenues={showAllVenues}
+          onToggle={() => setShowAllVenues(!showAllVenues)}
+        />
+      </div>
 
       {/* Floating Action Button - Redesigned */}
       <button

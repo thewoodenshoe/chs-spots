@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SpotsProvider } from "@/contexts/SpotsContext";
+import { VenuesProvider } from "@/contexts/VenuesContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,7 +37,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SpotsProvider>
-          {children}
+          <VenuesProvider>
+            {children}
+          </VenuesProvider>
         </SpotsProvider>
       </body>
     </html>

@@ -14,9 +14,6 @@ if (!fs.existsSync(logDir)) {
 }
 const logPath = path.join(logDir, 'create-areas.log');
 
-// Overwrite log file on each run
-fs.writeFileSync(logPath, '', 'utf8');
-
 /**
  * Logger function: logs to console (with emojis) and file (without emojis, with timestamp)
  */
@@ -68,7 +65,51 @@ function logVerbose(message) {
 const dataDir = path.join(__dirname, '..', 'data');
 const areasFile = path.join(dataDir, 'areas.json');
 
-// Define all areas (excluding Park Circle)
+/**
+ * Validate bounds for an area
+ * Checks: south < north, west < east, lat/lng in Charleston range (lat 32-33, lng -80.1 to -79)
+ * Throws error if invalid
+ */
+function validateBounds(area) {
+  const { bounds, center, name } = area;
+  
+  // Validate bounds structure
+  if (!bounds || typeof bounds.south !== 'number' || typeof bounds.north !== 'number' ||
+      typeof bounds.west !== 'number' || typeof bounds.east !== 'number') {
+    throw new Error(`Invalid bounds structure for area "${name}": bounds must have south, north, west, east as numbers`);
+  }
+  
+  // Validate bounds values: south < north, west < east
+  if (bounds.south >= bounds.north) {
+    throw new Error(`Invalid bounds for area "${name}": south (${bounds.south}) must be less than north (${bounds.north})`);
+  }
+  
+  if (bounds.west >= bounds.east) {
+    throw new Error(`Invalid bounds for area "${name}": west (${bounds.west}) must be less than east (${bounds.east})`);
+  }
+  
+  // Validate center coordinates are in Charleston range (32-33, -80.1 to -79)
+  if (center) {
+    if (typeof center.lat !== 'number' || center.lat < 32 || center.lat > 33) {
+      throw new Error(`Invalid center latitude for area "${name}": ${center.lat} must be between 32 and 33`);
+    }
+    
+    if (typeof center.lng !== 'number' || center.lng < -80.1 || center.lng > -79) {
+      throw new Error(`Invalid center longitude for area "${name}": ${center.lng} must be between -80.1 and -79`);
+    }
+  }
+  
+  // Validate bounds coordinates are in Charleston range (32-33, -80.1 to -79)
+  if (bounds.south < 32 || bounds.north > 33) {
+    throw new Error(`Invalid bounds latitude for area "${name}": bounds must be between 32 and 33 (south: ${bounds.south}, north: ${bounds.north})`);
+  }
+  
+  if (bounds.west < -80.1 || bounds.east > -79) {
+    throw new Error(`Invalid bounds longitude for area "${name}": bounds must be between -80.1 and -79 (west: ${bounds.west}, east: ${bounds.east})`);
+  }
+}
+
+// Define all areas
 const areas = [
   {
     name: "Daniel Island",
@@ -134,6 +175,19 @@ if (!fs.existsSync(dataDir)) {
   log(`📁 Created data directory: ${dataDir}`);
 }
 
+// Validate all areas before writing
+try {
+  log(`🔍 Validating ${areas.length} areas...`);
+  areas.forEach((area) => {
+    validateBounds(area);
+  });
+  log(`✅ All areas validated successfully`);
+} catch (validationError) {
+  log(`❌ Validation error: ${validationError.message}`);
+  logVerbose(`Validation error details: Message="${validationError.message}" | Stack="${validationError.stack || 'N/A'}"`);
+  process.exit(1);
+}
+
 // Write areas.json
 try {
   logVerbose(`Writing areas.json to: ${path.resolve(areasFile)}`);
@@ -152,17 +206,6 @@ try {
     // File: Detailed information
     logVerbose(`Area ${index + 1}: Name="${area.name}" | DisplayName="${area.displayName || area.name}" | Center=(${area.center.lat}, ${area.center.lng}) | Radius=${area.radiusMeters}m | Bounds=(${area.bounds.south}, ${area.bounds.west}) to (${area.bounds.north}, ${area.bounds.east}) | Description="${area.description || 'N/A'}"`);
   });
-  
-  // Validate no Park Circle
-  const hasParkCircle = areas.some(area => area.name === 'Park Circle' || area.name.includes('Park Circle'));
-  if (hasParkCircle) {
-    log(`⚠️  WARNING: Park Circle found in areas list!`);
-    logVerbose(`Validation failed: Park Circle found in areas list. Areas: ${areas.map(a => a.name).join(', ')}`);
-    process.exit(1);
-  } else {
-    log('✅ Verified: Park Circle is NOT included in areas list');
-    logVerbose(`Validation passed: Park Circle not found. Areas: ${areas.map(a => a.name).join(', ')}`);
-  }
   
   logVerbose(`File write successful. Output file: ${path.resolve(areasFile)} | File size: ${fs.statSync(areasFile).size} bytes`);
   log(`\n✨ Areas configuration file created successfully!`);
