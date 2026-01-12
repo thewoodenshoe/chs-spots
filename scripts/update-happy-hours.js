@@ -109,6 +109,7 @@ const CHARLESTON_AREAS = [
 const VENUES_PATH = path.join(__dirname, '../data/venues.json');
 const SCRAPED_DIR = path.join(__dirname, '../data/scraped');
 const URL_PATTERNS_PATH = path.join(__dirname, '../data/url-patterns.json');
+const SUBMENUS_PATH = path.join(__dirname, '../data/restaurants-submenus.json');
 const CACHE_DIR = path.join(__dirname, '../data/cache');
 
 /**
@@ -1229,6 +1230,33 @@ async function main() {
   const finalPatterns = Array.from(allPatternsSet).sort();
   fs.writeFileSync(URL_PATTERNS_PATH, JSON.stringify(finalPatterns, null, 2), 'utf8');
   
+  // Filter submenu-related patterns (patterns that match SUBPAGE_KEYWORDS)
+  const submenuPatterns = finalPatterns.filter(pattern => {
+    const patternLower = pattern.toLowerCase();
+    return SUBPAGE_KEYWORDS.some(keyword => 
+      patternLower.includes(keyword.toLowerCase())
+    );
+  });
+  
+  // Load existing submenu patterns and merge
+  let existingSubmenus = [];
+  if (fs.existsSync(SUBMENUS_PATH)) {
+    try {
+      const content = fs.readFileSync(SUBMENUS_PATH, 'utf8');
+      existingSubmenus = JSON.parse(content);
+      if (!Array.isArray(existingSubmenus)) {
+        existingSubmenus = [];
+      }
+    } catch (error) {
+      logVerbose(`  ⚠️  Could not load existing submenus: ${error.message}`);
+      existingSubmenus = [];
+    }
+  }
+  
+  const allSubmenusSet = new Set([...existingSubmenus, ...submenuPatterns]);
+  const finalSubmenus = Array.from(allSubmenusSet).sort();
+  fs.writeFileSync(SUBMENUS_PATH, JSON.stringify(finalSubmenus, null, 2), 'utf8');
+  
   // Summary
   log(`\n📊 Summary:`);
   log(`   ✅ Processed: ${stats.processed} venues`);
@@ -1238,9 +1266,11 @@ async function main() {
   log(`   📍 Local pages used: ${stats.localPageCount}`);
   log(`   🔗 Total submenus discovered: ${stats.totalSubmenus}`);
   log(`   🔗 Total URL patterns discovered: ${finalPatterns.length} (${sortedPatterns.length} new)`);
+  log(`   🍽️  Submenu patterns discovered: ${finalSubmenus.length} (${submenuPatterns.length} new)`);
   log(`   ❌ Errors: ${stats.errors}`);
   log(`   📁 Scraped data saved to: ${path.resolve(SCRAPED_DIR)}`);
   log(`   📄 URL patterns saved to: ${path.resolve(URL_PATTERNS_PATH)}`);
+  log(`   📄 Submenu patterns saved to: ${path.resolve(SUBMENUS_PATH)}`);
   
   log(`\n✨ Done!`);
   log(`   Next step: Run extract-happy-hours.js to extract structured data from scraped content`);
