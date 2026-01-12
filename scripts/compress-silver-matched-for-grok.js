@@ -1,13 +1,15 @@
 /**
- * Compress Silver Merged Files for Grok Upload
+ * Compress Silver Matched Files for Grok Upload
  * 
- * Combines all files from data/silver_merged/ into multiple compressed JSON files
+ * Combines all files from data/silver_matched/ into multiple compressed JSON files
  * (roughly 50MB each) for Grok upload. Keeps venues together (doesn't split venues
  * across files).
  * 
- * Output: data/silver_merged/compressed/part-1.json, part-2.json, etc.
+ * Note: silver_matched contains only venues with "happy hour" text (already filtered).
  * 
- * Run with: node scripts/compress-silver-merged-for-grok.js
+ * Output: data/silver_matched/compressed/part-1.json, part-2.json, etc.
+ * 
+ * Run with: node scripts/compress-silver-matched-for-grok.js
  */
 
 const fs = require('fs');
@@ -18,7 +20,7 @@ const logDir = path.join(__dirname, '..', 'logs');
 if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir, { recursive: true });
 }
-const logPath = path.join(logDir, 'compress-silver-merged-for-grok.log');
+const logPath = path.join(logDir, 'compress-silver-matched-for-grok.log');
 
 fs.writeFileSync(logPath, '', 'utf8');
 
@@ -29,8 +31,8 @@ function log(message) {
 }
 
 // Paths
-const SILVER_MERGED_DIR = path.join(__dirname, '../data/silver_merged');
-const COMPRESSED_DIR = path.join(__dirname, '../data/silver_merged/compressed');
+const SILVER_MATCHED_DIR = path.join(__dirname, '../data/silver_matched');
+const COMPRESSED_DIR = path.join(__dirname, '../data/silver_matched/compressed');
 
 // Target size per file (roughly 50MB, but in bytes we'll use 45MB to leave buffer)
 const TARGET_SIZE_BYTES = 45 * 1024 * 1024; // 45MB
@@ -66,24 +68,24 @@ function formatBytes(bytes) {
  * Main function
  */
 function main() {
-  log('📦 Compressing Silver Merged Files for Grok Upload\n');
+  log('📦 Compressing Silver Matched Files for Grok Upload\n');
   
-  // Check silver_merged directory
-  if (!fs.existsSync(SILVER_MERGED_DIR)) {
-    log(`❌ Silver merged directory not found: ${SILVER_MERGED_DIR}`);
-    log(`   Run merge-raw-files.js first`);
+  // Check silver_matched directory
+  if (!fs.existsSync(SILVER_MATCHED_DIR)) {
+    log(`❌ Silver matched directory not found: ${SILVER_MATCHED_DIR}`);
+    log(`   Run filter-happy-hour.js first`);
     process.exit(1);
   }
   
   // Get all JSON files (exclude compressed directory)
-  const files = fs.readdirSync(SILVER_MERGED_DIR)
+  const files = fs.readdirSync(SILVER_MATCHED_DIR)
     .filter(f => f.endsWith('.json') && f !== 'compressed')
-    .map(f => path.join(SILVER_MERGED_DIR, f));
+    .map(f => path.join(SILVER_MATCHED_DIR, f));
   
-  log(`📁 Found ${files.length} venue file(s) in silver_merged/\n`);
+  log(`📁 Found ${files.length} venue file(s) in silver_matched/ (already filtered for "happy hour")\n`);
   
   if (files.length === 0) {
-    log('❌ No venue files to compress. Run merge-raw-files.js first.');
+    log('❌ No venue files to compress. Run filter-happy-hour.js first.');
     process.exit(1);
   }
   

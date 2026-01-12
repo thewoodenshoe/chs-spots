@@ -2,6 +2,8 @@
 
 ## Instructions
 
+**Note:** This script processes `data/silver_matched/` files (already filtered for "happy hour" text), not `silver_merged/`.
+
 Upload one of the compressed JSON files (part-1.json, part-2.json, etc.) to Grok and use the following prompt:
 
 ---
@@ -70,10 +72,10 @@ Return a JSON array with one object per venue that has happy hour information. U
 
 1. Run the compression script:
 ```bash
-node scripts/compress-silver-merged-for-grok.js
+node scripts/compress-silver-matched-for-grok.js
 ```
 
-2. Upload `data/silver_merged/compressed/part-1.json` to Grok
+2. Upload `data/silver_matched/compressed/part-1.json` to Grok
 
 3. Paste the prompt above
 
