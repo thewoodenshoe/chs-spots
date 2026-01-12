@@ -687,10 +687,6 @@ MIT
 
 ## Troubleshooting
 
-### SSL Certificate Issues with Git
-
-See `FIX-SSL-AND-RUN-SCRIPT.md` for solutions.
-
 ### Google Maps Not Loading
 
 - Verify `NEXT_PUBLIC_GOOGLE_MAPS_KEY` is set in `.env.local`
@@ -704,6 +700,4 @@ See `FIX-SSL-AND-RUN-SCRIPT.md` for solutions.
 - Review rate limiting - scripts have built-in delays
 - Check network connectivity for website scraping
 
-For more details on running scripts, see:
-- `scripts/RUN-UPDATE-HAPPY-HOURS.md`
-- `FIX-SSL-AND-RUN-SCRIPT.md`
+For more details on the pipeline, see `scripts/README-PIPELINE.md`.
