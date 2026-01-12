@@ -45,11 +45,13 @@ next-env.d.ts
 /playwright-report/
 /playwright/.cache/
 
-# cache files (daily HTML cache for update-happy-hours.js)
-data/cache/
+# New pipeline (raw HTML and processed data)
+data/raw/
+!data/raw/.last-download
+data/silver_merged/
+data/silver_matched/
 
-# generated data files (scraped content, backups, logs)
-data/scraped/
+# generated data files (backups, logs)
 data/backup/
 logs/
 data/url-patterns.json

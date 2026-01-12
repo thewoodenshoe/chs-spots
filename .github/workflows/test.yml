@@ -34,6 +34,13 @@ jobs:
       run: npm test
       continue-on-error: true
 
+    - name: Run pipeline validation tests
+      run: npm run test:pipeline
+
+    - name: Run pipeline data structure validation
+      run: npm run test:pipeline:data
+      continue-on-error: true
+
     - name: Install Playwright browsers
       run: npx playwright install --with-deps chromium
 

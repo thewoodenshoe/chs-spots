@@ -10,6 +10,8 @@
     "test": "jest",
     "test:areas": "jest __tests__/areas-config.test.ts",
     "test:incremental": "jest __tests__/seed-incremental.test.js",
+    "test:pipeline": "node scripts/__tests__/validate-pipeline.js",
+    "test:pipeline:data": "node scripts/__tests__/validate-data-structures.js",
     "seed:incremental": "node scripts/seed-incremental.js",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",

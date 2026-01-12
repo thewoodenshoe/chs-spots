@@ -1,0 +1,15 @@
+{
+  "venueId": "ChIJTest123",
+  "venueName": "Test Venue",
+  "venueArea": "Test Area",
+  "website": "https://example.com",
+  "scrapedAt": "2026-01-12T21:00:10.848Z",
+  "pages": [
+    {
+      "url": "https://example.com",
+      "html": "<html><body>Happy Hour 4pm-7pm</body></html>",
+      "hash": "abc123",
+      "downloadedAt": "2026-01-12T21:00:10.848Z"
+    }
+  ]
+}
