@@ -50,6 +50,8 @@ data/raw/
 !data/raw/.last-download
 data/silver_merged/
 data/silver_matched/
+data/gold/
+!data/gold/.bulk-complete
 
 # generated data files (backups, logs)
 data/backup/
