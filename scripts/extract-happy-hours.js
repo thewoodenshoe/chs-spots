@@ -65,6 +65,23 @@ function shouldExtract(silverMatchedPath, goldPath, force = false) {
     return 'new';
   }
   
+  // Check if gold file already has valid extraction (from bulk)
+  try {
+    const goldData = JSON.parse(fs.readFileSync(goldPath, 'utf8'));
+    // If bulk extracted and has happy hour, only re-extract if source changed
+    if (goldData.extractionMethod === 'llm-bulk' && goldData.happyHour && goldData.happyHour.found === true) {
+      // Only re-extract if source actually changed
+      const silverStats = fs.statSync(silverMatchedPath);
+      const goldStats = fs.statSync(goldPath);
+      if (silverStats.mtime <= goldStats.mtime) {
+        return 'skip'; // Source hasn't changed, keep bulk extraction
+      }
+      return 'changed'; // Source changed, re-extract
+    }
+  } catch (e) {
+    // If we can't read gold file, proceed with extraction
+  }
+  
   // Compare timestamps
   const silverStats = fs.statSync(silverMatchedPath);
   const goldStats = fs.statSync(goldPath);
