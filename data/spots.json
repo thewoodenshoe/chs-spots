@@ -1,6 +1,78 @@
 [
   {
     "id": 1,
+    "lat": 32.8022428,
+    "lng": -79.9529594,
+    "title": "Moe's Crosstown Tavern",
+    "description": "4pm-7pm • Monday-Friday • drink specials",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 2,
+    "lat": 32.79236059999999,
+    "lng": -79.8810065,
+    "title": "Tavern & Table",
+    "description": "4pm-6pm • Weekdays • select specials that change throughout the year",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 3,
+    "lat": 32.7818603,
+    "lng": -79.93458550000001,
+    "title": "The Watch Rooftop Kitchen and Spirits",
+    "description": "4pm-7pm • Monday-Thursday • Happy Hour specials",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 4,
+    "lat": 32.7921108,
+    "lng": -79.8690531,
+    "title": "Ty's Roadside Coastal Kitchen",
+    "description": "Tuesday-Thursday 5pm-6:30pm, Friday 3:30pm-6:30pm • Tuesday-Thursday, Friday",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 5,
+    "lat": 32.8823878,
+    "lng": -79.9754682,
+    "title": "LoLA",
+    "description": "Tuesday-Friday • great discounts on food and drinks",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 6,
+    "lat": 32.788346,
+    "lng": -80.01912,
+    "title": "Hunley's Neighborhood Grill",
+    "description": "4pm-7pm • Monday-Friday",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 7,
+    "lat": 32.8816953,
+    "lng": -79.9765226,
+    "title": "Stems & Skins",
+    "description": "4pm-6pm • Monday-Friday",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 8,
+    "lat": 32.780588,
+    "lng": -79.927347,
+    "title": "Mac's Place",
+    "description": "Drinks and food specials are always available",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 9,
+    "lat": 32.7955392,
+    "lng": -79.9543472,
+    "title": "Lillian’s Petite Market & Eatery",
+    "description": "4pm-6pm • Daily",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 10,
     "lat": 32.8098647,
     "lng": -79.8768884,
     "title": "Langdon's Restaurant & Wine Bar",
@@ -8,10 +80,378 @@
     "type": "Happy Hour"
   },
   {
-    "id": 2,
+    "id": 11,
+    "lat": 32.79201,
+    "lng": -79.873423,
+    "title": "The Perch",
+    "description": "4pm-6pm",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 12,
+    "lat": 32.81680089999999,
+    "lng": -79.9534182,
+    "title": "Edmund's Oast Brewing Co.",
+    "description": "4pm-6pm • Monday-Friday • half off draft beers, other rotating food and drink specials",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 13,
+    "lat": 32.7331172,
+    "lng": -80.0572174,
+    "title": "The Southern General",
+    "description": "Monday-Friday 3pm-5pm, Saturday-Sunday 4pm-5pm • Daily • limited menu",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 14,
+    "lat": 32.78611009999999,
+    "lng": -79.93501359999999,
+    "title": "Big Gun Burger Shop & Bar",
+    "description": "4pm-6pm • Monday-Friday • $3 Tacos (Pork or Vegan), $4 House Liquor, $10 Classic Burger with Fries, $2.50 Pabst",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 15,
+    "lat": 32.7933778,
+    "lng": -79.8669419,
+    "title": "The Flying Biscuit Cafe",
+    "description": "4pm-7pm • Monday-Friday • Featured Munchie, Beer, Wine and Cocktail Specials",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 16,
+    "lat": 32.7620964,
+    "lng": -79.98461569999999,
+    "title": "The James",
+    "description": "Mon & Tue: 5pm – 6pm, Wed – Fri: 4pm – 6pm • Mon, Tue, Wed, Thu, Fri",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 17,
+    "lat": 32.812153,
+    "lng": -79.8794727,
+    "title": "Community Table",
+    "description": "Mon-Sat 4:00-5:30p • Mon-Sat",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 18,
+    "lat": 32.8348274,
+    "lng": -80.04576109999999,
+    "title": "Cedar Creek Tavern Charleston",
+    "description": "Happy Hour details available",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 19,
+    "lat": 32.7774484,
+    "lng": -79.8103782,
+    "title": "Crow Bar",
+    "description": "Monday - Friday 4 pm - 6 pm • Monday - Friday",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 20,
+    "lat": 32.7814812,
+    "lng": -79.9299322,
+    "title": "Frannie & The Fox",
+    "description": "Tuesday-Saturday 5pm-7pm • Tuesday-Saturday • elegant cocktails, savory bites",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 21,
+    "lat": 32.8027804,
+    "lng": -79.9448572,
+    "title": "The Archer",
+    "description": "Daily",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 22,
+    "lat": 32.7803192,
+    "lng": -79.93452409999999,
+    "title": "AZUR",
+    "description": "Happy Hour details available",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 23,
+    "lat": 32.776716,
+    "lng": -79.92719699999999,
+    "title": "Bar Vauté",
+    "description": "4pm-6pm • Monday-Friday",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 24,
+    "lat": 32.81160500000001,
+    "lng": -80.0443548,
+    "title": "Underground Chuck’s",
+    "description": "Monday-Friday • Great selection of local craft beer, creative cocktails and more",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 25,
+    "lat": 32.7809667,
+    "lng": -79.93124139999999,
+    "title": "Peninsula Grill",
+    "description": "Happy Hour details available",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 26,
+    "lat": 32.8736274,
+    "lng": -79.97210849999999,
+    "title": "COAST Brewing Company",
+    "description": "3pm-5pm • Thursday-Friday",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 27,
+    "lat": 32.8555203,
+    "lng": -79.9032301,
+    "title": "The Kingstide",
+    "description": "4pm-6pm • Monday-Friday • Bartender's Choice Cocktail, Rotating Beer Selections, $2 Off Titos Cocktails",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 28,
+    "lat": 32.7918418,
+    "lng": -79.881597,
+    "title": "Sunsets Creekside Bar",
+    "description": "Happy Hour details available",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 29,
+    "lat": 32.7769905,
+    "lng": -79.9282666,
+    "title": "The Establishment",
+    "description": "5pm-7pm • Tuesday-Saturday • Discounts on select wine and beer at the bar, Tito's Vodka Martini $12, Happy Hour Featured Wines by the Glass $9, Happy Hour Beer $6-7",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 30,
+    "lat": 32.7901354,
+    "lng": -79.9390796,
+    "title": "Charleston Beer Works",
+    "description": "Monday-Friday • House Liquor $6, House Wine $6, Local Draughts $6",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 31,
+    "lat": 32.872673,
+    "lng": -79.97842399999999,
+    "title": "Holy City Brewing",
+    "description": "4pm-6pm • Monday-Thursday • half-off flagship drafts, appetizer deals",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 32,
+    "lat": 32.7786744,
+    "lng": -79.9265571,
+    "title": "The Rooftop at the Vendue",
+    "description": "4pm-6pm • Sundays-Thursday • Signature Cocktails $12, Wines By The Glass $9, Local Craft Beers $6, Domestic Bottled Beers $3-$4, Flatbreads $10",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 33,
+    "lat": 32.780193,
+    "lng": -79.9273161,
+    "title": "Amen Street Fish & Raw Bar",
+    "description": "4pm-7pm",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 34,
+    "lat": 32.7963078,
+    "lng": -79.88674499999999,
+    "title": "The Kickin' Chicken",
+    "description": "4pm-7pm • Weekdays",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 35,
+    "lat": 32.7343444,
+    "lng": -80.0568618,
+    "title": "Minero Mexican Grill & Cantina",
+    "description": "4pm-6pm • Monday-Friday",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 36,
+    "lat": 32.7854361,
+    "lng": -79.7899016,
+    "title": "The Dinghy",
+    "description": "4pm-7pm • Weekdays • Great drinks specials",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 37,
+    "lat": 32.8393676,
+    "lng": -79.85447490000001,
+    "title": "The Wine Bar",
+    "description": "4pm-6pm • Daily • Daily specials from 4-6pm, 1/2 Off Wine Wednesday every week",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 38,
+    "lat": 32.79124,
+    "lng": -79.94024499999999,
+    "title": "Prohibition",
+    "description": "4pm-6pm • Monday-Thursday • bar only",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 39,
+    "lat": 32.7978959,
+    "lng": -79.88870059999999,
+    "title": "Charlotte's Wine Bar & Tapas",
+    "description": "Monday-Friday 4:00 PM - 6:00 PM (Quick Pours), Monday-Friday 7:00 PM - 9:00 PM (Small Bites) • Monday-Friday • Quick Pours Happy Hour, Small Bites Happy Hour",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 40,
+    "lat": 32.8306661,
+    "lng": -79.83081849999999,
+    "title": "Burtons Grill & Bar",
+    "description": "every weekday • Monday-Friday • deals on cocktails, wines & drafts, delicious bar bites",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 41,
+    "lat": 32.7921151,
+    "lng": -79.88295699999999,
+    "title": "Muddy's Dockside Bar",
+    "description": "Mon.-Fri. 4-7pm • Mon.-Fri.",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 42,
+    "lat": 32.814179,
+    "lng": -79.9515299,
+    "title": "King Street Cabaret",
+    "description": "Monday-Friday 4pm-8pm • Monday-Friday • Half off House Liquors, $3 Domestic Beers, $2 Off Other Liquor, Beer and Wine, $3 Bud Light • $5 Fireball shots • $6 Grey Goose, $5 Well and Call Tequila • $3 Mich Ultra, $3 Domestic Beers • $6 Grey Goose, $5 U Call It! (Crown, Call and House Liquors), $5 Bombs • $5 Mules • $3 Shooters • $4 Coronas",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 43,
+    "lat": 32.93266090000001,
+    "lng": -79.9996067,
+    "title": "LG's By The Creek",
+    "description": "4-7PM • Monday - Friday",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 44,
+    "lat": 32.7927239,
+    "lng": -80.03762549999999,
+    "title": "Ireland's Own / Jagerhaus Pub",
+    "description": "Happy Hour details available",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 45,
+    "lat": 32.9444967,
+    "lng": -80.0413981,
+    "title": "Carrabba's Italian Grill",
+    "description": "4pm-7pm • Daily • $8 Cocktails, $8 Bites",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 46,
+    "lat": 32.9112174,
+    "lng": -80.0234953,
+    "title": "La Hacienda Mexican Restaurant",
+    "description": "Happy Hour details available",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 47,
+    "lat": 32.785884,
+    "lng": -79.935519,
+    "title": "Ritual Nightclub",
+    "description": "Happy Hour details available",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 48,
+    "lat": 32.796679,
+    "lng": -79.9970058,
+    "title": "Tin Roof",
+    "description": "Happy Hour details available",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 49,
+    "lat": 32.8124748,
+    "lng": -79.8795445,
+    "title": "O'Brion's Pub & Grille",
+    "description": "4pm-7pm • Monday-Friday • $1 Off Domestic Beers, $1 Off House Wine, $1 Off House Liquor",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 50,
     "lat": 32.84035669999999,
     "lng": -79.85551679999999,
     "title": "Poke Bros.",
+    "description": "Happy Hour details available",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 51,
+    "lat": 32.7831237,
+    "lng": -79.93217179999999,
+    "title": "Grand Bohemian Wine Bar",
+    "description": "2pm",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 52,
+    "lat": 32.88121,
+    "lng": -79.975903,
+    "title": "DIG In The Park",
+    "description": "Happy Hour details available",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 53,
+    "lat": 32.8794803,
+    "lng": -79.9800004,
+    "title": "Bar on the Ave",
+    "description": "Happy Hour details available",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 54,
+    "lat": 32.7511445,
+    "lng": -79.9526843,
+    "title": "Ellis Creek Fish Camp",
+    "description": "3pm-5pm • $5 House Liquor, $2 off Frozen Drinks, $1 off Draft Beers, $5 House Wine White or Red, $5 Catfish Bites, Fried Okra, Fried Pickles, Pimento Cheese or Hushpuppies",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 55,
+    "lat": 32.862307,
+    "lng": -79.904271,
+    "title": "Wings Co.",
+    "description": "Happy Hour details available",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 56,
+    "lat": 32.8614384,
+    "lng": -79.9082524,
+    "title": "Ristorante LIDI",
+    "description": "2pm",
+    "type": "Happy Hour"
+  },
+  {
+    "id": 57,
+    "lat": 32.79148010000001,
+    "lng": -79.94166620000001,
+    "title": "Sorghum & Salt",
     "description": "Happy Hour details available",
     "type": "Happy Hour"
   }
