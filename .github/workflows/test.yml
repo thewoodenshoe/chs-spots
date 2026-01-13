@@ -41,6 +41,12 @@ jobs:
       run: npm run test:pipeline:data
       continue-on-error: true
 
+    - name: Run bulk LLM results processing validation
+      run: npm run test:bulk-process
+
+    - name: Run create spots validation
+      run: npm run test:create-spots
+
     - name: Install Playwright browsers
       run: npx playwright install --with-deps chromium
 

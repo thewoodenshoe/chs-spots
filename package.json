@@ -12,6 +12,8 @@
     "test:incremental": "jest __tests__/seed-incremental.test.js",
     "test:pipeline": "node scripts/__tests__/validate-pipeline.js",
     "test:pipeline:data": "node scripts/__tests__/validate-data-structures.js",
+    "test:bulk-process": "node scripts/__tests__/validate-process-bulk-llm-results.js",
+    "test:create-spots": "node scripts/__tests__/validate-create-spots.js",
     "extract:bulk:prepare": "node scripts/prepare-bulk-llm-extraction.js",
     "extract:bulk:process": "node scripts/process-bulk-llm-results.js",
     "extract:incremental": "node scripts/extract-happy-hours.js --incremental",
