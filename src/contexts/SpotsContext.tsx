@@ -11,6 +11,7 @@ export interface Spot {
   description: string;
   type: SpotType;
   photoUrl?: string;
+  source?: 'manual' | 'automated'; // Indicates if spot was added manually or by script
 }
 
 interface SpotsContextType {

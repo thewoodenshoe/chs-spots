@@ -182,8 +182,32 @@ function main() {
     return;
   }
   
+  // Load existing spots.json to preserve manual spots
+  let existingSpots = [];
+  let manualSpotsCount = 0;
+  if (fs.existsSync(SPOTS_PATH)) {
+    try {
+      const existingContent = fs.readFileSync(SPOTS_PATH, 'utf8');
+      existingSpots = JSON.parse(existingContent);
+      if (!Array.isArray(existingSpots)) {
+        existingSpots = [];
+      }
+      // Count and preserve manual spots
+      manualSpotsCount = existingSpots.filter(s => s.source === 'manual').length;
+      if (manualSpotsCount > 0) {
+        log(`📋 Found ${manualSpotsCount} manual spot(s) - will be preserved\n`);
+      }
+    } catch (error) {
+      log(`  ⚠️  Error reading existing spots.json: ${error.message}`);
+      existingSpots = [];
+    }
+  }
+  
+  // Extract manual spots (should never be removed)
+  const manualSpots = existingSpots.filter(s => s.source === 'manual');
+  
   // Process gold files and create spots
-  const spots = [];
+  const spots = [...manualSpots]; // Start with manual spots
   let processed = 0;
   let skipped = 0;
   let missingVenue = 0;
@@ -215,7 +239,15 @@ function main() {
         continue;
       }
       
-      const spot = createSpot(goldData, venueData, spots.length + 1);
+      // Calculate next ID (max of existing spots + 1)
+      const maxId = spots.length > 0 
+        ? Math.max(...spots.map(s => s.id || 0))
+        : manualSpots.length > 0
+        ? Math.max(...manualSpots.map(s => s.id || 0))
+        : 0;
+      const nextId = maxId + 1;
+      
+      const spot = createSpot(goldData, venueData, nextId);
       
       if (spot) {
         // Validate spot has required fields
@@ -224,6 +256,9 @@ function main() {
           skipped++;
           continue;
         }
+        
+        // Mark as automated
+        spot.source = 'automated';
         
         spots.push(spot);
         processed++;
@@ -248,12 +283,13 @@ function main() {
   
   // Summary
   log(`\n📊 Summary:`);
-  log(`   ✅ Spots created: ${processed}`);
+  log(`   ✅ Automated spots created: ${processed}`);
+  log(`   👤 Manual spots preserved: ${manualSpotsCount}`);
   log(`   ⚠️  Skipped: ${skipped}`);
   log(`   ❌ Missing venue data: ${missingVenue}`);
   log(`   ℹ️  No happy hour: ${noHappyHour}`);
   log(`   📋 Incomplete data: ${incompleteData} (time only, no days/specials)`);
-  log(`   📄 Total spots in spots.json: ${spots.length}`);
+  log(`   📄 Total spots in spots.json: ${spots.length} (${manualSpotsCount} manual + ${processed} automated)`);
   log(`\n✨ Done! Created spots.json with ${spots.length} spot(s)`);
 }
 

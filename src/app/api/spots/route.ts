@@ -56,6 +56,7 @@ export async function GET() {
       description: spot.description || '',
       type: spot.type || spot.activity || 'Happy Hour', // Use type if available, fallback to activity
       photoUrl: spot.photoUrl,
+      source: spot.source || 'automated', // Default to 'automated' for backward compatibility
     };
     
     // Try to enrich with area information from venues
@@ -127,6 +128,7 @@ export async function POST(request: Request) {
       type: spotData.type || spotData.activity || 'Happy Hour',
       photoUrl: spotData.photoUrl,
       area: spotData.area,
+      source: 'manual', // Mark as manually added - should never be removed by scripts
     };
     
     // Add new spot
