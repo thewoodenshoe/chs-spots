@@ -155,7 +155,13 @@ function combinePagesText(pages) {
  * Main function
  */
 function main() {
+  // Parse area filter from command line
+  const areaFilter = process.argv[2] || null;
+  
   log('📋 Preparing Incremental LLM Extraction\n');
+  if (areaFilter) {
+    log(`📍 Area filter: ${areaFilter}\n`);
+  }
   
   // Check bulk completion
   const bulkCompletePath = path.join(GOLD_DIR, '.bulk-complete');
@@ -192,6 +198,15 @@ function main() {
       try {
         const silverPath = path.join(SILVER_MATCHED_DIR, file);
         const silverData = JSON.parse(fs.readFileSync(silverPath, 'utf8'));
+        
+        // Apply area filter if specified
+        if (areaFilter) {
+          const venueArea = (silverData.venueArea || '').toLowerCase();
+          const filterArea = areaFilter.toLowerCase();
+          if (venueArea !== filterArea && !venueArea.includes(filterArea)) {
+            continue; // Skip venues not matching area filter
+          }
+        }
         
         venuesToExtract.push({
           venueId,
@@ -237,15 +252,22 @@ function main() {
     };
   });
   
-  // Archive old incremental files to history
+  // Archive old incremental files to history (only from previous days, not today)
   const historyDir = path.join(GOLD_DIR, 'incremental-history');
   if (!fs.existsSync(historyDir)) {
     fs.mkdirSync(historyDir, { recursive: true });
   }
   
-  // Move old incremental input files to history
+  const today = new Date().toISOString().split('T')[0];
+  
+  // Move old incremental input files to history (only if not from today)
   const oldInputFiles = fs.readdirSync(GOLD_DIR)
-    .filter(f => f.startsWith('incremental-input-') && f.endsWith('.json'));
+    .filter(f => f.startsWith('incremental-input-') && f.endsWith('.json'))
+    .filter(f => {
+      // Extract date from filename: incremental-input-YYYY-MM-DD.json
+      const match = f.match(/incremental-input-(\d{4}-\d{2}-\d{2})\.json/);
+      return match && match[1] !== today; // Only archive files not from today
+    });
   
   for (const oldFile of oldInputFiles) {
     const oldPath = path.join(GOLD_DIR, oldFile);
@@ -254,9 +276,14 @@ function main() {
     log(`  📦 Archived: ${oldFile} → incremental-history/`);
   }
   
-  // Move old incremental result files to history
+  // Move old incremental result files to history (only if not from today)
   const oldResultFiles = fs.readdirSync(GOLD_DIR)
-    .filter(f => f.startsWith('incremental-results-') && f.endsWith('.json'));
+    .filter(f => f.startsWith('incremental-results-') && f.endsWith('.json'))
+    .filter(f => {
+      // Extract date from filename: incremental-results-YYYY-MM-DD.json
+      const match = f.match(/incremental-results-(\d{4}-\d{2}-\d{2})\.json/);
+      return match && match[1] !== today; // Only archive files not from today
+    });
   
   for (const oldFile of oldResultFiles) {
     const oldPath = path.join(GOLD_DIR, oldFile);
@@ -269,23 +296,62 @@ function main() {
     log(`  ✅ Archived ${oldInputFiles.length + oldResultFiles.length} old file(s) to incremental-history/\n`);
   }
   
-  // Save incremental input
-  const today = new Date().toISOString().split('T')[0];
+  // Load existing incremental input file for today (if it exists)
   const incrementalInputPath = path.join(GOLD_DIR, `incremental-input-${today}.json`);
+  let existingData = null;
+  let existingVenueIds = new Set();
   
-  const inputData = {
+  if (fs.existsSync(incrementalInputPath)) {
+    try {
+      existingData = JSON.parse(fs.readFileSync(incrementalInputPath, 'utf8'));
+      existingVenueIds = new Set(existingData.venues.map(v => v.venueId));
+      log(`📄 Found existing incremental file for today with ${existingData.venues.length} venue(s)`);
+      log(`   Will append new venues (avoiding duplicates)\n`);
+    } catch (e) {
+      log(`  ⚠️  Error reading existing file: ${e.message}`);
+      log(`   Will create new file\n`);
+    }
+  }
+  
+  // Filter out venues that already exist in today's file
+  const newVenues = formattedVenues.filter(v => !existingVenueIds.has(v.venueId));
+  const duplicateCount = formattedVenues.length - newVenues.length;
+  
+  if (duplicateCount > 0) {
+    log(`  ℹ️  Skipping ${duplicateCount} venue(s) already in today's file\n`);
+  }
+  
+  if (newVenues.length === 0) {
+    log('✅ No new venues to add. All venues are already in today\'s incremental file!');
+    process.exit(0);
+  }
+  
+  // Merge with existing data or create new
+  const inputData = existingData || {
     date: today,
-    totalVenues: formattedVenues.length,
+    totalVenues: 0,
     summary: {
-      new: byReason.new.length,
-      changed: byReason.changed.length
+      new: 0,
+      changed: 0
     },
-    venues: formattedVenues
+    venues: []
   };
   
+  // Append new venues
+  inputData.venues.push(...newVenues);
+  inputData.totalVenues = inputData.venues.length;
+  
+  // Update summary counts
+  const allNew = inputData.venues.filter(v => v.reason === 'new').length;
+  const allChanged = inputData.venues.filter(v => v.reason === 'changed').length;
+  inputData.summary.new = allNew;
+  inputData.summary.changed = allChanged;
+  
+  // Save incremental input
   fs.writeFileSync(incrementalInputPath, JSON.stringify(inputData, null, 2), 'utf8');
   
-  log(`✅ Prepared ${formattedVenues.length} venue(s) for incremental extraction`);
+  log(`✅ Prepared ${newVenues.length} new venue(s) for incremental extraction`);
+  log(`📄 Total venues in file: ${inputData.totalVenues}`);
   log(`📄 Input file: ${incrementalInputPath}\n`);
   log(`📋 Next steps:`);
   log(`   1. Upload incremental-input-${today}.json to Grok UI or ChatGPT UI`);

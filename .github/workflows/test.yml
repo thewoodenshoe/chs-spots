@@ -47,6 +47,10 @@ jobs:
     - name: Run create spots validation
       run: npm run test:create-spots
 
+    - name: Run incremental append validation
+      run: npm run test:incremental-append
+      continue-on-error: true
+
     - name: Install Playwright browsers
       run: npx playwright install --with-deps chromium
 
