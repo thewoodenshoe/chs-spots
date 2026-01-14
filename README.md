@@ -2,6 +2,116 @@
 
 A crowdsourced map application for discovering and sharing local hotspots in Charleston, SC areas including Daniel Island, Mount Pleasant, James Island, Downtown Charleston, and Sullivan's Island.
 
+## Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/thewoodenshoe/chs-spots.git
+   cd chs-spots
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables:**
+   Create `.env.local` file:
+   ```bash
+   NEXT_PUBLIC_GOOGLE_MAPS_KEY=your_google_maps_api_key_here
+   ```
+
+4. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+
+## Initial Run / Initial Load
+
+Run these scripts **once** to set up the initial data:
+
+1. **Create areas configuration:**
+   ```bash
+   node scripts/create-areas.js
+   ```
+
+2. **Seed venues from Google Places:**
+   ```bash
+   node scripts/seed-venues.js
+   ```
+   This discovers all venues and creates `data/venues.json`.
+
+3. **Run the happy hour pipeline:**
+   ```bash
+   node scripts/download-raw-html.js
+   node scripts/merge-raw-files.js
+   node scripts/filter-happy-hour.js
+   ```
+
+4. **Bulk LLM extraction (one-time manual):**
+   ```bash
+   npm run extract:bulk:prepare
+   # Upload to Grok UI, extract, save as data/gold/bulk-results.json
+   npm run extract:bulk:process
+   ```
+
+5. **Create spots:**
+   ```bash
+   node scripts/create-spots.js
+   ```
+
+## Incremental Load / Daily Run
+
+Run these scripts **daily** to update data:
+
+1. **Download new/updated websites:**
+   ```bash
+   node scripts/download-raw-html.js
+   ```
+   Or for a specific area:
+   ```bash
+   node scripts/download-raw-html.js "Daniel Island"
+   ```
+
+2. **Merge raw files:**
+   ```bash
+   node scripts/merge-raw-files.js
+   ```
+   Or for a specific area:
+   ```bash
+   node scripts/merge-raw-files.js "Daniel Island"
+   ```
+
+3. **Filter happy hour:**
+   ```bash
+   node scripts/filter-happy-hour.js
+   ```
+   Or for a specific area:
+   ```bash
+   node scripts/filter-happy-hour.js "Daniel Island"
+   ```
+
+4. **Prepare incremental venues for LLM:**
+   ```bash
+   node scripts/prepare-incremental-llm-extraction.js
+   ```
+   Creates `data/gold/incremental-input-YYYY-MM-DD.json` (archives old files to `incremental-history/`).
+
+5. **Manual LLM extraction:**
+   - Upload `incremental-input-YYYY-MM-DD.json` to Grok UI
+   - Extract happy hour information
+   - Save results as `data/gold/incremental-results-YYYY-MM-DD.json`
+
+6. **Process incremental results:**
+   ```bash
+   node scripts/process-incremental-llm-results.js
+   ```
+
+7. **Update spots:**
+   ```bash
+   node scripts/create-spots.js
+   ```
+
 ## Quick Start (TLDR)
 
 1. **Create Areas Config**: `node scripts/create-areas.js`
