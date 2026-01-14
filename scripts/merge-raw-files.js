@@ -167,6 +167,15 @@ function urlToHash(url) {
 function main() {
   log('🔗 Starting Raw Files Merge\n');
   
+  // Parse command-line arguments
+  const args = process.argv.slice(2);
+  let areaFilter = null;
+  
+  if (args.length > 0) {
+    areaFilter = args[0];
+    log(`📍 Filtering by area: ${areaFilter}\n`);
+  }
+  
   // Load venues
   if (!fs.existsSync(VENUES_PATH)) {
     log(`❌ Venues file not found: ${VENUES_PATH}`);
@@ -184,12 +193,28 @@ function main() {
   }
   
   // Get all venue directories
-  const venueDirs = fs.readdirSync(RAW_DIR).filter(item => {
+  let venueDirs = fs.readdirSync(RAW_DIR).filter(item => {
     const itemPath = path.join(RAW_DIR, item);
-    return fs.statSync(itemPath).isDirectory();
+    return fs.statSync(itemPath).isDirectory() && item !== 'previous';
   });
   
-  log(`📁 Found ${venueDirs.length} venue(s) with raw files\n`);
+  // Filter by area if specified
+  if (areaFilter) {
+    const areaVenueIds = new Set(
+      venues
+        .filter(v => 
+          (v.area && v.area.toLowerCase() === areaFilter.toLowerCase()) ||
+          (v.addressComponents && v.addressComponents.some(ac => 
+            ac.types.includes('sublocality') && ac.long_name.toLowerCase() === areaFilter.toLowerCase()
+          ))
+        )
+        .map(v => v.id || v.place_id)
+    );
+    venueDirs = venueDirs.filter(venueId => areaVenueIds.has(venueId));
+    log(`📍 Filtered to ${venueDirs.length} venue(s) in ${areaFilter}\n`);
+  } else {
+    log(`📁 Found ${venueDirs.length} venue(s) with raw files\n`);
+  }
   
   // Process each venue
   const results = [];
