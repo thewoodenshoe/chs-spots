@@ -115,6 +115,15 @@ function processFile(file) {
 function main() {
   log('🔍 Starting Happy Hour Filter\n');
   
+  // Parse command-line arguments
+  const args = process.argv.slice(2);
+  let areaFilter = null;
+  
+  if (args.length > 0) {
+    areaFilter = args[0];
+    log(`📍 Filtering by area: ${areaFilter}\n`);
+  }
+  
   // Check merged directory
   if (!fs.existsSync(SILVER_MERGED_DIR)) {
     log(`❌ Merged directory not found: ${SILVER_MERGED_DIR}`);
@@ -122,9 +131,41 @@ function main() {
     process.exit(1);
   }
   
+  // Load venues for area filtering
+  let venues = [];
+  if (areaFilter) {
+    try {
+      if (fs.existsSync(VENUES_PATH)) {
+        venues = JSON.parse(fs.readFileSync(VENUES_PATH, 'utf8'));
+      }
+    } catch (e) {
+      log(`  ⚠️  Could not load venues.json for area filtering`);
+    }
+  }
+  
   // Get all merged files
-  const files = fs.readdirSync(SILVER_MERGED_DIR).filter(f => f.endsWith('.json'));
-  log(`📁 Found ${files.length} merged file(s)\n`);
+  let files = fs.readdirSync(SILVER_MERGED_DIR).filter(f => f.endsWith('.json'));
+  
+  // Filter by area if specified
+  if (areaFilter && venues.length > 0) {
+    const areaVenueIds = new Set(
+      venues
+        .filter(v => 
+          (v.area && v.area.toLowerCase() === areaFilter.toLowerCase()) ||
+          (v.addressComponents && v.addressComponents.some(ac => 
+            ac.types.includes('sublocality') && ac.long_name.toLowerCase() === areaFilter.toLowerCase()
+          ))
+        )
+        .map(v => v.id || v.place_id)
+    );
+    files = files.filter(file => {
+      const venueId = file.replace('.json', '');
+      return areaVenueIds.has(venueId);
+    });
+    log(`📍 Filtered to ${files.length} merged file(s) in ${areaFilter}\n`);
+  } else {
+    log(`📁 Found ${files.length} merged file(s)\n`);
+  }
   
   // Process each file
   const results = [];
