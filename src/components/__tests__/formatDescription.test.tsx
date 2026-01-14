@@ -35,16 +35,34 @@ describe('formatDescription', () => {
       }
       
       // Check if line contains bullet separator (•)
+      // If it's a time/day combination (e.g., "4pm-6pm • Monday-Friday"), keep it together
+      // Otherwise, split by bullet for other cases
       if (trimmed.includes('•')) {
-        const parts = trimmed.split('•').map(p => p.trim()).filter(p => p.length > 0);
-        for (const part of parts) {
+        // Check if this looks like a time/day combination
+        // Pattern: contains time (pm/am) AND contains day names (Monday, Tuesday, etc.) or "Daily", "Weekday", etc.
+        const hasTime = /\d+(?:am|pm|AM|PM)/i.test(trimmed);
+        const hasDays = /(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|Daily|Weekday|Weekend|Weekdays|Weekends)/i.test(trimmed);
+        
+        if (hasTime && hasDays) {
+          // Keep time and days together on one line
           formattedLines.push(
             <div key={formattedLines.length} className="text-xs text-gray-600">
-              • {part}
+              • {trimmed}
             </div>
           );
+        } else {
+          // Split by bullet for other cases
+          const parts = trimmed.split('•').map(p => p.trim()).filter(p => p.length > 0);
+          for (const part of parts) {
+            formattedLines.push(
+              <div key={formattedLines.length} className="text-xs text-gray-600">
+                • {part}
+              </div>
+            );
+          }
         }
       } else {
+        // Single line without bullets - this is likely a special or standalone item
         formattedLines.push(
           <div key={formattedLines.length} className="text-xs text-gray-600">
             • {trimmed}
@@ -94,7 +112,8 @@ describe('formatDescription', () => {
   });
 
   test('should split bullet-separated items into separate lines', () => {
-    const description = '4pm-6pm • Monday-Friday • $3 Tacos';
+    // Use a description that doesn't match time/day pattern
+    const description = 'Special Offer • Happy Hour • $3 Tacos';
     const { container } = render(formatDescription(description));
     
     // Should create separate bullet points
@@ -161,5 +180,42 @@ describe('formatDescription', () => {
     const lines = container.querySelectorAll('.text-xs');
     expect(lines.length).toBe(1);
     expect(container.textContent).toContain('Happy Hour available');
+  });
+
+  test('should keep time and days together on one line', () => {
+    const description = '4pm-6pm • Monday-Friday\nBartender\'s Choice Cocktail\nRotating Beer Selections';
+    const { container } = render(formatDescription(description));
+    
+    // Should have multiple lines (time/day + specials)
+    const lines = Array.from(container.querySelectorAll('.text-xs'));
+    expect(lines.length).toBe(3); // time/day + 2 specials
+    
+    // First line should contain both time and days (kept together)
+    const firstLine = lines[0].textContent || '';
+    expect(firstLine).toContain('4pm-6pm');
+    expect(firstLine).toContain('Monday-Friday');
+    // Should be on the same line (not split)
+    expect(firstLine).toMatch(/4pm-6pm.*Monday-Friday/);
+  });
+
+  test('should handle The Kingstide format correctly', () => {
+    const description = '4pm-6pm • Monday-Friday\nBartender\'s Choice Cocktail\nRotating Beer Selections\n$2 Off Titos Cocktails';
+    const { container } = render(formatDescription(description));
+    
+    // Should have 4 lines total (time/day + 3 specials)
+    const lines = Array.from(container.querySelectorAll('.text-xs'));
+    expect(lines.length).toBe(4);
+    
+    // First line should contain both time and days (kept together)
+    const firstLine = lines[0].textContent || '';
+    expect(firstLine).toContain('4pm-6pm');
+    expect(firstLine).toContain('Monday-Friday');
+    expect(firstLine).toMatch(/4pm-6pm.*Monday-Friday/);
+    
+    // Should have specials as separate lines
+    const text = container.textContent || '';
+    expect(text).toContain('Bartender\'s Choice Cocktail');
+    expect(text).toContain('Rotating Beer Selections');
+    expect(text).toContain('$2 Off Titos Cocktails');
   });
 });
