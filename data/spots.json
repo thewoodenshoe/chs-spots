@@ -73,22 +73,6 @@
   },
   {
     "id": 10,
-    "lat": 32.8098647,
-    "lng": -79.8768884,
-    "title": "Langdon's Restaurant & Wine Bar",
-    "description": "4pm-5pm",
-    "type": "Happy Hour"
-  },
-  {
-    "id": 11,
-    "lat": 32.79201,
-    "lng": -79.873423,
-    "title": "The Perch",
-    "description": "4pm-6pm",
-    "type": "Happy Hour"
-  },
-  {
-    "id": 12,
     "lat": 32.81680089999999,
     "lng": -79.9534182,
     "title": "Edmund's Oast Brewing Co.",
@@ -96,7 +80,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 13,
+    "id": 11,
     "lat": 32.7331172,
     "lng": -80.0572174,
     "title": "The Southern General",
@@ -104,7 +88,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 14,
+    "id": 12,
     "lat": 32.78611009999999,
     "lng": -79.93501359999999,
     "title": "Big Gun Burger Shop & Bar",
@@ -112,7 +96,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 15,
+    "id": 13,
     "lat": 32.7933778,
     "lng": -79.8669419,
     "title": "The Flying Biscuit Cafe",
@@ -120,7 +104,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 16,
+    "id": 14,
     "lat": 32.7620964,
     "lng": -79.98461569999999,
     "title": "The James",
@@ -128,7 +112,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 17,
+    "id": 15,
     "lat": 32.812153,
     "lng": -79.8794727,
     "title": "Community Table",
@@ -136,7 +120,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 18,
+    "id": 16,
     "lat": 32.8348274,
     "lng": -80.04576109999999,
     "title": "Cedar Creek Tavern Charleston",
@@ -144,7 +128,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 19,
+    "id": 17,
     "lat": 32.7774484,
     "lng": -79.8103782,
     "title": "Crow Bar",
@@ -152,7 +136,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 20,
+    "id": 18,
     "lat": 32.7814812,
     "lng": -79.9299322,
     "title": "Frannie & The Fox",
@@ -160,7 +144,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 21,
+    "id": 19,
     "lat": 32.8027804,
     "lng": -79.9448572,
     "title": "The Archer",
@@ -168,7 +152,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 22,
+    "id": 20,
     "lat": 32.7803192,
     "lng": -79.93452409999999,
     "title": "AZUR",
@@ -176,7 +160,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 23,
+    "id": 21,
     "lat": 32.776716,
     "lng": -79.92719699999999,
     "title": "Bar Vauté",
@@ -184,7 +168,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 24,
+    "id": 22,
     "lat": 32.81160500000001,
     "lng": -80.0443548,
     "title": "Underground Chuck’s",
@@ -192,7 +176,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 25,
+    "id": 23,
     "lat": 32.7809667,
     "lng": -79.93124139999999,
     "title": "Peninsula Grill",
@@ -200,7 +184,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 26,
+    "id": 24,
     "lat": 32.8736274,
     "lng": -79.97210849999999,
     "title": "COAST Brewing Company",
@@ -208,7 +192,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 27,
+    "id": 25,
     "lat": 32.8555203,
     "lng": -79.9032301,
     "title": "The Kingstide",
@@ -216,7 +200,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 28,
+    "id": 26,
     "lat": 32.7918418,
     "lng": -79.881597,
     "title": "Sunsets Creekside Bar",
@@ -224,7 +208,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 29,
+    "id": 27,
     "lat": 32.7769905,
     "lng": -79.9282666,
     "title": "The Establishment",
@@ -232,7 +216,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 30,
+    "id": 28,
     "lat": 32.7901354,
     "lng": -79.9390796,
     "title": "Charleston Beer Works",
@@ -240,7 +224,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 31,
+    "id": 29,
     "lat": 32.872673,
     "lng": -79.97842399999999,
     "title": "Holy City Brewing",
@@ -248,7 +232,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 32,
+    "id": 30,
     "lat": 32.7786744,
     "lng": -79.9265571,
     "title": "The Rooftop at the Vendue",
@@ -256,15 +240,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 33,
-    "lat": 32.780193,
-    "lng": -79.9273161,
-    "title": "Amen Street Fish & Raw Bar",
-    "description": "4pm-7pm",
-    "type": "Happy Hour"
-  },
-  {
-    "id": 34,
+    "id": 31,
     "lat": 32.7963078,
     "lng": -79.88674499999999,
     "title": "The Kickin' Chicken",
@@ -272,7 +248,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 35,
+    "id": 32,
     "lat": 32.7343444,
     "lng": -80.0568618,
     "title": "Minero Mexican Grill & Cantina",
@@ -280,7 +256,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 36,
+    "id": 33,
     "lat": 32.7854361,
     "lng": -79.7899016,
     "title": "The Dinghy",
@@ -288,7 +264,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 37,
+    "id": 34,
     "lat": 32.8393676,
     "lng": -79.85447490000001,
     "title": "The Wine Bar",
@@ -296,7 +272,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 38,
+    "id": 35,
     "lat": 32.79124,
     "lng": -79.94024499999999,
     "title": "Prohibition",
@@ -304,7 +280,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 39,
+    "id": 36,
     "lat": 32.7978959,
     "lng": -79.88870059999999,
     "title": "Charlotte's Wine Bar & Tapas",
@@ -312,7 +288,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 40,
+    "id": 37,
     "lat": 32.8306661,
     "lng": -79.83081849999999,
     "title": "Burtons Grill & Bar",
@@ -320,7 +296,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 41,
+    "id": 38,
     "lat": 32.7921151,
     "lng": -79.88295699999999,
     "title": "Muddy's Dockside Bar",
@@ -328,7 +304,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 42,
+    "id": 39,
     "lat": 32.814179,
     "lng": -79.9515299,
     "title": "King Street Cabaret",
@@ -336,7 +312,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 43,
+    "id": 40,
     "lat": 32.93266090000001,
     "lng": -79.9996067,
     "title": "LG's By The Creek",
@@ -344,7 +320,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 44,
+    "id": 41,
     "lat": 32.7927239,
     "lng": -80.03762549999999,
     "title": "Ireland's Own / Jagerhaus Pub",
@@ -352,7 +328,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 45,
+    "id": 42,
     "lat": 32.9444967,
     "lng": -80.0413981,
     "title": "Carrabba's Italian Grill",
@@ -360,7 +336,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 46,
+    "id": 43,
     "lat": 32.9112174,
     "lng": -80.0234953,
     "title": "La Hacienda Mexican Restaurant",
@@ -368,7 +344,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 47,
+    "id": 44,
     "lat": 32.785884,
     "lng": -79.935519,
     "title": "Ritual Nightclub",
@@ -376,7 +352,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 48,
+    "id": 45,
     "lat": 32.796679,
     "lng": -79.9970058,
     "title": "Tin Roof",
@@ -384,7 +360,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 49,
+    "id": 46,
     "lat": 32.8124748,
     "lng": -79.8795445,
     "title": "O'Brion's Pub & Grille",
@@ -392,7 +368,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 50,
+    "id": 47,
     "lat": 32.84035669999999,
     "lng": -79.85551679999999,
     "title": "Poke Bros.",
@@ -400,15 +376,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 51,
-    "lat": 32.7831237,
-    "lng": -79.93217179999999,
-    "title": "Grand Bohemian Wine Bar",
-    "description": "2pm",
-    "type": "Happy Hour"
-  },
-  {
-    "id": 52,
+    "id": 48,
     "lat": 32.88121,
     "lng": -79.975903,
     "title": "DIG In The Park",
@@ -416,7 +384,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 53,
+    "id": 49,
     "lat": 32.8794803,
     "lng": -79.9800004,
     "title": "Bar on the Ave",
@@ -424,7 +392,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 54,
+    "id": 50,
     "lat": 32.7511445,
     "lng": -79.9526843,
     "title": "Ellis Creek Fish Camp",
@@ -432,7 +400,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 55,
+    "id": 51,
     "lat": 32.862307,
     "lng": -79.904271,
     "title": "Wings Co.",
@@ -440,15 +408,7 @@
     "type": "Happy Hour"
   },
   {
-    "id": 56,
-    "lat": 32.8614384,
-    "lng": -79.9082524,
-    "title": "Ristorante LIDI",
-    "description": "2pm",
-    "type": "Happy Hour"
-  },
-  {
-    "id": 57,
+    "id": 52,
     "lat": 32.79148010000001,
     "lng": -79.94166620000001,
     "title": "Sorghum & Salt",

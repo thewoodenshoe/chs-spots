@@ -47,11 +47,11 @@ function formatHappyHourDescription(happyHour) {
   // Time and days together on first line
   if (happyHour.times || happyHour.days) {
     const timeDayParts = [];
-    if (happyHour.times) {
-      timeDayParts.push(happyHour.times);
+    if (happyHour.times && happyHour.times.trim()) {
+      timeDayParts.push(happyHour.times.trim());
     }
-    if (happyHour.days) {
-      timeDayParts.push(happyHour.days);
+    if (happyHour.days && happyHour.days.trim()) {
+      timeDayParts.push(happyHour.days.trim());
     }
     if (timeDayParts.length > 0) {
       lines.push(timeDayParts.join(' • '));
@@ -65,6 +65,14 @@ function formatHappyHourDescription(happyHour) {
         lines.push(special.trim());
       }
     }
+  }
+  
+  // If we only have a time with no days or specials, it's incomplete data
+  // Don't create a meaningless description like "2pm"
+  if (lines.length === 1 && happyHour.times && !happyHour.days && 
+      (!happyHour.specials || happyHour.specials.length === 0)) {
+    // This is incomplete - return null to indicate we shouldn't create a spot
+    return null;
   }
   
   // If no content but has source, add placeholder
@@ -87,12 +95,19 @@ function createSpot(goldData, venueData, spotId) {
     return null;
   }
   
+  // Format description - returns null if data is too incomplete
+  const description = formatHappyHourDescription(happyHour);
+  if (!description) {
+    // Incomplete data (e.g., only time with no days/specials)
+    return null;
+  }
+  
   const spot = {
     id: spotId,
     lat: venueData.lat || venueData.geometry?.location?.lat,
     lng: venueData.lng || venueData.geometry?.location?.lng,
     title: goldData.venueName || venueData.name || 'Unknown Venue',
-    description: formatHappyHourDescription(happyHour),
+    description: description,
     type: 'Happy Hour',
   };
   
@@ -173,6 +188,7 @@ function main() {
   let skipped = 0;
   let missingVenue = 0;
   let noHappyHour = 0;
+  let incompleteData = 0;
   
   for (const goldPath of goldFiles) {
     try {
@@ -212,6 +228,13 @@ function main() {
         spots.push(spot);
         processed++;
         log(`  ✅ Created spot: ${spot.title} (${spot.id})`);
+      } else {
+        // Spot creation returned null - likely incomplete data
+        incompleteData++;
+        const hh = goldData.happyHour || {};
+        if (hh.times && !hh.days && (!hh.specials || hh.specials.length === 0)) {
+          log(`  ⚠️  Skipping: Incomplete data for ${goldData.venueName} (${venueId}) - only time "${hh.times}" with no days or specials`);
+        }
       }
       
     } catch (error) {
@@ -229,6 +252,7 @@ function main() {
   log(`   ⚠️  Skipped: ${skipped}`);
   log(`   ❌ Missing venue data: ${missingVenue}`);
   log(`   ℹ️  No happy hour: ${noHappyHour}`);
+  log(`   📋 Incomplete data: ${incompleteData} (time only, no days/specials)`);
   log(`   📄 Total spots in spots.json: ${spots.length}`);
   log(`\n✨ Done! Created spots.json with ${spots.length} spot(s)`);
 }
