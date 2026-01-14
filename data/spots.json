@@ -4,7 +4,7 @@
     "lat": 32.8022428,
     "lng": -79.9529594,
     "title": "Moe's Crosstown Tavern",
-    "description": "4pm-7pm • Monday-Friday • drink specials",
+    "description": "4pm-7pm • Monday-Friday\ndrink specials",
     "type": "Happy Hour"
   },
   {
@@ -12,7 +12,7 @@
     "lat": 32.79236059999999,
     "lng": -79.8810065,
     "title": "Tavern & Table",
-    "description": "4pm-6pm • Weekdays • select specials that change throughout the year",
+    "description": "4pm-6pm • Weekdays\nselect specials that change throughout the year",
     "type": "Happy Hour"
   },
   {
@@ -20,7 +20,7 @@
     "lat": 32.7818603,
     "lng": -79.93458550000001,
     "title": "The Watch Rooftop Kitchen and Spirits",
-    "description": "4pm-7pm • Monday-Thursday • Happy Hour specials",
+    "description": "4pm-7pm • Monday-Thursday\nHappy Hour specials",
     "type": "Happy Hour"
   },
   {
@@ -36,7 +36,7 @@
     "lat": 32.8823878,
     "lng": -79.9754682,
     "title": "LoLA",
-    "description": "Tuesday-Friday • great discounts on food and drinks",
+    "description": "Tuesday-Friday\ngreat discounts on food and drinks",
     "type": "Happy Hour"
   },
   {
@@ -92,7 +92,7 @@
     "lat": 32.81680089999999,
     "lng": -79.9534182,
     "title": "Edmund's Oast Brewing Co.",
-    "description": "4pm-6pm • Monday-Friday • half off draft beers, other rotating food and drink specials",
+    "description": "4pm-6pm • Monday-Friday\nhalf off draft beers\nother rotating food and drink specials",
     "type": "Happy Hour"
   },
   {
@@ -100,7 +100,7 @@
     "lat": 32.7331172,
     "lng": -80.0572174,
     "title": "The Southern General",
-    "description": "Monday-Friday 3pm-5pm, Saturday-Sunday 4pm-5pm • Daily • limited menu",
+    "description": "Monday-Friday 3pm-5pm, Saturday-Sunday 4pm-5pm • Daily\nlimited menu",
     "type": "Happy Hour"
   },
   {
@@ -108,7 +108,7 @@
     "lat": 32.78611009999999,
     "lng": -79.93501359999999,
     "title": "Big Gun Burger Shop & Bar",
-    "description": "4pm-6pm • Monday-Friday • $3 Tacos (Pork or Vegan), $4 House Liquor, $10 Classic Burger with Fries, $2.50 Pabst",
+    "description": "4pm-6pm • Monday-Friday\n$3 Tacos (Pork or Vegan)\n$4 House Liquor\n$10 Classic Burger with Fries\n$2.50 Pabst",
     "type": "Happy Hour"
   },
   {
@@ -116,7 +116,7 @@
     "lat": 32.7933778,
     "lng": -79.8669419,
     "title": "The Flying Biscuit Cafe",
-    "description": "4pm-7pm • Monday-Friday • Featured Munchie, Beer, Wine and Cocktail Specials",
+    "description": "4pm-7pm • Monday-Friday\nFeatured Munchie\nBeer\nWine and Cocktail Specials",
     "type": "Happy Hour"
   },
   {
@@ -156,7 +156,7 @@
     "lat": 32.7814812,
     "lng": -79.9299322,
     "title": "Frannie & The Fox",
-    "description": "Tuesday-Saturday 5pm-7pm • Tuesday-Saturday • elegant cocktails, savory bites",
+    "description": "Tuesday-Saturday 5pm-7pm • Tuesday-Saturday\nelegant cocktails\nsavory bites",
     "type": "Happy Hour"
   },
   {
@@ -188,7 +188,7 @@
     "lat": 32.81160500000001,
     "lng": -80.0443548,
     "title": "Underground Chuck’s",
-    "description": "Monday-Friday • Great selection of local craft beer, creative cocktails and more",
+    "description": "Monday-Friday\nGreat selection of local craft beer\ncreative cocktails and more",
     "type": "Happy Hour"
   },
   {
@@ -212,7 +212,7 @@
     "lat": 32.8555203,
     "lng": -79.9032301,
     "title": "The Kingstide",
-    "description": "4pm-6pm • Monday-Friday • Bartender's Choice Cocktail, Rotating Beer Selections, $2 Off Titos Cocktails",
+    "description": "4pm-6pm • Monday-Friday\nBartender's Choice Cocktail\nRotating Beer Selections\n$2 Off Titos Cocktails",
     "type": "Happy Hour"
   },
   {
@@ -228,7 +228,7 @@
     "lat": 32.7769905,
     "lng": -79.9282666,
     "title": "The Establishment",
-    "description": "5pm-7pm • Tuesday-Saturday • Discounts on select wine and beer at the bar, Tito's Vodka Martini $12, Happy Hour Featured Wines by the Glass $9, Happy Hour Beer $6-7",
+    "description": "5pm-7pm • Tuesday-Saturday\nDiscounts on select wine and beer at the bar\nTito's Vodka Martini $12\nHappy Hour Featured Wines by the Glass $9\nHappy Hour Beer $6-7",
     "type": "Happy Hour"
   },
   {
@@ -236,7 +236,7 @@
     "lat": 32.7901354,
     "lng": -79.9390796,
     "title": "Charleston Beer Works",
-    "description": "Monday-Friday • House Liquor $6, House Wine $6, Local Draughts $6",
+    "description": "Monday-Friday\nHouse Liquor $6\nHouse Wine $6\nLocal Draughts $6",
     "type": "Happy Hour"
   },
   {
@@ -244,7 +244,7 @@
     "lat": 32.872673,
     "lng": -79.97842399999999,
     "title": "Holy City Brewing",
-    "description": "4pm-6pm • Monday-Thursday • half-off flagship drafts, appetizer deals",
+    "description": "4pm-6pm • Monday-Thursday\nhalf-off flagship drafts\nappetizer deals",
     "type": "Happy Hour"
   },
   {
@@ -252,7 +252,7 @@
     "lat": 32.7786744,
     "lng": -79.9265571,
     "title": "The Rooftop at the Vendue",
-    "description": "4pm-6pm • Sundays-Thursday • Signature Cocktails $12, Wines By The Glass $9, Local Craft Beers $6, Domestic Bottled Beers $3-$4, Flatbreads $10",
+    "description": "4pm-6pm • Sundays-Thursday\nSignature Cocktails $12\nWines By The Glass $9\nLocal Craft Beers $6\nDomestic Bottled Beers $3-$4\nFlatbreads $10",
     "type": "Happy Hour"
   },
   {
@@ -284,7 +284,7 @@
     "lat": 32.7854361,
     "lng": -79.7899016,
     "title": "The Dinghy",
-    "description": "4pm-7pm • Weekdays • Great drinks specials",
+    "description": "4pm-7pm • Weekdays\nGreat drinks specials",
     "type": "Happy Hour"
   },
   {
@@ -292,7 +292,7 @@
     "lat": 32.8393676,
     "lng": -79.85447490000001,
     "title": "The Wine Bar",
-    "description": "4pm-6pm • Daily • Daily specials from 4-6pm, 1/2 Off Wine Wednesday every week",
+    "description": "4pm-6pm • Daily\nDaily specials from 4-6pm\n1/2 Off Wine Wednesday every week",
     "type": "Happy Hour"
   },
   {
@@ -300,7 +300,7 @@
     "lat": 32.79124,
     "lng": -79.94024499999999,
     "title": "Prohibition",
-    "description": "4pm-6pm • Monday-Thursday • bar only",
+    "description": "4pm-6pm • Monday-Thursday\nbar only",
     "type": "Happy Hour"
   },
   {
@@ -308,7 +308,7 @@
     "lat": 32.7978959,
     "lng": -79.88870059999999,
     "title": "Charlotte's Wine Bar & Tapas",
-    "description": "Monday-Friday 4:00 PM - 6:00 PM (Quick Pours), Monday-Friday 7:00 PM - 9:00 PM (Small Bites) • Monday-Friday • Quick Pours Happy Hour, Small Bites Happy Hour",
+    "description": "Monday-Friday 4:00 PM - 6:00 PM (Quick Pours), Monday-Friday 7:00 PM - 9:00 PM (Small Bites) • Monday-Friday\nQuick Pours Happy Hour\nSmall Bites Happy Hour",
     "type": "Happy Hour"
   },
   {
@@ -316,7 +316,7 @@
     "lat": 32.8306661,
     "lng": -79.83081849999999,
     "title": "Burtons Grill & Bar",
-    "description": "every weekday • Monday-Friday • deals on cocktails, wines & drafts, delicious bar bites",
+    "description": "every weekday • Monday-Friday\ndeals on cocktails, wines & drafts\ndelicious bar bites",
     "type": "Happy Hour"
   },
   {
@@ -332,7 +332,7 @@
     "lat": 32.814179,
     "lng": -79.9515299,
     "title": "King Street Cabaret",
-    "description": "Monday-Friday 4pm-8pm • Monday-Friday • Half off House Liquors, $3 Domestic Beers, $2 Off Other Liquor, Beer and Wine, $3 Bud Light • $5 Fireball shots • $6 Grey Goose, $5 Well and Call Tequila • $3 Mich Ultra, $3 Domestic Beers • $6 Grey Goose, $5 U Call It! (Crown, Call and House Liquors), $5 Bombs • $5 Mules • $3 Shooters • $4 Coronas",
+    "description": "Monday-Friday 4pm-8pm • Monday-Friday\nHalf off House Liquors\n$3 Domestic Beers\n$2 Off Other Liquor, Beer and Wine\n$3 Bud Light • $5 Fireball shots • $6 Grey Goose\n$5 Well and Call Tequila • $3 Mich Ultra\n$3 Domestic Beers • $6 Grey Goose\n$5 U Call It! (Crown, Call and House Liquors)\n$5 Bombs • $5 Mules • $3 Shooters • $4 Coronas",
     "type": "Happy Hour"
   },
   {
@@ -356,7 +356,7 @@
     "lat": 32.9444967,
     "lng": -80.0413981,
     "title": "Carrabba's Italian Grill",
-    "description": "4pm-7pm • Daily • $8 Cocktails, $8 Bites",
+    "description": "4pm-7pm • Daily\n$8 Cocktails\n$8 Bites",
     "type": "Happy Hour"
   },
   {
@@ -388,7 +388,7 @@
     "lat": 32.8124748,
     "lng": -79.8795445,
     "title": "O'Brion's Pub & Grille",
-    "description": "4pm-7pm • Monday-Friday • $1 Off Domestic Beers, $1 Off House Wine, $1 Off House Liquor",
+    "description": "4pm-7pm • Monday-Friday\n$1 Off Domestic Beers\n$1 Off House Wine\n$1 Off House Liquor",
     "type": "Happy Hour"
   },
   {
@@ -428,7 +428,7 @@
     "lat": 32.7511445,
     "lng": -79.9526843,
     "title": "Ellis Creek Fish Camp",
-    "description": "3pm-5pm • $5 House Liquor, $2 off Frozen Drinks, $1 off Draft Beers, $5 House Wine White or Red, $5 Catfish Bites, Fried Okra, Fried Pickles, Pimento Cheese or Hushpuppies",
+    "description": "3pm-5pm\n$5 House Liquor\n$2 off Frozen Drinks\n$1 off Draft Beers\n$5 House Wine White or Red\n$5 Catfish Bites, Fried Okra, Fried Pickles, Pimento Cheese or Hushpuppies",
     "type": "Happy Hour"
   },
   {

@@ -39,32 +39,41 @@ const SPOTS_PATH = path.join(__dirname, '../data/spots.json');
 
 /**
  * Format happy hour description from gold data
+ * Creates a structured description with proper formatting for display
  */
 function formatHappyHourDescription(happyHour) {
-  const parts = [];
+  const lines = [];
   
-  if (happyHour.times) {
-    parts.push(happyHour.times);
-  }
-  
-  if (happyHour.days) {
-    if (parts.length > 0) {
-      parts.push(happyHour.days);
-    } else {
-      parts.push(happyHour.days);
+  // Time and days together on first line
+  if (happyHour.times || happyHour.days) {
+    const timeDayParts = [];
+    if (happyHour.times) {
+      timeDayParts.push(happyHour.times);
+    }
+    if (happyHour.days) {
+      timeDayParts.push(happyHour.days);
+    }
+    if (timeDayParts.length > 0) {
+      lines.push(timeDayParts.join(' • '));
     }
   }
   
+  // Specials as separate lines (one per special)
   if (happyHour.specials && happyHour.specials.length > 0) {
-    const specialsText = happyHour.specials.join(', ');
-    parts.push(specialsText);
+    for (const special of happyHour.specials) {
+      if (special && special.trim()) {
+        lines.push(special.trim());
+      }
+    }
   }
   
-  if (parts.length === 0 && happyHour.source) {
-    parts.push('Happy Hour details available');
+  // If no content but has source, add placeholder
+  if (lines.length === 0 && happyHour.source) {
+    lines.push('Happy Hour details available');
   }
   
-  return parts.join(' • ') || 'Happy Hour available';
+  // Join with newlines (will be preserved in display)
+  return lines.length > 0 ? lines.join('\n') : 'Happy Hour available';
 }
 
 /**

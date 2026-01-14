@@ -206,37 +206,61 @@ export default function MapComponent({
     setSelectedVenue(null);
   }, []);
 
-  // Format description with bullet points and source attribution
+  // Format description with proper line breaks and bullet points
+  // Preserves time ranges (e.g., "4pm-6pm") and creates clean bullet points
   const formatDescription = (description: string): React.ReactElement => {
-    // Split by common separators and create bullet points
-    // Look for source patterns like "— source: website.com" or "source: yelp"
-    const lines = description
-      .split(/[•\n\-]/)
-      .map(line => line.trim())
-      .filter(line => line.length > 0);
+    // Split by newlines first (preserves intentional line breaks)
+    // Then handle bullet separators, but preserve time ranges and other dashes
+    const rawLines = description.split('\n');
+    
+    const formattedLines: React.ReactElement[] = [];
+    
+    for (const rawLine of rawLines) {
+      const trimmed = rawLine.trim();
+      if (!trimmed) continue;
+      
+      // Check if line contains source attribution
+      const sourceMatch = trimmed.match(/(.+?)\s*—\s*source:\s*(.+)/i) || trimmed.match(/(.+?)\s*source:\s*(.+)/i);
+      
+      if (sourceMatch) {
+        const [, content, source] = sourceMatch;
+        formattedLines.push(
+          <div key={formattedLines.length} className="text-xs text-gray-600">
+            <span>• {content.trim()}</span>
+            <span className="text-gray-500 italic"> — source: {source.trim()}</span>
+          </div>
+        );
+        continue;
+      }
+      
+      // Check if line contains bullet separator (•) - split but preserve time ranges
+      if (trimmed.includes('•')) {
+        // Split by bullet, but be smart about time ranges
+        // Pattern: time ranges like "4pm-6pm" should not be split
+        const parts = trimmed.split('•').map(p => p.trim()).filter(p => p.length > 0);
+        
+        for (const part of parts) {
+          formattedLines.push(
+            <div key={formattedLines.length} className="text-xs text-gray-600">
+              • {part}
+            </div>
+          );
+        }
+      } else {
+        // Single line without bullets - check if it's a time range or special
+        // Time ranges (e.g., "4pm-6pm") should be preserved as-is
+        // Other dashes might be separators, but we'll preserve them for now
+        formattedLines.push(
+          <div key={formattedLines.length} className="text-xs text-gray-600">
+            • {trimmed}
+          </div>
+        );
+      }
+    }
     
     return (
       <div className="space-y-1">
-        {lines.map((line, index) => {
-          // Check if line contains source attribution
-          const sourceMatch = line.match(/(.+?)\s*—\s*source:\s*(.+)/i) || line.match(/(.+?)\s*source:\s*(.+)/i);
-          
-          if (sourceMatch) {
-            const [, content, source] = sourceMatch;
-            return (
-              <div key={index} className="text-xs text-gray-600">
-                <span>• {content.trim()}</span>
-                <span className="text-gray-500 italic"> — source: {source.trim()}</span>
-              </div>
-            );
-          }
-          
-          return (
-            <div key={index} className="text-xs text-gray-600">
-              • {line}
-            </div>
-          );
-        })}
+        {formattedLines}
       </div>
     );
   };
