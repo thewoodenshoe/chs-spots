@@ -20,7 +20,9 @@
  *   ]
  * }
  * 
- * Run with: node scripts/merge-raw-files.js
+ * Run with: node scripts/merge-raw-files.js [area-filter]
+ * 
+ * If area-filter is provided, only processes venues from that area.
  */
 
 const fs = require('fs');

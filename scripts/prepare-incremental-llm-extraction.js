@@ -237,6 +237,38 @@ function main() {
     };
   });
   
+  // Archive old incremental files to history
+  const historyDir = path.join(GOLD_DIR, 'incremental-history');
+  if (!fs.existsSync(historyDir)) {
+    fs.mkdirSync(historyDir, { recursive: true });
+  }
+  
+  // Move old incremental input files to history
+  const oldInputFiles = fs.readdirSync(GOLD_DIR)
+    .filter(f => f.startsWith('incremental-input-') && f.endsWith('.json'));
+  
+  for (const oldFile of oldInputFiles) {
+    const oldPath = path.join(GOLD_DIR, oldFile);
+    const historyPath = path.join(historyDir, oldFile);
+    fs.renameSync(oldPath, historyPath);
+    log(`  📦 Archived: ${oldFile} → incremental-history/`);
+  }
+  
+  // Move old incremental result files to history
+  const oldResultFiles = fs.readdirSync(GOLD_DIR)
+    .filter(f => f.startsWith('incremental-results-') && f.endsWith('.json'));
+  
+  for (const oldFile of oldResultFiles) {
+    const oldPath = path.join(GOLD_DIR, oldFile);
+    const historyPath = path.join(historyDir, oldFile);
+    fs.renameSync(oldPath, historyPath);
+    log(`  📦 Archived: ${oldFile} → incremental-history/`);
+  }
+  
+  if (oldInputFiles.length > 0 || oldResultFiles.length > 0) {
+    log(`  ✅ Archived ${oldInputFiles.length + oldResultFiles.length} old file(s) to incremental-history/\n`);
+  }
+  
   // Save incremental input
   const today = new Date().toISOString().split('T')[0];
   const incrementalInputPath = path.join(GOLD_DIR, `incremental-input-${today}.json`);

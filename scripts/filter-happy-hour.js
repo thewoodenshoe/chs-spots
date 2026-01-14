@@ -7,7 +7,9 @@
  * Only venues with "happy hour" text (case-insensitive) are copied.
  * Files remain completely untouched - just copied if they match.
  * 
- * Run with: node scripts/filter-happy-hour.js
+ * Run with: node scripts/filter-happy-hour.js [area-filter]
+ * 
+ * If area-filter is provided, only processes venues from that area.
  */
 
 const fs = require('fs');
