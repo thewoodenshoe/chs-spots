@@ -6,7 +6,7 @@
  * - Creates individual gold/<venue-id>.json files
  * - Marks bulk as complete (.bulk-complete flag)
  * - Computes source hashes correctly
- * - Handles missing silver_matched files gracefully
+   * - Handles missing silver_merged files gracefully
  * - Skips re-processing if already complete
  */
 
@@ -16,7 +16,7 @@ const crypto = require('crypto');
 
 const TEST_DIR = path.join(__dirname, '../../.test-data');
 const TEST_GOLD_DIR = path.join(TEST_DIR, 'gold');
-const TEST_SILVER_MATCHED_DIR = path.join(TEST_DIR, 'silver_matched');
+const TEST_SILVER_MERGED_ALL_DIR = path.join(TEST_DIR, 'silver_merged/all');
 
 function cleanTestDir() {
   if (fs.existsSync(TEST_DIR)) {
@@ -24,11 +24,11 @@ function cleanTestDir() {
   }
   fs.mkdirSync(TEST_DIR, { recursive: true });
   fs.mkdirSync(TEST_GOLD_DIR, { recursive: true });
-  fs.mkdirSync(TEST_SILVER_MATCHED_DIR, { recursive: true });
+  fs.mkdirSync(TEST_SILVER_MERGED_ALL_DIR, { recursive: true });
 }
 
 // Mock the script's functions by copying logic
-function computeSourceHash(venueId, baseDir = TEST_SILVER_MATCHED_DIR) {
+function computeSourceHash(venueId, baseDir = TEST_SILVER_MERGED_ALL_DIR) {
   const silverPath = path.join(baseDir, `${venueId}.json`);
   if (!fs.existsSync(silverPath)) {
     return null;
@@ -44,7 +44,7 @@ function computeSourceHash(venueId, baseDir = TEST_SILVER_MATCHED_DIR) {
   }
 }
 
-function getSourceModifiedAt(venueId, baseDir = TEST_SILVER_MATCHED_DIR) {
+function getSourceModifiedAt(venueId, baseDir = TEST_SILVER_MERGED_ALL_DIR) {
   const silverPath = path.join(baseDir, `${venueId}.json`);
   if (!fs.existsSync(silverPath)) {
     return null;
@@ -58,7 +58,7 @@ function getSourceModifiedAt(venueId, baseDir = TEST_SILVER_MATCHED_DIR) {
   }
 }
 
-function processBulkResults(bulkResultsArray, goldDir = TEST_GOLD_DIR, silverMatchedDir = TEST_SILVER_MATCHED_DIR) {
+function processBulkResults(bulkResultsArray, goldDir = TEST_GOLD_DIR, silverMergedDir = TEST_SILVER_MERGED_ALL_DIR) {
   const results = [];
   const bulkCompletePath = path.join(goldDir, '.bulk-complete');
   
@@ -79,13 +79,13 @@ function processBulkResults(bulkResultsArray, goldDir = TEST_GOLD_DIR, silverMat
     }
     
     // Get source metadata
-    const sourceHash = computeSourceHash(venueId, silverMatchedDir);
-    const sourceModifiedAt = getSourceModifiedAt(venueId, silverMatchedDir);
+    const sourceHash = computeSourceHash(venueId, silverMergedDir);
+    const sourceModifiedAt = getSourceModifiedAt(venueId, silverMergedDir);
     
-    // Load silver_matched data for venue name
+    // Load silver_merged data for venue name
     let venueName = venueResult.venueName || 'Unknown';
     try {
-      const silverPath = path.join(silverMatchedDir, `${venueId}.json`);
+      const silverPath = path.join(silverMergedDir, `${venueId}.json`);
       if (fs.existsSync(silverPath)) {
         const silverData = JSON.parse(fs.readFileSync(silverPath, 'utf8'));
         venueName = silverData.venueName || venueName;
@@ -140,14 +140,14 @@ describe('Process Bulk LLM Results', () => {
     const venueId1 = 'ChIJTest123';
     const venueId2 = 'ChIJTest456';
     
-    // Create silver_matched files
+    // Create silver_merged files
     const silver1 = {
       venueId: venueId1,
       venueName: 'Test Venue 1',
       pages: []
     };
     fs.writeFileSync(
-      path.join(TEST_SILVER_MATCHED_DIR, `${venueId1}.json`),
+      path.join(TEST_SILVER_MERGED_ALL_DIR, `${venueId1}.json`),
       JSON.stringify(silver1, null, 2),
       'utf8'
     );
@@ -158,7 +158,7 @@ describe('Process Bulk LLM Results', () => {
       pages: []
     };
     fs.writeFileSync(
-      path.join(TEST_SILVER_MATCHED_DIR, `${venueId2}.json`),
+      path.join(TEST_SILVER_MERGED_ALL_DIR, `${venueId2}.json`),
       JSON.stringify(silver2, null, 2),
       'utf8'
     );
@@ -242,7 +242,7 @@ describe('Process Bulk LLM Results', () => {
     expect(fs.existsSync(goldPath)).toBe(false);
   });
   
-  test('Should compute source hash from silver_matched file', () => {
+  test('Should compute source hash from silver_merged file', () => {
     const venueId = 'ChIJTest123';
     
     // Create silver_matched file
@@ -252,7 +252,7 @@ describe('Process Bulk LLM Results', () => {
       pages: [{ url: 'https://example.com', content: 'test' }]
     };
     fs.writeFileSync(
-      path.join(TEST_SILVER_MATCHED_DIR, `${venueId}.json`),
+      path.join(TEST_SILVER_MERGED_ALL_DIR, `${venueId}.json`),
       JSON.stringify(silverData, null, 2),
       'utf8'
     );
@@ -277,10 +277,10 @@ describe('Process Bulk LLM Results', () => {
     expect(goldData.sourceHash.length).toBe(16);
   });
   
-  test('Should handle missing silver_matched file gracefully', () => {
+  test('Should handle missing silver_merged file gracefully', () => {
     const venueId = 'ChIJTest123';
     
-    // No silver_matched file exists
+    // No silver_merged file exists
     
     // Process
     const bulkResults = [
@@ -305,17 +305,17 @@ describe('Process Bulk LLM Results', () => {
     expect(goldData.sourceModifiedAt).toBeNull();
   });
   
-  test('Should prefer venueName from silver_matched over bulk results', () => {
+  test('Should prefer venueName from silver_merged over bulk results', () => {
     const venueId = 'ChIJTest123';
     
-    // Create silver_matched file with different name
+    // Create silver_merged file with different name
     const silverData = {
       venueId,
       venueName: 'Correct Venue Name',
       pages: []
     };
     fs.writeFileSync(
-      path.join(TEST_SILVER_MATCHED_DIR, `${venueId}.json`),
+      path.join(TEST_SILVER_MERGED_ALL_DIR, `${venueId}.json`),
       JSON.stringify(silverData, null, 2),
       'utf8'
     );
@@ -331,7 +331,7 @@ describe('Process Bulk LLM Results', () => {
     
     processBulkResults(bulkResults);
     
-    // Check gold file uses correct name from silver_matched
+    // Check gold file uses correct name from silver_merged
     const goldPath = path.join(TEST_GOLD_DIR, `${venueId}.json`);
     const goldData = JSON.parse(fs.readFileSync(goldPath, 'utf8'));
     

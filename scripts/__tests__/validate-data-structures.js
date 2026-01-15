@@ -8,9 +8,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const RAW_DIR = path.join(__dirname, '../../data/raw');
-const SILVER_MERGED_DIR = path.join(__dirname, '../../data/silver_merged');
-const SILVER_MATCHED_DIR = path.join(__dirname, '../../data/silver_matched');
+const RAW_ALL_DIR = path.join(__dirname, '../../data/raw/all');
+const SILVER_MERGED_ALL_DIR = path.join(__dirname, '../../data/silver_merged/all');
 
 const results = {
   passed: 0,
@@ -42,23 +41,23 @@ console.log('🔍 Data Structure Validation\n');
 // Validate Raw Directory Structure
 console.log('Step 1: Validating Raw Directory Structure\n');
 
-if (fs.existsSync(RAW_DIR)) {
-  const venueDirs = fs.readdirSync(RAW_DIR).filter(item => {
-    const itemPath = path.join(RAW_DIR, item);
-    return fs.statSync(itemPath).isDirectory() && item !== 'previous';
+if (fs.existsSync(RAW_ALL_DIR)) {
+  const venueDirs = fs.readdirSync(RAW_ALL_DIR).filter(item => {
+    const itemPath = path.join(RAW_ALL_DIR, item);
+    return fs.statSync(itemPath).isDirectory();
   });
   
-  test(`Raw directory exists`, () => {
-    if (!fs.existsSync(RAW_DIR)) throw new Error('Raw directory not found');
+  test(`Raw/all directory exists`, () => {
+    if (!fs.existsSync(RAW_ALL_DIR)) throw new Error('Raw/all directory not found');
   });
   
-  test(`Found ${venueDirs.length} venue directories in raw`, () => {
-    if (venueDirs.length === 0) warn('No venues in raw directory', 'This may be normal for first run');
+  test(`Found ${venueDirs.length} venue directories in raw/all`, () => {
+    if (venueDirs.length === 0) warn('No venues in raw/all directory', 'This may be normal for first run');
   });
   
   // Validate a few venue directories
   venueDirs.slice(0, 5).forEach(venueId => {
-    const venueDir = path.join(RAW_DIR, venueId);
+    const venueDir = path.join(RAW_ALL_DIR, venueId);
     const files = fs.readdirSync(venueDir);
     const htmlFiles = files.filter(f => f.endsWith('.html'));
     const metadataFile = files.includes('metadata.json');
@@ -104,11 +103,11 @@ if (fs.existsSync(RAW_DIR)) {
 // Validate Silver Merged Directory Structure
 console.log('\nStep 2: Validating Silver Merged Directory Structure\n');
 
-if (fs.existsSync(SILVER_MERGED_DIR)) {
-  const mergedFiles = fs.readdirSync(SILVER_MERGED_DIR).filter(f => f.endsWith('.json'));
+if (fs.existsSync(SILVER_MERGED_ALL_DIR)) {
+  const mergedFiles = fs.readdirSync(SILVER_MERGED_ALL_DIR).filter(f => f.endsWith('.json'));
   
-  test(`Silver merged directory exists`, () => {
-    if (!fs.existsSync(SILVER_MERGED_DIR)) throw new Error('Silver merged directory not found');
+  test(`Silver merged/all directory exists`, () => {
+    if (!fs.existsSync(SILVER_MERGED_ALL_DIR)) throw new Error('Silver merged/all directory not found');
   });
   
   test(`Found ${mergedFiles.length} merged files`, () => {
@@ -117,7 +116,7 @@ if (fs.existsSync(SILVER_MERGED_DIR)) {
   
   // Validate merged file structures
   mergedFiles.slice(0, 10).forEach(file => {
-    const filePath = path.join(SILVER_MERGED_DIR, file);
+    const filePath = path.join(SILVER_MERGED_ALL_DIR, file);
     
     test(`Merged file ${file} is valid JSON`, () => {
       try {
@@ -165,67 +164,7 @@ if (fs.existsSync(SILVER_MERGED_DIR)) {
   warn('Silver merged directory does not exist', 'Run merge-raw-files.js first');
 }
 
-// Validate Silver Matched Directory Structure
-console.log('\nStep 3: Validating Silver Matched Directory Structure\n');
-
-if (fs.existsSync(SILVER_MATCHED_DIR)) {
-  const matchedFiles = fs.readdirSync(SILVER_MATCHED_DIR).filter(f => f.endsWith('.json'));
-  
-  test(`Silver matched directory exists`, () => {
-    if (!fs.existsSync(SILVER_MATCHED_DIR)) throw new Error('Silver matched directory not found');
-  });
-  
-  test(`Found ${matchedFiles.length} matched files`, () => {
-    if (matchedFiles.length === 0) warn('No matched files found', 'Run filter-happy-hour.js first');
-  });
-  
-  test(`Matched files are subset of merged files`, () => {
-    if (!fs.existsSync(SILVER_MERGED_DIR)) {
-      throw new Error('Cannot validate: merged directory does not exist');
-    }
-    
-    const mergedFiles = fs.readdirSync(SILVER_MERGED_DIR).filter(f => f.endsWith('.json'));
-    const matchedSet = new Set(matchedFiles);
-    
-    matchedFiles.forEach(file => {
-      if (!mergedFiles.includes(file)) {
-        warn(`Matched file ${file} not in merged directory`, 
-          'This may indicate data inconsistency');
-      }
-    });
-    
-    if (matchedFiles.length > mergedFiles.length) {
-      throw new Error(`More matched files (${matchedFiles.length}) than merged files (${mergedFiles.length})`);
-    }
-  });
-  
-  // Validate that matched files actually contain happy hour text
-  matchedFiles.slice(0, 10).forEach(file => {
-    const filePath = path.join(SILVER_MATCHED_DIR, file);
-    const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    
-    test(`Matched file ${file} contains happy hour text`, () => {
-      let hasHappyHour = false;
-      
-      for (const page of data.pages || []) {
-        const html = page.html || '';
-        const textLower = html.toLowerCase();
-        const patterns = ['happy hour', 'happyhour', 'hh ', ' hh:', 'happy hour:'];
-        
-        if (patterns.some(pattern => textLower.includes(pattern))) {
-          hasHappyHour = true;
-          break;
-        }
-      }
-      
-      if (!hasHappyHour) {
-        throw new Error('File does not contain happy hour text (should not be in matched directory)');
-      }
-    });
-  });
-} else {
-  warn('Silver matched directory does not exist', 'Run filter-happy-hour.js first');
-}
+// Note: silver_matched layer has been removed - all data flows through silver_merged/all/
 
 // Summary
 console.log('\n📊 Validation Summary:\n');

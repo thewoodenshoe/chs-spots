@@ -9,7 +9,7 @@ const fs = require('fs');
 const path = require('path');
 
 const TEST_DIR = path.join(__dirname, '../../.test-data');
-const TEST_SILVER_MATCHED_DIR = path.join(TEST_DIR, 'silver_matched');
+const TEST_SILVER_MERGED_ALL_DIR = path.join(TEST_DIR, 'silver_merged/all');
 const TEST_GOLD_DIR = path.join(TEST_DIR, 'gold');
 
 function cleanTestDir() {
@@ -17,18 +17,18 @@ function cleanTestDir() {
     fs.rmSync(TEST_DIR, { recursive: true, force: true });
   }
   fs.mkdirSync(TEST_DIR, { recursive: true });
-  fs.mkdirSync(TEST_SILVER_MATCHED_DIR, { recursive: true });
+  fs.mkdirSync(TEST_SILVER_MERGED_ALL_DIR, { recursive: true });
   fs.mkdirSync(TEST_GOLD_DIR, { recursive: true });
 }
 
-function shouldExtract(silverMatchedPath, goldPath) {
+function shouldExtract(silverMergedPath, goldPath) {
   // Never extracted
   if (!fs.existsSync(goldPath)) {
     return 'new';
   }
   
   // Compare timestamps
-  const silverStats = fs.statSync(silverMatchedPath);
+  const silverStats = fs.statSync(silverMergedPath);
   const goldStats = fs.statSync(goldPath);
   
   // Silver file newer = content changed
@@ -53,8 +53,8 @@ describe('LLM Extraction - Incremental Detection', () => {
   test('Should detect new venue (gold file does not exist)', () => {
     const venueId = 'ChIJTest123';
     
-    // Create silver_matched file
-    const silverPath = path.join(TEST_SILVER_MATCHED_DIR, `${venueId}.json`);
+    // Create silver_merged file
+    const silverPath = path.join(TEST_SILVER_MERGED_ALL_DIR, `${venueId}.json`);
     const silverData = { venueId, venueName: 'Test Venue' };
     fs.writeFileSync(silverPath, JSON.stringify(silverData, null, 2), 'utf8');
     
@@ -81,8 +81,8 @@ describe('LLM Extraction - Incremental Detection', () => {
     // Wait a moment
     const oldTime = fs.statSync(goldPath).mtime;
     
-    // Update silver_matched file (newer)
-    const silverPath = path.join(TEST_SILVER_MATCHED_DIR, `${venueId}.json`);
+    // Update silver_merged file (newer)
+    const silverPath = path.join(TEST_SILVER_MERGED_ALL_DIR, `${venueId}.json`);
     const silverData = { venueId, venueName: 'Test Venue Updated' };
     fs.writeFileSync(silverPath, JSON.stringify(silverData, null, 2), 'utf8');
     
@@ -107,8 +107,8 @@ describe('LLM Extraction - Incremental Detection', () => {
     };
     fs.writeFileSync(goldPath, JSON.stringify(goldData, null, 2), 'utf8');
     
-    // Create silver_matched file (same or older)
-    const silverPath = path.join(TEST_SILVER_MATCHED_DIR, `${venueId}.json`);
+    // Create silver_merged file (same or older)
+    const silverPath = path.join(TEST_SILVER_MERGED_ALL_DIR, `${venueId}.json`);
     const silverData = { venueId, venueName: 'Test Venue' };
     fs.writeFileSync(silverPath, JSON.stringify(silverData, null, 2), 'utf8');
     
@@ -139,8 +139,8 @@ describe('LLM Extraction - Incremental Detection', () => {
     const venueId = 'ChIJTestPaulStewart';
     
     // === BULK PHASE ===
-    // Venue in silver_matched (Day 1 - no happy hour)
-    const silverPath = path.join(TEST_SILVER_MATCHED_DIR, `${venueId}.json`);
+    // Venue in silver_merged/all (Day 1 - no happy hour)
+    const silverPath = path.join(TEST_SILVER_MERGED_ALL_DIR, `${venueId}.json`);
     const silverDataDay1 = {
       venueId,
       venueName: "Paul Stewart's Tavern",

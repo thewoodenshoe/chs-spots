@@ -11,7 +11,7 @@ const crypto = require('crypto');
 
 const TEST_DIR = path.join(__dirname, '../../.test-data');
 const TEST_GOLD_DIR = path.join(TEST_DIR, 'gold');
-const TEST_SILVER_MATCHED_DIR = path.join(TEST_DIR, 'silver_matched');
+const TEST_SILVER_MERGED_ALL_DIR = path.join(TEST_DIR, 'silver_merged/all');
 
 function cleanTestDir() {
   if (fs.existsSync(TEST_DIR)) {
@@ -19,10 +19,10 @@ function cleanTestDir() {
   }
   fs.mkdirSync(TEST_DIR, { recursive: true });
   fs.mkdirSync(TEST_GOLD_DIR, { recursive: true });
-  fs.mkdirSync(TEST_SILVER_MATCHED_DIR, { recursive: true });
+  fs.mkdirSync(TEST_SILVER_MERGED_ALL_DIR, { recursive: true });
 }
 
-function computeSourceHash(venueId, baseDir = TEST_SILVER_MATCHED_DIR) {
+function computeSourceHash(venueId, baseDir = TEST_SILVER_MERGED_ALL_DIR) {
   const silverPath = path.join(baseDir, `${venueId}.json`);
   if (!fs.existsSync(silverPath)) {
     return null;
@@ -38,7 +38,7 @@ function computeSourceHash(venueId, baseDir = TEST_SILVER_MATCHED_DIR) {
   }
 }
 
-function processBulkResults(bulkResultsArray, goldDir = TEST_GOLD_DIR, silverMatchedDir = TEST_SILVER_MATCHED_DIR) {
+function processBulkResults(bulkResultsArray, goldDir = TEST_GOLD_DIR, silverMergedDir = TEST_SILVER_MERGED_ALL_DIR) {
   const results = [];
   const bulkCompletePath = path.join(goldDir, '.bulk-complete');
   
@@ -59,12 +59,12 @@ function processBulkResults(bulkResultsArray, goldDir = TEST_GOLD_DIR, silverMat
     }
     
     // Get source metadata
-    const sourceHash = computeSourceHash(venueId, silverMatchedDir);
+    const sourceHash = computeSourceHash(venueId, silverMergedDir);
     
-    // Load silver_matched data for venue name
+    // Load silver_merged data for venue name
     let venueName = venueResult.venueName || 'Unknown';
     try {
-      const silverPath = path.join(silverMatchedDir, `${venueId}.json`);
+      const silverPath = path.join(silverMergedDir, `${venueId}.json`);
       if (fs.existsSync(silverPath)) {
         const silverData = JSON.parse(fs.readFileSync(silverPath, 'utf8'));
         venueName = silverData.venueName || venueName;
@@ -131,10 +131,10 @@ function main() {
     const venueId1 = 'ChIJTest123';
     const venueId2 = 'ChIJTest456';
     
-    // Create silver_matched files
+    // Create silver_merged files
     const silver1 = { venueId: venueId1, venueName: 'Test Venue 1', pages: [] };
     fs.writeFileSync(
-      path.join(TEST_SILVER_MATCHED_DIR, `${venueId1}.json`),
+      path.join(TEST_SILVER_MERGED_ALL_DIR, `${venueId1}.json`),
       JSON.stringify(silver1, null, 2),
       'utf8'
     );
@@ -204,7 +204,7 @@ function main() {
     failed++;
   }
   
-  // Test 3: Handle missing silver_matched gracefully
+  // Test 3: Handle missing silver_merged gracefully
   cleanTestDir();
   if (test('Should handle missing silver_matched file gracefully', () => {
     const venueId = 'ChIJTest123';
@@ -226,21 +226,21 @@ function main() {
     const goldData = JSON.parse(fs.readFileSync(goldPath, 'utf8'));
     
     if (goldData.venueName !== 'Test Venue from Bulk') throw new Error('Should use venueName from bulk');
-    if (goldData.sourceHash !== null) throw new Error('sourceHash should be null when silver_matched missing');
+    if (goldData.sourceHash !== null) throw new Error('sourceHash should be null when silver_merged missing');
   })) {
     passed++;
   } else {
     failed++;
   }
   
-  // Test 4: Prefer venueName from silver_matched
+  // Test 4: Prefer venueName from silver_merged
   cleanTestDir();
   if (test('Should prefer venueName from silver_matched over bulk results', () => {
     const venueId = 'ChIJTest123';
     
     const silverData = { venueId, venueName: 'Correct Venue Name', pages: [] };
     fs.writeFileSync(
-      path.join(TEST_SILVER_MATCHED_DIR, `${venueId}.json`),
+      path.join(TEST_SILVER_MERGED_ALL_DIR, `${venueId}.json`),
       JSON.stringify(silverData, null, 2),
       'utf8'
     );
