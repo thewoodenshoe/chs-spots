@@ -54,7 +54,7 @@ if (!fs.existsSync(RAW_INCREMENTAL_DIR)) {
 
 // Constants
 const MAX_SUBPAGES = 10;
-const PARALLEL_WORKERS = 5;
+const PARALLEL_WORKERS = 15; // Increased from 5 to speed up downloads
 const SUBPAGE_KEYWORDS = [
   'menu',              // Matches: menu, menus, food-menu, drink-menu, etc.
   'happy-hour',        // Matches: happy-hour, happy-hours
