@@ -1,10 +1,10 @@
 /**
  * Prepare Bulk LLM Extraction - One-Time Manual Exercise
  * 
- * Reads all venues from silver_matched/ and formats them for manual
+ * Reads all venues from silver_merged/all/ and formats them for manual
  * copy-paste into Grok UI or ChatGPT UI.
  * 
- * This is a ONE-TIME manual exercise for the initial 164 venues.
+ * This is a ONE-TIME manual exercise for the initial bulk load.
  * After bulk extraction is complete, use extract-happy-hours.js --incremental
  * for automatic incremental extraction.
  * 
@@ -33,8 +33,8 @@ function log(message) {
   fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
 }
 
-// Paths
-const SILVER_MATCHED_DIR = path.join(__dirname, '../data/silver_matched');
+// Paths - Now reading from silver_merged/all/ instead of silver_matched/
+const SILVER_MERGED_ALL_DIR = path.join(__dirname, '../data/silver_merged/all');
 const GOLD_DIR = path.join(__dirname, '../data/gold');
 
 // Ensure gold directory exists
@@ -87,19 +87,19 @@ function main() {
     process.exit(0);
   }
   
-  // Check silver_matched directory
-  if (!fs.existsSync(SILVER_MATCHED_DIR)) {
-    log(`❌ Silver matched directory not found: ${SILVER_MATCHED_DIR}`);
-    log(`   Run filter-happy-hour.js first`);
+  // Check silver_merged/all directory
+  if (!fs.existsSync(SILVER_MERGED_ALL_DIR)) {
+    log(`❌ Silver merged directory not found: ${SILVER_MERGED_ALL_DIR}`);
+    log(`   Run merge-raw-files.js first`);
     process.exit(1);
   }
   
-  // Get all matched files
-  const files = fs.readdirSync(SILVER_MATCHED_DIR).filter(f => f.endsWith('.json'));
-  log(`📁 Found ${files.length} venue(s) in silver_matched/\n`);
+  // Get all merged files
+  const files = fs.readdirSync(SILVER_MERGED_ALL_DIR).filter(f => f.endsWith('.json'));
+  log(`📁 Found ${files.length} venue(s) in silver_merged/all/\n`);
   
   if (files.length === 0) {
-    log('❌ No venues to extract. Run filter-happy-hour.js first.');
+    log('❌ No venues to extract. Run merge-raw-files.js first.');
     process.exit(1);
   }
   
@@ -107,7 +107,7 @@ function main() {
   const venues = [];
   
   for (const file of files) {
-    const filePath = path.join(SILVER_MATCHED_DIR, file);
+    const filePath = path.join(SILVER_MERGED_ALL_DIR, file);
     
     try {
       const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));

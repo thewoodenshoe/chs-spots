@@ -2,7 +2,7 @@
  * Download Raw HTML - Step 1 of Happy Hour Pipeline
  * 
  * Downloads raw, untouched HTML from venue websites and subpages.
- * Saves to data/raw/<venue-id>/<url-hash>.html
+ * Saves to data/raw/all/<venue-id>/<url-hash>.html
  * 
  * This is the source of truth - simple curl/wget equivalent.
  * No processing, no extraction, just raw HTML.
@@ -30,18 +30,26 @@ function log(message) {
   fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
 }
 
-// Paths
+// Paths - New structure: raw/all/ and raw/previous/
 const VENUES_PATH = path.join(__dirname, '../data/venues.json');
 const RAW_DIR = path.join(__dirname, '../data/raw');
+const RAW_ALL_DIR = path.join(__dirname, '../data/raw/all');
 const RAW_PREVIOUS_DIR = path.join(__dirname, '../data/raw/previous');
+const RAW_INCREMENTAL_DIR = path.join(__dirname, '../data/raw/incremental');
 const LAST_DOWNLOAD_PATH = path.join(__dirname, '../data/raw/.last-download');
 
-// Ensure raw directory exists
+// Ensure raw directories exist
 if (!fs.existsSync(RAW_DIR)) {
   fs.mkdirSync(RAW_DIR, { recursive: true });
 }
+if (!fs.existsSync(RAW_ALL_DIR)) {
+  fs.mkdirSync(RAW_ALL_DIR, { recursive: true });
+}
 if (!fs.existsSync(RAW_PREVIOUS_DIR)) {
   fs.mkdirSync(RAW_PREVIOUS_DIR, { recursive: true });
+}
+if (!fs.existsSync(RAW_INCREMENTAL_DIR)) {
+  fs.mkdirSync(RAW_INCREMENTAL_DIR, { recursive: true });
 }
 
 // Constants
@@ -65,7 +73,8 @@ const SUBPAGE_KEYWORDS = [
   'calendar',          // Matches: calendar, events-calendar
   'cocktails',         // Matches: cocktails, cocktail, cocktail-menu
   'wine',              // Matches: wine, wines, wine-menu, wine-list
-  'beer'               // Matches: beer, beers, beer-menu, beer-list
+  'beer',              // Matches: beer, beers, beer-menu, beer-list
+  'location'           // Matches: location, locations, clements-ferry-location, etc.
 ];
 
 /**
@@ -76,10 +85,10 @@ function urlToHash(url) {
 }
 
 /**
- * Get raw HTML file path
+ * Get raw HTML file path (now in raw/all/<venue-id>/)
  */
 function getRawFilePath(venueId, url) {
-  const venueDir = path.join(RAW_DIR, venueId);
+  const venueDir = path.join(RAW_ALL_DIR, venueId);
   if (!fs.existsSync(venueDir)) {
     fs.mkdirSync(venueDir, { recursive: true });
   }
@@ -88,10 +97,10 @@ function getRawFilePath(venueId, url) {
 }
 
 /**
- * Get metadata file path
+ * Get metadata file path (now in raw/all/<venue-id>/)
  */
 function getMetadataPath(venueId) {
-  const venueDir = path.join(RAW_DIR, venueId);
+  const venueDir = path.join(RAW_ALL_DIR, venueId);
   if (!fs.existsSync(venueDir)) {
     fs.mkdirSync(venueDir, { recursive: true });
   }
@@ -175,7 +184,7 @@ function isFileFromToday(filePath) {
 }
 
 /**
- * Archive current raw directory to previous
+ * Archive current raw/all directory to raw/previous
  */
 function archivePreviousDay() {
   const today = getTodayDateString();
@@ -190,16 +199,20 @@ function archivePreviousDay() {
   log(`📅 New day detected (${today}, previous: ${lastDownload})`);
   log(`📦 Archiving previous day's data...`);
   
-  // Move all venue directories to previous
-  const venueDirs = fs.readdirSync(RAW_DIR).filter(item => {
-    const itemPath = path.join(RAW_DIR, item);
-    return fs.statSync(itemPath).isDirectory() && item !== 'previous';
+  // Move all venue directories from raw/all/ to raw/previous/
+  if (!fs.existsSync(RAW_ALL_DIR)) {
+    return false;
+  }
+  
+  const venueDirs = fs.readdirSync(RAW_ALL_DIR).filter(item => {
+    const itemPath = path.join(RAW_ALL_DIR, item);
+    return fs.statSync(itemPath).isDirectory();
   });
   
   let archived = 0;
   for (const venueDir of venueDirs) {
     try {
-      const sourcePath = path.join(RAW_DIR, venueDir);
+      const sourcePath = path.join(RAW_ALL_DIR, venueDir);
       const destPath = path.join(RAW_PREVIOUS_DIR, venueDir);
       
       // Remove existing archive for this venue if it exists
@@ -493,7 +506,7 @@ async function main() {
   log(`   📥 Files downloaded today: ${totalDownloaded}`);
   log(`   💾 Files skipped (already downloaded today): ${totalSkipped}`);
   log(`   📅 Download date: ${today}`);
-  log(`\n✨ Done! Raw HTML saved to: ${path.resolve(RAW_DIR)}`);
+  log(`\n✨ Done! Raw HTML saved to: ${path.resolve(RAW_ALL_DIR)}`);
   log(`   Previous day's data: ${path.resolve(RAW_PREVIOUS_DIR)}`);
 }
 

@@ -40,17 +40,17 @@ function log(message) {
   fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
 }
 
-// Paths
+// Paths - Now reading from silver_merged/all/ instead of silver_matched/
 const GOLD_DIR = path.join(__dirname, '../data/gold');
-const SILVER_MATCHED_DIR = path.join(__dirname, '../data/silver_matched');
+const SILVER_MERGED_ALL_DIR = path.join(__dirname, '../data/silver_merged/all');
 const BULK_RESULTS_PATH = path.join(GOLD_DIR, 'bulk-results.json');
 const BULK_COMPLETE_PATH = path.join(GOLD_DIR, '.bulk-complete');
 
 /**
- * Compute content hash for a venue's silver_matched file
+ * Compute content hash for a venue's silver_merged file
  */
 function computeSourceHash(venueId) {
-  const silverPath = path.join(SILVER_MATCHED_DIR, `${venueId}.json`);
+  const silverPath = path.join(SILVER_MERGED_ALL_DIR, `${venueId}.json`);
   if (!fs.existsSync(silverPath)) {
     return null;
   }
@@ -69,7 +69,7 @@ function computeSourceHash(venueId) {
  * Get source file modified time
  */
 function getSourceModifiedAt(venueId) {
-  const silverPath = path.join(SILVER_MATCHED_DIR, `${venueId}.json`);
+  const silverPath = path.join(SILVER_MERGED_ALL_DIR, `${venueId}.json`);
   if (!fs.existsSync(silverPath)) {
     return null;
   }
@@ -96,10 +96,10 @@ function processVenueResult(venueResult) {
   const sourceHash = computeSourceHash(venueId);
   const sourceModifiedAt = getSourceModifiedAt(venueId);
   
-  // Load silver_matched data for venue name
+  // Load silver_merged data for venue name
   let venueName = venueResult.venueName || 'Unknown';
   try {
-    const silverPath = path.join(SILVER_MATCHED_DIR, `${venueId}.json`);
+    const silverPath = path.join(SILVER_MERGED_ALL_DIR, `${venueId}.json`);
     if (fs.existsSync(silverPath)) {
       const silverData = JSON.parse(fs.readFileSync(silverPath, 'utf8'));
       venueName = silverData.venueName || venueName;

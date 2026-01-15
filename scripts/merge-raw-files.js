@@ -2,7 +2,7 @@
  * Merge Raw Files - Step 2 of Happy Hour Pipeline
  * 
  * Merges all raw HTML files per venue into a single JSON file.
- * Saves to data/silver_merged/<venue-id>.json
+ * Saves to data/silver_merged/all/<venue-id>.json
  * 
  * Structure:
  * {
@@ -43,21 +43,42 @@ function log(message) {
   fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
 }
 
-// Paths
-const RAW_DIR = path.join(__dirname, '../data/raw');
+// Paths - New structure: raw/all/ and silver_merged/all/
+const RAW_ALL_DIR = path.join(__dirname, '../data/raw/all');
+const RAW_PREVIOUS_DIR = path.join(__dirname, '../data/raw/previous');
 const SILVER_MERGED_DIR = path.join(__dirname, '../data/silver_merged');
+const SILVER_MERGED_ALL_DIR = path.join(__dirname, '../data/silver_merged/all');
+const SILVER_MERGED_PREVIOUS_DIR = path.join(__dirname, '../data/silver_merged/previous');
+const SILVER_MERGED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_merged/incremental');
 const VENUES_PATH = path.join(__dirname, '../data/venues.json');
 
 // Ensure directories exist
 if (!fs.existsSync(SILVER_MERGED_DIR)) {
   fs.mkdirSync(SILVER_MERGED_DIR, { recursive: true });
 }
+if (!fs.existsSync(SILVER_MERGED_ALL_DIR)) {
+  fs.mkdirSync(SILVER_MERGED_ALL_DIR, { recursive: true });
+}
+if (!fs.existsSync(SILVER_MERGED_PREVIOUS_DIR)) {
+  fs.mkdirSync(SILVER_MERGED_PREVIOUS_DIR, { recursive: true });
+}
+if (!fs.existsSync(SILVER_MERGED_INCREMENTAL_DIR)) {
+  fs.mkdirSync(SILVER_MERGED_INCREMENTAL_DIR, { recursive: true });
+}
 
 /**
- * Get all HTML files for a venue
+ * Generate hash from URL (same as download-raw-html.js)
+ */
+function urlToHash(url) {
+  const crypto = require('crypto');
+  return crypto.createHash('md5').update(url).digest('hex').substring(0, 12);
+}
+
+/**
+ * Get all HTML files for a venue (now from raw/all/<venue-id>/)
  */
 function getVenueRawFiles(venueId) {
-  const venueDir = path.join(RAW_DIR, venueId);
+  const venueDir = path.join(RAW_ALL_DIR, venueId);
   if (!fs.existsSync(venueDir)) {
     return [];
   }
@@ -75,10 +96,10 @@ function getVenueRawFiles(venueId) {
 }
 
 /**
- * Load URL metadata
+ * Load URL metadata (now from raw/all/<venue-id>/)
  */
 function loadMetadata(venueId) {
-  const metadataPath = path.join(RAW_DIR, venueId, 'metadata.json');
+  const metadataPath = path.join(RAW_ALL_DIR, venueId, 'metadata.json');
   if (!fs.existsSync(metadataPath)) {
     return {};
   }
@@ -141,8 +162,8 @@ function processVenue(venueId, venues) {
     pages
   };
   
-  // Save merged file
-  const mergedPath = path.join(SILVER_MERGED_DIR, `${venueId}.json`);
+  // Save merged file to silver_merged/all/
+  const mergedPath = path.join(SILVER_MERGED_ALL_DIR, `${venueId}.json`);
   fs.writeFileSync(mergedPath, JSON.stringify(mergedData, null, 2), 'utf8');
   
   return {
@@ -154,11 +175,44 @@ function processVenue(venueId, venues) {
 }
 
 /**
- * Generate hash from URL (same as download-raw-html.js)
+ * Archive previous day's merged files
  */
-function urlToHash(url) {
-  const crypto = require('crypto');
-  return crypto.createHash('md5').update(url).digest('hex').substring(0, 12);
+function archivePreviousDay() {
+  if (!fs.existsSync(SILVER_MERGED_ALL_DIR)) {
+    return false;
+  }
+  
+  const today = new Date().toISOString().split('T')[0];
+  const files = fs.readdirSync(SILVER_MERGED_ALL_DIR).filter(f => f.endsWith('.json'));
+  
+  if (files.length === 0) {
+    return false;
+  }
+  
+  let archived = 0;
+  for (const file of files) {
+    try {
+      const sourcePath = path.join(SILVER_MERGED_ALL_DIR, file);
+      const destPath = path.join(SILVER_MERGED_PREVIOUS_DIR, file);
+      
+      // Remove existing archive if it exists
+      if (fs.existsSync(destPath)) {
+        fs.unlinkSync(destPath);
+      }
+      
+      // Move to previous
+      fs.renameSync(sourcePath, destPath);
+      archived++;
+    } catch (error) {
+      log(`  ⚠️  Failed to archive ${file}: ${error.message}`);
+    }
+  }
+  
+  if (archived > 0) {
+    log(`  ✅ Archived ${archived} merged file(s) to silver_merged/previous/`);
+  }
+  
+  return archived > 0;
 }
 
 /**
@@ -166,6 +220,9 @@ function urlToHash(url) {
  */
 function main() {
   log('🔗 Starting Raw Files Merge\n');
+  
+  // Archive previous day's merged files (if they exist)
+  archivePreviousDay();
   
   // Parse command-line arguments
   const args = process.argv.slice(2);
@@ -186,16 +243,16 @@ function main() {
   log(`📖 Loaded ${venues.length} venue(s) from venues.json\n`);
   
   // Check raw directory
-  if (!fs.existsSync(RAW_DIR)) {
-    log(`❌ Raw directory not found: ${RAW_DIR}`);
+  if (!fs.existsSync(RAW_ALL_DIR)) {
+    log(`❌ Raw directory not found: ${RAW_ALL_DIR}`);
     log(`   Run download-raw-html.js first`);
     process.exit(1);
   }
   
-  // Get all venue directories
-  let venueDirs = fs.readdirSync(RAW_DIR).filter(item => {
-    const itemPath = path.join(RAW_DIR, item);
-    return fs.statSync(itemPath).isDirectory() && item !== 'previous';
+  // Get all venue directories from raw/all/
+  let venueDirs = fs.readdirSync(RAW_ALL_DIR).filter(item => {
+    const itemPath = path.join(RAW_ALL_DIR, item);
+    return fs.statSync(itemPath).isDirectory();
   });
   
   // Filter by area if specified
@@ -232,7 +289,8 @@ function main() {
   log(`\n📊 Summary:`);
   log(`   ✅ Merged: ${successful} venue(s)`);
   log(`   📄 Total pages: ${totalPages}`);
-  log(`\n✨ Done! Merged files saved to: ${path.resolve(SILVER_MERGED_DIR)}`);
+  log(`\n✨ Done! Merged files saved to: ${path.resolve(SILVER_MERGED_ALL_DIR)}`);
+  log(`   Previous day's data: ${path.resolve(SILVER_MERGED_PREVIOUS_DIR)}`);
 }
 
 try {

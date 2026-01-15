@@ -1,13 +1,13 @@
 /**
  * Extract Happy Hours - Incremental LLM Extraction
  * 
- * Extracts structured happy hour data from silver_matched files using LLM.
+ * Extracts structured happy hour data from silver_merged/all/ files using LLM.
  * Only processes new/changed venues (incremental mode).
  * 
  * Requires:
  * - Bulk extraction must be completed first (.bulk-complete exists)
  * - Only processes venues where gold/<venue-id>.json doesn't exist OR
- *   silver_matched/<venue-id>.json is newer than gold/<venue-id>.json
+ *   silver_merged/all/<venue-id>.json is newer than gold/<venue-id>.json
  * 
  * Modes:
  * --incremental (default): Only new/changed venues
@@ -35,8 +35,8 @@ function log(message) {
   fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
 }
 
-// Paths
-const SILVER_MATCHED_DIR = path.join(__dirname, '../data/silver_matched');
+// Paths - Now reading from silver_merged/all/ instead of silver_matched/
+const SILVER_MERGED_ALL_DIR = path.join(__dirname, '../data/silver_merged/all');
 const GOLD_DIR = path.join(__dirname, '../data/gold');
 const BULK_COMPLETE_PATH = path.join(GOLD_DIR, '.bulk-complete');
 
@@ -55,7 +55,7 @@ function isBulkComplete() {
 /**
  * Determine if venue needs extraction
  */
-function shouldExtract(silverMatchedPath, goldPath, force = false) {
+function shouldExtract(silverMergedPath, goldPath, force = false) {
   if (force) {
     return 'force';
   }
@@ -71,7 +71,7 @@ function shouldExtract(silverMatchedPath, goldPath, force = false) {
     // If bulk extracted and has happy hour, only re-extract if source changed
     if (goldData.extractionMethod === 'llm-bulk' && goldData.happyHour && goldData.happyHour.found === true) {
       // Only re-extract if source actually changed
-      const silverStats = fs.statSync(silverMatchedPath);
+      const silverStats = fs.statSync(silverMergedPath);
       const goldStats = fs.statSync(goldPath);
       if (silverStats.mtime <= goldStats.mtime) {
         return 'skip'; // Source hasn't changed, keep bulk extraction
@@ -83,7 +83,7 @@ function shouldExtract(silverMatchedPath, goldPath, force = false) {
   }
   
   // Compare timestamps
-  const silverStats = fs.statSync(silverMatchedPath);
+  const silverStats = fs.statSync(silverMergedPath);
   const goldStats = fs.statSync(goldPath);
   
   // Silver file newer = content changed
@@ -99,7 +99,7 @@ function shouldExtract(silverMatchedPath, goldPath, force = false) {
  * Compute content hash for source tracking
  */
 function computeSourceHash(venueId) {
-  const silverPath = path.join(SILVER_MATCHED_DIR, `${venueId}.json`);
+  const silverPath = path.join(SILVER_MERGED_ALL_DIR, `${venueId}.json`);
   if (!fs.existsSync(silverPath)) {
     return null;
   }
@@ -118,7 +118,7 @@ function computeSourceHash(venueId) {
  * Get source file modified time
  */
 function getSourceModifiedAt(venueId) {
-  const silverPath = path.join(SILVER_MATCHED_DIR, `${venueId}.json`);
+  const silverPath = path.join(SILVER_MERGED_ALL_DIR, `${venueId}.json`);
   if (!fs.existsSync(silverPath)) {
     return null;
   }
@@ -218,11 +218,11 @@ async function extractWithLLM(venueId, venueData) {
  * Process a single venue
  */
 async function processVenue(venueId, force = false) {
-  const silverPath = path.join(SILVER_MATCHED_DIR, `${venueId}.json`);
+  const silverPath = path.join(SILVER_MERGED_ALL_DIR, `${venueId}.json`);
   const goldPath = path.join(GOLD_DIR, `${venueId}.json`);
   
   if (!fs.existsSync(silverPath)) {
-    log(`  ⚠️  Silver matched file not found: ${venueId}`);
+    log(`  ⚠️  Silver merged file not found: ${venueId}`);
     return null;
   }
   
@@ -237,7 +237,7 @@ async function processVenue(venueId, force = false) {
     };
   }
   
-  // Load silver_matched data
+  // Load silver_merged data
   const silverData = JSON.parse(fs.readFileSync(silverPath, 'utf8'));
   
   log(`  🔄 Processing ${silverData.venueName} (${venueId}): ${status}`);
@@ -309,19 +309,19 @@ async function main() {
     process.exit(1);
   }
   
-  // Check silver_matched directory
-  if (!fs.existsSync(SILVER_MATCHED_DIR)) {
-    log(`❌ Silver matched directory not found: ${SILVER_MATCHED_DIR}`);
-    log(`   Run filter-happy-hour.js first`);
+  // Check silver_merged/all directory
+  if (!fs.existsSync(SILVER_MERGED_ALL_DIR)) {
+    log(`❌ Silver merged directory not found: ${SILVER_MERGED_ALL_DIR}`);
+    log(`   Run merge-raw-files.js first`);
     process.exit(1);
   }
   
-  // Get all matched files
-  const files = fs.readdirSync(SILVER_MATCHED_DIR).filter(f => f.endsWith('.json'));
-  log(`📁 Found ${files.length} venue(s) in silver_matched/\n`);
+  // Get all merged files
+  const files = fs.readdirSync(SILVER_MERGED_ALL_DIR).filter(f => f.endsWith('.json'));
+  log(`📁 Found ${files.length} venue(s) in silver_merged/all/\n`);
   
   if (files.length === 0) {
-    log('❌ No venues to extract. Run filter-happy-hour.js first.');
+    log('❌ No venues to extract. Run merge-raw-files.js first.');
     process.exit(1);
   }
   

@@ -1,18 +1,18 @@
 /**
  * Prepare Incremental LLM Extraction - For Manual Upload
  * 
- * Identifies new/changed venues from silver_matched that need LLM extraction.
+ * Identifies new/changed venues from silver_merged/all/ that need LLM extraction.
  * Prepares them for manual upload to Grok UI or ChatGPT UI.
  * 
  * This script:
- * 1. Finds venues in silver_matched that are new or changed (not in gold, or source changed)
+ * 1. Finds venues in silver_merged/all/ that are new or changed (not in gold, or source changed)
  * 2. Formats them for manual LLM extraction
  * 3. Outputs to data/gold/incremental-input-YYYY-MM-DD.json
  * 
  * After manual extraction, save results to data/gold/incremental-results-YYYY-MM-DD.json
  * Then run: node scripts/process-incremental-llm-results.js
  * 
- * Run with: node scripts/prepare-incremental-llm-extraction.js
+ * Run with: node scripts/prepare-incremental-llm-extraction.js [area-filter]
  */
 
 const fs = require('fs');
@@ -34,16 +34,16 @@ function log(message) {
   fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
 }
 
-// Paths
-const SILVER_MATCHED_DIR = path.join(__dirname, '../data/silver_matched');
+// Paths - Now reading from silver_merged/all/ instead of silver_matched/
+const SILVER_MERGED_ALL_DIR = path.join(__dirname, '../data/silver_merged/all');
 const GOLD_DIR = path.join(__dirname, '../data/gold');
 const CHANGES_DIR = path.join(__dirname, '../data/raw');
 
 /**
- * Compute content hash for a venue's silver_matched file
+ * Compute content hash for a venue's silver_merged file
  */
 function computeSourceHash(venueId) {
-  const silverPath = path.join(SILVER_MATCHED_DIR, `${venueId}.json`);
+  const silverPath = path.join(SILVER_MERGED_ALL_DIR, `${venueId}.json`);
   if (!fs.existsSync(silverPath)) {
     return null;
   }
@@ -62,7 +62,7 @@ function computeSourceHash(venueId) {
  * Get source file modified time
  */
 function getSourceModifiedAt(venueId) {
-  const silverPath = path.join(SILVER_MATCHED_DIR, `${venueId}.json`);
+  const silverPath = path.join(SILVER_MERGED_ALL_DIR, `${venueId}.json`);
   if (!fs.existsSync(silverPath)) {
     return null;
   }
@@ -79,7 +79,7 @@ function getSourceModifiedAt(venueId) {
  * Check if venue needs extraction
  */
 function needsExtraction(venueId) {
-  const silverPath = path.join(SILVER_MATCHED_DIR, `${venueId}.json`);
+  const silverPath = path.join(SILVER_MERGED_ALL_DIR, `${venueId}.json`);
   const goldPath = path.join(GOLD_DIR, `${venueId}.json`);
   
   // Never extracted
@@ -93,6 +93,9 @@ function needsExtraction(venueId) {
     // If bulk extracted and has happy hour, only re-extract if source changed
     if (goldData.extractionMethod === 'llm-bulk' && goldData.happyHour && goldData.happyHour.found === true) {
       // Check if source changed
+      if (!fs.existsSync(silverPath)) {
+        return { needs: false, reason: 'no-silver-file' };
+      }
       const silverStats = fs.statSync(silverPath);
       const goldStats = fs.statSync(goldPath);
       if (silverStats.mtime <= goldStats.mtime) {
@@ -171,19 +174,19 @@ function main() {
     log('   Or use this script to prepare all venues for bulk extraction');
   }
   
-  // Check silver_matched directory
-  if (!fs.existsSync(SILVER_MATCHED_DIR)) {
-    log(`❌ Silver matched directory not found: ${SILVER_MATCHED_DIR}`);
-    log(`   Run filter-happy-hour.js first`);
+  // Check silver_merged/all directory
+  if (!fs.existsSync(SILVER_MERGED_ALL_DIR)) {
+    log(`❌ Silver merged directory not found: ${SILVER_MERGED_ALL_DIR}`);
+    log(`   Run merge-raw-files.js first`);
     process.exit(1);
   }
   
-  // Get all matched files
-  const files = fs.readdirSync(SILVER_MATCHED_DIR).filter(f => f.endsWith('.json'));
-  log(`📁 Found ${files.length} venue(s) in silver_matched/\n`);
+  // Get all merged files
+  const files = fs.readdirSync(SILVER_MERGED_ALL_DIR).filter(f => f.endsWith('.json'));
+  log(`📁 Found ${files.length} venue(s) in silver_merged/all/\n`);
   
   if (files.length === 0) {
-    log('❌ No venues found in silver_matched/');
+    log('❌ No venues found in silver_merged/all/');
     process.exit(1);
   }
   
@@ -196,7 +199,7 @@ function main() {
     
     if (check.needs) {
       try {
-        const silverPath = path.join(SILVER_MATCHED_DIR, file);
+        const silverPath = path.join(SILVER_MERGED_ALL_DIR, file);
         const silverData = JSON.parse(fs.readFileSync(silverPath, 'utf8'));
         
         // Apply area filter if specified
