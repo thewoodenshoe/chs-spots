@@ -45,8 +45,8 @@ Run these scripts **once** to set up the initial data:
    ```bash
    node scripts/download-raw-html.js
    node scripts/merge-raw-files.js
-   node scripts/filter-happy-hour.js
    ```
+   Note: The `silver_matched` filtering layer has been removed. All data now flows through `silver_merged/all/`.
 
 4. **Bulk LLM extraction (one-time manual):**
    ```bash
@@ -82,16 +82,7 @@ Run these scripts **daily** to update data:
    node scripts/merge-raw-files.js "Daniel Island"
    ```
 
-3. **Filter happy hour:**
-   ```bash
-   node scripts/filter-happy-hour.js
-   ```
-   Or for a specific area:
-   ```bash
-   node scripts/filter-happy-hour.js "Daniel Island"
-   ```
-
-4. **Prepare incremental venues for LLM:**
+3. **Prepare incremental venues for LLM:**
    ```bash
    node scripts/prepare-incremental-llm-extraction.js
    ```
@@ -102,12 +93,12 @@ Run these scripts **daily** to update data:
    - Extract happy hour information
    - Save results as `data/gold/incremental-results-YYYY-MM-DD.json`
 
-6. **Process incremental results:**
+5. **Process incremental results:**
    ```bash
    node scripts/process-incremental-llm-results.js
    ```
 
-7. **Update spots:**
+6. **Update spots:**
    ```bash
    node scripts/create-spots.js
    ```
@@ -118,8 +109,7 @@ Run these scripts **daily** to update data:
 2. **Seed Venues**: `node scripts/seed-venues.js` (requires Google Maps API key)
 3. **Download Raw HTML**: `node scripts/download-raw-html.js`
 4. **Merge Raw Files**: `node scripts/merge-raw-files.js`
-5. **Filter Happy Hour**: `node scripts/filter-happy-hour.js`
-6. **Extract Happy Hours** (Optional): `npm run extract:incremental` or bulk LLM extraction
+5. **Extract Happy Hours** (Optional): `npm run extract:incremental` or bulk LLM extraction
 
 That's it! Run `npm run dev` to start the website.
 
@@ -245,11 +235,11 @@ Downloads raw HTML from venue websites and subpages. This is the first step in t
 
 **Features:**
 - Downloads raw, untouched HTML (source of truth)
-- Downloads homepage + relevant subpages (menu, happy hour, specials, etc.)
+- Downloads homepage + relevant subpages (menu, happy-hour, happyhour, hh, specials, events, bar, drinks, deals, promos, promotions, offers, happenings, whats-on, calendar, cocktails, wine, beer, **location**)
 - **Daily Caching**: Per-venue daily cache (skips re-download if already downloaded today)
-- **Previous Day Archive**: Archives previous day's downloads for diff comparison
-- Extracts URL patterns for learning
-- Handles multi-location sites (finds location-specific pages)
+- **Previous Day Archive**: Archives previous day's downloads to `raw/previous/` for diff comparison
+- **Directory Structure**: All downloads go to `raw/all/<venue-id>/`, previous day in `raw/previous/<venue-id>/`
+- Handles multi-location sites (finds location-specific pages using 'location' keyword)
 
 **Requirements:**
 - `venues.json` must exist (created in Step 2)
@@ -265,10 +255,11 @@ node scripts/download-raw-html.js
 - ~1-2 minutes on subsequent runs the same day (uses cache)
 
 **Output:**
-- `data/raw/<venue-id>/` - Raw HTML files per venue (one directory per venue)
-- `data/raw/<venue-id>/*.html` - Individual HTML files (hashed filenames)
-- `data/raw/<venue-id>/metadata.json` - URL to hash mapping
-- `data/raw/previous/` - Previous day's downloads (for diff comparison)
+- `data/raw/all/<venue-id>/` - Raw HTML files per venue (one directory per venue)
+- `data/raw/all/<venue-id>/*.html` - Individual HTML files (hashed filenames)
+- `data/raw/all/<venue-id>/metadata.json` - URL to hash mapping
+- `data/raw/previous/<venue-id>/` - Previous day's downloads (for diff comparison)
+- `data/raw/incremental/` - Incremental files (for new/changed venues)
 
 ---
 
@@ -282,9 +273,10 @@ Merges all raw HTML files per venue into single JSON files. This is the second s
 - Combines all HTML files per venue into a single merged JSON file
 - Preserves metadata (URLs, download timestamps, hashes)
 - One file per venue
+- **Directory Structure**: All merged files go to `silver_merged/all/<venue-id>.json`, previous day in `silver_merged/previous/<venue-id>.json`
 
 **Requirements:**
-- `data/raw/` directory with raw HTML files (created in Step 3)
+- `data/raw/all/` directory with raw HTML files (created in Step 3)
 
 **Run:**
 ```bash
@@ -295,42 +287,21 @@ node scripts/merge-raw-files.js
 - ~1-2 minutes for 741 venues
 
 **Output:**
-- `data/silver_merged/<venue-id>.json` - Merged JSON file per venue (all pages combined with metadata)
+- `data/silver_merged/all/<venue-id>.json` - Merged JSON file per venue (all pages combined with metadata)
+- `data/silver_merged/previous/<venue-id>.json` - Previous day's merged files (for diff comparison)
+- `data/silver_merged/incremental/` - Incremental files (for new/changed venues)
+
+**Note:** The `silver_matched` filtering layer has been removed. All venues (with or without happy hour text) are now in `silver_merged/all/`. LLM extraction will process all venues and filter based on content.
 
 ---
 
-### Step 5: Filter Happy Hour
-
-**Script:** `scripts/filter-happy-hour.js`
-
-Filters merged files that contain "happy hour" text patterns. This is the third step in the pipeline.
-
-**Features:**
-- Searches for "happy hour" patterns (case-insensitive, with/without spaces, plural forms)
-- Copies matching venues to `silver_matched/` directory
-- Preserves all data from merged files
-
-**Requirements:**
-- `data/silver_merged/` directory with merged files (created in Step 4)
-
-**Run:**
-```bash
-node scripts/filter-happy-hour.js
-```
-
-**Expected Runtime:**
-- ~30 seconds for 741 venues
-
-**Output:**
-- `data/silver_matched/<venue-id>.json` - Only venues with "happy hour" text (copied from silver_merged)
-
----
-
-### Step 6: Extract Happy Hours (LLM)
+### Step 5: Extract Happy Hours (LLM)
 
 **Script:** `scripts/extract-happy-hours.js`
 
-Extracts structured happy hour data from `silver_matched` files using LLM. This is the final step in the pipeline.
+Extracts structured happy hour data from `silver_merged/all/` files using LLM. This is the final step in the pipeline.
+
+**Note:** Since the `silver_matched` layer has been removed, LLM extraction processes all venues from `silver_merged/all/` and determines which ones have happy hour information.
 
 **Workflow:**
 
@@ -362,7 +333,7 @@ Extracts structured happy hour data using LLM API.
 - Uses LLM API for extraction
 
 **Requirements:**
-- `data/silver_matched/` directory with filtered files (created in Step 5)
+- `data/silver_merged/all/` directory with merged files (created in Step 4)
 - Bulk extraction must be completed first (for incremental mode)
 
 **Output:**
@@ -403,11 +374,12 @@ npm run seed:incremental
 ```
 1. create-areas.js        → data/areas.json
 2. seed-venues.js         → data/venues.json
-3. download-raw-html.js   → data/raw/<venue-id>/
-4. merge-raw-files.js     → data/silver_merged/<venue-id>.json
-5. filter-happy-hour.js   → data/silver_matched/<venue-id>.json
-6. extract-happy-hours.js → data/gold/<venue-id>.json
+3. download-raw-html.js   → data/raw/all/<venue-id>/
+4. merge-raw-files.js     → data/silver_merged/all/<venue-id>.json
+5. extract-happy-hours.js → data/gold/<venue-id>.json
 ```
+
+**Note:** The `silver_matched` filtering layer (Step 5) has been removed. All data flows through `silver_merged/all/`.
 
 **For a fresh setup, run these commands in order:**
 
@@ -424,10 +396,7 @@ node scripts/download-raw-html.js
 # Step 4: Merge raw files
 node scripts/merge-raw-files.js
 
-# Step 5: Filter happy hour
-node scripts/filter-happy-hour.js
-
-# Step 6: Extract happy hours (bulk + incremental)
+# Step 5: Extract happy hours (bulk + incremental)
 npm run extract:bulk:prepare
 # ... manual Grok UI extraction ...
 npm run extract:bulk:process
@@ -479,19 +448,28 @@ data/
 ├── spots.json              # Curated spots with activities
 ├── backup/                 # Timestamped backups
 ├── raw/                    # Raw HTML files (Step 3)
-│   └── <venue-id>/
-│       ├── <hash>.html     # Individual HTML files
-│       └── metadata.json   # URL to hash mapping
+│   ├── all/                # All downloaded HTML files
+│   │   └── <venue-id>/
+│   │       ├── <hash>.html # Individual HTML files
+│   │       └── metadata.json # URL to hash mapping
+│   ├── previous/           # Previous day's downloads (for diff)
+│   │   └── <venue-id>/
+│   └── incremental/        # Incremental files (new/changed)
 ├── silver_merged/          # Merged JSON per venue (Step 4)
-│   └── <venue-id>.json     # All pages combined
-├── silver_matched/         # Only venues with "happy hour" (Step 5)
-│   └── <venue-id>.json     # Copied from silver_merged
-└── gold/                   # LLM extracted structured data (Step 6)
+│   ├── all/                # All merged files
+│   │   └── <venue-id>.json # All pages combined
+│   ├── previous/           # Previous day's merged files
+│   │   └── <venue-id>.json
+│   └── incremental/        # Incremental files (new/changed)
+└── gold/                   # LLM extracted structured data (Step 5)
     ├── <venue-id>.json     # Extracted happy hour data
     ├── .bulk-complete      # Flag: Bulk extraction done
     ├── bulk-input.json     # For manual Grok UI
-    └── bulk-results.json   # From manual Grok UI
+    ├── bulk-results.json   # From manual Grok UI
+    └── incremental-history/ # Archived incremental files
 ```
+
+**Note:** The `silver_matched/` directory has been removed. All venues (with or without happy hour text) are in `silver_merged/all/`.
 
 ---
 
@@ -520,8 +498,8 @@ npm run test:e2e:ui
 **Test Coverage:**
 - **Seed Venues**: 4 test files, ~70+ test cases, runs on git push
 - **Raw Layer**: 4 test files, ~73+ test cases, runs on git push
-- **Silver Layer**: 5 test files, ~110+ test cases, runs on git push
-- **Total**: 13+ test files, 250+ test cases, all run on git push via GitHub Actions
+- **Silver Layer**: 3 test files, ~50+ test cases, runs on git push (silver_matched layer removed)
+- **Total**: 11+ test files, 190+ test cases, all run on git push via GitHub Actions
 
 ---
 
@@ -534,18 +512,16 @@ chs-spots/
 │   ├── spots.json            # Curated spots with activities
 │   ├── areas.json            # Area configuration
 │   ├── backup/               # Timestamped backups
-│   ├── raw/                  # Raw HTML files
-│   ├── silver_merged/        # Merged JSON per venue
-│   ├── silver_matched/       # Only venues with "happy hour"
+│   ├── raw/                  # Raw HTML files (all/, previous/, incremental/)
+│   ├── silver_merged/        # Merged JSON per venue (all/, previous/, incremental/)
 │   └── gold/                 # LLM extracted structured data
 ├── scripts/                   # Node.js scripts
 │   ├── create-areas.js       # Create areas.json
 │   ├── seed-venues.js        # Seed venues (with parallel processing)
 │   ├── seed-incremental.js   # Incremental venue updates
-│   ├── download-raw-html.js  # Download raw HTML (pipeline Step 1)
-│   ├── merge-raw-files.js    # Merge raw files (pipeline Step 2)
-│   ├── filter-happy-hour.js  # Filter happy hour (pipeline Step 3)
-│   ├── extract-happy-hours.js # Extract structured data (pipeline Step 4)
+│   ├── download-raw-html.js  # Download raw HTML (pipeline Step 3)
+│   ├── merge-raw-files.js    # Merge raw files (pipeline Step 4)
+│   ├── extract-happy-hours.js # Extract structured data (pipeline Step 5)
 │   ├── prepare-bulk-llm-extraction.js # Bulk LLM preparation
 │   ├── process-bulk-llm-results.js    # Process bulk LLM results
 │   ├── compare-raw-files.js  # Compare raw files for diffs
