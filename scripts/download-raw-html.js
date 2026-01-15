@@ -47,7 +47,26 @@ if (!fs.existsSync(RAW_PREVIOUS_DIR)) {
 // Constants
 const MAX_SUBPAGES = 10;
 const PARALLEL_WORKERS = 5;
-const SUBPAGE_KEYWORDS = ['menu', 'happy-hour', 'happyhour', 'specials', 'events', 'bar', 'drinks'];
+const SUBPAGE_KEYWORDS = [
+  'menu',              // Matches: menu, menus, food-menu, drink-menu, etc.
+  'happy-hour',        // Matches: happy-hour, happy-hours
+  'happyhour',         // Matches: happyhour, happyhours
+  'hh',                // Matches: hh, hh-menu, happy-hh
+  'specials',          // Matches: specials, special, happy-hour-specials
+  'events',            // Matches: events, event, calendar-events
+  'bar',               // Matches: bar, bar-menu, bar-specials
+  'drinks',            // Matches: drinks, drink, drink-menu, drink-specials
+  'deals',             // Matches: deals, deal, daily-deals
+  'promos',            // Matches: promos, promo, promotions, promotional
+  'promotions',        // Matches: promotions, promotion
+  'offers',            // Matches: offers, offer, special-offers
+  'happenings',        // Matches: happenings, happening
+  'whats-on',          // Matches: whats-on, what's-on
+  'calendar',          // Matches: calendar, events-calendar
+  'cocktails',         // Matches: cocktails, cocktail, cocktail-menu
+  'wine',              // Matches: wine, wines, wine-menu, wine-list
+  'beer'               // Matches: beer, beers, beer-menu, beer-list
+];
 
 /**
  * Generate hash from URL for filename
