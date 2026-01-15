@@ -208,7 +208,7 @@ describe('Pipeline Diff Flow - Paul Stewart\'s Tavern', () => {
     // === DAY 2: WEBSITE UPDATED ===
     // Download new content (with happy hour)
     const day2Html = '<html><body>Welcome to Paul Stewart\'s Tavern. Happy Hour Monday-Friday 4pm-7pm. $2 off all drinks!</body></html>';
-    const currentVenueDir = path.join(TEST_RAW_DIR, VENUE_ID);
+    const currentVenueDir = path.join(TEST_RAW_ALL_DIR, VENUE_ID);
     fs.mkdirSync(currentVenueDir, { recursive: true });
     
     const currentFilePath = path.join(currentVenueDir, `${hash}.html`);
