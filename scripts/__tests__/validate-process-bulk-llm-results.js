@@ -206,7 +206,7 @@ function main() {
   
   // Test 3: Handle missing silver_merged gracefully
   cleanTestDir();
-  if (test('Should handle missing silver_matched file gracefully', () => {
+  if (test('Should handle missing silver_merged file gracefully', () => {
     const venueId = 'ChIJTest123';
     
     const bulkResults = [
@@ -235,7 +235,7 @@ function main() {
   
   // Test 4: Prefer venueName from silver_merged
   cleanTestDir();
-  if (test('Should prefer venueName from silver_matched over bulk results', () => {
+  if (test('Should prefer venueName from silver_merged over bulk results', () => {
     const venueId = 'ChIJTest123';
     
     const silverData = { venueId, venueName: 'Correct Venue Name', pages: [] };
