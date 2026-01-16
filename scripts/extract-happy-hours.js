@@ -201,14 +201,31 @@ async function extractHappyHours(isIncremental = false) {
                     };
                 }
             }
-
-        } catch (error) {
-            console.error(`Error calling Gemini API for ${venueData.venueName} (${venueId}): ${error.message}`);
-            result = { 
-                found: false, 
-                reason: `Error processing: ${error.message}`,
-                error: error.message 
-            };
+                
+                // Success - break out of retry loop
+                break;
+                
+            } catch (error) {
+                retries--;
+                
+                // Handle rate limit errors (429) with exponential backoff
+                if (error.status === 429 && retries > 0) {
+                    const retryDelay = Math.min(delay * (4 - retries), 60000); // Max 60 seconds
+                    console.log(`   ⏳ Rate limit hit, retrying in ${Math.round(retryDelay/1000)}s... (${retries} retries left)`);
+                    await new Promise(resolve => setTimeout(resolve, retryDelay));
+                    delay *= 2; // Exponential backoff
+                    continue;
+                }
+                
+                // Other errors or out of retries
+                console.error(`Error calling Gemini API for ${venueData.venueName} (${venueId}): ${error.message}`);
+                result = { 
+                    found: false, 
+                    reason: `Error processing: ${error.message}`,
+                    error: error.message 
+                };
+                break;
+            }
         }
 
         // Add metadata to the gold record
