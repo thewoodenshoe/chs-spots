@@ -195,7 +195,7 @@ describe('MapComponent', () => {
     expect(venueMarkers.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('filters venues by selectedArea', () => {
+  it('shows ALL venues when showAllVenues is true (no area filtering)', () => {
     useVenues.mockReturnValue({ venues: mockVenues });
     
     render(
@@ -210,9 +210,10 @@ describe('MapComponent', () => {
       </SpotsProvider>
     );
     
-    // Should only show Daniel Island venue
+    // Should show ALL venues regardless of selectedArea when showAllVenues is true
     const venueMarkers = screen.getAllByTestId('marker-venue');
-    expect(venueMarkers.length).toBeGreaterThanOrEqual(1);
+    // Both venues should be shown (Daniel Island + Mount Pleasant)
+    expect(venueMarkers.length).toBe(2);
   });
 
   it('renders both spots and venues when both enabled', () => {

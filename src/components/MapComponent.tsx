@@ -169,17 +169,15 @@ export default function MapComponent({
     });
   }, [spots, selectedArea, selectedActivity]);
 
-  // Filter venues based on selected area
+  // Filter venues - when showAllVenues is true, show ALL venues regardless of area
   const filteredVenues = useMemo(() => {
     if (!showAllVenues) return [];
+    // Show ALL venues when showAllVenues is true (no area filtering)
     return venues.filter((venue) => {
-      if (!venue.area) return false;
-      // Normalize area names for comparison
-      const venueArea = venue.area.toLowerCase();
-      const selectedAreaLower = selectedArea.toLowerCase();
-      return venueArea === selectedAreaLower || venueArea.includes(selectedAreaLower);
+      // Only filter out venues without coordinates
+      return venue.lat && venue.lng;
     });
-  }, [venues, selectedArea, showAllVenues]);
+  }, [venues, showAllVenues]);
 
   // Handle map click for submission mode
   const handleMapClick = useCallback((e: google.maps.MapMouseEvent) => {
