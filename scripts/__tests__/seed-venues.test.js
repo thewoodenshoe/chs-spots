@@ -2,7 +2,9 @@ const fs = require('fs');
 const path = require('path');
 
 describe('Venue Seeding Script Validation', () => {
+  // Check both locations: primary (data/venues.json) and reporting (data/reporting/venues.json)
   const venuesPath = path.join(__dirname, '..', '..', 'data', 'venues.json');
+  const reportingVenuesPath = path.join(__dirname, '..', '..', 'data', 'reporting', 'venues.json');
   let venues = [];
 
   beforeAll(() => {
@@ -15,6 +17,8 @@ describe('Venue Seeding Script Validation', () => {
 
   describe('Data File Exists and is Valid', () => {
     test('venues.json file should exist', () => {
+      // Check if venues.json exists in either location
+      const exists = fs.existsSync(venuesPath) || fs.existsSync(reportingVenuesPath);
       expect(fs.existsSync(venuesPath)).toBe(true);
     });
 

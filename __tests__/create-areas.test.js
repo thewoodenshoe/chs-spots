@@ -27,7 +27,7 @@ describe('create-areas.js script tests', () => {
     }
   });
   
-  describe('Test 1: Script runs and creates areas.json with 7 areas', () => {
+  describe('Test 1: Script runs and creates areas.json with 8 areas', () => {
     test('script executes without errors', () => {
       expect(() => {
         execSync(`node ${scriptPath}`, { stdio: 'pipe', encoding: 'utf8' });
@@ -39,11 +39,11 @@ describe('create-areas.js script tests', () => {
       expect(fs.existsSync(areasFilePath)).toBe(true);
     });
     
-    test('areas.json contains exactly 7 areas', () => {
+    test('areas.json contains exactly 8 areas', () => {
       execSync(`node ${scriptPath}`, { stdio: 'pipe', encoding: 'utf8' });
       const areasData = JSON.parse(fs.readFileSync(areasFilePath, 'utf8'));
       expect(Array.isArray(areasData)).toBe(true);
-      expect(areasData.length).toBe(7);
+      expect(areasData.length).toBe(8); // Updated: Now includes Isle of Palms
     });
   });
   
