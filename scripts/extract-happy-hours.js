@@ -13,24 +13,28 @@ const INCREMENTAL_HISTORY_DIR = path.join(GOLD_DIR, 'incremental-history');
 if (!fs.existsSync(GOLD_DIR)) fs.mkdirSync(GOLD_DIR, { recursive: true });
 if (!fs.existsSync(INCREMENTAL_HISTORY_DIR)) fs.mkdirSync(INCREMENTAL_HISTORY_DIR, { recursive: true });
 
-// Access your API key as an environment variable (see README)
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-if (!GEMINI_API_KEY) {
-    console.error('Error: GEMINI_API_KEY is not set in environment variables.');
-    process.exit(1);
-}
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
-
 async function extractHappyHours(isIncremental = false) {
+    // Access your API key as an environment variable (see README)
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+    if (!GEMINI_API_KEY) {
+        console.error('Error: GEMINI_API_KEY is not set in environment variables.');
+        process.exit(1);
+    }
+    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
     console.log(`Starting happy hour extraction (${isIncremental ? 'incremental' : 'bulk'})...`);
 
-    let venueFiles;
+    let venueFiles = [];
     try {
         venueFiles = fs.readdirSync(SILVER_MERGED_DIR).filter(file => file.endsWith('.json'));
     } catch (error) {
         console.error(`Error reading silver_merged directory: ${error.message}`);
         process.exit(1);
+    }
+    
+    if (venueFiles.length === 0) {
+        console.log('No venue files found in silver_merged/all/ directory.');
+        return;
     }
 
     if (isIncremental && !fs.existsSync(BULK_COMPLETE_FLAG)) {
@@ -152,13 +156,18 @@ async function extractHappyHours(isIncremental = false) {
     console.log('Happy hour extraction complete.');
 }
 
-// Main execution logic
-const isIncrementalMode = process.argv.includes('--incremental');
+// Export function for testing
+module.exports = extractHappyHours;
 
-if (isIncrementalMode) {
-    extractHappyHours(true);
-} else {
-    // Default to a full bulk automated run if no flags are provided
-    console.log('No mode specified. Defaulting to full automated extraction.');
-    extractHappyHours(false);
+// Main execution logic (only run if script is executed directly, not when imported)
+if (require.main === module) {
+    const isIncrementalMode = process.argv.includes('--incremental');
+
+    if (isIncrementalMode) {
+        extractHappyHours(true);
+    } else {
+        // Default to a full bulk automated run if no flags are provided
+        console.log('No mode specified. Defaulting to full automated extraction.');
+        extractHappyHours(false);
+    }
 }
