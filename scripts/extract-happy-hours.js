@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env.local') });
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const crypto = require('crypto');
 
@@ -19,10 +20,10 @@ if (!GEMINI_API_KEY) {
     process.exit(1);
 }
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
 
 async function extractHappyHours(isIncremental = false) {
-    console.log(`Starting happy hour extraction (${isIncremental ? 'incremental' : 'bulk'})...");
+    console.log(`Starting happy hour extraction (${isIncremental ? 'incremental' : 'bulk'})...`);
 
     let venueFiles;
     try {
@@ -51,7 +52,7 @@ async function extractHappyHours(isIncremental = false) {
             continue;
         }
 
-        const sourceHash = crypto.createHash('md5').update(JSON.stringify(venueData)).digest('hex');
+        const sourceHash = crypto.createHash('md5').update(JSON.stringify(venueData.pages)).digest('hex');
 
         // Check if already processed and no changes for incremental mode
         if (isIncremental && fs.existsSync(goldFilePath)) {
@@ -66,17 +67,17 @@ async function extractHappyHours(isIncremental = false) {
             }
         }
         
-        console.log(`Processing ${venueData.venueName} (${venueId})...");
+        console.log(`Processing ${venueData.venueName} (${venueId})...`);
 
         // Construct LLM Prompt
         const prompt = `
             You are an expert at extracting happy hour information from website content.
             Analyze the following text from a restaurant/bar website. Identify any happy hour specials,
-            including their times, days, and specific offers (e.g., \"$5 Beers\", \"Half-off appetizers\").
+            including their times, days, and specific offers (e.g., "$5 Beers", "Half-off appetizers").
             It is crucial to differentiate happy hours from regular business hours. Happy hours often
-            have specific time ranges (e.g., \"4pm-6pm\", \"Monday-Friday\") and mention \"specials\" or \"deals\".
-            Business hours typically cover longer periods (e.g., \"11am-10pm daily\").
-            Also, be aware of non-standard naming conventions for happy hour (e.g., \"Heavy's Hour\" instead of \"Happy Hour\").
+            have specific time ranges (e.g., "4pm-6pm", "Monday-Friday") and mention "specials" or "deals".
+            Business hours typically cover longer periods (e.g., "11am-10pm daily").
+            Also, be aware of non-standard naming conventions for happy hour (e.g., "Heavy's Hour" instead of "Happy Hour").
 
             If happy hour information is found, return a JSON object in the following format:
             {
@@ -156,13 +157,8 @@ const isIncrementalMode = process.argv.includes('--incremental');
 
 if (isIncrementalMode) {
     extractHappyHours(true);
-} else if (process.argv.includes('--bulk')) {
-    console.warn('Running in bulk processing mode. This is intended for manual LLM results.');
-    console.warn('For automated bulk LLM extraction, consider adapting this script or running incrementally after `bulk:prepare`.');
-    extractHappyHours(false); // Can be adapted to use LLM for bulk if needed
 } else {
-    // Default to incremental if no flags, but warn
-    console.warn('No mode specified. Defaulting to incremental extraction.');
-    console.warn('Use `--incremental` for automated daily updates or `--bulk` for a full re-extraction.');
-    extractHappyHours(true);
+    // Default to a full bulk automated run if no flags are provided
+    console.log('No mode specified. Defaulting to full automated extraction.');
+    extractHappyHours(false);
 }
