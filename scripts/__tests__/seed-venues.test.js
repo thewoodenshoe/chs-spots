@@ -451,7 +451,8 @@ describe('Venue Seeding Script Validation', () => {
         'James Island',
         "Sullivan's Island",
         'North Charleston',
-        'West Ashley'
+        'West Ashley',
+        'Isle of Palms'
       ];
       
       venues.forEach(venue => {
