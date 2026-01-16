@@ -35,7 +35,11 @@ function log(message) {
 // Paths
 const GOLD_DIR = path.join(__dirname, '../data/gold');
 const VENUES_PATH = path.join(__dirname, '../data/venues.json');
-const SPOTS_PATH = path.join(__dirname, '../data/spots.json');
+const AREAS_PATH = path.join(__dirname, '../data/areas.json');
+const REPORTING_DIR = path.join(__dirname, '../data/reporting');
+const SPOTS_PATH = path.join(REPORTING_DIR, 'spots.json');
+const REPORTING_VENUES_PATH = path.join(REPORTING_DIR, 'venues.json');
+const REPORTING_AREAS_PATH = path.join(REPORTING_DIR, 'areas.json');
 
 /**
  * Format happy hour description from gold data
@@ -163,7 +167,7 @@ function main() {
   // Check if gold directory exists
   if (!fs.existsSync(GOLD_DIR)) {
     log(`❌ Gold directory not found: ${GOLD_DIR}`);
-    log(`   Run process-bulk-llm-results.js first`);
+    log(`   Run extract-happy-hours.js first`);
     process.exit(1);
   }
   
@@ -172,6 +176,19 @@ function main() {
     log(`❌ Venues file not found: ${VENUES_PATH}`);
     log(`   Run seed-venues.js first`);
     process.exit(1);
+  }
+  
+  // Check if areas.json exists
+  if (!fs.existsSync(AREAS_PATH)) {
+    log(`❌ Areas file not found: ${AREAS_PATH}`);
+    log(`   Run create-areas.js first`);
+    process.exit(1);
+  }
+  
+  // Ensure reporting directory exists
+  if (!fs.existsSync(REPORTING_DIR)) {
+    fs.mkdirSync(REPORTING_DIR, { recursive: true });
+    log(`📁 Created reporting directory: ${REPORTING_DIR}\n`);
   }
   
   // Load venues

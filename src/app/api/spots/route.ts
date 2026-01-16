@@ -3,8 +3,9 @@ import fs from 'fs';
 import path from 'path';
 
 export async function GET() {
-  const spotsPath = path.join(process.cwd(), 'data', 'spots.json');
-  const venuesPath = path.join(process.cwd(), 'data', 'venues.json');
+  // Read from reporting folder (contains only found:true spots)
+  const spotsPath = path.join(process.cwd(), 'data', 'reporting', 'spots.json');
+  const venuesPath = path.join(process.cwd(), 'data', 'reporting', 'venues.json');
   
   // Handle missing spots.json file gracefully - return empty array (no spots is valid, not an error)
   let spots: any[] = [];

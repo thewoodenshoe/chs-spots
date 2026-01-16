@@ -117,7 +117,8 @@ const areas = [
     description: "Includes Clements Ferry Road and northern extensions",
     center: { lat: 32.845, lng: -79.908 },
     radiusMeters: 8000,
-    bounds: { south: 32.82, west: -79.96, north: 32.89, east: -79.88 }
+    bounds: { south: 32.82, west: -79.96, north: 32.89, east: -79.88 },
+    zipCodes: ["29492"]
   },
   {
     name: "Mount Pleasant",
@@ -125,7 +126,8 @@ const areas = [
     description: "Broad coverage including Shem Creek",
     center: { lat: 32.795, lng: -79.875 },
     radiusMeters: 12000,
-    bounds: { south: 32.75, west: -80.00, north: 32.90, east: -79.80 }
+    bounds: { south: 32.75, west: -80.00, north: 32.90, east: -79.80 },
+    zipCodes: ["29464", "29466"]
   },
   {
     name: "Downtown Charleston",
@@ -133,7 +135,8 @@ const areas = [
     description: "Historic downtown and surrounding neighborhoods",
     center: { lat: 32.776, lng: -79.931 },
     radiusMeters: 5000,
-    bounds: { south: 32.76, west: -79.96, north: 32.79, east: -79.91 }
+    bounds: { south: 32.76, west: -79.96, north: 32.79, east: -79.91 },
+    zipCodes: ["29401", "29403"]
   },
   {
     name: "Sullivan's Island",
@@ -141,7 +144,8 @@ const areas = [
     description: "Beach community and restaurants",
     center: { lat: 32.760, lng: -79.840 },
     radiusMeters: 3000,
-    bounds: { south: 32.75, west: -79.87, north: 32.77, east: -79.83 }
+    bounds: { south: 32.75, west: -79.87, north: 32.77, east: -79.83 },
+    zipCodes: ["29482"]
   },
   {
     name: "North Charleston",
@@ -149,7 +153,8 @@ const areas = [
     description: "North Charleston area including Tanger Outlets and airport area",
     center: { lat: 32.888, lng: -80.006 },
     radiusMeters: 10000,
-    bounds: { south: 32.82, west: -80.10, north: 32.95, east: -79.90 }
+    bounds: { south: 32.82, west: -80.10, north: 32.95, east: -79.90 },
+    zipCodes: ["29405", "29418", "29420"]
   },
   {
     name: "West Ashley",
@@ -157,7 +162,8 @@ const areas = [
     description: "West Ashley area across the Ashley River",
     center: { lat: 32.785, lng: -80.040 },
     radiusMeters: 8000,
-    bounds: { south: 32.72, west: -80.10, north: 32.85, east: -79.95 }
+    bounds: { south: 32.72, west: -80.10, north: 32.85, east: -79.95 },
+    zipCodes: ["29407", "29414", "29415"]
   },
   {
     name: "James Island",
@@ -165,7 +171,17 @@ const areas = [
     description: "James Island including western coverage like The Harlow",
     center: { lat: 32.737, lng: -79.965 },
     radiusMeters: 10000,
-    bounds: { south: 32.7, west: -79.98, north: 32.75, east: -79.9 }
+    bounds: { south: 32.7, west: -79.98, north: 32.75, east: -79.9 },
+    zipCodes: ["29412"]
+  },
+  {
+    name: "Isle of Palms",
+    displayName: "Isle of Palms",
+    description: "Isle of Palms beach community and restaurants",
+    center: { lat: 32.786, lng: -79.795 },
+    radiusMeters: 5000,
+    bounds: { south: 32.77, west: -79.82, north: 32.80, east: -79.77 },
+    zipCodes: ["29451"]
   }
 ];
 

@@ -70,17 +70,36 @@ describe('seed-incremental.js', () => {
 
   describe('File structure and data loading', () => {
     test('should load areas.json correctly', () => {
-      // Write mock areas
-      fs.writeFileSync(areasFile, JSON.stringify(mockAreas), 'utf8');
+      // Backup existing areas.json if it exists
+      const areasBackup = areasFile + '.backup.test';
+      let hasBackup = false;
+      if (fs.existsSync(areasFile)) {
+        fs.copyFileSync(areasFile, areasBackup);
+        hasBackup = true;
+      }
       
-      const areasContent = fs.readFileSync(areasFile, 'utf8');
-      const areas = JSON.parse(areasContent);
-      
-      expect(Array.isArray(areas)).toBe(true);
-      expect(areas.length).toBe(2);
-      expect(areas[0]).toHaveProperty('name');
-      expect(areas[0]).toHaveProperty('center');
-      expect(areas[0]).toHaveProperty('radiusMeters');
+      try {
+        // Write mock areas (only for test)
+        fs.writeFileSync(areasFile, JSON.stringify(mockAreas), 'utf8');
+        
+        const areasContent = fs.readFileSync(areasFile, 'utf8');
+        const areas = JSON.parse(areasContent);
+        
+        expect(Array.isArray(areas)).toBe(true);
+        expect(areas.length).toBe(2);
+        expect(areas[0]).toHaveProperty('name');
+        expect(areas[0]).toHaveProperty('center');
+        expect(areas[0]).toHaveProperty('radiusMeters');
+      } finally {
+        // Restore original areas.json
+        if (hasBackup && fs.existsSync(areasBackup)) {
+          fs.copyFileSync(areasBackup, areasFile);
+          fs.unlinkSync(areasBackup);
+        } else if (!hasBackup && fs.existsSync(areasFile)) {
+          // If no backup existed and we created it, remove the test file
+          fs.unlinkSync(areasFile);
+        }
+      }
     });
 
     test('should load existing venues.json if exists', () => {

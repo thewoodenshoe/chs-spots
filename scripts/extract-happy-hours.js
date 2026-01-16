@@ -140,21 +140,25 @@ async function extractHappyHours(isIncremental = false) {
             `;
 
         let result;
-        try {
-            const chat = model.startChat({
-                history: [
-                    {
-                        role: "user",
-                        parts: [{ text: prompt }]
-                    }
-                ],
-                generationConfig: {
-                    maxOutputTokens: 2048,
-                },
-            });
+        let retries = 3;
+        let delay = 1000; // Start with 1 second delay
+        
+        while (retries > 0) {
+            try {
+                const chat = model.startChat({
+                    history: [
+                        {
+                            role: "user",
+                            parts: [{ text: prompt }]
+                        }
+                    ],
+                    generationConfig: {
+                        maxOutputTokens: 2048,
+                    },
+                });
 
-            const response = await chat.sendMessage(prompt);
-            const text = response.response.text();
+                const response = await chat.sendMessage(prompt);
+                const text = response.response.text();
             
             // Attempt to parse JSON, sometimes LLMs wrap it in markdown
             const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/);
