@@ -75,28 +75,61 @@ async function extractHappyHours(isIncremental = false) {
 
         // Construct LLM Prompt
         const prompt = `
-            You are an expert at extracting happy hour information from website content.
-            Analyze the following text from a restaurant/bar website. Identify any happy hour specials,
-            including their times, days, and specific offers (e.g., "$5 Beers", "Half-off appetizers").
-            It is crucial to differentiate happy hours from regular business hours. Happy hours often
-            have specific time ranges (e.g., "4pm-6pm", "Monday-Friday") and mention "specials" or "deals".
-            Business hours typically cover longer periods (e.g., "11am-10pm daily").
-            Also, be aware of non-standard naming conventions for happy hour (e.g., "Heavy's Hour" instead of "Happy Hour").
+            You are an expert analyst and creative detective specializing in uncovering hidden or creatively named happy hour promotions on restaurant and bar websites. Your job is to be **extremely generous and open-minded**: capture **every possible** time-limited drink/food discount, deal, or special — even if it's not called "happy hour". Err on the side of inclusion with low confidence rather than missing something.
 
-            If happy hour information is found, return a JSON object in the following format:
+            The input is raw HTML text (merged from homepage + all submenus for one venue). Ignore garbage (scripts, navigation, footers, unrelated ads, reviews, cookie notices) and focus on menu, specials, bar, drinks, or promotion sections.
+
+            Look for these patterns (be very creative and human-like):
+            - Any time window + implied benefit/discount (e.g., "4-7pm", "5-7", "late afternoon", "early evening", "after work", "sunset", "twilight", "happy vibes")
+            - Creative or coded names: "jolly hours", "heavy hour", "sunset specials", "after-work deals", "bar hour", "happy vibes hour", "discount hour", "deal time"
+            - Buy-more-pay-less or combo deals during a period (e.g., "between 5-7 buy 3 pay 2", "2-for-1 from 4-6", "free appetizer with drink 5-7pm")
+            - Dollar amounts, percentages off, "half off", "2-for-1", "dollar oysters", "cheap drinks", "pint specials" tied to a time
+            - "Specials", "deals", "offers", "promotions", "bar bites" with time range
+            - Typical happy hour windows: late afternoon to early night (3pm-8pm range, especially 4-7, 5-7, 3-6, etc.)
+
+            Rules (do NOT violate):
+            1. Never include regular business hours (e.g., "open 11am-10pm") unless explicitly tied to discounts/specials.
+            2. Ignore unrelated "happy" words (happy customers, we're happy to serve, happy birthday, etc.).
+            3. Ignore user reviews, testimonials, blog posts — only use the restaurant's own promotion text.
+            4. Standardize days: "Monday-Friday", "Daily", "Every day", "Weekdays", "Tue-Thu", etc.
+            5. If multiple promotions (early + late night), return as array in happyHour.entries.
+            6. Confidence score (0–100):
+               - 90–100: Explicit "happy hour" + clear days/times/specials
+               - 70–89: Strong match (clear time + discount, no "happy hour" word)
+               - 40–69: Partial/inferred (time range + some deal language)
+               - 10–39: Very weak/creative/ambiguous (e.g., "jolly hours", "sunset deals")
+               - 0–9: Almost certainly not — but still include if any hint
+            7. For every confidence < 80, add a clear confidence_score_rationale explaining why the score is low.
+
+            Output format (single JSON object for this venue):
             {
-              "found": true,
-              "times": "e.g., 4pm-7pm",
-              "days": "e.g., Monday-Friday",
-              "specials": ["e.g., $5 draft beers", "e.g., half-price appetizers"],
-              "source": "URL where happy hour was found, or homepage if general",
-              "confidence": 1 to 100 (your confidence in the extraction)
+              "venueId": "${venueId}",
+              "venueName": "${venueData.venueName}",
+              "happyHour": {
+                "found": true,
+                "entries": [
+                  {
+                    "days": "Monday-Friday",
+                    "times": "4pm-7pm",
+                    "specials": ["$5 beers", "Half off appetizers"],
+                    "source": "https://example.com/menu",
+                    "confidence": 85,
+                    "confidence_score_rationale": "Explicit 'happy hour' + times + specials — high clarity"
+                  }
+                ]
+              }
             }
-            If no happy hour information is clearly identifiable, return:
+            OR if no happy hour found:
             {
-              "found": false,
-              "confidence": 1 to 100 (your confidence that no happy hour was found)
+              "venueId": "${venueId}",
+              "venueName": "${venueData.venueName}",
+              "happyHour": {
+                "found": false,
+                "reason": "No time-limited promotion or discount found - only business hours listed"
+              }
             }
+
+            Only include venues with at least one possible match (found: true), but low confidence is fine and encouraged for edge cases.
 
             Here is the website content for ${venueData.venueName} from various pages:
             ---
@@ -126,12 +159,50 @@ async function extractHappyHours(isIncremental = false) {
             if (jsonMatch && jsonMatch[1]) {
                 result = JSON.parse(jsonMatch[1]);
             } else {
-                result = JSON.parse(text); // Try parsing directly
+                // Try to extract JSON from the response text
+                const jsonStart = text.indexOf('{');
+                const jsonEnd = text.lastIndexOf('}') + 1;
+                if (jsonStart !== -1 && jsonEnd > jsonStart) {
+                    result = JSON.parse(text.substring(jsonStart, jsonEnd));
+                } else {
+                    result = JSON.parse(text); // Try parsing directly
+                }
+            }
+
+            // Handle new format: result may have happyHour property with entries
+            // Or it may be the old format with found, times, days, etc. at top level
+            if (result.happyHour) {
+                // New format - use as is
+                result = result.happyHour;
+            } else if (result.found !== undefined) {
+                // Old format - convert to new format with entries array
+                if (result.found) {
+                    result = {
+                        found: true,
+                        entries: [{
+                            days: result.days || "Unknown",
+                            times: result.times || "Unknown",
+                            specials: result.specials || [],
+                            source: result.source || venueData.pages[0]?.url || "Unknown",
+                            confidence: result.confidence || 50,
+                            confidence_score_rationale: result.confidence < 80 ? "Converted from old format" : undefined
+                        }]
+                    };
+                } else {
+                    result = {
+                        found: false,
+                        reason: result.reason || "No happy hour found"
+                    };
+                }
             }
 
         } catch (error) {
             console.error(`Error calling Gemini API for ${venueData.venueName} (${venueId}): ${error.message}`);
-            result = { found: false, confidence: 0, error: error.message };
+            result = { 
+                found: false, 
+                reason: `Error processing: ${error.message}`,
+                error: error.message 
+            };
         }
 
         // Add metadata to the gold record
