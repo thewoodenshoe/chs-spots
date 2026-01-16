@@ -67,12 +67,8 @@ jest.mock('@google/generative-ai', () => {
                                 response: {
                                     text: () => `
 { 
-                                        "found": true,
-                                        "times": "5pm-7pm",
-                                        "days": "daily",
-                                        "specials": ["discounted drinks"],
-                                        "source": "https://example.com/specials",
-                                        "confidence": 95
+                                        "found": false,
+                                        "confidence": 80
                                     }
 `
                                 }
