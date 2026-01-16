@@ -62,7 +62,8 @@ jest.mock('@google/generative-ai', () => {
                                 }
                             });
                         } else if (prompt.includes("Opening hours: 9am-10pm daily") || 
-                                   (prompt.includes("Our full menu") && !prompt.includes("Happy Hour"))) {
+                                   prompt.includes("Our full menu") ||
+                                   prompt.includes("We open at 8am and close at midnight")) {
                             return Promise.resolve({
                                 response: {
                                     text: () => `
