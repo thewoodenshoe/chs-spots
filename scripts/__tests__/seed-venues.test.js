@@ -8,8 +8,11 @@ describe('Venue Seeding Script Validation', () => {
   let venues = [];
 
   beforeAll(() => {
-    // Load venues.json if it exists
-    if (fs.existsSync(venuesPath)) {
+    // Load venues.json from whichever location exists (prefer reporting, fallback to data)
+    if (fs.existsSync(reportingVenuesPath)) {
+      const data = fs.readFileSync(reportingVenuesPath, 'utf8');
+      venues = JSON.parse(data);
+    } else if (fs.existsSync(venuesPath)) {
       const data = fs.readFileSync(venuesPath, 'utf8');
       venues = JSON.parse(data);
     }
@@ -19,7 +22,7 @@ describe('Venue Seeding Script Validation', () => {
     test('venues.json file should exist', () => {
       // Check if venues.json exists in either location
       const exists = fs.existsSync(venuesPath) || fs.existsSync(reportingVenuesPath);
-      expect(fs.existsSync(venuesPath)).toBe(true);
+      expect(exists).toBe(true);
     });
 
     test('venues.json should be valid JSON', () => {
