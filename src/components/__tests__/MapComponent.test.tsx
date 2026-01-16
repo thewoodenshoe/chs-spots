@@ -99,7 +99,13 @@ jest.mock('@/contexts/VenuesContext', () => {
   // Create a mock provider that reads from global on each render
   const MockVenuesProvider = ({ children }: { children: React.ReactNode }) => {
     // Read directly from global on each render to get latest value
-    const contextValue = (global as any).__mockVenuesContextValue__ || { venues: [], loading: false, refreshVenues: jest.fn() };
+    // Create a new object to ensure React sees it as a new value
+    const globalValue = (global as any).__mockVenuesContextValue__ || { venues: [], loading: false, refreshVenues: jest.fn() };
+    const contextValue = {
+      venues: globalValue.venues || [],
+      loading: globalValue.loading || false,
+      refreshVenues: globalValue.refreshVenues || jest.fn(),
+    };
     return React.createElement(TestVenuesContext.Provider, { value: contextValue }, children);
   };
   
