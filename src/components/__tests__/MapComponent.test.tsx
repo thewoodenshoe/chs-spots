@@ -84,22 +84,44 @@ jest.mock('@/contexts/SpotsContext', () => ({
   useSpots: jest.fn(),
 }));
 
-// Mock useVenues hook
-jest.mock('@/contexts/VenuesContext', () => ({
-  ...jest.requireActual('@/contexts/VenuesContext'),
-  useVenues: jest.fn(),
-}));
+// Mock useVenues hook - create our own context for testing
+jest.mock('@/contexts/VenuesContext', () => {
+  const React = require('react');
+  const mockUseVenues = jest.fn();
+  
+  // Create a test context
+  const TestVenuesContext = React.createContext({ venues: [], loading: false, refreshVenues: jest.fn() });
+  
+  // Create a mock provider that uses mocked values
+  const MockVenuesProvider = ({ children }: { children: React.ReactNode }) => {
+    // Get the current mock return value
+    const mockReturn = mockUseVenues() || { venues: [], loading: false, refreshVenues: jest.fn() };
+    return React.createElement(TestVenuesContext.Provider, { value: mockReturn }, children);
+  };
+  
+  // Mock hook that uses the context
+  const mockUseVenuesHook = jest.fn(() => {
+    // In real component, this would use useContext, but for tests we use the mock return value
+    return mockUseVenues() || { venues: [], loading: false, refreshVenues: jest.fn() };
+  });
+  
+  return {
+    useVenues: mockUseVenuesHook,
+    VenuesProvider: MockVenuesProvider,
+    Venue: {} as any, // Type export
+  };
+});
 
 const { useSpots } = require('@/contexts/SpotsContext');
-const { useVenues } = require('@/contexts/VenuesContext');
+const { useVenues, VenuesProvider } = require('@/contexts/VenuesContext');
 
 // Mock environment variable
 const originalEnv = process.env;
-beforeEach(() => {
-  process.env = {
-    ...originalEnv,
-    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: 'test-api-key',
-  };
+  beforeEach(() => {
+    process.env = {
+      ...originalEnv,
+      NEXT_PUBLIC_GOOGLE_MAPS_KEY: 'test-api-key', // MapComponent uses NEXT_PUBLIC_GOOGLE_MAPS_KEY
+    };
   // Reset mocks before each test
   jest.clearAllMocks();
   // Set default return values
@@ -147,19 +169,18 @@ describe('MapComponent', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     useSpots.mockReturnValue({ spots: mockSpots, loading: false });
-    useVenues.mockReturnValue({ venues: mockVenues, loading: false, refreshVenues: jest.fn() });
-    // Mock fetch for VenuesProvider (if it tries to fetch)
-    if (global.fetch) {
-      (global.fetch as jest.Mock) = jest.fn().mockResolvedValue({
-        ok: true,
-        json: async () => mockVenues,
-      });
-    } else {
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        json: async () => mockVenues,
-      }) as jest.Mock;
+    // Set up useVenues mock implementation
+    const mockContextValue = { venues: mockVenues, loading: false, refreshVenues: jest.fn() };
+    useVenues.mockReturnValue(mockContextValue);
+    // Also set mock implementation if the hook supports it
+    if ((useVenues as any).setMockImplementation) {
+      (useVenues as any).setMockImplementation(() => mockContextValue);
     }
+    // Mock fetch for VenuesProvider (if it tries to fetch)
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockVenues,
+    }) as jest.Mock;
   });
 
   it('renders map without errors', () => {
