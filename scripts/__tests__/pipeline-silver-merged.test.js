@@ -16,17 +16,29 @@ const TEST_SILVER_MERGED_DIR = path.join(TEST_DIR, 'silver_merged');
 function cleanTestDir() {
   if (fs.existsSync(TEST_DIR)) {
     // Remove all contents first to avoid ENOTEMPTY errors
-    const files = fs.readdirSync(TEST_DIR);
-    for (const file of files) {
-      const filePath = path.join(TEST_DIR, file);
-      const stat = fs.statSync(filePath);
-      if (stat.isDirectory()) {
-        fs.rmSync(filePath, { recursive: true, force: true });
-      } else {
-        fs.unlinkSync(filePath);
+    try {
+      const files = fs.readdirSync(TEST_DIR);
+      for (const file of files) {
+        const filePath = path.join(TEST_DIR, file);
+        try {
+          const stat = fs.statSync(filePath);
+          if (stat.isDirectory()) {
+            fs.rmSync(filePath, { recursive: true, force: true });
+          } else {
+            fs.unlinkSync(filePath);
+          }
+        } catch (e) {
+          // Ignore individual file errors
+        }
       }
+    } catch (e) {
+      // If readdir fails, try direct removal
     }
-    fs.rmSync(TEST_DIR, { recursive: true, force: true });
+    try {
+      fs.rmSync(TEST_DIR, { recursive: true, force: true });
+    } catch (e) {
+      // Ignore errors during cleanup
+    }
   }
   fs.mkdirSync(TEST_DIR, { recursive: true });
   fs.mkdirSync(TEST_RAW_DIR, { recursive: true });

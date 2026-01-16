@@ -21,17 +21,29 @@ const TEST_SILVER_MERGED_ALL_DIR = path.join(TEST_DIR, 'silver_merged/all');
 function cleanTestDir() {
   if (fs.existsSync(TEST_DIR)) {
     // Remove all contents first to avoid ENOTEMPTY errors
-    const files = fs.readdirSync(TEST_DIR);
-    for (const file of files) {
-      const filePath = path.join(TEST_DIR, file);
-      const stat = fs.statSync(filePath);
-      if (stat.isDirectory()) {
-        fs.rmSync(filePath, { recursive: true, force: true });
-      } else {
-        fs.unlinkSync(filePath);
+    try {
+      const files = fs.readdirSync(TEST_DIR);
+      for (const file of files) {
+        const filePath = path.join(TEST_DIR, file);
+        try {
+          const stat = fs.statSync(filePath);
+          if (stat.isDirectory()) {
+            fs.rmSync(filePath, { recursive: true, force: true });
+          } else {
+            fs.unlinkSync(filePath);
+          }
+        } catch (e) {
+          // Ignore individual file errors
+        }
       }
+    } catch (e) {
+      // If readdir fails, try direct removal
     }
-    fs.rmSync(TEST_DIR, { recursive: true, force: true });
+    try {
+      fs.rmSync(TEST_DIR, { recursive: true, force: true });
+    } catch (e) {
+      // Ignore errors during cleanup
+    }
   }
   fs.mkdirSync(TEST_DIR, { recursive: true });
   fs.mkdirSync(TEST_GOLD_DIR, { recursive: true });
@@ -74,9 +86,7 @@ function processBulkResults(bulkResultsArray, goldDir = TEST_GOLD_DIR, silverMer
   const bulkCompletePath = path.join(goldDir, '.bulk-complete');
   
   // Ensure gold directory exists
-  if (!fs.existsSync(goldDir)) {
-    fs.mkdirSync(goldDir, { recursive: true });
-  }
+  fs.mkdirSync(goldDir, { recursive: true });
   
   // Check if already processed
   if (fs.existsSync(bulkCompletePath)) {
@@ -174,15 +184,19 @@ describe('Process Bulk LLM Results', () => {
       'utf8'
     );
     
-    // Create bulk results (array format)
+    // Create bulk results (array format) - using new entries format
     const bulkResults = [
       {
         venueId: venueId1,
         venueName: 'Test Venue 1',
         happyHour: {
           found: true,
-          times: '4pm-7pm',
-          days: 'Monday-Friday'
+          entries: [{
+            days: 'Monday-Friday',
+            times: '4pm-7pm',
+            specials: ['$5 beers'],
+            confidence: 90
+          }]
         }
       },
       {
@@ -190,8 +204,12 @@ describe('Process Bulk LLM Results', () => {
         venueName: 'Test Venue 2',
         happyHour: {
           found: true,
-          times: '5pm-8pm',
-          days: 'Daily'
+          entries: [{
+            days: 'Daily',
+            times: '5pm-8pm',
+            specials: ['Half off appetizers'],
+            confidence: 85
+          }]
         }
       }
     ];
@@ -217,8 +235,10 @@ describe('Process Bulk LLM Results', () => {
     expect(goldData1.venueName).toBe('Test Venue 1');
     expect(goldData1.extractionMethod).toBe('llm-bulk');
     expect(goldData1.happyHour.found).toBe(true);
-    expect(goldData1.happyHour.times).toBe('4pm-7pm');
-    expect(goldData1.happyHour.days).toBe('Monday-Friday');
+    // Check new entries format
+    expect(goldData1.happyHour.entries).toBeDefined();
+    expect(goldData1.happyHour.entries[0].times).toBe('4pm-7pm');
+    expect(goldData1.happyHour.entries[0].days).toBe('Monday-Friday');
     expect(goldData1.sourceHash).toBeTruthy();
     expect(goldData1.needsLLM).toBe(false);
     

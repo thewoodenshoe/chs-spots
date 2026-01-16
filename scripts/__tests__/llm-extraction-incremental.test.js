@@ -15,17 +15,29 @@ const TEST_GOLD_DIR = path.join(TEST_DIR, 'gold');
 function cleanTestDir() {
   if (fs.existsSync(TEST_DIR)) {
     // Remove all contents first to avoid ENOTEMPTY errors
-    const files = fs.readdirSync(TEST_DIR);
-    for (const file of files) {
-      const filePath = path.join(TEST_DIR, file);
-      const stat = fs.statSync(filePath);
-      if (stat.isDirectory()) {
-        fs.rmSync(filePath, { recursive: true, force: true });
-      } else {
-        fs.unlinkSync(filePath);
+    try {
+      const files = fs.readdirSync(TEST_DIR);
+      for (const file of files) {
+        const filePath = path.join(TEST_DIR, file);
+        try {
+          const stat = fs.statSync(filePath);
+          if (stat.isDirectory()) {
+            fs.rmSync(filePath, { recursive: true, force: true });
+          } else {
+            fs.unlinkSync(filePath);
+          }
+        } catch (e) {
+          // Ignore individual file errors
+        }
       }
+    } catch (e) {
+      // If readdir fails, try direct removal
     }
-    fs.rmSync(TEST_DIR, { recursive: true, force: true });
+    try {
+      fs.rmSync(TEST_DIR, { recursive: true, force: true });
+    } catch (e) {
+      // Ignore errors during cleanup
+    }
   }
   fs.mkdirSync(TEST_DIR, { recursive: true });
   fs.mkdirSync(TEST_SILVER_MERGED_ALL_DIR, { recursive: true });
@@ -76,8 +88,12 @@ describe('LLM Extraction - Incremental Detection', () => {
     expect(status).toBe('new');
   });
   
-  test('Should detect changed venue (silver file newer than gold)', () => {
+  test('Should detect changed venue (silver file newer than gold)', async () => {
     const venueId = 'ChIJTest123';
+    
+    // Ensure directories exist
+    fs.mkdirSync(TEST_GOLD_DIR, { recursive: true });
+    fs.mkdirSync(TEST_SILVER_MERGED_ALL_DIR, { recursive: true });
     
     // Create gold file first (older)
     const goldPath = path.join(TEST_GOLD_DIR, `${venueId}.json`);
@@ -89,7 +105,8 @@ describe('LLM Extraction - Incremental Detection', () => {
     };
     fs.writeFileSync(goldPath, JSON.stringify(goldData, null, 2), 'utf8');
     
-    // Wait a moment
+    // Wait a moment to ensure timestamp difference
+    await new Promise(resolve => setTimeout(resolve, 200));
     const oldTime = fs.statSync(goldPath).mtime;
     
     // Update silver_merged file (newer)
@@ -97,9 +114,10 @@ describe('LLM Extraction - Incremental Detection', () => {
     const silverData = { venueId, venueName: 'Test Venue Updated' };
     fs.writeFileSync(silverPath, JSON.stringify(silverData, null, 2), 'utf8');
     
-    // Ensure silver is newer
+    // Ensure silver is newer by waiting a bit more
+    await new Promise(resolve => setTimeout(resolve, 200));
     const silverStats = fs.statSync(silverPath);
-    expect(silverStats.mtime.getTime()).toBeGreaterThanOrEqual(oldTime.getTime());
+    expect(silverStats.mtime.getTime()).toBeGreaterThan(oldTime.getTime());
     
     const status = shouldExtract(silverPath, goldPath);
     expect(status).toBe('changed');
@@ -146,8 +164,12 @@ describe('LLM Extraction - Incremental Detection', () => {
     expect(canRunIncremental).toBe(true);
   });
   
-  test('Complete flow: Bulk → Incremental (Paul Stewart scenario)', () => {
+  test('Complete flow: Bulk → Incremental (Paul Stewart scenario)', async () => {
     const venueId = 'ChIJTestPaulStewart';
+    
+    // Ensure directories exist
+    fs.mkdirSync(TEST_GOLD_DIR, { recursive: true });
+    fs.mkdirSync(TEST_SILVER_MERGED_ALL_DIR, { recursive: true });
     
     // === BULK PHASE ===
     // Venue in silver_merged/all (Day 1 - no happy hour)

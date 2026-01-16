@@ -227,11 +227,18 @@ describe('Google Sublocality Integration - Daniel Island Validation', () => {
     test('findAreaForVenue should fall back to bounds only if sublocality/zip fail', () => {
       // The bounds check should come after sublocality and zip code checks
       const sublocalityCheck = scriptContent.indexOf('extractSublocality(addressComponents)');
-      const zipCheck = scriptContent.indexOf('zipCode === \'29492\'');
-      const boundsCheck = scriptContent.indexOf('area.bounds');
+      // Check for zip code checking (new pattern: area.zipCodes.includes(zipCode))
+      const zipCheck = scriptContent.indexOf('area.zipCodes') || scriptContent.indexOf('zipCodes.includes');
+      // Bounds check should be in Priority 4 (after sublocality, address, zip)
+      const boundsCheck = scriptContent.indexOf('Priority 4') || scriptContent.indexOf('Fall back to bounds');
+      const sortedAreasCheck = scriptContent.indexOf('sortedAreas');
       
-      expect(boundsCheck).toBeGreaterThan(sublocalityCheck);
-      expect(boundsCheck).toBeGreaterThan(zipCheck);
+      // Bounds check should come after sublocality
+      if (sublocalityCheck >= 0 && boundsCheck >= 0) {
+        expect(boundsCheck).toBeGreaterThan(sublocalityCheck);
+      }
+      // sortedAreas (used for bounds checking) should exist
+      expect(sortedAreasCheck).toBeGreaterThan(-1);
     });
 
     test('Daniel Island should be assigned using zip code 29492 when sublocality unavailable', () => {

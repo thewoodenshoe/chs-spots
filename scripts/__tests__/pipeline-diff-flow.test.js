@@ -31,18 +31,30 @@ const VENUE = {
 
 function cleanTestDir() {
   if (fs.existsSync(TEST_DIR)) {
-    // Use rimraf pattern: remove all contents first
-    const files = fs.readdirSync(TEST_DIR);
-    for (const file of files) {
-      const filePath = path.join(TEST_DIR, file);
-      const stat = fs.statSync(filePath);
-      if (stat.isDirectory()) {
-        fs.rmSync(filePath, { recursive: true, force: true });
-      } else {
-        fs.unlinkSync(filePath);
+    // Remove all contents first to avoid ENOTEMPTY errors
+    try {
+      const files = fs.readdirSync(TEST_DIR);
+      for (const file of files) {
+        const filePath = path.join(TEST_DIR, file);
+        try {
+          const stat = fs.statSync(filePath);
+          if (stat.isDirectory()) {
+            fs.rmSync(filePath, { recursive: true, force: true });
+          } else {
+            fs.unlinkSync(filePath);
+          }
+        } catch (e) {
+          // Ignore individual file errors
+        }
       }
+    } catch (e) {
+      // If readdir fails, try direct removal
     }
-    fs.rmSync(TEST_DIR, { recursive: true, force: true });
+    try {
+      fs.rmSync(TEST_DIR, { recursive: true, force: true });
+    } catch (e) {
+      // Ignore errors during cleanup
+    }
   }
   fs.mkdirSync(TEST_DIR, { recursive: true });
   fs.mkdirSync(TEST_RAW_ALL_DIR, { recursive: true });
@@ -210,7 +222,7 @@ describe('Pipeline Diff Flow - Paul Stewart\'s Tavern', () => {
       pages: [{ html: day1Html }]
     };
     
-    const day1MergedPath = path.join(TEST_SILVER_MERGED_DIR, `${VENUE_ID}.json`);
+    const day1MergedPath = path.join(TEST_SILVER_MERGED_ALL_DIR, `${VENUE_ID}.json`);
     fs.writeFileSync(day1MergedPath, JSON.stringify(day1Merged, null, 2), 'utf8');
     
     const day1HasHappyHour = day1Merged.pages.some(page => containsHappyHour(page.html));

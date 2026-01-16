@@ -225,7 +225,7 @@ describe('SubmissionModal', () => {
   describe('Form Submission', () => {
     it('should not submit if pinLocation is not set', async () => {
       const onSubmit = jest.fn();
-      window.alert = jest.fn();
+      const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
       render(<SubmissionModal {...defaultProps} pinLocation={null} onSubmit={onSubmit} />);
       
       const titleInput = screen.getByPlaceholderText(/Best Sunset View/i);
@@ -236,13 +236,17 @@ describe('SubmissionModal', () => {
         fireEvent.click(submitButton);
       });
 
-      expect(onSubmit).not.toHaveBeenCalled();
-      expect(window.alert).toHaveBeenCalledWith('Please drop a pin on the map first');
+      await waitFor(() => {
+        expect(onSubmit).not.toHaveBeenCalled();
+        expect(alertSpy).toHaveBeenCalledWith('Please drop a pin on the map first');
+      });
+      
+      alertSpy.mockRestore();
     });
 
     it('should not submit if title is empty', async () => {
       const onSubmit = jest.fn();
-      window.alert = jest.fn();
+      const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
       render(<SubmissionModal {...defaultProps} onSubmit={onSubmit} />);
       
       const submitButton = screen.getByRole('button', { name: /submit|save|add/i });
@@ -250,8 +254,12 @@ describe('SubmissionModal', () => {
         fireEvent.click(submitButton);
       });
 
-      expect(onSubmit).not.toHaveBeenCalled();
-      expect(window.alert).toHaveBeenCalledWith('Please enter a title');
+      await waitFor(() => {
+        expect(onSubmit).not.toHaveBeenCalled();
+        expect(alertSpy).toHaveBeenCalledWith('Please enter a title');
+      });
+      
+      alertSpy.mockRestore();
     });
 
     it('should submit with correct data', async () => {

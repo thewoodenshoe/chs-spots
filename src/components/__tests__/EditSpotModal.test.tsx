@@ -51,6 +51,8 @@ describe('EditSpotModal', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (global.confirm as jest.Mock).mockReturnValue(true);
+    // Mock window.alert globally for all tests
+    window.alert = jest.fn();
   });
 
   describe('Rendering', () => {
@@ -203,7 +205,7 @@ describe('EditSpotModal', () => {
   describe('Form Submission', () => {
     it('should not submit if pinLocation is not set', async () => {
       const onSubmit = jest.fn();
-      window.alert = jest.fn();
+      const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
       render(<EditSpotModal {...defaultProps} pinLocation={null} onSubmit={onSubmit} />);
       
       const submitButton = screen.getByRole('button', { name: /submit|save|update/i });
@@ -211,8 +213,12 @@ describe('EditSpotModal', () => {
         fireEvent.click(submitButton);
       });
 
-      expect(onSubmit).not.toHaveBeenCalled();
-      expect(window.alert).toHaveBeenCalledWith('Please ensure location is set');
+      await waitFor(() => {
+        expect(onSubmit).not.toHaveBeenCalled();
+        expect(alertSpy).toHaveBeenCalledWith('Please ensure location is set');
+      });
+      
+      alertSpy.mockRestore();
     });
 
     it('should not submit if title is empty', async () => {

@@ -158,11 +158,11 @@ export default function EditSpotModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!spot || !pinLocation) {
-      alert('Please ensure location is set');
+      window.alert('Please ensure location is set');
       return;
     }
     if (!title.trim()) {
-      alert('Please enter a title');
+      window.alert('Please enter a title');
       return;
     }
 
@@ -180,7 +180,7 @@ export default function EditSpotModal({
       handleClose();
     } catch (error) {
       console.error('Error updating spot:', error);
-      alert('Failed to update spot. Please try again.');
+        window.alert('Failed to update spot. Please try again.');
     }
   };
 
@@ -197,7 +197,7 @@ export default function EditSpotModal({
         handleClose();
       } catch (error) {
         console.error('Error deleting spot:', error);
-        alert('Failed to delete spot. Please try again.');
+        window.alert('Failed to delete spot. Please try again.');
       }
     }
   };
