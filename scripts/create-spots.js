@@ -86,6 +86,7 @@ function formatHappyHourDescription(happyHour) {
 
 /**
  * Create spot from gold data and venue data
+ * Handles both new format (entries array) and old format (direct properties)
  */
 function createSpot(goldData, venueData, spotId) {
   const happyHour = goldData.happyHour || {};
@@ -95,8 +96,38 @@ function createSpot(goldData, venueData, spotId) {
     return null;
   }
   
-  // Format description - returns null if data is too incomplete
-  const description = formatHappyHourDescription(happyHour);
+  // Handle new format with entries array, or old format with direct properties
+  let entries = [];
+  if (happyHour.entries && Array.isArray(happyHour.entries) && happyHour.entries.length > 0) {
+    // New format: entries array
+    entries = happyHour.entries;
+  } else if (happyHour.times || happyHour.days || happyHour.specials) {
+    // Old format: direct properties - convert to entries format
+    entries = [{
+      times: happyHour.times,
+      days: happyHour.days,
+      specials: happyHour.specials || [],
+      source: happyHour.source
+    }];
+  } else {
+    // No valid happy hour data
+    return null;
+  }
+  
+  // Format description from first entry (or combine multiple entries)
+  let description = null;
+  if (entries.length === 1) {
+    description = formatHappyHourDescription(entries[0]);
+  } else if (entries.length > 1) {
+    // Multiple entries - format each and combine
+    const entryDescriptions = entries
+      .map(entry => formatHappyHourDescription(entry))
+      .filter(desc => desc !== null);
+    if (entryDescriptions.length > 0) {
+      description = entryDescriptions.join('\n\n---\n\n');
+    }
+  }
+  
   if (!description) {
     // Incomplete data (e.g., only time with no days/specials)
     return null;
@@ -109,6 +140,7 @@ function createSpot(goldData, venueData, spotId) {
     title: goldData.venueName || venueData.name || 'Unknown Venue',
     description: description,
     type: 'Happy Hour',
+    source: 'automated' // Mark as automated (vs manual)
   };
   
   // Add photoUrl if available from venue

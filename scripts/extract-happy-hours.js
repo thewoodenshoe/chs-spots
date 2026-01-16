@@ -21,7 +21,9 @@ async function extractHappyHours(isIncremental = false) {
         process.exit(1);
     }
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
+    // Use gemini-1.5-flash or gemini-pro (available models vary by API version)
+    // gemini-1.5-flash is faster and cheaper, gemini-pro is more capable
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     console.log(`Starting happy hour extraction (${isIncremental ? 'incremental' : 'bulk'})...`);
 
     let venueFiles = [];
