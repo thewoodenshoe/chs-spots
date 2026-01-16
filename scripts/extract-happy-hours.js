@@ -1,387 +1,168 @@
-/**
- * Extract Happy Hours - Incremental LLM Extraction
- * 
- * Extracts structured happy hour data from silver_merged/all/ files using LLM.
- * Only processes new/changed venues (incremental mode).
- * 
- * Requires:
- * - Bulk extraction must be completed first (.bulk-complete exists)
- * - Only processes venues where gold/<venue-id>.json doesn't exist OR
- *   silver_merged/all/<venue-id>.json is newer than gold/<venue-id>.json
- * 
- * Modes:
- * --incremental (default): Only new/changed venues
- * --force: Re-extract all venues (use with caution)
- * 
- * Run with: node scripts/extract-happy-hours.js [--incremental|--force]
- */
-
 const fs = require('fs');
 const path = require('path');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const crypto = require('crypto');
 
-// Logging setup
-const logDir = path.join(__dirname, '..', 'logs');
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir, { recursive: true });
-}
-const logPath = path.join(logDir, 'extract-happy-hours.log');
-
-fs.writeFileSync(logPath, '', 'utf8');
-
-function log(message) {
-  const ts = new Date().toISOString();
-  console.log(message);
-  fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
-}
-
-// Paths - Now reading from silver_merged/all/ instead of silver_matched/
-const SILVER_MERGED_ALL_DIR = path.join(__dirname, '../data/silver_merged/all');
+const SILVER_MERGED_DIR = path.join(__dirname, '../data/silver_merged/all');
 const GOLD_DIR = path.join(__dirname, '../data/gold');
-const BULK_COMPLETE_PATH = path.join(GOLD_DIR, '.bulk-complete');
+const BULK_COMPLETE_FLAG = path.join(GOLD_DIR, '.bulk-complete');
+const INCREMENTAL_HISTORY_DIR = path.join(GOLD_DIR, 'incremental-history');
 
-// Ensure gold directory exists
-if (!fs.existsSync(GOLD_DIR)) {
-  fs.mkdirSync(GOLD_DIR, { recursive: true });
-}
+// Ensure gold and incremental history directories exist
+if (!fs.existsSync(GOLD_DIR)) fs.mkdirSync(GOLD_DIR, { recursive: true });
+if (!fs.existsSync(INCREMENTAL_HISTORY_DIR)) fs.mkdirSync(INCREMENTAL_HISTORY_DIR, { recursive: true });
 
-/**
- * Check if bulk extraction is complete
- */
-function isBulkComplete() {
-  return fs.existsSync(BULK_COMPLETE_PATH);
-}
-
-/**
- * Determine if venue needs extraction
- */
-function shouldExtract(silverMergedPath, goldPath, force = false) {
-  if (force) {
-    return 'force';
-  }
-  
-  // Never extracted
-  if (!fs.existsSync(goldPath)) {
-    return 'new';
-  }
-  
-  // Check if gold file already has valid extraction (from bulk)
-  try {
-    const goldData = JSON.parse(fs.readFileSync(goldPath, 'utf8'));
-    // If bulk extracted and has happy hour, only re-extract if source changed
-    if (goldData.extractionMethod === 'llm-bulk' && goldData.happyHour && goldData.happyHour.found === true) {
-      // Only re-extract if source actually changed
-      const silverStats = fs.statSync(silverMergedPath);
-      const goldStats = fs.statSync(goldPath);
-      if (silverStats.mtime <= goldStats.mtime) {
-        return 'skip'; // Source hasn't changed, keep bulk extraction
-      }
-      return 'changed'; // Source changed, re-extract
-    }
-  } catch (e) {
-    // If we can't read gold file, proceed with extraction
-  }
-  
-  // Compare timestamps
-  const silverStats = fs.statSync(silverMergedPath);
-  const goldStats = fs.statSync(goldPath);
-  
-  // Silver file newer = content changed
-  if (silverStats.mtime > goldStats.mtime) {
-    return 'changed';
-  }
-  
-  // Already extracted and unchanged
-  return 'skip';
-}
-
-/**
- * Compute content hash for source tracking
- */
-function computeSourceHash(venueId) {
-  const silverPath = path.join(SILVER_MERGED_ALL_DIR, `${venueId}.json`);
-  if (!fs.existsSync(silverPath)) {
-    return null;
-  }
-  
-  try {
-    const data = JSON.parse(fs.readFileSync(silverPath, 'utf8'));
-    const content = JSON.stringify(data);
-    const normalized = content.replace(/\s+/g, ' ').trim();
-    return crypto.createHash('sha256').update(normalized).digest('hex').substring(0, 16);
-  } catch (e) {
-    return null;
-  }
-}
-
-/**
- * Get source file modified time
- */
-function getSourceModifiedAt(venueId) {
-  const silverPath = path.join(SILVER_MERGED_ALL_DIR, `${venueId}.json`);
-  if (!fs.existsSync(silverPath)) {
-    return null;
-  }
-  
-  try {
-    const stats = fs.statSync(silverPath);
-    return stats.mtime.toISOString();
-  } catch (e) {
-    return null;
-  }
-}
-
-/**
- * Extract text from HTML
- */
-function extractTextFromHtml(html) {
-  if (!html || typeof html !== 'string') {
-    return '';
-  }
-  
-  // Remove script and style tags
-  let text = html
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-    .replace(/<[^>]+>/g, ' ') // Remove HTML tags
-    .replace(/\s+/g, ' ') // Normalize whitespace
-    .trim();
-  
-  return text;
-}
-
-/**
- * Combine all pages into single text
- */
-function combinePagesText(pages) {
-  const texts = pages
-    .map(page => extractTextFromHtml(page.html || ''))
-    .filter(text => text.length > 0);
-  
-  return texts.join('\n\n--- Page Break ---\n\n');
-}
-
-/**
- * Extract happy hour using LLM API
- * 
- * This is a placeholder that will call the actual LLM API.
- * For now, it returns a structure indicating LLM extraction is needed.
- * 
- * TODO: Implement actual LLM API call (Grok API, OpenAI, etc.)
- */
-async function extractWithLLM(venueId, venueData) {
-  // Extract text from all pages
-  const combinedText = combinePagesText(venueData.pages || []);
-  
-  // TODO: Call LLM API here
-  // For now, return placeholder structure
-  log(`  🤖 [PLACEHOLDER] Would call LLM API for ${venueData.venueName}`);
-  
-  // Placeholder response structure
-  // In real implementation, this would be the LLM API response
-  return {
-    found: false,
-    reason: 'LLM API not yet implemented - placeholder response',
-    times: null,
-    days: null,
-    specials: [],
-    source: venueData.website || null,
-    confidence: 0.0,
-    needsLLM: true
-  };
-  
-  /* Example LLM API call (when implemented):
-  const response = await fetch('https://api.grok.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${process.env.GROK_API_KEY}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: 'grok-beta',
-      messages: [{
-        role: 'system',
-        content: 'Extract happy hour information from restaurant/bar website content...'
-      }, {
-        role: 'user',
-        content: `Venue: ${venueData.venueName}\nWebsite: ${venueData.website}\n\nContent:\n${combinedText}`
-      }]
-    })
-  });
-  
-  const result = await response.json();
-  return parseLLMResponse(result);
-  */
-}
-
-/**
- * Process a single venue
- */
-async function processVenue(venueId, force = false) {
-  const silverPath = path.join(SILVER_MERGED_ALL_DIR, `${venueId}.json`);
-  const goldPath = path.join(GOLD_DIR, `${venueId}.json`);
-  
-  if (!fs.existsSync(silverPath)) {
-    log(`  ⚠️  Silver merged file not found: ${venueId}`);
-    return null;
-  }
-  
-  // Check if needs extraction
-  const status = shouldExtract(silverPath, goldPath, force);
-  
-  if (status === 'skip') {
-    return {
-      venueId,
-      status: 'skip',
-      reason: 'Already extracted and unchanged'
-    };
-  }
-  
-  // Load silver_merged data
-  const silverData = JSON.parse(fs.readFileSync(silverPath, 'utf8'));
-  
-  log(`  🔄 Processing ${silverData.venueName} (${venueId}): ${status}`);
-  
-  try {
-    // Extract with LLM
-    const extractedData = await extractWithLLM(venueId, silverData);
-    
-    // Get source metadata
-    const sourceHash = computeSourceHash(venueId);
-    const sourceModifiedAt = getSourceModifiedAt(venueId);
-    
-    // Create gold file
-    const goldData = {
-      venueId,
-      venueName: silverData.venueName,
-      venueArea: silverData.venueArea || null,
-      website: silverData.website || null,
-      extractedAt: new Date().toISOString(),
-      extractionMethod: 'llm-incremental',
-      sourceHash: sourceHash || null,
-      sourceModifiedAt: sourceModifiedAt || null,
-      happyHour: extractedData,
-      needsLLM: extractedData.needsLLM !== false
-    };
-    
-    // Save gold file
-    fs.writeFileSync(goldPath, JSON.stringify(goldData, null, 2), 'utf8');
-    
-    log(`  ✅ Extracted: ${silverData.venueName} (${venueId})`);
-    
-    return {
-      venueId,
-      venueName: silverData.venueName,
-      status: status === 'force' ? 'force' : status,
-      happyHourFound: extractedData.found || false,
-      success: true
-    };
-  } catch (error) {
-    log(`  ❌ Error extracting ${silverData.venueName}: ${error.message}`);
-    return {
-      venueId,
-      venueName: silverData.venueName,
-      status,
-      error: error.message,
-      success: false
-    };
-  }
-}
-
-/**
- * Main function
- */
-async function main() {
-  log('🤖 Starting Incremental LLM Extraction\n');
-  
-  // Parse arguments
-  const args = process.argv.slice(2);
-  const force = args.includes('--force');
-  const mode = force ? 'force' : 'incremental';
-  
-  log(`📋 Mode: ${mode}\n`);
-  
-  // Check bulk completion (unless force mode)
-  if (!force && !isBulkComplete()) {
-    log('❌ Bulk extraction not completed (.bulk-complete does not exist)');
-    log('   Run prepare-bulk-llm-extraction.js and process-bulk-llm-results.js first');
-    log('   Or use --force to re-extract all venues');
+// Access your API key as an environment variable (see README)
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+if (!GEMINI_API_KEY) {
+    console.error('Error: GEMINI_API_KEY is not set in environment variables.');
     process.exit(1);
-  }
-  
-  // Check silver_merged/all directory
-  if (!fs.existsSync(SILVER_MERGED_ALL_DIR)) {
-    log(`❌ Silver merged directory not found: ${SILVER_MERGED_ALL_DIR}`);
-    log(`   Run merge-raw-files.js first`);
-    process.exit(1);
-  }
-  
-  // Get all merged files
-  const files = fs.readdirSync(SILVER_MERGED_ALL_DIR).filter(f => f.endsWith('.json'));
-  log(`📁 Found ${files.length} venue(s) in silver_merged/all/\n`);
-  
-  if (files.length === 0) {
-    log('❌ No venues to extract. Run merge-raw-files.js first.');
-    process.exit(1);
-  }
-  
-  // Process each venue
-  const results = [];
-  const stats = {
-    new: 0,
-    changed: 0,
-    skipped: 0,
-    force: 0,
-    errors: 0,
-    success: 0
-  };
-  
-  for (const file of files) {
-    const venueId = file.replace('.json', '');
-    const result = await processVenue(venueId, force);
-    
-    if (result) {
-      results.push(result);
-      
-      if (result.error) {
-        stats.errors++;
-      } else if (result.status === 'skip') {
-        stats.skipped++;
-      } else {
-        stats.success++;
-        if (result.status === 'new') stats.new++;
-        else if (result.status === 'changed') stats.changed++;
-        else if (result.status === 'force') stats.force++;
-      }
+}
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+async function extractHappyHours(isIncremental = false) {
+    console.log(`Starting happy hour extraction (${isIncremental ? 'incremental' : 'bulk'})...");
+
+    let venueFiles;
+    try {
+        venueFiles = fs.readdirSync(SILVER_MERGED_DIR).filter(file => file.endsWith('.json'));
+    } catch (error) {
+        console.error(`Error reading silver_merged directory: ${error.message}`);
+        process.exit(1);
     }
-    
-    // Rate limiting (if using LLM API)
-    if (result && result.status !== 'skip') {
-      await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay
+
+    if (isIncremental && !fs.existsSync(BULK_COMPLETE_FLAG)) {
+        console.warn('Bulk extraction not marked as complete. Running in incremental mode requires prior bulk extraction.');
+        console.warn('Please run `npm run extract:bulk:prepare` and `npm run extract:bulk:process` first.');
+        process.exit(1);
     }
-  }
-  
-  // Summary
-  log(`\n📊 Summary:`);
-  log(`   🆕 New: ${stats.new}`);
-  log(`   🔄 Changed: ${stats.changed}`);
-  log(`   ⏭️  Skipped: ${stats.skipped}`);
-  if (force) {
-    log(`   🔁 Force re-extracted: ${stats.force}`);
-  }
-  log(`   ✅ Successful: ${stats.success}`);
-  log(`   ❌ Errors: ${stats.errors}`);
-  log(`\n✨ Done! Extracted data saved to: ${path.resolve(GOLD_DIR)}`);
-  
-  if (stats.new > 0 || stats.changed > 0) {
-    log(`   Next: Run create-spots.js to generate spots.json`);
-  }
+
+    for (const file of venueFiles) {
+        const venueId = path.basename(file, '.json');
+        const silverFilePath = path.join(SILVER_MERGED_DIR, file);
+        const goldFilePath = path.join(GOLD_DIR, `${venueId}.json`);
+
+        let venueData;
+        try {
+            venueData = JSON.parse(fs.readFileSync(silverFilePath, 'utf8'));
+        } catch (error) {
+            console.error(`Error reading venue file ${file}: ${error.message}`);
+            continue;
+        }
+
+        const sourceHash = crypto.createHash('md5').update(JSON.stringify(venueData)).digest('hex');
+
+        // Check if already processed and no changes for incremental mode
+        if (isIncremental && fs.existsSync(goldFilePath)) {
+            try {
+                const existingGoldData = JSON.parse(fs.readFileSync(goldFilePath, 'utf8'));
+                if (existingGoldData.sourceHash === sourceHash) {
+                    console.log(`Skipping ${venueData.venueName} (${venueId}): No changes detected.`);
+                    continue;
+                }
+            } catch (error) {
+                console.warn(`Could not read existing gold file for ${venueId}, re-processing.`);
+            }
+        }
+        
+        console.log(`Processing ${venueData.venueName} (${venueId})...");
+
+        // Construct LLM Prompt
+        const prompt = `
+            You are an expert at extracting happy hour information from website content.
+            Analyze the following text from a restaurant/bar website. Identify any happy hour specials,
+            including their times, days, and specific offers (e.g., \"$5 Beers\", \"Half-off appetizers\").
+            It is crucial to differentiate happy hours from regular business hours. Happy hours often
+            have specific time ranges (e.g., \"4pm-6pm\", \"Monday-Friday\") and mention \"specials\" or \"deals\".
+            Business hours typically cover longer periods (e.g., \"11am-10pm daily\").
+            Also, be aware of non-standard naming conventions for happy hour (e.g., \"Heavy's Hour\" instead of \"Happy Hour\").
+
+            If happy hour information is found, return a JSON object in the following format:
+            {
+              "found": true,
+              "times": "e.g., 4pm-7pm",
+              "days": "e.g., Monday-Friday",
+              "specials": ["e.g., $5 draft beers", "e.g., half-price appetizers"],
+              "source": "URL where happy hour was found, or homepage if general",
+              "confidence": 1 to 100 (your confidence in the extraction)
+            }
+            If no happy hour information is clearly identifiable, return:
+            {
+              "found": false,
+              "confidence": 1 to 100 (your confidence that no happy hour was found)
+            }
+
+            Here is the website content for ${venueData.venueName} from various pages:
+            ---
+            ${venueData.pages.map(p => `URL: ${p.url}\nContent:\n${p.text}`).join('\n---\n')}
+            ---
+            `;
+
+        let result;
+        try {
+            const chat = model.startChat({
+                history: [
+                    {
+                        role: "user",
+                        parts: [{ text: prompt }]
+                    }
+                ],
+                generationConfig: {
+                    maxOutputTokens: 2048,
+                },
+            });
+
+            const response = await chat.sendMessage(prompt);
+            const text = response.response.text();
+            
+            // Attempt to parse JSON, sometimes LLMs wrap it in markdown
+            const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/);
+            if (jsonMatch && jsonMatch[1]) {
+                result = JSON.parse(jsonMatch[1]);
+            } else {
+                result = JSON.parse(text); // Try parsing directly
+            }
+
+        } catch (error) {
+            console.error(`Error calling Gemini API for ${venueData.venueName} (${venueId}): ${error.message}`);
+            result = { found: false, confidence: 0, error: error.message };
+        }
+
+        // Add metadata to the gold record
+        const goldRecord = {
+            venueId: venueId,
+            venueName: venueData.venueName,
+            happyHour: result,
+            sourceHash: sourceHash,
+            processedAt: new Date().toISOString()
+        };
+
+        try {
+            fs.writeFileSync(goldFilePath, JSON.stringify(goldRecord, null, 2), 'utf8');
+            console.log(`Successfully processed ${venueData.venueName} and saved to ${goldFilePath}`);
+        } catch (error) {
+            console.error(`Error writing gold file for ${venueData.venueName}: ${error.message}`);
+        }
+
+        // Add a small delay to avoid hitting API rate limits
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    console.log('Happy hour extraction complete.');
 }
 
-try {
-  main();
-} catch (error) {
-  log(`❌ Fatal error: ${error.message || error}`);
-  console.error(error);
-  process.exit(1);
+// Main execution logic
+const isIncrementalMode = process.argv.includes('--incremental');
+
+if (isIncrementalMode) {
+    extractHappyHours(true);
+} else if (process.argv.includes('--bulk')) {
+    console.warn('Running in bulk processing mode. This is intended for manual LLM results.');
+    console.warn('For automated bulk LLM extraction, consider adapting this script or running incrementally after `bulk:prepare`.');
+    extractHappyHours(false); // Can be adapted to use LLM for bulk if needed
+} else {
+    // Default to incremental if no flags, but warn
+    console.warn('No mode specified. Defaulting to incremental extraction.');
+    console.warn('Use `--incremental` for automated daily updates or `--bulk` for a full re-extraction.');
+    extractHappyHours(true);
 }

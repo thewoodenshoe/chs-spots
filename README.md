@@ -109,7 +109,7 @@ Run these scripts **daily** to update data:
 2. **Seed Venues**: `node scripts/seed-venues.js` (requires Google Maps API key)
 3. **Download Raw HTML**: `node scripts/download-raw-html.js`
 4. **Merge Raw Files**: `node scripts/merge-raw-files.js`
-5. **Extract Happy Hours** (Optional): `npm run extract:incremental` or bulk LLM extraction
+5. Extract Happy Hours (LLM): `npm run extract:bulk:prepare` then `npm run extract:bulk:process` (manual step in between), or `npm run extract:incremental`
 
 That's it! Run `npm run dev` to start the website.
 
@@ -129,6 +129,7 @@ That's it! Run `npm run dev` to start the website.
 - **Next.js 16** - React framework
 - **TypeScript** - Type safety
 - **Google Maps API** - Interactive map with markers and clustering
+- **Google Gemini API** - AI-powered happy hour extraction
 - **Tailwind CSS** - Styling
 - **Playwright** - End-to-end testing
 
@@ -299,45 +300,51 @@ node scripts/merge-raw-files.js
 
 **Script:** `scripts/extract-happy-hours.js`
 
-Extracts structured happy hour data from `silver_merged/all/` files using LLM. This is the final step in the pipeline.
+This script is responsible for orchestrating the extraction of structured happy hour data using a Large Language Model (LLM). It processes the merged venue data from `silver_merged/all/` files.
 
-**Note:** Since the `silver_matched` layer has been removed, LLM extraction processes all venues from `silver_merged/all/` and determines which ones have happy hour information.
+**Note:** The LLM extraction processes all venues from `silver_merged/all/` and determines which ones have happy hour information based on the prompt.
 
 **Workflow:**
 
-#### Bulk Extraction (One-Time Manual)
+#### Bulk Extraction (One-Time)
 
-1. **Prepare bulk data:**
-```bash
-npm run extract:bulk:prepare
-```
-Creates `data/gold/bulk-input.json` for manual Grok UI extraction.
+This is typically done once to establish a baseline of happy hour data for all venues.
 
-2. **Manual extraction:** Copy-paste into Grok UI, extract, save results to `data/gold/bulk-results.json`
+1.  **Prepare bulk data:**
+    ```bash
+    npm run extract:bulk:prepare
+    ```
+    Creates `data/gold/bulk-input.json` for manual LLM (e.g., Grok UI) extraction.
 
-3. **Process bulk results:**
-```bash
-npm run extract:bulk:process
-```
-Creates `data/gold/<venue-id>.json` for each venue and marks bulk as complete.
+2.  **Manual extraction:** Copy the content of `data/gold/bulk-input.json`, paste into your chosen LLM (e.g., Grok UI, ChatGPT), use a suitable prompt to extract happy hour information, and save the LLM's raw JSON output as `data/gold/bulk-results.json`.
 
-#### Incremental Extraction (Daily Automated)
+3.  **Process bulk results:**
+    ```bash
+    npm run extract:bulk:process
+    ```
+    This command processes `data/gold/bulk-results.json`, creating individual, structured `data/gold/<venue-id>.json` files for each venue and setting a flag (`.bulk-complete`) to indicate that the initial bulk extraction is done.
 
+#### Incremental Extraction (Automated Daily)
+
+This mode is designed for daily, automated updates, only processing new or changed venue data.
+
+**Run:**
 ```bash
 npm run extract:incremental
 ```
-
-Extracts structured happy hour data using LLM API.
-- Only processes new/changed venues (compares timestamps)
-- Requires `.bulk-complete` flag to exist (bulk must be done first)
-- Uses LLM API for extraction
+This command internally uses `scripts/extract-happy-hours.js` with an incremental flag.
+-   It identifies new or updated venues by comparing content hashes.
+-   For these venues, it calls the Gemini API (LLM) for automated extraction.
+-   Requires the `.bulk-complete` flag to exist (bulk extraction must be done first to establish the baseline).
 
 **Requirements:**
-- `data/silver_merged/all/` directory with merged files (created in Step 4)
-- Bulk extraction must be completed first (for incremental mode)
+-   `data/silver_merged/all/` directory with merged files (created in Step 4).
+-   `GEMINI_API_KEY` environment variable for automated incremental extraction.
+-   Bulk extraction must be completed first (for incremental mode).
 
 **Output:**
-- `data/gold/<venue-id>.json` - Extracted structured happy hour data per venue
+-   `data/gold/<venue-id>.json` - Extracted structured happy hour data per venue.
+-   `data/gold/incremental-history/` - Archives of incremental input/results for auditing.
 
 ---
 
@@ -376,7 +383,7 @@ npm run seed:incremental
 2. seed-venues.js         → data/venues.json
 3. download-raw-html.js   → data/raw/all/<venue-id>/
 4. merge-raw-files.js     → data/silver_merged/all/<venue-id>.json
-5. extract-happy-hours.js → data/gold/<venue-id>.json
+5. extract-happy-hours.js → data/gold/<venue-id>.json (uses LLM)
 ```
 
 **Note:** The `silver_matched` filtering layer (Step 5) has been removed. All data flows through `silver_merged/all/`.
@@ -521,6 +528,7 @@ chs-spots/
 │   ├── seed-incremental.js   # Incremental venue updates
 │   ├── download-raw-html.js  # Download raw HTML (pipeline Step 3)
 │   ├── merge-raw-files.js    # Merge raw files (pipeline Step 4)
+│   ├── extract-happy-hours.js # Extracts structured happy hour data using LLM API (pipeline Step 5)
 │   ├── extract-happy-hours.js # Extract structured data (pipeline Step 5)
 │   ├── prepare-bulk-llm-extraction.js # Bulk LLM preparation
 │   ├── process-bulk-llm-results.js    # Process bulk LLM results
@@ -565,6 +573,9 @@ GOOGLE_PLACES_KEY=your_google_places_api_key_here
 # Optional (for website finding fallback - free tier available)
 GOOGLE_SEARCH_API_KEY=your_google_search_api_key_here
 GOOGLE_SEARCH_ENGINE_ID=your_search_engine_id_here
+
+# Required for LLM extraction (Happy Hour)
+GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
 ---
