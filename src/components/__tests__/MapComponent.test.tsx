@@ -84,24 +84,30 @@ jest.mock('@/contexts/SpotsContext', () => ({
   useSpots: jest.fn(),
 }));
 
-// Mock useVenues hook - use a ref to store mock value so provider can access it
-const mockVenuesRef = { current: { venues: [], loading: false, refreshVenues: jest.fn() } };
+// Mock useVenues hook - use global variable accessible from mock factory
+(global as any).__mockVenuesContextValue__ = { venues: [], loading: false, refreshVenues: jest.fn() };
 
 jest.mock('@/contexts/VenuesContext', () => {
   const React = require('react');
   
-  // Create a test context
+  // Create a test context - shared between provider and hook
   const TestVenuesContext = React.createContext({ venues: [], loading: false, refreshVenues: jest.fn() });
   
-  // Create a mock provider that uses the ref value
+  // Create a mock provider that reads from global on each render
   const MockVenuesProvider = ({ children }: { children: React.ReactNode }) => {
-    // Access ref from outer scope - this works in Jest mocks
-    const contextValue = mockVenuesRef.current;
+    // Read from global on each render to get latest value
+    const contextValue = (global as any).__mockVenuesContextValue__ || { venues: [], loading: false, refreshVenues: jest.fn() };
     return React.createElement(TestVenuesContext.Provider, { value: contextValue }, children);
   };
   
-  // Mock hook that returns the ref value
-  const mockUseVenuesHook = jest.fn(() => mockVenuesRef.current);
+  // Mock hook that actually uses the context (so MapComponent can read from it)
+  const mockUseVenuesHook = () => {
+    const context = React.useContext(TestVenuesContext);
+    if (context === undefined) {
+      throw new Error('useVenues must be used within a VenuesProvider');
+    }
+    return context;
+  };
   
   return {
     useVenues: mockUseVenuesHook,
@@ -116,6 +122,7 @@ const { useVenues, VenuesProvider } = require('@/contexts/VenuesContext');
 // Mock environment variable
 const originalEnv = process.env;
   beforeEach(() => {
+    // Set API key BEFORE any component renders
     process.env = {
       ...originalEnv,
       NEXT_PUBLIC_GOOGLE_MAPS_KEY: 'test-api-key', // MapComponent uses NEXT_PUBLIC_GOOGLE_MAPS_KEY
@@ -124,9 +131,8 @@ const originalEnv = process.env;
     jest.clearAllMocks();
     // Set default return values
     useSpots.mockReturnValue({ spots: [], loading: false });
-    // Update ref value for VenuesProvider
-    mockVenuesRef.current = { venues: [], loading: false, refreshVenues: jest.fn() };
-    useVenues.mockReturnValue(mockVenuesRef.current);
+    // Update global mock value for VenuesProvider (hook reads from context via useContext)
+    (global as any).__mockVenuesContextValue__ = { venues: [], loading: false, refreshVenues: jest.fn() };
   });
 
 afterAll(() => {
@@ -169,13 +175,8 @@ describe('MapComponent', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     useSpots.mockReturnValue({ spots: mockSpots, loading: false });
-    // Set up useVenues mock implementation
-    const mockContextValue = { venues: mockVenues, loading: false, refreshVenues: jest.fn() };
-    useVenues.mockReturnValue(mockContextValue);
-    // Also set mock implementation if the hook supports it
-    if ((useVenues as any).setMockImplementation) {
-      (useVenues as any).setMockImplementation(() => mockContextValue);
-    }
+    // Update global mock value for VenuesProvider (hook reads from context via useContext)
+    (global as any).__mockVenuesContextValue__ = { venues: mockVenues, loading: false, refreshVenues: jest.fn() };
     // Mock fetch for VenuesProvider (if it tries to fetch)
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
@@ -184,9 +185,10 @@ describe('MapComponent', () => {
   });
 
   it('renders map without errors', () => {
+    // Ensure API key is set
+    process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY = 'test-api-key';
     useSpots.mockReturnValue({ spots: mockSpots, loading: false });
-    mockVenuesRef.current = { venues: mockVenues, loading: false, refreshVenues: jest.fn() };
-    useVenues.mockReturnValue(mockVenuesRef.current);
+    (global as any).__mockVenuesContextValue__ = { venues: mockVenues, loading: false, refreshVenues: jest.fn() };
     
     render(
       <SpotsProvider>
@@ -201,8 +203,7 @@ describe('MapComponent', () => {
 
   it('renders spots as markers', () => {
     useSpots.mockReturnValue({ spots: mockSpots, loading: false });
-    mockVenuesRef.current = { venues: [], loading: false, refreshVenues: jest.fn() };
-    useVenues.mockReturnValue(mockVenuesRef.current);
+    (global as any).__mockVenuesContextValue__ = { venues: [], loading: false, refreshVenues: jest.fn() };
     
     render(
       <SpotsProvider>
@@ -233,8 +234,7 @@ describe('MapComponent', () => {
 
   it('renders red venue markers when showAllVenues is true', () => {
     useSpots.mockReturnValue({ spots: [], loading: false });
-    mockVenuesRef.current = { venues: mockVenues, loading: false, refreshVenues: jest.fn() };
-    useVenues.mockReturnValue(mockVenuesRef.current);
+    (global as any).__mockVenuesContextValue__ = { venues: mockVenues, loading: false, refreshVenues: jest.fn() };
     
     render(
       <SpotsProvider>
@@ -254,8 +254,7 @@ describe('MapComponent', () => {
 
   it('shows ALL venues when showAllVenues is true (no area filtering)', () => {
     useSpots.mockReturnValue({ spots: [], loading: false });
-    mockVenuesRef.current = { venues: mockVenues, loading: false, refreshVenues: jest.fn() };
-    useVenues.mockReturnValue(mockVenuesRef.current);
+    (global as any).__mockVenuesContextValue__ = { venues: mockVenues, loading: false, refreshVenues: jest.fn() };
     
     render(
       <SpotsProvider>
@@ -278,8 +277,7 @@ describe('MapComponent', () => {
 
   it('renders both spots and venues when both enabled', () => {
     useSpots.mockReturnValue({ spots: mockSpots, loading: false });
-    mockVenuesRef.current = { venues: mockVenues, loading: false, refreshVenues: jest.fn() };
-    useVenues.mockReturnValue(mockVenuesRef.current);
+    (global as any).__mockVenuesContextValue__ = { venues: mockVenues, loading: false, refreshVenues: jest.fn() };
     
     render(
       <SpotsProvider>
@@ -305,8 +303,7 @@ describe('MapComponent', () => {
 
   it('sets correct z-index for spots (above venues)', () => {
     useSpots.mockReturnValue({ spots: mockSpots, loading: false });
-    mockVenuesRef.current = { venues: mockVenues, loading: false, refreshVenues: jest.fn() };
-    useVenues.mockReturnValue(mockVenuesRef.current);
+    (global as any).__mockVenuesContextValue__ = { venues: mockVenues, loading: false, refreshVenues: jest.fn() };
     render(
       <SpotsProvider>
         <VenuesProvider>
@@ -351,7 +348,7 @@ describe('MapComponent', () => {
   });
 
   it('handles empty venues array', () => {
-    useVenues.mockReturnValue({ venues: [] });
+    (global as any).__mockVenuesContextValue__ = { venues: [], loading: false, refreshVenues: jest.fn() };
     
     render(
       <SpotsProvider>
