@@ -3,17 +3,99 @@ import { NextRequest } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
-// Mock Request/Response for Node.js environment
-global.Request = global.Request || (class {} as any);
-global.Response = global.Response || (class {} as any);
+// Mock Headers and RequestCookies for Next.js
+class MockHeaders extends Map {
+  get(key: string) {
+    return super.get(key.toLowerCase()) || null;
+  }
+  set(key: string, value: string) {
+    return super.set(key.toLowerCase(), value);
+  }
+}
+
+// Mock RequestCookies
+class MockRequestCookies {
+  private cookies = new Map();
+  get(name: string) {
+    return { name, value: this.cookies.get(name) || '' };
+  }
+  set(name: string, value: string) {
+    this.cookies.set(name, value);
+  }
+}
+
+// Mock NextRequest and NextResponse
+jest.mock('next/server', () => {
+  const actual = jest.requireActual('next/server');
+  
+  class MockNextRequest extends Request {
+    cookies: MockRequestCookies;
+    url: string;
+    
+    constructor(input: RequestInfo | URL, init?: RequestInit) {
+      super(input, init);
+      this.url = typeof input === 'string' ? input : input.toString();
+      this.cookies = new MockRequestCookies();
+      if (!this.headers) {
+        (this as any).headers = new MockHeaders();
+      }
+    }
+  }
+
+  class MockNextResponse {
+    static json(body: any, init?: ResponseInit) {
+      return new Response(JSON.stringify(body), {
+        ...init,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(init?.headers || {}),
+        },
+      });
+    }
+  }
+
+  return {
+    ...actual,
+    NextRequest: MockNextRequest,
+    NextResponse: MockNextResponse,
+  };
+});
 
 // Mock fs module
 jest.mock('fs');
 const mockedFs = fs as jest.Mocked<typeof fs>;
 
+// Mock path.join to return expected path
+jest.mock('path', () => {
+  const actual = jest.requireActual('path');
+  return {
+    ...actual,
+    join: jest.fn((...paths) => {
+      // If the path ends with 'venues.json', return a mock path for reporting
+      if (paths[paths.length - 1] === 'venues.json') {
+        return '/mock/path/to/data/reporting/venues.json';
+      }
+      return actual.join(...paths);
+    }),
+  };
+});
+
 describe('GET /api/venues', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Mock path.join for each test
+    const pathModule = require('path');
+    pathModule.join.mockImplementation((...paths: string[]) => {
+      if (paths[paths.length - 1] === 'venues.json') {
+        return '/mock/path/to/data/reporting/venues.json';
+      }
+      const actualPath = jest.requireActual('path');
+      return actualPath.join(...paths);
+    });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it('should return all venues from venues.json', async () => {
