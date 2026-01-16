@@ -3,6 +3,10 @@ import { NextRequest } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
+// Mock Request/Response for Node.js environment
+global.Request = global.Request || (class {} as any);
+global.Response = global.Response || (class {} as any);
+
 // Mock fs module
 jest.mock('fs');
 const mockedFs = fs as jest.Mocked<typeof fs>;

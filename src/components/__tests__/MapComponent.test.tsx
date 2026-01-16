@@ -43,15 +43,21 @@ jest.mock('@react-google-maps/api', () => ({
     icon, 
     onClick, 
     zIndex,
-    'data-testid': testId 
+    'data-testid': testId,
+    clusterer
   }: { 
     position?: { lat: number; lng: number };
     icon?: any;
     onClick?: () => void;
     zIndex?: number;
     'data-testid'?: string;
+    clusterer?: any;
   }) => {
-    const markerType = icon?.url?.includes('ef4444') ? 'venue' : 'spot';
+    // Determine marker type from icon color (red = venue, others = spot)
+    // Venue markers use red color (#ef4444), spot markers use other colors
+    const iconUrl = icon?.url || '';
+    const isVenue = iconUrl.includes('ef4444') || iconUrl.includes('#ef4444');
+    const markerType = isVenue ? 'venue' : 'spot';
     return (
       <div 
         data-testid={testId || `marker-${markerType}`}
@@ -140,8 +146,20 @@ describe('MapComponent', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    useSpots.mockReturnValue({ spots: mockSpots });
-    useVenues.mockReturnValue({ venues: mockVenues });
+    useSpots.mockReturnValue({ spots: mockSpots, loading: false });
+    useVenues.mockReturnValue({ venues: mockVenues, loading: false, refreshVenues: jest.fn() });
+    // Mock fetch for VenuesProvider (if it tries to fetch)
+    if (global.fetch) {
+      (global.fetch as jest.Mock) = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => mockVenues,
+      });
+    } else {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => mockVenues,
+      }) as jest.Mock;
+    }
   });
 
   it('renders map without errors', () => {

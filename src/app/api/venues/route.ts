@@ -3,7 +3,8 @@ import fs from 'fs';
 import path from 'path';
 
 export async function GET(request: Request) {
-  const venuesPath = path.join(process.cwd(), 'data', 'venues.json');
+  // Read from reporting folder (contains only found:true venues)
+  const venuesPath = path.join(process.cwd(), 'data', 'reporting', 'venues.json');
   const { searchParams } = new URL(request.url);
   const areaFilter = searchParams.get('area');
   
