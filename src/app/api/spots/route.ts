@@ -79,11 +79,12 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const dataDir = path.join(process.cwd(), 'data');
-    const spotsPath = path.join(dataDir, 'spots.json');
+    const reportingDir = path.join(dataDir, 'reporting');
+    const spotsPath = path.join(reportingDir, 'spots.json');
     
-    // Ensure data directory exists
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
+    // Ensure reporting directory exists
+    if (!fs.existsSync(reportingDir)) {
+      fs.mkdirSync(reportingDir, { recursive: true });
     }
     
     // Parse request body
