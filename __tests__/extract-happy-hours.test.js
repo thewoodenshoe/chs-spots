@@ -10,6 +10,8 @@ jest.mock('@google/generative-ai', () => {
                 startChat: jest.fn(() => ({
                     sendMessage: jest.fn((prompt) => {
                         // Simulate LLM responses based on prompt content
+                        // IMPORTANT: Check happy hour conditions BEFORE general business hours conditions
+                        // to ensure happy hours are detected even when both are present
                         if (prompt.includes("Happy Hour: 4pm-7pm Monday-Friday")) {
                             return Promise.resolve({
                                 response: {
@@ -25,13 +27,21 @@ jest.mock('@google/generative-ai', () => {
 `
                                 }
                             });
-                        } else if (prompt.includes("Opening hours: 9am-10pm daily") || prompt.includes("Our full menu")) {
+                        } else if (prompt.includes("Happy Hour: 5-7pm") || prompt.includes("Happy Hour: 5-7pm!") || 
+                                   prompt.includes("Happy Hour daily from 5pm-7pm") ||
+                                   prompt.includes("Happy Hour daily from 5pm") ||
+                                   (prompt.includes("Test Venue 3") && prompt.includes("Happy Hour daily from 5pm-7pm")) ||
+                                   (prompt.includes("discounted drinks") && prompt.includes("Happy Hour daily"))) {
                             return Promise.resolve({
                                 response: {
                                     text: () => `
 { 
-                                        "found": false,
-                                        "confidence": 80
+                                        "found": true,
+                                        "times": "5pm-7pm",
+                                        "days": "daily",
+                                        "specials": ["discounted drinks"],
+                                        "source": "https://example.com/specials",
+                                        "confidence": 95
                                     }
 `
                                 }
@@ -51,10 +61,8 @@ jest.mock('@google/generative-ai', () => {
 `
                                 }
                             });
-                        } else if (prompt.includes("Happy Hour: 5-7pm") || prompt.includes("Happy Hour: 5-7pm!") || 
-                                   prompt.includes("Happy Hour daily from 5pm-7pm") ||
-                                   prompt.includes("Specials available from 5-7pm") ||
-                                   prompt.includes("Test Venue 3") && prompt.includes("5pm-7pm")) {
+                        } else if (prompt.includes("Opening hours: 9am-10pm daily") || 
+                                   (prompt.includes("Our full menu") && !prompt.includes("Happy Hour"))) {
                             return Promise.resolve({
                                 response: {
                                     text: () => `
@@ -321,27 +329,35 @@ describe('extractHappyHours', () => {
     });
 
     test('should log warning and exit if bulk complete flag is missing in incremental mode', async () => {
-        // Ensure API key is set (checked before bulk flag)
+        // Ensure API key is set (checked first)
         process.env.GEMINI_API_KEY = 'mock-api-key';
         
-        // Mock existsSync to return false for the bulk complete flag, true for directories
+        // Mock readdirSync to return at least one file so the script doesn't return early
+        // The bulk flag check happens AFTER reading files but before processing
+        fs.readdirSync.mockReturnValue(['venue1.json']);
+        
+        // Mock existsSync to return false for the bulk complete flag
         fs.existsSync.mockImplementation((p) => {
+            if (!p) return false;
             const pathStr = p ? p.toString() : '';
-            if (pathStr.includes('.bulk-complete') || pathStr === MOCK_BULK_COMPLETE_FLAG) {
-                return false; // Flag missing
+            
+            // Check if this is the bulk complete flag path (check for .bulk-complete in the path)
+            if (pathStr.includes('.bulk-complete') || 
+                pathStr.endsWith('/.bulk-complete') || 
+                pathStr.endsWith('\\.bulk-complete') ||
+                pathStr === MOCK_BULK_COMPLETE_FLAG) {
+                return false; // Flag missing - this should trigger the warning
             }
-            if (pathStr.includes('silver_merged') || pathStr.includes('gold')) {
-                return true; // Directories exist
-            }
-            return jest.requireActual('fs').existsSync(p);
+            // All other paths should exist (directories, etc.)
+            return true;
         });
-        fs.readdirSync.mockReturnValue([]); // No files to read
 
         const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
         process.exit = jest.fn();
 
         await extractHappyHours(true); // Run in incremental mode
 
+        // Verify the warning was called
         expect(consoleWarnSpy).toHaveBeenCalledWith(
             'Bulk extraction not marked as complete. Running in incremental mode requires prior bulk extraction.'
         );
