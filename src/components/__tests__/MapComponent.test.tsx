@@ -1,3 +1,6 @@
+// Set API key BEFORE importing MapComponent (constant is evaluated at module load)
+process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY = 'test-api-key';
+
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import MapComponent from '../MapComponent';
@@ -95,7 +98,7 @@ jest.mock('@/contexts/VenuesContext', () => {
   
   // Create a mock provider that reads from global on each render
   const MockVenuesProvider = ({ children }: { children: React.ReactNode }) => {
-    // Read from global on each render to get latest value
+    // Read directly from global on each render to get latest value
     const contextValue = (global as any).__mockVenuesContextValue__ || { venues: [], loading: false, refreshVenues: jest.fn() };
     return React.createElement(TestVenuesContext.Provider, { value: contextValue }, children);
   };
@@ -185,10 +188,17 @@ describe('MapComponent', () => {
   });
 
   it('renders map without errors', () => {
-    // Ensure API key is set
+    // Ensure API key is set in env before component renders
+    const originalKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY;
     process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY = 'test-api-key';
+    
     useSpots.mockReturnValue({ spots: mockSpots, loading: false });
     (global as any).__mockVenuesContextValue__ = { venues: mockVenues, loading: false, refreshVenues: jest.fn() };
+    
+    // Re-import MapComponent to pick up the new env var (if needed)
+    // Actually, the constant is set at module load, so we need to ensure it's set before import
+    // Since it's already imported, we'll just ensure the env is set
+    const { default: MapComponent } = require('@/components/MapComponent');
     
     render(
       <SpotsProvider>
@@ -197,6 +207,12 @@ describe('MapComponent', () => {
         </VenuesProvider>
       </SpotsProvider>
     );
+    
+    // Restore original key
+    if (originalKey) {
+      process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY = originalKey;
+    }
+    
     expect(screen.getByTestId('load-script')).toBeInTheDocument();
     expect(screen.getByTestId('google-map')).toBeInTheDocument();
   });
@@ -379,7 +395,7 @@ describe('MapComponent', () => {
       },
     ];
     
-    useVenues.mockReturnValue({ venues: venuesWithNullArea });
+    (global as any).__mockVenuesContextValue__ = { venues: venuesWithNullArea, loading: false, refreshVenues: jest.fn() };
     
     render(
       <SpotsProvider>
