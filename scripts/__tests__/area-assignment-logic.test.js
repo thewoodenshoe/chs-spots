@@ -143,8 +143,13 @@ describe('Area Assignment Logic - extractAreaFromAddress', () => {
     },
     {
       address: '400 Meeting Street, Charleston, SC',
+      expected: 'Downtown Charleston',
+      description: 'Meeting Street boundary number (400) = Downtown (1-400 inclusive)'
+    },
+    {
+      address: '401 Meeting Street, Charleston, SC',
       expected: 'North Charleston',
-      description: 'Meeting Street boundary number (400) = North Charleston'
+      description: 'Meeting Street number >400 = North Charleston'
     },
     {
       address: '500 Meeting Street, Charleston, SC',
@@ -261,14 +266,14 @@ function extractAreaFromAddressTest(address) {
     return 'Downtown Charleston';
   }
   
-  // Meeting Street: 1-400 = Downtown, 400+ = North Charleston
+  // Meeting Street: 1-400 = Downtown, >400 = North Charleston
   if (addressLower.includes('meeting street')) {
     const numberMatch = address.match(/(\d+)\s+meeting street/i);
     if (numberMatch) {
       const streetNumber = parseInt(numberMatch[1]);
       if (streetNumber >= 1 && streetNumber <= 400) {
         return 'Downtown Charleston';
-      } else if (streetNumber >= 400) {
+      } else if (streetNumber > 400) {
         return 'North Charleston';
       }
     }
@@ -472,7 +477,8 @@ describe('Area Assignment Logic - Accuracy Requirements', () => {
     // Test boundary cases
     expect(extractAreaFromAddressTest('1 Meeting Street, Charleston, SC')).toBe('Downtown Charleston');
     expect(extractAreaFromAddressTest('399 Meeting Street, Charleston, SC')).toBe('Downtown Charleston');
-    expect(extractAreaFromAddressTest('400 Meeting Street, Charleston, SC')).toBe('North Charleston');
+    expect(extractAreaFromAddressTest('400 Meeting Street, Charleston, SC')).toBe('Downtown Charleston'); // 400 is inclusive in 1-400 range
+    expect(extractAreaFromAddressTest('401 Meeting Street, Charleston, SC')).toBe('North Charleston'); // >400 is North Charleston
   });
 
   test('East Bay Street should always return Downtown (authoritative)', () => {

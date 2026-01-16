@@ -367,10 +367,11 @@ export default function SubmissionModal({
 
             {/* Photo Upload */}
             <div className="mb-6">
-              <label className="mb-2 block text-sm font-semibold text-gray-700">
+              <label htmlFor="photo-upload" className="mb-2 block text-sm font-semibold text-gray-700">
                 Photo (optional)
               </label>
               <input
+                id="photo-upload"
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"

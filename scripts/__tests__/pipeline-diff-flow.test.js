@@ -31,6 +31,17 @@ const VENUE = {
 
 function cleanTestDir() {
   if (fs.existsSync(TEST_DIR)) {
+    // Use rimraf pattern: remove all contents first
+    const files = fs.readdirSync(TEST_DIR);
+    for (const file of files) {
+      const filePath = path.join(TEST_DIR, file);
+      const stat = fs.statSync(filePath);
+      if (stat.isDirectory()) {
+        fs.rmSync(filePath, { recursive: true, force: true });
+      } else {
+        fs.unlinkSync(filePath);
+      }
+    }
     fs.rmSync(TEST_DIR, { recursive: true, force: true });
   }
   fs.mkdirSync(TEST_DIR, { recursive: true });

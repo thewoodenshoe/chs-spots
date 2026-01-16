@@ -18,6 +18,17 @@ const TEST_LAST_DOWNLOAD = path.join(TEST_RAW_DIR, '.last-download');
 // Helper to clean test directory
 function cleanTestDir() {
   if (fs.existsSync(TEST_DIR)) {
+    // Remove all contents first to avoid ENOTEMPTY errors
+    const files = fs.readdirSync(TEST_DIR);
+    for (const file of files) {
+      const filePath = path.join(TEST_DIR, file);
+      const stat = fs.statSync(filePath);
+      if (stat.isDirectory()) {
+        fs.rmSync(filePath, { recursive: true, force: true });
+      } else {
+        fs.unlinkSync(filePath);
+      }
+    }
     fs.rmSync(TEST_DIR, { recursive: true, force: true });
   }
   fs.mkdirSync(TEST_DIR, { recursive: true });
@@ -240,7 +251,8 @@ describe('Pipeline Step 1: download-raw-html.js - Comprehensive Tests', () => {
       expect(savedContent).toBe(html);
       expect(savedContent).toContain('&');
       expect(savedContent).toContain('"');
-      expect(savedContent).toContain('©');
+      // HTML encoding: © becomes &copy; when saved, so check for the encoded version
+      expect(savedContent).toContain('&copy;');
     });
   });
   

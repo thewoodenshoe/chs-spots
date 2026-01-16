@@ -381,7 +381,7 @@ function extractAreaFromAddress(address) {
     return 'Downtown Charleston';
   }
   
-  // Meeting Street: Lower numbers (1-400) = Downtown, Higher (400+) = North Charleston
+  // Meeting Street: Lower numbers (1-400) = Downtown, Higher (>400) = North Charleston
   // This is authoritative - don't override with bounds for these street numbers
   if (addressLower.includes('meeting street')) {
     const numberMatch = address.match(/(\d+)\s+meeting street/i);
@@ -389,7 +389,7 @@ function extractAreaFromAddress(address) {
       const streetNumber = parseInt(numberMatch[1]);
       if (streetNumber >= 1 && streetNumber <= 400) {
         return 'Downtown Charleston';
-      } else if (streetNumber >= 400) {
+      } else if (streetNumber > 400) {
         return 'North Charleston';
       }
     }

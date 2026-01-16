@@ -431,6 +431,7 @@ describe('Venue Seeding Script Validation', () => {
         // Verify validation script has the updated logic
         expect(validateScriptContent).toContain('streetNumber >= 1 && streetNumber <= 2000');
         expect(validateScriptContent).toContain('streetNumber >= 1 && streetNumber <= 400');
+        expect(validateScriptContent).toContain('streetNumber > 400'); // >400, not >=400
         expect(validateScriptContent).toContain('pittsburgh avenue');
       }
     });
