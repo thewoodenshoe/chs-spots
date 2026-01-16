@@ -31,6 +31,8 @@ describe('SubmissionModal', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Mock window.alert globally for all tests
+    window.alert = jest.fn();
   });
 
   describe('Rendering', () => {

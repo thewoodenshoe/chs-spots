@@ -410,10 +410,10 @@ describe('Venue Seeding Script Validation', () => {
       const scriptPath = path.join(__dirname, '..', 'seed-venues.js');
       const scriptContent = fs.readFileSync(scriptPath, 'utf8');
       
-      // Verify Meeting Street number-based logic
+      // Verify Meeting Street number-based logic (400 is inclusive in Downtown range, >400 is North Charleston)
       expect(scriptContent).toContain('meeting street');
       expect(scriptContent).toContain('streetNumber >= 1 && streetNumber <= 400');
-      expect(scriptContent).toContain('streetNumber >= 400');
+      expect(scriptContent).toContain('streetNumber > 400'); // >400, not >=400
     });
   });
 

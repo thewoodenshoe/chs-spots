@@ -150,11 +150,11 @@ export default function SubmissionModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pinLocation) {
-      alert('Please drop a pin on the map first');
+      window.alert('Please drop a pin on the map first');
       return;
     }
     if (!title.trim()) {
-      alert('Please enter a title');
+      window.alert('Please enter a title');
       return;
     }
     
