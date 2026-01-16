@@ -145,10 +145,13 @@ describe('extractHappyHours', () => {
         expect(writtenGoldContent.venueId).toBe(venueId);
         expect(writtenGoldContent.venueName).toBe(venueName);
         expect(writtenGoldContent.happyHour.found).toBe(true);
-        expect(writtenGoldContent.happyHour.times).toBe('4pm-7pm');
-        expect(writtenGoldContent.happyHour.days).toBe('Monday-Friday');
-        expect(writtenGoldContent.happyHour.specials).toEqual(['$5 draft beers', 'half-off appetizers']);
-        expect(writtenGoldContent.happyHour.confidence).toBe(95);
+        // New format uses entries array - check first entry
+        expect(writtenGoldContent.happyHour.entries).toBeDefined();
+        expect(writtenGoldContent.happyHour.entries.length).toBeGreaterThan(0);
+        expect(writtenGoldContent.happyHour.entries[0].times).toBe('4pm-7pm');
+        expect(writtenGoldContent.happyHour.entries[0].days).toBe('Monday-Friday');
+        expect(writtenGoldContent.happyHour.entries[0].specials).toEqual(['$5 draft beers', 'half-off appetizers']);
+        expect(writtenGoldContent.happyHour.entries[0].confidence).toBe(95);
         expect(writtenGoldContent.sourceHash).toBe(crypto.createHash('md5').update(JSON.stringify(mockSilverContent.pages)).digest('hex'));
     });
 
@@ -172,7 +175,8 @@ describe('extractHappyHours', () => {
         expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
         const writtenGoldContent = JSON.parse(fs.writeFileSync.mock.calls[0][1]);
         expect(writtenGoldContent.happyHour.found).toBe(false);
-        expect(writtenGoldContent.happyHour.confidence).toBe(80);
+        // New format uses reason instead of confidence when found is false
+        expect(writtenGoldContent.happyHour.reason).toBeDefined();
     });
 
     test('should differentiate happy hours from regular business hours', async () => {
@@ -195,9 +199,11 @@ describe('extractHappyHours', () => {
         expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
         const writtenGoldContent = JSON.parse(fs.writeFileSync.mock.calls[0][1]);
         expect(writtenGoldContent.happyHour.found).toBe(true);
-        expect(writtenGoldContent.happyHour.times).toBe('5pm-7pm');
-        expect(writtenGoldContent.happyHour.days).toBe('daily');
-        expect(writtenGoldContent.happyHour.specials).toEqual(['discounted drinks']);
+        // New format uses entries array - check first entry
+        expect(writtenGoldContent.happyHour.entries).toBeDefined();
+        expect(writtenGoldContent.happyHour.entries[0].times).toBe('5pm-7pm');
+        expect(writtenGoldContent.happyHour.entries[0].days).toBe('daily');
+        expect(writtenGoldContent.happyHour.entries[0].specials).toEqual(['discounted drinks']);
     });
 
     test('should recognize non-standard happy hour names (e.g., Heavy\'s Hour)', async () => {
@@ -219,10 +225,12 @@ describe('extractHappyHours', () => {
         expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
         const writtenGoldContent = JSON.parse(fs.writeFileSync.mock.calls[0][1]);
         expect(writtenGoldContent.happyHour.found).toBe(true);
-        expect(writtenGoldContent.happyHour.times).toBe('3pm-6pm');
-        expect(writtenGoldContent.happyHour.days).toBe('daily');
-        expect(writtenGoldContent.happyHour.specials).toEqual(["Special 'Heavy's Hour' pricing"]);
-        expect(writtenGoldContent.happyHour.confidence).toBe(90);
+        // New format uses entries array - check first entry
+        expect(writtenGoldContent.happyHour.entries).toBeDefined();
+        expect(writtenGoldContent.happyHour.entries[0].times).toBe('3pm-6pm');
+        expect(writtenGoldContent.happyHour.entries[0].days).toBe('daily');
+        expect(writtenGoldContent.happyHour.entries[0].specials).toEqual(["Special 'Heavy's Hour' pricing"]);
+        expect(writtenGoldContent.happyHour.entries[0].confidence).toBe(90);
     });
 
     test('should skip processing if GEMINI_API_KEY is not set', async () => {

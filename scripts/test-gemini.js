@@ -12,27 +12,54 @@ async function testGemini() {
     }
     console.log("GEMINI_API_KEY is set.");
 
-    try {
-        const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
+    // Try different model names to find which one works
+    const modelsToTry = [
+        "gemini-pro",
+        "gemini-1.5-flash",
+        "gemini-1.5-pro",
+        "gemini-2.5-flash",
+        "gemini-2.5-pro",
+        "gemini-1.0-pro"
+    ];
 
-        const prompt = "What is the capital of South Carolina?";
-        console.log(`Sending prompt: "${prompt}"`);
+    let success = false;
+    let lastError = null;
+    
+    for (const modelName of modelsToTry) {
+        try {
+            console.log(`\nTrying model: ${modelName}...`);
+            const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+            const model = genAI.getGenerativeModel({ model: modelName });
 
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+            const prompt = "What is the capital of South Carolina?";
+            console.log(`Sending prompt: "${prompt}"`);
 
-        console.log("---");
-        console.log("SUCCESS: Successfully received a response from the Gemini API.");
-        console.log(text);
-        console.log("---");
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text();
 
-    } catch (error) {
+            console.log("---");
+            console.log(`✅ SUCCESS with model: ${modelName}`);
+            console.log(`Response: ${text}`);
+            console.log("---");
+            success = true;
+            break; // Exit loop on success
+        } catch (error) {
+            lastError = error;
+            if (error.status === 404) {
+                console.log(`   ❌ ${modelName}: Not found (404)`);
+            } else {
+                console.log(`   ❌ ${modelName}: ${error.message}`);
+            }
+        }
+    }
+
+    if (!success) {
         console.error("---");
-        console.error("ERROR: An error occurred during the Gemini API test.");
-        console.error("This is likely due to your Google Cloud project configuration.");
-        console.error(error);
+        console.error("ERROR: All model names failed. This is likely due to your Google Cloud project configuration.");
+        if (lastError) {
+            console.error(lastError);
+        }
         console.error("---");
     }
 }
