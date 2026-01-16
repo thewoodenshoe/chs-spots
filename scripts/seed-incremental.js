@@ -78,7 +78,7 @@ if (!GOOGLE_MAPS_API_KEY) {
 // Paths
 const dataDir = path.join(__dirname, '..', 'data');
 const venuesFile = path.join(dataDir, 'venues.json');
-const areasConfigFile = path.join(dataDir, 'areas.json');
+const areasConfigFile = path.join(dataDir, 'config', 'areas.json');
 
 // Strategy 3: Only search for bar, restaurant, brewery (3 types)
 const VENUE_TYPES = [

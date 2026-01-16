@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 
 const venuesPath = path.join(__dirname, '..', 'data', 'venues.json');
-const areasPath = path.join(__dirname, '..', 'data', 'areas.json');
+const areasPath = path.join(__dirname, '..', 'data', 'config', 'areas.json');
 
 // Load data
 const venues = JSON.parse(fs.readFileSync(venuesPath, 'utf8'));

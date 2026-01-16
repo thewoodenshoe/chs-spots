@@ -9,7 +9,7 @@ const path = require('path');
 describe('seed-incremental.js', () => {
   const dataDir = path.join(__dirname, '..', 'data');
   const venuesFile = path.join(dataDir, 'venues.json');
-  const areasFile = path.join(dataDir, 'areas.json');
+  const areasFile = path.join(dataDir, 'config', 'areas.json');
   const missingWebsitesFile = path.join(dataDir, 'venue-website-not-found.csv');
 
   // Mock data

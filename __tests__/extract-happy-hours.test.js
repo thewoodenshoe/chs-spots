@@ -2,99 +2,75 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-// Mock the GoogleGenerativeAI module
-jest.mock('@google/generative-ai', () => {
-    return {
-        GoogleGenerativeAI: jest.fn(() => ({
-            getGenerativeModel: jest.fn(() => ({
-                startChat: jest.fn(() => ({
-                    sendMessage: jest.fn((prompt) => {
-                        // Simulate LLM responses based on prompt content
-                        // IMPORTANT: Check happy hour conditions BEFORE general business hours conditions
-                        // to ensure happy hours are detected even when both are present
-                        if (prompt.includes("Happy Hour: 4pm-7pm Monday-Friday")) {
-                            return Promise.resolve({
-                                response: {
-                                    text: () => `
-{ 
-                                        "found": true,
-                                        "times": "4pm-7pm",
-                                        "days": "Monday-Friday",
-                                        "specials": ["$5 draft beers", "half-off appetizers"],
-                                        "source": "https://example.com/specials",
-                                        "confidence": 95
-                                    }
-`
-                                }
-                            });
-                        } else if (prompt.includes("Happy Hour: 5-7pm") || prompt.includes("Happy Hour: 5-7pm!") || 
-                                   prompt.includes("Happy Hour daily from 5pm-7pm") ||
-                                   prompt.includes("Happy Hour daily from 5pm") ||
-                                   (prompt.includes("Test Venue 3") && prompt.includes("Happy Hour daily from 5pm-7pm")) ||
-                                   (prompt.includes("discounted drinks") && prompt.includes("Happy Hour daily"))) {
-                            return Promise.resolve({
-                                response: {
-                                    text: () => `
-{ 
-                                        "found": true,
-                                        "times": "5pm-7pm",
-                                        "days": "daily",
-                                        "specials": ["discounted drinks"],
-                                        "source": "https://example.com/specials",
-                                        "confidence": 95
-                                    }
-`
-                                }
-                            });
-                        } else if (prompt.includes("Heavy's Hour from 3-6pm")) {
-                            return Promise.resolve({
-                                response: {
-                                    text: () => `
-{ 
-                                        "found": true,
-                                        "times": "3pm-6pm",
-                                        "days": "daily",
-                                        "specials": ["Special 'Heavy's Hour' pricing"],
-                                        "source": "https://heavy.com/menu",
-                                        "confidence": 90
-                                    }
-`
-                                }
-                            });
-                        } else if (prompt.includes("Opening hours: 9am-10pm daily") || 
-                                   prompt.includes("Our full menu") ||
-                                   prompt.includes("We open at 8am and close at midnight")) {
-                            return Promise.resolve({
-                                response: {
-                                    text: () => `
-{ 
-                                        "found": false,
-                                        "confidence": 80
-                                    }
-`
-                                }
-                            });
-                        }
-                        return Promise.resolve({
-                            response: {
-                                text: () => `
-{ 
-                                    "found": false,
-                                    "confidence": 50
-                                }
-`
-                            }
-                        });
-                    }),
-                })),
-            })),
-        })),
-    };
-});
+// Mock node-fetch
+const mockFetch = jest.fn();
+jest.mock('node-fetch', () => mockFetch);
 
-// Import the function to be tested AFTER mocking
-const { GoogleGenerativeAI } = require('@google/generative-ai'); // Re-import to get the mocked version
 const extractHappyHours = require('../scripts/extract-happy-hours');
+
+// Helper function to create mock fetch responses
+function createMockFetchResponse(prompt) {
+    // Simulate LLM responses based on prompt content
+    // IMPORTANT: Check happy hour conditions BEFORE general business hours conditions
+    // to ensure happy hours are detected even when both are present
+    let responseText = '';
+    
+    if (prompt.includes("Happy Hour: 4pm-7pm Monday-Friday")) {
+        responseText = `{ 
+            "found": true,
+            "times": "4pm-7pm",
+            "days": "Monday-Friday",
+            "specials": ["$5 draft beers", "half-off appetizers"],
+            "source": "https://example.com/specials",
+            "confidence": 95
+        }`;
+    } else if (prompt.includes("Happy Hour: 5-7pm") || prompt.includes("Happy Hour: 5-7pm!") || 
+               prompt.includes("Happy Hour daily from 5pm-7pm") ||
+               prompt.includes("Happy Hour daily from 5pm") ||
+               (prompt.includes("Test Venue 3") && prompt.includes("Happy Hour daily from 5pm-7pm")) ||
+               (prompt.includes("discounted drinks") && prompt.includes("Happy Hour daily"))) {
+        responseText = `{ 
+            "found": true,
+            "times": "5pm-7pm",
+            "days": "daily",
+            "specials": ["discounted drinks"],
+            "source": "https://example.com/specials",
+            "confidence": 95
+        }`;
+    } else if (prompt.includes("Heavy's Hour from 3-6pm")) {
+        responseText = `{ 
+            "found": true,
+            "times": "3pm-6pm",
+            "days": "daily",
+            "specials": ["Special 'Heavy's Hour' pricing"],
+            "source": "https://heavy.com/menu",
+            "confidence": 90
+        }`;
+    } else if (prompt.includes("Opening hours: 9am-10pm daily") || 
+               prompt.includes("Our full menu") ||
+               prompt.includes("We open at 8am and close at midnight")) {
+        responseText = `{ 
+            "found": false,
+            "confidence": 80
+        }`;
+    } else {
+        responseText = `{ 
+            "found": false,
+            "confidence": 50
+        }`;
+    }
+    
+    return Promise.resolve({
+        ok: true,
+        json: async () => ({
+            choices: [{
+                message: {
+                    content: responseText
+                }
+            }]
+        })
+    });
+}
 
 // Mock file system operations
 jest.mock('fs', () => ({
@@ -107,19 +83,39 @@ jest.mock('fs', () => ({
 }));
 
 describe('extractHappyHours', () => {
-    const MOCK_SILVER_MERGED_DIR = path.join(__dirname, '../data/silver_merged/all');
+    const MOCK_SILVER_TRIMMED_DIR = path.join(__dirname, '../data/silver_trimmed/all');
     const MOCK_GOLD_DIR = path.join(__dirname, '../data/gold');
     const MOCK_BULK_COMPLETE_FLAG = path.join(MOCK_GOLD_DIR, '.bulk-complete');
 
     beforeEach(() => {
         jest.clearAllMocks();
-        process.env.GEMINI_API_KEY = 'mock-api-key'; // Ensure API key is set
+        process.env.GROK_API_KEY = 'mock-api-key'; // Ensure API key is set
         fs.existsSync.mockReturnValue(true); // Default to directories existing
         fs.mkdirSync.mockReturnValue(undefined); // Mock mkdirSync
+        
+        // Mock fetch to return successful responses
+        mockFetch.mockImplementation((url, options) => {
+            const body = JSON.parse(options.body);
+            const prompt = body.messages[0].content;
+            return createMockFetchResponse(prompt);
+        });
+        
+        // Mock LLM instructions file read
+        const mockLLMInstructions = `You are an expert analyst...
+{VENUE_ID}
+{VENUE_NAME}
+{CONTENT_PLACEHOLDER}`;
+        fs.readFileSync.mockImplementation((filePath, encoding) => {
+            if (filePath && filePath.includes('llm-instructions.txt')) {
+                return mockLLMInstructions;
+            }
+            // For other files, use the actual implementation or return empty
+            return '';
+        });
     });
 
     afterEach(() => {
-        delete process.env.GEMINI_API_KEY;
+        delete process.env.GROK_API_KEY;
     });
 
     test('should extract happy hour information correctly for a venue', async () => {
@@ -132,7 +128,7 @@ describe('extractHappyHours', () => {
                 { url: 'https://example.com/about', text: 'About our place. Opening hours: 11am-10pm daily.' }
             ]
         };
-        const mockSilverFilePath = path.join(MOCK_SILVER_MERGED_DIR, `${venueId}.json`);
+        const mockSilverFilePath = path.join(MOCK_SILVER_TRIMMED_DIR, `${venueId}.json`);
 
         fs.readdirSync.mockReturnValueOnce([`${venueId}.json`]);
         fs.readFileSync.mockReturnValueOnce(JSON.stringify(mockSilverContent)); // For silver file
@@ -233,14 +229,14 @@ describe('extractHappyHours', () => {
         expect(writtenGoldContent.happyHour.entries[0].confidence).toBe(90);
     });
 
-    test('should skip processing if GEMINI_API_KEY is not set', async () => {
-        delete process.env.GEMINI_API_KEY; // Unset the mock API key
+    test('should skip processing if GROK_API_KEY is not set', async () => {
+        delete process.env.GROK_API_KEY; // Unset the mock API key
         const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
         process.exit = jest.fn(); // Mock process.exit
 
         await extractHappyHours(false);
 
-        expect(consoleErrorSpy).toHaveBeenCalledWith('Error: GEMINI_API_KEY is not set in environment variables.');
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Error: GROK_API_KEY is not set in environment variables.');
         expect(process.exit).toHaveBeenCalledWith(1);
         // API key is checked after reading files in current implementation, so readdirSync will be called
         // But exit happens immediately after API key check
@@ -335,7 +331,7 @@ describe('extractHappyHours', () => {
 
     test('should log warning and exit if bulk complete flag is missing in incremental mode', async () => {
         // Ensure API key is set (checked first)
-        process.env.GEMINI_API_KEY = 'mock-api-key';
+        process.env.GROK_API_KEY = 'mock-api-key';
         
         // Mock readdirSync to return at least one file so the script doesn't return early
         // The bulk flag check happens AFTER reading files but before processing
@@ -370,7 +366,7 @@ describe('extractHappyHours', () => {
         consoleWarnSpy.mockRestore();
     });
 
-    test('should log error and exit if silver_merged directory cannot be read', async () => {
+    test('should log error and exit if silver_trimmed directory cannot be read', async () => {
         fs.readdirSync.mockImplementation(() => {
             throw new Error('Permission denied');
         });
@@ -381,7 +377,7 @@ describe('extractHappyHours', () => {
 
         await extractHappyHours(true);
 
-        expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Error reading silver_merged directory: Permission denied'));
+        expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Error reading silver_trimmed directory: Permission denied'));
         expect(process.exit).toHaveBeenCalledWith(1);
         consoleErrorSpy.mockRestore();
     });

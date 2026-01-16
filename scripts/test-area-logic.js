@@ -7,7 +7,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Load areas config
-const areasConfigPath = path.join(__dirname, '..', 'data', 'areas.json');
+const areasConfigPath = path.join(__dirname, '..', 'data', 'config', 'areas.json');
 const areasConfig = JSON.parse(fs.readFileSync(areasConfigPath, 'utf8'));
 
 // Mock the helper functions (simplified versions)

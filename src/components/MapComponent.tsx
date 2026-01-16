@@ -289,34 +289,113 @@ export default function MapComponent({
 
   // Find closest spot
   const findClosestSpot = useCallback(() => {
-    if (!map || filteredSpots.length === 0) return;
+    if (!map || filteredSpots.length === 0) {
+      setToastMessage('No spots available');
+      setTimeout(() => setToastMessage(null), 3000);
+      return;
+    }
     
-    // Get origin from map center or user location
-    const origin = userLocation || map.getCenter()?.toJSON() || center;
-    if (!origin) return;
-    
-    // Calculate distances to all filtered spots
-    const spotsWithDistance = filteredSpots.map(spot => ({
-      spot,
-      distance: calculateDistance(origin.lat, origin.lng, spot.lat, spot.lng),
-    }));
-    
-    // Find closest
-    const closest = spotsWithDistance.reduce((prev, current) => 
-      current.distance < prev.distance ? current : prev
-    );
-    
-    // Show popup and toast
-    setSelectedSpot(closest.spot);
-    setToastMessage(`Closest: ${closest.spot.title} (${closest.distance.toFixed(1)} miles)`);
-    
-    // Center map on closest spot
-    map.setCenter({ lat: closest.spot.lat, lng: closest.spot.lng });
-    map.setZoom(15);
-    
-    // Clear toast after 3 seconds
-    setTimeout(() => setToastMessage(null), 3000);
-  }, [map, filteredSpots, userLocation, center]);
+    // Request location permission when button is clicked
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userPos = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+          setUserLocation(userPos);
+          
+          // Calculate distances to all filtered spots from user location
+          const spotsWithDistance = filteredSpots.map(spot => ({
+            spot,
+            distance: calculateDistance(userPos.lat, userPos.lng, spot.lat, spot.lng),
+          }));
+          
+          // Find closest
+          const closest = spotsWithDistance.reduce((prev, current) => 
+            current.distance < prev.distance ? current : prev
+          );
+          
+          // Show popup and toast
+          setSelectedSpot(closest.spot);
+          setToastMessage(`Closest: ${closest.spot.title} (${closest.distance.toFixed(1)} miles)`);
+          
+          // Center map on closest spot
+          map.setCenter({ lat: closest.spot.lat, lng: closest.spot.lng });
+          map.setZoom(15);
+          
+          // Clear toast after 3 seconds
+          setTimeout(() => setToastMessage(null), 3000);
+        },
+        (error) => {
+          // Location permission denied or error - use map center as fallback
+          const origin = map.getCenter()?.toJSON() || center;
+          if (!origin) {
+            setToastMessage('Unable to determine location');
+            setTimeout(() => setToastMessage(null), 3000);
+            return;
+          }
+          
+          // Calculate distances from map center
+          const spotsWithDistance = filteredSpots.map(spot => ({
+            spot,
+            distance: calculateDistance(origin.lat, origin.lng, spot.lat, spot.lng),
+          }));
+          
+          // Find closest
+          const closest = spotsWithDistance.reduce((prev, current) => 
+            current.distance < prev.distance ? current : prev
+          );
+          
+          // Show popup and toast with note about using map center
+          setSelectedSpot(closest.spot);
+          setToastMessage(`Closest from map center: ${closest.spot.title} (${closest.distance.toFixed(1)} miles)`);
+          
+          // Center map on closest spot
+          map.setCenter({ lat: closest.spot.lat, lng: closest.spot.lng });
+          map.setZoom(15);
+          
+          // Clear toast after 3 seconds
+          setTimeout(() => setToastMessage(null), 3000);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0, // Force fresh location
+        }
+      );
+    } else {
+      // Geolocation not supported - use map center
+      const origin = map.getCenter()?.toJSON() || center;
+      if (!origin) {
+        setToastMessage('Location not supported');
+        setTimeout(() => setToastMessage(null), 3000);
+        return;
+      }
+      
+      // Calculate distances from map center
+      const spotsWithDistance = filteredSpots.map(spot => ({
+        spot,
+        distance: calculateDistance(origin.lat, origin.lng, spot.lat, spot.lng),
+      }));
+      
+      // Find closest
+      const closest = spotsWithDistance.reduce((prev, current) => 
+        current.distance < prev.distance ? current : prev
+      );
+      
+      // Show popup and toast
+      setSelectedSpot(closest.spot);
+      setToastMessage(`Closest from map center: ${closest.spot.title} (${closest.distance.toFixed(1)} miles)`);
+      
+      // Center map on closest spot
+      map.setCenter({ lat: closest.spot.lat, lng: closest.spot.lng });
+      map.setZoom(15);
+      
+      // Clear toast after 3 seconds
+      setTimeout(() => setToastMessage(null), 3000);
+    }
+  }, [map, filteredSpots, center]);
 
   // Listen for findClosestSpot event
   useEffect(() => {

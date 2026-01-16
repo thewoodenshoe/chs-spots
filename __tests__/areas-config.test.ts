@@ -6,8 +6,8 @@
 import fs from 'fs';
 import path from 'path';
 
-describe('Step 1: Areas Configuration (data/areas.json)', () => {
-  const areasFilePath = path.join(process.cwd(), 'data', 'areas.json');
+describe('Step 1: Areas Configuration (data/config/areas.json)', () => {
+  const areasFilePath = path.join(process.cwd(), 'data', 'config', 'areas.json');
   let areasData: any[];
 
   beforeAll(() => {

@@ -33,14 +33,14 @@ describe('/api/areas route', () => {
       { name: 'Park Circle', center: { lat: 32.878, lng: -80.01 }, radiusMeters: 4000 },
     ];
 
-    mockPathJoin.mockReturnValue('/mock/project/data/areas.json');
+    mockPathJoin.mockReturnValue('/mock/project/data/config/areas.json');
     mockReadFileSync.mockReturnValue(JSON.stringify(mockAreas));
 
     const response = await GET();
     const data = await response.json();
 
-    expect(mockPathJoin).toHaveBeenCalledWith('/mock/project', 'data', 'areas.json');
-    expect(mockReadFileSync).toHaveBeenCalledWith('/mock/project/data/areas.json', 'utf8');
+    expect(mockPathJoin).toHaveBeenCalledWith('/mock/project', 'data', 'config', 'areas.json');
+    expect(mockReadFileSync).toHaveBeenCalledWith('/mock/project/data/config/areas.json', 'utf8');
     expect(response.status).toBe(200);
     expect(data).toEqual(['Daniel Island', 'Mount Pleasant', 'Park Circle']);
   });
@@ -52,7 +52,7 @@ describe('/api/areas route', () => {
       { name: 'West Ashley', displayName: 'West Ashley', center: { lat: 32.785, lng: -80.04 } },
     ];
 
-    mockPathJoin.mockReturnValue('/mock/project/data/areas.json');
+    mockPathJoin.mockReturnValue('/mock/project/data/config/areas.json');
     mockReadFileSync.mockReturnValue(JSON.stringify(mockAreas));
 
     const response = await GET();
@@ -64,7 +64,7 @@ describe('/api/areas route', () => {
   });
 
   it('should handle file not found error', async () => {
-    mockPathJoin.mockReturnValue('/mock/project/data/areas.json');
+    mockPathJoin.mockReturnValue('/mock/project/data/config/areas.json');
     mockReadFileSync.mockImplementation(() => {
       throw new Error('File not found');
     });
@@ -78,7 +78,7 @@ describe('/api/areas route', () => {
   });
 
   it('should handle invalid JSON error', async () => {
-    mockPathJoin.mockReturnValue('/mock/project/data/areas.json');
+    mockPathJoin.mockReturnValue('/mock/project/data/config/areas.json');
     mockReadFileSync.mockReturnValue('invalid json');
 
     const response = await GET();
@@ -102,7 +102,7 @@ describe('/api/areas route', () => {
       { name: 'James Island' },
     ];
 
-    mockPathJoin.mockReturnValue('/mock/project/data/areas.json');
+    mockPathJoin.mockReturnValue('/mock/project/data/config/areas.json');
     mockReadFileSync.mockReturnValue(JSON.stringify(mockAreas));
 
     const response = await GET();

@@ -55,27 +55,20 @@ if (!fs.existsSync(RAW_INCREMENTAL_DIR)) {
 // Constants
 const MAX_SUBPAGES = 10;
 const PARALLEL_WORKERS = 15; // Increased from 5 to speed up downloads
-const SUBPAGE_KEYWORDS = [
-  'menu',              // Matches: menu, menus, food-menu, drink-menu, etc.
-  'happy-hour',        // Matches: happy-hour, happy-hours
-  'happyhour',         // Matches: happyhour, happyhours
-  'hh',                // Matches: hh, hh-menu, happy-hh
-  'specials',          // Matches: specials, special, happy-hour-specials
-  'events',            // Matches: events, event, calendar-events
-  'bar',               // Matches: bar, bar-menu, bar-specials
-  'drinks',            // Matches: drinks, drink, drink-menu, drink-specials
-  'deals',             // Matches: deals, deal, daily-deals
-  'promos',            // Matches: promos, promo, promotions, promotional
-  'promotions',        // Matches: promotions, promotion
-  'offers',            // Matches: offers, offer, special-offers
-  'happenings',        // Matches: happenings, happening
-  'whats-on',          // Matches: whats-on, what's-on
-  'calendar',          // Matches: calendar, events-calendar
-  'cocktails',         // Matches: cocktails, cocktail, cocktail-menu
-  'wine',              // Matches: wine, wines, wine-menu, wine-list
-  'beer',              // Matches: beer, beers, beer-menu, beer-list
-  'location'           // Matches: location, locations, clements-ferry-location, etc.
-];
+const SUBMENU_KEYWORDS_PATH = path.join(__dirname, '../data/config/submenu-keywords.json');
+
+// Load submenu keywords from config file
+let SUBPAGE_KEYWORDS;
+try {
+    const keywordsData = fs.readFileSync(SUBMENU_KEYWORDS_PATH, 'utf8');
+    SUBPAGE_KEYWORDS = JSON.parse(keywordsData);
+    if (!Array.isArray(SUBPAGE_KEYWORDS)) {
+        throw new Error('submenu-keywords.json must contain an array');
+    }
+} catch (error) {
+    console.error(`Error reading submenu keywords from ${SUBMENU_KEYWORDS_PATH}: ${error.message}`);
+    process.exit(1);
+}
 
 /**
  * Generate hash from URL for filename

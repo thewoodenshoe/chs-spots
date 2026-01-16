@@ -63,7 +63,13 @@ function logVerbose(message) {
 }
 
 const dataDir = path.join(__dirname, '..', 'data');
-const areasFile = path.join(dataDir, 'areas.json');
+// Ensure config directory exists
+const configDir = path.join(dataDir, 'config');
+if (!fs.existsSync(configDir)) {
+  fs.mkdirSync(configDir, { recursive: true });
+}
+
+const areasFile = path.join(configDir, 'areas.json');
 
 /**
  * Validate bounds for an area

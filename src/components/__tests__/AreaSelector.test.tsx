@@ -6,7 +6,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Load actual areas from areas.json file
-const areasFilePath = path.join(process.cwd(), 'data', 'areas.json');
+const areasFilePath = path.join(process.cwd(), 'data', 'config', 'areas.json');
 let areasFromFile: string[] = [];
 
 try {

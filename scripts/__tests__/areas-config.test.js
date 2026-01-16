@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 describe('Areas Configuration Validation', () => {
-  const areasFilePath = path.join(__dirname, '../../data/areas.json');
+  const areasFilePath = path.join(__dirname, '../../data/config/areas.json');
   let areasData;
 
   beforeAll(() => {

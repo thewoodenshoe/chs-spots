@@ -9,8 +9,8 @@ const { execSync } = require('child_process');
 
 describe('create-areas.js script tests', () => {
   const scriptPath = path.join(__dirname, '..', 'scripts', 'create-areas.js');
-  const areasFilePath = path.join(__dirname, '..', 'data', 'areas.json');
-  const testAreasFilePath = path.join(__dirname, '..', 'data', 'areas.json.backup');
+  const areasFilePath = path.join(__dirname, '..', 'data', 'config', 'areas.json');
+  const testAreasFilePath = path.join(__dirname, '..', 'data', 'config', 'areas.json.backup');
   
   // Backup existing areas.json if it exists
   beforeAll(() => {

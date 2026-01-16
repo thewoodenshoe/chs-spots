@@ -7,7 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const areasPath = path.join(__dirname, '..', 'data', 'areas.json');
+const areasPath = path.join(__dirname, '..', 'data', 'config', 'areas.json');
 
 console.log('🧪 Validating Areas API Route Logic\n');
 console.log(`📁 Areas file: ${path.resolve(areasPath)}\n`);

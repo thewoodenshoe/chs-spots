@@ -52,11 +52,20 @@ if (!GOOGLE_MAPS_API_KEY) {
   process.exit(1);
 }
 
-// Paths
+// Paths - Read from and write to reporting/venues.json (incremental, preserves existing data)
 const dataDir = path.join(__dirname, '..', 'data');
+const reportingDir = path.join(dataDir, 'reporting');
 const backupDir = path.join(dataDir, 'backup');
-const outputFile = path.join(dataDir, 'venues.json');
-const areasConfigFile = path.join(dataDir, 'areas.json');
+// Primary output: reporting/venues.json (static file, incremental updates only)
+const outputFile = path.join(reportingDir, 'venues.json');
+// Also write to data/venues.json for backwards compatibility
+const dataVenuesFile = path.join(dataDir, 'venues.json');
+const areasConfigFile = path.join(dataDir, 'config', 'areas.json');
+
+// Ensure reporting directory exists
+if (!fs.existsSync(reportingDir)) {
+  fs.mkdirSync(reportingDir, { recursive: true });
+}
 
 // Ensure backup directory exists
 if (!fs.existsSync(backupDir)) {
@@ -1251,10 +1260,15 @@ async function fetchKnownVenuesByName(areaName, knownVenueNames) {
     }
   }
   
-  // Write to file
+  // Write to reporting/venues.json (primary location - static file, incremental updates)
   try {
     fs.writeFileSync(outputFile, JSON.stringify(allVenues, null, 2), 'utf8');
     log(`\n📝 Successfully wrote ${allVenues.length} total venues to ${path.resolve(outputFile)}`);
+    
+    // Also write to data/venues.json for backwards compatibility with other scripts
+    fs.writeFileSync(dataVenuesFile, JSON.stringify(allVenues, null, 2), 'utf8');
+    log(`   📋 Also wrote to ${path.resolve(dataVenuesFile)} for backwards compatibility`);
+    
     log(`   ✨ Added ${newVenues.length} new venues across ${areasToProcess.length} area(s)`);
     for (const areaConfig of areasToProcess) {
       const areaName = areaConfig.name;

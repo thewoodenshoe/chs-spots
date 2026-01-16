@@ -1,1 +1,83 @@
-[]
+[
+  {
+    "id": 1,
+    "lat": 32.8584797,
+    "lng": -79.91157559999999,
+    "title": "Orlando's Brick Oven Pizza",
+    "description": "11am-2:30pm • Monday-Friday\nPizza slices offered (lunch availability)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 2,
+    "lat": 32.8619906,
+    "lng": -79.90698689999999,
+    "title": "Heavy's Barburger",
+    "description": "4pm-6pm • Monday-Friday\n$5 Shorty Margaritas\nNeighborhood Draft Beer\nGlass of House Wine\nJack & Coke\nTito’s Vodka & Soda",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 3,
+    "lat": 32.8637094,
+    "lng": -79.90362089999999,
+    "title": "Dragon Palace Chinese Bistro",
+    "description": "Lunch • Not specified\n$12.99 lunch entrees (e.g., General Tso's Chicken, Mongolian Beef)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 4,
+    "lat": 32.8620785,
+    "lng": -79.9046341,
+    "title": "Wasabi of Daniel Island",
+    "description": "4:30pm-7:00pm • Monday-Saturday\nWasabi Happy Hour\n\n---\n\n4:30pm-9:45pm • Monday\n20% Off For All Military, Health Care, Firefighters, Policemen And Teachers\n\n---\n\n4:30pm-9:45pm • Tuesday\nTitos Tuesday\n\n---\n\n4:30pm-9:45pm • Wednesday\nLadies Night: Discounted Bottles of Wine up to 1/2 Off\n\n---\n\n4:30pm-9:45pm • Thursday\n$3 Asian Bottled Beers\nSapporo 22oz cans for $5.50\n\n---\n\n4:30pm-9:45pm • Thursday\nHalf off Hot Sake any size, any flavor\n\n---\n\n4:30pm-9:45pm • Saturday\nDiscounted Bottles of Wine up to 1/2 Off",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 5,
+    "lat": 32.8555203,
+    "lng": -79.9032301,
+    "title": "The Kingstide",
+    "description": "4pm-6pm • Monday-Friday\nHH Chicken BLT 14$\nRoasted Meatballs 10$\nHH She Crab Soup 9$\nFocaccia 9$\nPopcorn Shrimp 10$\nBartender's Choice Cocktail 13$\nPino Grigio 9$\nWhite Wine 11$\nCabernet 12$\nPinot Noir 13$\n$2 off Draft Beers 6$\n$2 Off Titos Cocktails 10$\n\n---\n\n11am-2:30pm • Saturday-Sunday\nBreakfast sandwich 14$\nBreakfast Wrap 14$\nSmoked Salmon Avocado Toast 18$\n\n---\n\nAll day • Daily (January 8-18)\nThree-course meal for $55/person (choice of Lobster Bisque/Steamed Mussels/Burrata Salad; Crab Pappardelle/Market Fish/Pork Milanese; Kingstide Crunch Bar/Dulce De Leche Cheesecake)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 6,
+    "lat": 32.8590054,
+    "lng": -79.90998499999999,
+    "title": "Mac's Daniel Island",
+    "description": "6pm-9pm • Friday\nLive Music on the Patio",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 7,
+    "lat": 32.915732,
+    "lng": -79.88425,
+    "title": "Dog and Duck",
+    "description": "4pm-7pm • Every Day\n$3.50 House Liquor\n$3 Domestic Bottles\n$5 Cecchi Wines\n$5 Rumplemintz / Jager / Jameson / Jack Daniels / Lunazul / Fireball\n$4 House Wine (variation in some listings)\n\n---\n\n11am-4pm • Saturday-Sunday\n$15 Buckets of Mimosas\n$5 Hair-of-the-Dog Bloody Marys\n\n---\n\nAll Day • Saturday\n$1 off Columbia Craft & Peak Drift Drafts\n\n---\n\nStarting at 5pm (until gone) • Specific Dates (e.g., 12/13, 12/27, etc.)\n$19 Oyster Buckets\n\n---\n\nAll Day • Every Friday\n$14.95 Flounder Basket with fries, slaw, and tartar sauce",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 8,
+    "lat": 32.8614384,
+    "lng": -79.9082524,
+    "title": "Ristorante LIDI",
+    "description": "4pm-6pm • Monday, Wednesday, Thursday, Friday",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 9,
+    "lat": 32.8623763,
+    "lng": -79.9041836,
+    "title": "Ali Baba Deli & Catering",
+    "description": "11:00 AM - 9:00 PM • Sunday (specific date: January 18th)\nMediterranean Sandwich and a side with a drink for special price",
+    "type": "Happy Hour",
+    "source": "automated"
+  }
+]

@@ -1,13 +1,16 @@
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env.local') });
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+// node-fetch v3 is ESM, but we need to handle CommonJS require
+const fetchModule = require('node-fetch');
+const fetch = typeof fetchModule === 'function' ? fetchModule : fetchModule.default;
 const crypto = require('crypto');
 
-const SILVER_MERGED_DIR = path.join(__dirname, '../data/silver_merged/all');
+const SILVER_TRIMMED_DIR = path.join(__dirname, '../data/silver_trimmed/all');
 const GOLD_DIR = path.join(__dirname, '../data/gold');
 const BULK_COMPLETE_FLAG = path.join(GOLD_DIR, '.bulk-complete');
 const INCREMENTAL_HISTORY_DIR = path.join(GOLD_DIR, 'incremental-history');
+const LLM_INSTRUCTIONS_PATH = path.join(__dirname, '../data/config/llm-instructions.txt');
 
 // Ensure gold and incremental history directories exist
 if (!fs.existsSync(GOLD_DIR)) fs.mkdirSync(GOLD_DIR, { recursive: true });
@@ -15,27 +18,27 @@ if (!fs.existsSync(INCREMENTAL_HISTORY_DIR)) fs.mkdirSync(INCREMENTAL_HISTORY_DI
 
 async function extractHappyHours(isIncremental = false) {
     // Access your API key as an environment variable (see README)
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-    if (!GEMINI_API_KEY) {
-        console.error('Error: GEMINI_API_KEY is not set in environment variables.');
+    const GROK_API_KEY = process.env.GROK_API_KEY;
+    if (!GROK_API_KEY) {
+        console.error('Error: GROK_API_KEY is not set in environment variables.');
         process.exit(1);
     }
-    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    // Use gemini-2.5-flash (verified working model)
-    // gemini-2.5-flash is fast, cost-effective, and stable
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const GROK_API_URL = 'https://api.x.ai/v1/chat/completions';
+    const GROK_MODEL = 'grok-4-latest'; // xAI Grok model (matches working curl example)
     console.log(`Starting happy hour extraction (${isIncremental ? 'incremental' : 'bulk'})...`);
 
     let venueFiles = [];
     try {
-        venueFiles = fs.readdirSync(SILVER_MERGED_DIR).filter(file => file.endsWith('.json'));
+        venueFiles = fs.readdirSync(SILVER_TRIMMED_DIR).filter(file => file.endsWith('.json'));
     } catch (error) {
-        console.error(`Error reading silver_merged directory: ${error.message}`);
+        console.error(`Error reading silver_trimmed directory: ${error.message}`);
+        console.error(`Please run 'node scripts/trim-silver-html.js' first.`);
         process.exit(1);
     }
     
     if (venueFiles.length === 0) {
-        console.log('No venue files found in silver_merged/all/ directory.');
+        console.log('No venue files found in silver_trimmed/all/ directory.');
+        console.log('Please run \'node scripts/trim-silver-html.js\' first.');
         return;
     }
 
@@ -47,7 +50,7 @@ async function extractHappyHours(isIncremental = false) {
 
     for (const file of venueFiles) {
         const venueId = path.basename(file, '.json');
-        const silverFilePath = path.join(SILVER_MERGED_DIR, file);
+        const silverFilePath = path.join(SILVER_TRIMMED_DIR, file);
         const goldFilePath = path.join(GOLD_DIR, `${venueId}.json`);
 
         let venueData;
@@ -58,10 +61,14 @@ async function extractHappyHours(isIncremental = false) {
             continue;
         }
 
-        const sourceHash = crypto.createHash('md5').update(JSON.stringify(venueData.pages)).digest('hex');
+        // Create hash from pages content (text or html) for change detection
+        // Use text field if available (from silver_trimmed), otherwise fallback to html
+        const pagesContent = venueData.pages.map(p => p.text || p.html || '').join('\n');
+        const sourceHash = crypto.createHash('md5').update(pagesContent).digest('hex');
 
-        // Check if already processed and no changes for incremental mode
-        if (isIncremental && fs.existsSync(goldFilePath)) {
+        // Check if already processed and no changes (works in both bulk and incremental modes)
+        // Skip LLM call if content hasn't changed - saves API costs
+        if (fs.existsSync(goldFilePath)) {
             try {
                 const existingGoldData = JSON.parse(fs.readFileSync(goldFilePath, 'utf8'));
                 if (existingGoldData.sourceHash === sourceHash) {
@@ -75,132 +82,102 @@ async function extractHappyHours(isIncremental = false) {
         
         console.log(`Processing ${venueData.venueName} (${venueId})...`);
 
-        // Construct LLM Prompt
-        const prompt = `
-            You are an expert analyst and creative detective specializing in uncovering hidden or creatively named happy hour promotions on restaurant and bar websites. Your job is to be **extremely generous and open-minded**: capture **every possible** time-limited drink/food discount, deal, or special — even if it's not called "happy hour". Err on the side of inclusion with low confidence rather than missing something.
+        // Load LLM instructions from config file
+        let llmInstructions;
+        try {
+            llmInstructions = fs.readFileSync(LLM_INSTRUCTIONS_PATH, 'utf8');
+        } catch (error) {
+            console.error(`Error reading LLM instructions from ${LLM_INSTRUCTIONS_PATH}: ${error.message}`);
+            process.exit(1);
+        }
 
-            The input is raw HTML text (merged from homepage + all submenus for one venue). Ignore garbage (scripts, navigation, footers, unrelated ads, reviews, cookie notices) and focus on menu, specials, bar, drinks, or promotion sections.
-
-            Look for these patterns (be very creative and human-like):
-            - Any time window + implied benefit/discount (e.g., "4-7pm", "5-7", "late afternoon", "early evening", "after work", "sunset", "twilight", "happy vibes")
-            - Creative or coded names: "jolly hours", "heavy hour", "sunset specials", "after-work deals", "bar hour", "happy vibes hour", "discount hour", "deal time"
-            - Buy-more-pay-less or combo deals during a period (e.g., "between 5-7 buy 3 pay 2", "2-for-1 from 4-6", "free appetizer with drink 5-7pm")
-            - Dollar amounts, percentages off, "half off", "2-for-1", "dollar oysters", "cheap drinks", "pint specials" tied to a time
-            - "Specials", "deals", "offers", "promotions", "bar bites" with time range
-            - Typical happy hour windows: late afternoon to early night (3pm-8pm range, especially 4-7, 5-7, 3-6, etc.)
-
-            Rules (do NOT violate):
-            1. Never include regular business hours (e.g., "open 11am-10pm") unless explicitly tied to discounts/specials.
-            2. Ignore unrelated "happy" words (happy customers, we're happy to serve, happy birthday, etc.).
-            3. Ignore user reviews, testimonials, blog posts — only use the restaurant's own promotion text.
-            4. Standardize days: "Monday-Friday", "Daily", "Every day", "Weekdays", "Tue-Thu", etc.
-            5. If multiple promotions (early + late night), return as array in happyHour.entries.
-            6. Confidence score (0–100):
-               - 90–100: Explicit "happy hour" + clear days/times/specials
-               - 70–89: Strong match (clear time + discount, no "happy hour" word)
-               - 40–69: Partial/inferred (time range + some deal language)
-               - 10–39: Very weak/creative/ambiguous (e.g., "jolly hours", "sunset deals")
-               - 0–9: Almost certainly not — but still include if any hint
-            7. For every confidence < 80, add a clear confidence_score_rationale explaining why the score is low.
-
-            Output format (single JSON object for this venue):
-            {
-              "venueId": "${venueId}",
-              "venueName": "${venueData.venueName}",
-              "happyHour": {
-                "found": true,
-                "entries": [
-                  {
-                    "days": "Monday-Friday",
-                    "times": "4pm-7pm",
-                    "specials": ["$5 beers", "Half off appetizers"],
-                    "source": "https://example.com/menu",
-                    "confidence": 85,
-                    "confidence_score_rationale": "Explicit 'happy hour' + times + specials — high clarity"
-                  }
-                ]
-              }
-            }
-            OR if no happy hour found:
-            {
-              "venueId": "${venueId}",
-              "venueName": "${venueData.venueName}",
-              "happyHour": {
-                "found": false,
-                "reason": "No time-limited promotion or discount found - only business hours listed"
-              }
-            }
-
-            Only include venues with at least one possible match (found: true), but low confidence is fine and encouraged for edge cases.
-
-            Here is the website content for ${venueData.venueName} from various pages:
-            ---
-            ${venueData.pages.map(p => `URL: ${p.url}\nContent:\n${p.text}`).join('\n---\n')}
-            ---
-            `;
+        // Replace placeholders in the instructions template
+        // Use 'text' field if available (from silver_trimmed), otherwise fallback to 'html'
+        const contentPlaceholder = venueData.pages.map(p => {
+            const content = p.text || p.html || '';
+            return `URL: ${p.url}\nContent:\n${content}`;
+        }).join('\n---\n');
+        const prompt = llmInstructions
+            .replace(/{VENUE_ID}/g, venueId)
+            .replace(/{VENUE_NAME}/g, venueData.venueName)
+            .replace(/{CONTENT_PLACEHOLDER}/g, contentPlaceholder);
 
         let result;
         let retries = 3;
         let delay = 1000; // Start with 1 second delay
         
         while (retries > 0) {
+            let response;
             try {
-                const chat = model.startChat({
-                    history: [
-                        {
-                            role: "user",
-                            parts: [{ text: prompt }]
-                        }
-                    ],
-                    generationConfig: {
-                        maxOutputTokens: 2048,
+                response = await fetch(GROK_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${GROK_API_KEY}`
                     },
+                    body: JSON.stringify({
+                        model: GROK_MODEL,
+                        messages: [
+                            {
+                                role: 'user',
+                                content: prompt
+                            }
+                        ],
+                        stream: false,
+                        max_tokens: 2048,
+                        temperature: 0.7
+                    })
                 });
 
-                const response = await chat.sendMessage(prompt);
-                const text = response.response.text();
-            
-            // Attempt to parse JSON, sometimes LLMs wrap it in markdown
-            const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/);
-            if (jsonMatch && jsonMatch[1]) {
-                result = JSON.parse(jsonMatch[1]);
-            } else {
-                // Try to extract JSON from the response text
-                const jsonStart = text.indexOf('{');
-                const jsonEnd = text.lastIndexOf('}') + 1;
-                if (jsonStart !== -1 && jsonEnd > jsonStart) {
-                    result = JSON.parse(text.substring(jsonStart, jsonEnd));
-                } else {
-                    result = JSON.parse(text); // Try parsing directly
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(`HTTP ${response.status}: ${errorData.error?.message || response.statusText}`);
                 }
-            }
 
-            // Handle new format: result may have happyHour property with entries
-            // Or it may be the old format with found, times, days, etc. at top level
-            if (result.happyHour) {
-                // New format - use as is
-                result = result.happyHour;
-            } else if (result.found !== undefined) {
-                // Old format - convert to new format with entries array
-                if (result.found) {
-                    result = {
-                        found: true,
-                        entries: [{
-                            days: result.days || "Unknown",
-                            times: result.times || "Unknown",
-                            specials: result.specials || [],
-                            source: result.source || venueData.pages[0]?.url || "Unknown",
-                            confidence: result.confidence || 50,
-                            confidence_score_rationale: result.confidence < 80 ? "Converted from old format" : undefined
-                        }]
-                    };
+                const data = await response.json();
+                const text = data.choices[0]?.message?.content || '';
+            
+                // Attempt to parse JSON, sometimes LLMs wrap it in markdown
+                const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/);
+                if (jsonMatch && jsonMatch[1]) {
+                    result = JSON.parse(jsonMatch[1]);
                 } else {
-                    result = {
-                        found: false,
-                        reason: result.reason || "No happy hour found"
-                    };
+                    // Try to extract JSON from the response text
+                    const jsonStart = text.indexOf('{');
+                    const jsonEnd = text.lastIndexOf('}') + 1;
+                    if (jsonStart !== -1 && jsonEnd > jsonStart) {
+                        result = JSON.parse(text.substring(jsonStart, jsonEnd));
+                    } else {
+                        result = JSON.parse(text); // Try parsing directly
+                    }
                 }
-            }
+
+                // Handle new format: result may have happyHour property with entries
+                // Or it may be the old format with found, times, days, etc. at top level
+                if (result.happyHour) {
+                    // New format - use as is
+                    result = result.happyHour;
+                } else if (result.found !== undefined) {
+                    // Old format - convert to new format with entries array
+                    if (result.found) {
+                        result = {
+                            found: true,
+                            entries: [{
+                                days: result.days || "Unknown",
+                                times: result.times || "Unknown",
+                                specials: result.specials || [],
+                                source: result.source || venueData.pages[0]?.url || "Unknown",
+                                confidence: result.confidence || 50,
+                                confidence_score_rationale: result.confidence < 80 ? "Converted from old format" : undefined
+                            }]
+                        };
+                    } else {
+                        result = {
+                            found: false,
+                            reason: result.reason || "No happy hour found"
+                        };
+                    }
+                }
                 
                 // Success - break out of retry loop
                 break;
@@ -209,7 +186,8 @@ async function extractHappyHours(isIncremental = false) {
                 retries--;
                 
                 // Handle rate limit errors (429) with exponential backoff
-                if (error.status === 429 && retries > 0) {
+                const statusCode = error.message?.match(/HTTP (\d+)/)?.[1] || (response?.status);
+                if ((statusCode === 429 || statusCode === '429') && retries > 0) {
                     const retryDelay = Math.min(delay * (4 - retries), 60000); // Max 60 seconds
                     console.log(`   ⏳ Rate limit hit, retrying in ${Math.round(retryDelay/1000)}s... (${retries} retries left)`);
                     await new Promise(resolve => setTimeout(resolve, retryDelay));
@@ -218,7 +196,7 @@ async function extractHappyHours(isIncremental = false) {
                 }
                 
                 // Other errors or out of retries
-                console.error(`Error calling Gemini API for ${venueData.venueName} (${venueId}): ${error.message}`);
+                console.error(`Error calling Grok API for ${venueData.venueName} (${venueId}): ${error.message}`);
                 result = { 
                     found: false, 
                     reason: `Error processing: ${error.message}`,

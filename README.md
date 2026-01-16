@@ -26,6 +26,19 @@ A crowdsourced map application for discovering and sharing local hotspots in Cha
    npm run dev
    ```
 
+## Configuration
+
+Configuration files are stored in `data/config/`:
+
+- **`data/config/areas.json`** - Geographic area definitions (bounds, centers, zip codes)
+- **`data/config/llm-instructions.txt`** - LLM prompt template for happy hour extraction
+- **`data/config/submenu-keywords.json`** - Keywords used to discover submenu pages (menu, events, specials, etc.)
+
+You can edit these files directly to adjust:
+- Area boundaries and definitions
+- LLM extraction instructions and prompts
+- Website submenu discovery keywords
+
 ## Initial Run / Initial Load
 
 Run these scripts **once** to set up the initial data:
@@ -34,6 +47,7 @@ Run these scripts **once** to set up the initial data:
    ```bash
    node scripts/create-areas.js
    ```
+   Creates `data/config/areas.json` with area definitions.
 
 2. **Seed venues from Google Places:**
    ```bash
@@ -47,13 +61,15 @@ Run these scripts **once** to set up the initial data:
    node scripts/merge-raw-files.js
    ```
    Note: The `silver_matched` filtering layer has been removed. All data now flows through `silver_merged/all/`.
+   The download script uses keywords from `data/config/submenu-keywords.json` to discover submenu pages.
 
-4. **Extract happy hours (Gemini API - bulk):**
+4. **Extract happy hours (Grok API - bulk):**
    ```bash
    node scripts/extract-happy-hours.js
    ```
-   This uses Google Gemini API to extract happy hour information from all venues.
-   Requires `GEMINI_API_KEY` environment variable.
+   This uses Grok API (xAI) to extract happy hour information from all venues.
+   Requires `GROK_API_KEY` environment variable.
+   Uses instructions from `data/config/llm-instructions.txt`.
 
 5. **Create spots:**
    ```bash
@@ -82,12 +98,12 @@ Run these scripts **daily** to update data:
    node scripts/merge-raw-files.js "Daniel Island"
    ```
 
-3. **Extract happy hours (Gemini API - incremental):**
+3. **Extract happy hours (Grok API - incremental):**
    ```bash
    npm run extract:incremental
    ```
-   This automatically processes only new or changed venues using Gemini API.
-   Requires `GEMINI_API_KEY` environment variable and `.bulk-complete` flag.
+   This automatically processes only new or changed venues using Grok API.
+   Requires `GROK_API_KEY` environment variable and `.bulk-complete` flag.
 
 6. **Update spots:**
    ```bash
@@ -100,7 +116,7 @@ Run these scripts **daily** to update data:
 2. **Seed Venues**: `node scripts/seed-venues.js` (requires Google Maps API key)
 3. **Download Raw HTML**: `node scripts/download-raw-html.js`
 4. **Merge Raw Files**: `node scripts/merge-raw-files.js`
-5. Extract Happy Hours (Gemini LLM): `node scripts/extract-happy-hours.js` (bulk) or `npm run extract:incremental` (daily)
+5. Extract Happy Hours (Grok LLM): `node scripts/extract-happy-hours.js` (bulk) or `npm run extract:incremental` (daily)
 
 That's it! Run `npm run dev` to start the website.
 
@@ -120,7 +136,7 @@ That's it! Run `npm run dev` to start the website.
 - **Next.js 16** - React framework
 - **TypeScript** - Type safety
 - **Google Maps API** - Interactive map with markers and clustering
-- **Google Gemini API** - AI-powered happy hour extraction
+- **Grok API (xAI)** - AI-powered happy hour extraction
 - **Tailwind CSS** - Styling
 - **Playwright** - End-to-end testing
 
@@ -164,7 +180,7 @@ The application uses a multi-stage data pipeline to discover venues and extract 
 
 **Script:** `scripts/create-areas.js`
 
-Creates `data/areas.json` with area definitions for all Charleston areas. This file must be created before running venue seeding scripts.
+Creates `data/config/areas.json` with area definitions for all Charleston areas. This file must be created before running venue seeding scripts.
 
 **Run:**
 ```bash
@@ -172,7 +188,7 @@ node scripts/create-areas.js
 ```
 
 **Output:**
-- `data/areas.json` - Area configuration with center coordinates, radius, bounds, and descriptions for 8 Charleston areas
+- `data/config/areas.json` - Area configuration with center coordinates, radius, bounds, and descriptions for 8 Charleston areas
 
 ---
 
@@ -196,7 +212,7 @@ Fetches alcohol-serving venues from Google Places API for all areas defined in `
 - Appends to existing `/data/venues.json` without overwriting
 
 **Requirements:**
-- `areas.json` must exist (created in Step 1)
+- `data/config/areas.json` must exist (created in Step 1)
 - `NEXT_PUBLIC_GOOGLE_MAPS_KEY` or `GOOGLE_PLACES_KEY` environment variable
 - Optional: `GOOGLE_SEARCH_API_KEY` and `GOOGLE_SEARCH_ENGINE_ID` for website fallback (free tier available)
 
@@ -227,7 +243,7 @@ Downloads raw HTML from venue websites and subpages. This is the first step in t
 
 **Features:**
 - Downloads raw, untouched HTML (source of truth)
-- Downloads homepage + relevant subpages (menu, happy-hour, happyhour, hh, specials, events, bar, drinks, deals, promos, promotions, offers, happenings, whats-on, calendar, cocktails, wine, beer, **location**)
+- Downloads homepage + relevant subpages (keywords defined in `data/config/submenu-keywords.json`: menu, happy-hour, happyhour, hh, specials, events, bar, drinks, deals, promos, promotions, offers, happenings, whats-on, calendar, cocktails, wine, beer, location)
 - **Daily Caching**: Per-venue daily cache (skips re-download if already downloaded today)
 - **Previous Day Archive**: Archives previous day's downloads to `raw/previous/` for diff comparison
 - **Directory Structure**: All downloads go to `raw/all/<venue-id>/`, previous day in `raw/previous/<venue-id>/`
@@ -283,25 +299,80 @@ node scripts/merge-raw-files.js
 - `data/silver_merged/previous/<venue-id>.json` - Previous day's merged files (for diff comparison)
 - `data/silver_merged/incremental/` - Incremental files (for new/changed venues)
 
-**Note:** The `silver_matched` filtering layer has been removed. All venues (with or without happy hour text) are now in `silver_merged/all/`. LLM extraction will process all venues and filter based on content.
+**Note:** The `silver_matched` filtering layer has been removed. All venues (with or without happy hour text) are now in `silver_merged/all/`. The HTML is cleaned in the next step before LLM extraction.
 
 ---
 
-### Step 5: Extract Happy Hours (Gemini LLM)
+### Step 5: Trim Silver HTML
+
+**Script:** `scripts/trim-silver-html.js`
+
+Removes irrelevant HTML tags and extracts only visible text content. This step significantly reduces LLM input size (80-90% reduction) and improves accuracy by focusing on actual content.
+
+**Features:**
+- Removes non-visible elements: `<script>`, `<style>`, `<head>`, `<header>`, `<footer>`, `<nav>`, `<noscript>`, `<iframe>`
+- Removes hidden elements: `display: none`, `hidden` attribute
+- Extracts visible text while preserving basic structure (paragraphs, lists)
+- Includes page title for context
+- Calculates size reduction metrics
+
+**Requirements:**
+- `data/silver_merged/all/` directory with merged files (created in Step 4)
+
+**Run:**
+```bash
+node scripts/trim-silver-html.js
+```
+
+Or for a specific area:
+```bash
+node scripts/trim-silver-html.js "Daniel Island"
+```
+
+**Expected Runtime:**
+- ~1-2 minutes for 741 venues
+- ~80-90% size reduction per file
+
+**Output:**
+- `data/silver_trimmed/all/<venue-id>.json` - Trimmed JSON file per venue (with `text` field instead of `html`)
+- `data/silver_trimmed/previous/<venue-id>.json` - Previous day's trimmed files
+- `data/silver_trimmed/incremental/` - Incremental files (for new/changed venues)
+
+**Output Format:**
+```json
+{
+  "venueId": "ChIJ...",
+  "venueName": "Venue Name",
+  "pages": [
+    {
+      "url": "https://example.com/menu",
+      "text": "[Page Title: Menu]\n\nHappy Hour\nMonday-Friday 4pm-7pm\n$5 beers\nHalf off appetizers",
+      "hash": "abc123",
+      "downloadedAt": "2026-01-12T15:33:13.976Z",
+      "trimmedAt": "2026-01-12T16:00:00.000Z",
+      "sizeReduction": "85%"
+    }
+  ]
+}
+```
+
+---
+
+### Step 6: Extract Happy Hours (Grok LLM)
 
 **Script:** `scripts/extract-happy-hours.js`
 
-This script uses **Google Gemini API** to extract structured happy hour data from merged venue content. It processes all venues from `silver_merged/all/` and uses AI to identify and extract happy hour information.
+This script uses **Grok API (xAI)** to extract structured happy hour data from trimmed venue content. It processes all venues from `silver_trimmed/all/` (cleaned text) and uses AI to identify and extract happy hour information.
 
 **Features:**
-- **Automated LLM Extraction**: Uses Google Gemini API for intelligent happy hour detection
+- **Automated LLM Extraction**: Uses Grok API for intelligent happy hour detection
 - **Bulk Mode**: Processes all venues (one-time initial run)
 - **Incremental Mode**: Only processes new or changed venues (daily updates)
 - **Smart Detection**: Recognizes happy hours even with non-standard names (e.g., "Heavy's Hour")
 - **Hash-based Change Detection**: Skips unchanged venues in incremental mode
 - **Rate Limiting**: Built-in delays to respect API limits (1 second between calls)
 
-**Note:** The LLM extraction processes all venues from `silver_merged/all/` and determines which ones have happy hour information based on the prompt. It differentiates happy hours from regular business hours.
+**Note:** The LLM extraction processes all venues from `silver_trimmed/all/` (cleaned text, not raw HTML) and determines which ones have happy hour information based on the prompt. It differentiates happy hours from regular business hours.
 
 #### Bulk Extraction (One-Time Initial Run)
 
@@ -317,8 +388,8 @@ npm run extract:incremental  # (without --incremental flag, runs bulk)
 ```
 
 This command:
-- Processes **all** venues from `silver_merged/all/`
-- Calls Gemini API for each venue to extract happy hour information
+- Processes **all** venues from `silver_trimmed/all/` (cleaned text)
+- Calls Grok API for each venue to extract happy hour information
 - Saves results to `data/gold/<venue-id>.json`
 - Creates `.bulk-complete` flag when done (required for incremental mode)
 
@@ -339,21 +410,21 @@ node scripts/extract-happy-hours.js --incremental
 ```
 
 This command:
-- Identifies new or updated venues by comparing content hashes
+- Identifies new or updated venues by comparing content hashes from `silver_trimmed/all/`
 - **Only processes changed venues** (significantly faster)
-- Calls Gemini API for changed venues only
+- Calls Grok API for changed venues only
 - Requires `.bulk-complete` flag to exist (bulk extraction must be done first)
 
 **Requirements:**
-- `data/silver_merged/all/` directory with merged files (created in Step 4)
-- `GEMINI_API_KEY` environment variable (required)
+- `data/silver_trimmed/all/` directory with trimmed files (created in Step 4)
+- `GROK_API_KEY` environment variable (required)
 - `.bulk-complete` flag must exist (for incremental mode)
 
 **Output:**
 - `data/gold/<venue-id>.json` - Extracted structured happy hour data per venue (ALL venues: found:true AND found:false). Full representation of silver→gold transformation.
 - `data/reporting/spots.json` - **Final output**: Only venues with `found:true`. Filtered from gold for frontend consumption.
 - `data/reporting/venues.json` - Copy of `venues.json` for frontend consumption.
-- `data/reporting/areas.json` - Copy of `areas.json` for frontend consumption.
+- `data/reporting/areas.json` - Copy of `data/config/areas.json` for frontend consumption.
 
 **Architecture Note**: 
 - `gold/` contains **ALL** venues (complete silver→gold representation)
@@ -370,7 +441,7 @@ The gold files contain:
 - `sourceHash`: MD5 hash of source content (for change detection)
 - `processedAt`: ISO timestamp
 
-**Note:** The script supports both automated bulk and incremental extraction using Gemini API. For manual bulk extraction via Grok UI, you can still use `npm run extract:bulk:prepare` and `npm run extract:bulk:process` if preferred.
+**Note:** The script supports both automated bulk and incremental extraction using Grok API. For manual bulk extraction via Grok UI, you can still use `npm run extract:bulk:prepare` and `npm run extract:bulk:process` if preferred.
 
 ---
 
@@ -405,11 +476,12 @@ npm run seed:incremental
 ## Complete Pipeline Summary
 
 ```
-1. create-areas.js        → data/areas.json
+1. create-areas.js        → data/config/areas.json
 2. seed-venues.js         → data/venues.json
 3. download-raw-html.js   → data/raw/all/<venue-id>/
 4. merge-raw-files.js     → data/silver_merged/all/<venue-id>.json
-5. extract-happy-hours.js → data/gold/<venue-id>.json (uses LLM)
+5. trim-silver-html.js    → data/silver_trimmed/all/<venue-id>.json (cleaned text)
+6. extract-happy-hours.js → data/gold/<venue-id>.json (uses LLM)
 ```
 
 **Note:** The `silver_matched` filtering layer (Step 5) has been removed. All data flows through `silver_merged/all/`.
@@ -429,7 +501,10 @@ node scripts/download-raw-html.js
 # Step 4: Merge raw files
 node scripts/merge-raw-files.js
 
-# Step 5: Extract happy hours (Gemini API)
+# Step 5: Trim HTML (remove irrelevant tags, extract visible text)
+node scripts/trim-silver-html.js
+
+# Step 6: Extract happy hours (Grok API)
 node scripts/extract-happy-hours.js  # Bulk (one-time initial run)
 # ... then for daily updates ...
 npm run extract:incremental  # Incremental (daily, only changed venues)
@@ -474,7 +549,10 @@ Curated spots with activity information.
 
 ```
 data/
-├── areas.json              # Area configuration
+├── config/                 # Configuration files
+│   ├── areas.json         # Area configuration
+│   ├── llm-instructions.txt # LLM prompt template
+│   └── submenu-keywords.json # Submenu discovery keywords
 ├── venues.json             # All discovered venues
 ├── reporting/
 │   ├── spots.json          # Curated spots with activities (only found:true)
@@ -491,11 +569,17 @@ data/
 │   └── incremental/        # Incremental files (new/changed)
 ├── silver_merged/          # Merged JSON per venue (Step 4)
 │   ├── all/                # All merged files
-│   │   └── <venue-id>.json # All pages combined
+│   │   └── <venue-id>.json # All pages combined (with HTML)
 │   ├── previous/           # Previous day's merged files
 │   │   └── <venue-id>.json
 │   └── incremental/        # Incremental files (new/changed)
-└── gold/                   # LLM extracted structured data (Step 5)
+├── silver_trimmed/         # Trimmed JSON per venue (Step 5)
+│   ├── all/                # All trimmed files
+│   │   └── <venue-id>.json # Cleaned text (no HTML tags)
+│   ├── previous/           # Previous day's trimmed files
+│   │   └── <venue-id>.json
+│   └── incremental/        # Incremental files (new/changed)
+└── gold/                   # LLM extracted structured data (Step 6)
     ├── <venue-id>.json     # Extracted happy hour data
     ├── .bulk-complete      # Flag: Bulk extraction done
     ├── bulk-input.json     # For manual Grok UI
@@ -542,13 +626,17 @@ npm run test:e2e:ui
 ```
 chs-spots/
 ├── data/                      # Data files
+│   ├── config/               # Configuration files
+│   │   ├── areas.json        # Area configuration
+│   │   ├── llm-instructions.txt # LLM prompt template
+│   │   └── submenu-keywords.json # Submenu discovery keywords
 │   ├── venues.json           # All venues from Google Places
 │   ├── spots.json            # Curated spots with activities
-│   ├── areas.json            # Area configuration
 │   ├── backup/               # Timestamped backups
 │   ├── raw/                  # Raw HTML files (all/, previous/, incremental/)
 │   ├── silver_merged/        # Merged JSON per venue (all/, previous/, incremental/)
-│   └── gold/                 # LLM extracted structured data
+├── silver_trimmed/       # Trimmed JSON per venue (all/, previous/, incremental/)
+└── gold/                 # LLM extracted structured data
 ├── scripts/                   # Node.js scripts
 │   ├── create-areas.js       # Create areas.json
 │   ├── seed-venues.js        # Seed venues (with parallel processing)
@@ -602,7 +690,7 @@ GOOGLE_SEARCH_API_KEY=your_google_search_api_key_here
 GOOGLE_SEARCH_ENGINE_ID=your_search_engine_id_here
 
 # Required for LLM extraction (Happy Hour)
-GEMINI_API_KEY=your_gemini_api_key_here
+GROK_API_KEY=your_grok_api_key_here
 ```
 
 ---
