@@ -34,8 +34,13 @@ function log(message) {
 
 // Paths
 const GOLD_DIR = path.join(__dirname, '../data/gold');
-const VENUES_PATH = path.join(__dirname, '../data/venues.json');
-const AREAS_PATH = path.join(__dirname, '../data/areas.json');
+// Check both locations for venues.json
+const VENUES_PATH = fs.existsSync(path.join(__dirname, '../data/venues.json')) 
+  ? path.join(__dirname, '../data/venues.json')
+  : path.join(__dirname, '../data/reporting/venues.json');
+const AREAS_PATH = fs.existsSync(path.join(__dirname, '../data/areas.json'))
+  ? path.join(__dirname, '../data/areas.json')
+  : path.join(__dirname, '../data/reporting/areas.json');
 const REPORTING_DIR = path.join(__dirname, '../data/reporting');
 const SPOTS_PATH = path.join(REPORTING_DIR, 'spots.json');
 const REPORTING_VENUES_PATH = path.join(REPORTING_DIR, 'venues.json');
