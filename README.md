@@ -350,7 +350,17 @@ This command:
 - `.bulk-complete` flag must exist (for incremental mode)
 
 **Output:**
-- `data/gold/<venue-id>.json` - Extracted structured happy hour data per venue with:
+- `data/gold/<venue-id>.json` - Extracted structured happy hour data per venue (ALL venues: found:true AND found:false). Full representation of silver→gold transformation.
+- `data/reporting/spots.json` - **Final output**: Only venues with `found:true`. Filtered from gold for frontend consumption.
+- `data/reporting/venues.json` - Copy of `venues.json` for frontend consumption.
+- `data/reporting/areas.json` - Copy of `areas.json` for frontend consumption.
+
+**Architecture Note**: 
+- `gold/` contains **ALL** venues (complete silver→gold representation)
+- `reporting/` contains **only found:true** venues plus supporting data (venues.json, areas.json) for frontend
+- This separation ensures full audit trail in `gold/` while keeping `reporting/` lightweight with only relevant spots
+
+The gold files contain:
   - `found`: boolean (whether happy hour was found)
   - `times`: string (e.g., "4pm-7pm")
   - `days`: string (e.g., "Monday-Friday")
@@ -447,7 +457,7 @@ All alcohol-serving venues discovered from Google Places API.
 }
 ```
 
-### `/data/spots.json`
+### `/data/reporting/spots.json`
 Curated spots with activity information.
 ```json
 {
@@ -466,7 +476,10 @@ Curated spots with activity information.
 data/
 ├── areas.json              # Area configuration
 ├── venues.json             # All discovered venues
-├── spots.json              # Curated spots with activities
+├── reporting/
+│   ├── spots.json          # Curated spots with activities (only found:true)
+│   ├── venues.json         # Copy of venues.json for frontend
+│   └── areas.json          # Copy of areas.json for frontend
 ├── backup/                 # Timestamped backups
 ├── raw/                    # Raw HTML files (Step 3)
 │   ├── all/                # All downloaded HTML files

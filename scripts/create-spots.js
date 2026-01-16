@@ -327,8 +327,21 @@ function main() {
     }
   }
   
-  // Write spots.json
+  // Write spots.json to reporting folder
   fs.writeFileSync(SPOTS_PATH, JSON.stringify(spots, null, 2), 'utf8');
+  log(`\n✅ Created ${SPOTS_PATH}`);
+  
+  // Copy venues.json to reporting folder
+  if (fs.existsSync(VENUES_PATH)) {
+    fs.copyFileSync(VENUES_PATH, REPORTING_VENUES_PATH);
+    log(`✅ Copied venues.json to ${REPORTING_VENUES_PATH}`);
+  }
+  
+  // Copy areas.json to reporting folder
+  if (fs.existsSync(AREAS_PATH)) {
+    fs.copyFileSync(AREAS_PATH, REPORTING_AREAS_PATH);
+    log(`✅ Copied areas.json to ${REPORTING_AREAS_PATH}`);
+  }
   
   // Summary
   log(`\n📊 Summary:`);
@@ -339,7 +352,8 @@ function main() {
   log(`   ℹ️  No happy hour: ${noHappyHour}`);
   log(`   📋 Incomplete data: ${incompleteData} (time only, no days/specials)`);
   log(`   📄 Total spots in spots.json: ${spots.length} (${manualSpotsCount} manual + ${processed} automated)`);
-  log(`\n✨ Done! Created spots.json with ${spots.length} spot(s)`);
+  log(`\n✨ Done! Created reporting folder with spots.json, venues.json, and areas.json`);
+  log(`   Total spots: ${spots.length} (${manualSpotsCount} manual + ${processed} automated)`);
 }
 
 try {
