@@ -92,6 +92,8 @@ describe('Pipeline Diff Flow - Paul Stewart\'s Tavern', () => {
     // Step 1: Download raw HTML (Day 1 - no happy hour)
     const day1Html = '<html><body>Welcome to Paul Stewart\'s Tavern. We serve great food and drinks. Open daily.</body></html>';
     const venueDir = path.join(TEST_RAW_ALL_DIR, VENUE_ID);
+    // Ensure parent directory exists
+    fs.mkdirSync(TEST_RAW_ALL_DIR, { recursive: true });
     fs.mkdirSync(venueDir, { recursive: true });
     
     const hash = urlToHash(VENUE_WEBSITE);

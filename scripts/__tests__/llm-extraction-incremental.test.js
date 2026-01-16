@@ -196,6 +196,10 @@ describe('LLM Extraction - Incremental Detection', () => {
     const bulkCompletePath = path.join(TEST_GOLD_DIR, '.bulk-complete');
     fs.writeFileSync(bulkCompletePath, new Date().toISOString(), 'utf8');
     
+    // Wait a moment to ensure timestamp difference
+    await new Promise(resolve => setTimeout(resolve, 200));
+    const oldGoldTime = fs.statSync(goldPath).mtime;
+    
     // === INCREMENTAL PHASE (Day 2) ===
     // Website updated with happy hour
     const silverDataDay2 = {
@@ -204,6 +208,13 @@ describe('LLM Extraction - Incremental Detection', () => {
       pages: [{ html: '<html>Happy Hour Monday-Friday 4pm-7pm</html>' }]
     };
     fs.writeFileSync(silverPath, JSON.stringify(silverDataDay2, null, 2), 'utf8');
+    
+    // Wait a moment to ensure silver is newer
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
+    // Verify silver is actually newer
+    const silverStats = fs.statSync(silverPath);
+    expect(silverStats.mtime.getTime()).toBeGreaterThan(oldGoldTime.getTime());
     
     // Check if needs extraction
     const status = shouldExtract(silverPath, goldPath);

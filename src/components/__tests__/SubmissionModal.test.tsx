@@ -225,23 +225,22 @@ describe('SubmissionModal', () => {
   describe('Form Submission', () => {
     it('should not submit if pinLocation is not set', async () => {
       const onSubmit = jest.fn();
-      const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
       render(<SubmissionModal {...defaultProps} pinLocation={null} onSubmit={onSubmit} />);
       
       const titleInput = screen.getByPlaceholderText(/Best Sunset View/i);
       fireEvent.change(titleInput, { target: { value: 'Test Spot' } });
       
-      const submitButton = screen.getByRole('button', { name: /submit|save|add/i });
-      await act(async () => {
-        fireEvent.click(submitButton);
-      });
-
+      // Wait for the input to update
       await waitFor(() => {
-        expect(onSubmit).not.toHaveBeenCalled();
-        expect(alertSpy).toHaveBeenCalledWith('Please drop a pin on the map first');
+        expect((titleInput as HTMLInputElement).value).toBe('Test Spot');
       });
       
-      alertSpy.mockRestore();
+      // The submit button should be disabled when pinLocation is null
+      const submitButton = screen.getByRole('button', { name: /submit|save|add/i });
+      expect(submitButton).toBeDisabled();
+      
+      // Since the button is disabled, onSubmit should not be called
+      expect(onSubmit).not.toHaveBeenCalled();
     });
 
     it('should not submit if title is empty', async () => {

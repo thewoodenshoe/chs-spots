@@ -223,23 +223,22 @@ describe('EditSpotModal', () => {
 
     it('should not submit if title is empty', async () => {
       const onSubmit = jest.fn();
-      const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
       render(<EditSpotModal {...defaultProps} onSubmit={onSubmit} />);
       
       const titleInput = screen.getByDisplayValue('Test Spot');
       fireEvent.change(titleInput, { target: { value: '' } });
       
-      const submitButton = screen.getByRole('button', { name: /submit|save|update/i });
-      await act(async () => {
-        fireEvent.click(submitButton);
-      });
-
+      // Wait for the input to update
       await waitFor(() => {
-        expect(onSubmit).not.toHaveBeenCalled();
-        expect(alertSpy).toHaveBeenCalledWith('Please enter a title');
+        expect((titleInput as HTMLInputElement).value).toBe('');
       });
       
-      alertSpy.mockRestore();
+      // The submit button should be disabled when title is empty
+      const submitButton = screen.getByRole('button', { name: /submit|save|update/i });
+      expect(submitButton).toBeDisabled();
+      
+      // Since the button is disabled, onSubmit should not be called
+      expect(onSubmit).not.toHaveBeenCalled();
     });
 
     it('should submit with updated data', async () => {
@@ -521,8 +520,14 @@ describe('EditSpotModal', () => {
         description: '',
       };
       render(<EditSpotModal {...defaultProps} spot={spotWithoutDescription} />);
-      const descriptionInput = screen.getByPlaceholderText(/description/i) as HTMLTextAreaElement;
-      expect(descriptionInput.value).toBe('');
+      // The placeholder is "Tell us about this spot..."
+      const descriptionInput = screen.getByPlaceholderText(/Tell us about this spot/i) ||
+        screen.getByPlaceholderText(/description/i) ||
+        document.querySelector('textarea[placeholder*="spot"]') as HTMLTextAreaElement;
+      expect(descriptionInput).toBeInTheDocument();
+      if (descriptionInput) {
+        expect(descriptionInput.value).toBe('');
+      }
     });
 
     it('should handle external pin location changes', () => {
