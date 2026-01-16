@@ -44,13 +44,24 @@ jest.mock('next/server', () => {
 
   class MockNextResponse {
     static json(body: any, init?: ResponseInit) {
-      return new Response(JSON.stringify(body), {
+      const status = init?.status || 200;
+      const response = new Response(JSON.stringify(body), {
         ...init,
+        status,
         headers: {
           'Content-Type': 'application/json',
           ...(init?.headers || {}),
         },
       });
+      // Ensure response has json method (browser Response API)
+      if (!response.json) {
+        (response as any).json = async () => body;
+      }
+      // Ensure status is accessible
+      if (!response.status) {
+        (response as any).status = status;
+      }
+      return response;
     }
   }
 
