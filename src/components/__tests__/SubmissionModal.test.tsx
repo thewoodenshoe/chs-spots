@@ -245,20 +245,14 @@ describe('SubmissionModal', () => {
 
     it('should not submit if title is empty', async () => {
       const onSubmit = jest.fn();
-      const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
       render(<SubmissionModal {...defaultProps} onSubmit={onSubmit} />);
       
+      // The submit button should be disabled when title is empty (default state)
       const submitButton = screen.getByRole('button', { name: /submit|save|add/i });
-      await act(async () => {
-        fireEvent.click(submitButton);
-      });
-
-      await waitFor(() => {
-        expect(onSubmit).not.toHaveBeenCalled();
-        expect(alertSpy).toHaveBeenCalledWith('Please enter a title');
-      });
+      expect(submitButton).toBeDisabled();
       
-      alertSpy.mockRestore();
+      // Since the button is disabled, onSubmit should not be called
+      expect(onSubmit).not.toHaveBeenCalled();
     });
 
     it('should submit with correct data', async () => {
