@@ -131,6 +131,13 @@ async function extractHappyHours(isIncremental = false) {
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
+                    // If we get a 429 (Too Many Requests), abort immediately
+                    if (response.status === 429) {
+                        console.error(`\n❌ Rate limit exceeded (HTTP 429): ${errorData.error?.message || response.statusText}`);
+                        console.error(`   Aborting extraction. Please wait and try again later.`);
+                        console.error(`   Processed up to: ${venueData.venueName} (${venueId})`);
+                        process.exit(1);
+                    }
                     throw new Error(`HTTP ${response.status}: ${errorData.error?.message || response.statusText}`);
                 }
 
@@ -183,19 +190,27 @@ async function extractHappyHours(isIncremental = false) {
                 break;
                 
             } catch (error) {
+                // Check if this is a 429 error from the error message (in case it wasn't caught in response.ok check)
+                const statusCode = error.message?.match(/HTTP (\d+)/)?.[1];
+                if (statusCode === 429 || statusCode === '429') {
+                    console.error(`\n❌ Rate limit exceeded (HTTP 429): Too Many Requests`);
+                    console.error(`   Aborting extraction. Please wait and try again later.`);
+                    console.error(`   Processed up to: ${venueData.venueName} (${venueId})`);
+                    console.error(`   Error: ${error.message}`);
+                    process.exit(1);
+                }
+                
                 retries--;
                 
-                // Handle rate limit errors (429) with exponential backoff
-                const statusCode = error.message?.match(/HTTP (\d+)/)?.[1] || (response?.status);
-                if ((statusCode === 429 || statusCode === '429') && retries > 0) {
-                    const retryDelay = Math.min(delay * (4 - retries), 60000); // Max 60 seconds
-                    console.log(`   ⏳ Rate limit hit, retrying in ${Math.round(retryDelay/1000)}s... (${retries} retries left)`);
-                    await new Promise(resolve => setTimeout(resolve, retryDelay));
+                // Other errors - retry or give up
+                if (retries > 0) {
+                    console.log(`   ⚠️  Error: ${error.message}, retrying... (${retries} retries left)`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
                     delay *= 2; // Exponential backoff
                     continue;
                 }
                 
-                // Other errors or out of retries
+                // Out of retries
                 console.error(`Error calling Grok API for ${venueData.venueName} (${venueId}): ${error.message}`);
                 result = { 
                     found: false, 
