@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJG0Nz-jNv_ogRABdnmGiH3T0",
+  "venueName": "New Realm Brewing Co.",
+  "venueArea": "Daniel Island",
+  "website": "https://newrealmbrewing.com/charleston/",
+  "scrapedAt": "2026-01-18T16:25:30.856Z",
+  "trimmedAt": "2026-01-18T16:25:31.654Z",
+  "pages": [
+    {
+      "url": "https://newrealmbrewing.com/charleston/",
+      "text": "",
+      "hash": "e393f3b01f3d",
+      "downloadedAt": "2026-01-18T16:08:02.376Z",
+      "trimmedAt": "2026-01-18T16:25:31.654Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

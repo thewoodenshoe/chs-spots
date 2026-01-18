@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJ1VLlku9v_ogRb6gomm1SkGU",
+  "venueName": "Agaves Cantina",
+  "venueArea": "Daniel Island",
+  "website": "http://www.agavescantina.com/",
+  "scrapedAt": "2026-01-18T16:25:30.825Z",
+  "trimmedAt": "2026-01-18T16:25:31.227Z",
+  "pages": [
+    {
+      "url": "http://www.agavescantina.com/",
+      "text": "",
+      "hash": "dcea203473a6",
+      "downloadedAt": "2026-01-18T16:08:02.508Z",
+      "trimmedAt": "2026-01-18T16:25:31.227Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

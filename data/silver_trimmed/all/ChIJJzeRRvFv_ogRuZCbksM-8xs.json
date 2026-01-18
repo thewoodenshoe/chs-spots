@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJJzeRRvFv_ogRuZCbksM-8xs",
+  "venueName": "Hampton Inn Charleston - Daniel Island",
+  "venueArea": "Daniel Island",
+  "website": "https://www.hilton.com/en/hotels/chsdihx-hampton-charleston-daniel-island/?SEO_id=GMB-AMER-HX-CHSDIHX&y_source=1_MjA4MjU0Ni03MTUtbG9jYXRpb24ud2Vic2l0ZQ%3D%3D",
+  "scrapedAt": "2026-01-18T16:25:30.857Z",
+  "trimmedAt": "2026-01-18T16:25:31.654Z",
+  "pages": [
+    {
+      "url": "https://www.hilton.com/en/hotels/chsdihx-hampton-charleston-daniel-island/?SEO_id=GMB-AMER-HX-CHSDIHX&y_source=1_MjA4MjU0Ni03MTUtbG9jYXRpb24ud2Vic2l0ZQ%3D%3D",
+      "text": "",
+      "hash": "824208b6fff4",
+      "downloadedAt": "2026-01-18T16:08:02.132Z",
+      "trimmedAt": "2026-01-18T16:25:31.654Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

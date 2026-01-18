@@ -1,0 +1,27 @@
+{
+  "venueId": "ChIJWacVmIdl_ogRZ_uEKiUGFFw",
+  "venueName": "The Ice Cream Team",
+  "venueArea": "Daniel Island",
+  "website": "https://www.theicecreamteam.com/",
+  "scrapedAt": "2026-01-18T16:25:30.881Z",
+  "trimmedAt": "2026-01-18T16:25:32.077Z",
+  "pages": [
+    {
+      "url": "https://www.theicecreamteam.com/menu.html",
+      "text": "FOR ICE CREAM ​ Copyright © 2010 - 2025- The Ice Cream Team® - All Rights Reserved - 3.5% fee on Credit Card - Cancellation fee is Applicable WE SCREAM Contact Us Home About Us Menu Contact https://hometown-catering.com/contact Also visit our parent company HomeTown Catering",
+      "hash": "6c3d0c81198a",
+      "downloadedAt": "2026-01-18T16:08:10.362Z",
+      "trimmedAt": "2026-01-18T16:25:32.071Z",
+      "sizeReduction": "99.6%"
+    },
+    {
+      "url": "https://www.theicecreamteam.com/",
+      "text": "FOR ICE CREAM ​ Copyright © 2010 - 2025- The Ice Cream Team® - All Rights Reserved - 3.5% fee on Credit Card - Cancellation fee is Applicable WE SCREAM Contact Us Home About Us Menu Contact Also visit our parent company HomeTown Catering SAFE, FAMILY FRIENDLY DRIVERS! events ice cream truck charleston Background Checked, Clean Driving Records, Drug, Alcohol, & Tobacco Free ★ We have several ice cream trucks for you to choose from for your event★ We carry a wide variety of Blue Bunny, Good Humor, Popsicle treats & SnoBar adult ice cream★ We provide nice, clean & professional trucks★ We work with each client individually to specifically cater to your individual needs★ We pride ourselves on our professionalism and kid-friendly environment★ We give back to the community through various charities★ We are fully licensed and insured We proudly serve the Charleston County SC and Berkley County SC areas! ice cream truck events Welcome to your new favorite ice cream truck, bringing sweet smiles and treats to Charleston, SC! We specialize in serving the classic pre-packaged ice cream flavors right to your event or neighborhood. Whether you're hosting a wedding, corporate gathering, birthday party, or a community event, we cater to all occasions with a personalized experience. Our truck roams the streets of Charleston, spreading joy and indulgence wherever we go. Let us make your event extra special with our fun and tasty ice cream products!",
+      "hash": "a4958efe1fe6",
+      "downloadedAt": "2026-01-18T16:08:10.248Z",
+      "trimmedAt": "2026-01-18T16:25:32.077Z",
+      "sizeReduction": "98.1%"
+    }
+  ],
+  "sizeReduction": "98.8%"
+}
