@@ -166,10 +166,33 @@ function trimHtml(html) {
 }
 
 /**
+ * Check if trimmed file needs update (incremental check)
+ */
+function needsUpdate(silverFilePath, trimmedFilePath) {
+  // If trimmed file doesn't exist, needs update
+  if (!fs.existsSync(trimmedFilePath)) {
+    return true;
+  }
+  
+  // Compare modification times
+  try {
+    const silverStats = fs.statSync(silverFilePath);
+    const trimmedStats = fs.statSync(trimmedFilePath);
+    
+    // If silver file is newer, needs update
+    return silverStats.mtime > trimmedStats.mtime;
+  } catch (error) {
+    // If can't read stats, assume needs update
+    return true;
+  }
+}
+
+/**
  * Process a single venue file
  */
 function processVenueFile(venueId, areaFilter = null) {
   const silverFilePath = path.join(SILVER_MERGED_DIR, `${venueId}.json`);
+  const trimmedFilePath = path.join(SILVER_TRIMMED_ALL_DIR, `${venueId}.json`);
   
   if (!fs.existsSync(silverFilePath)) {
     log(`  ⚠️  Silver file not found: ${venueId}`);
@@ -187,6 +210,12 @@ function processVenueFile(venueId, areaFilter = null) {
   // Filter by area if specified
   if (areaFilter && silverData.venueArea !== areaFilter) {
     return { success: false, reason: 'Area filter' };
+  }
+  
+  // INCREMENTAL: Skip if no changes detected
+  if (!needsUpdate(silverFilePath, trimmedFilePath)) {
+    log(`  ⏭️  Skipping ${silverData.venueName} (${venueId}): No changes detected`);
+    return { success: false, reason: 'No changes', skipped: true };
   }
   
   // Process each page
@@ -288,6 +317,7 @@ function main() {
   // Process each venue
   let processed = 0;
   let skipped = 0;
+  let skippedNoChanges = 0;
   let errors = 0;
   let totalOriginalSize = 0;
   let totalTrimmedSize = 0;
@@ -303,6 +333,8 @@ function main() {
       totalTrimmedSize += result.trimmedSize || 0;
     } else if (result.reason === 'Area filter') {
       skipped++;
+    } else if (result.reason === 'No changes' || result.skipped) {
+      skippedNoChanges++;
     } else {
       errors++;
     }
@@ -315,7 +347,8 @@ function main() {
   
   log(`\n📊 Summary:`);
   log(`   ✅ Processed: ${processed}`);
-  log(`   ⏭️  Skipped: ${skipped}`);
+  log(`   ⏭️  Skipped (area filter): ${skipped}`);
+  log(`   ⏭️  Skipped (no changes): ${skippedNoChanges}`);
   log(`   ❌ Errors: ${errors}`);
   log(`   📉 Overall size reduction: ${overallReduction}`);
   log(`   📦 Original size: ${(totalOriginalSize / 1024 / 1024).toFixed(2)} MB`);

@@ -282,10 +282,9 @@ function main() {
     return;
   }
   
-  // Load existing spots.json to preserve all existing spots (manual + automated)
+  // Load existing spots.json to preserve manual spots only (automated spots will be regenerated)
   let existingSpots = [];
   let manualSpotsCount = 0;
-  let automatedSpotsCount = 0;
   if (fs.existsSync(SPOTS_PATH)) {
     try {
       const existingContent = fs.readFileSync(SPOTS_PATH, 'utf8');
@@ -293,11 +292,10 @@ function main() {
       if (!Array.isArray(existingSpots)) {
         existingSpots = [];
       }
-      // Count manual and automated spots
+      // Only preserve manual spots - automated spots will be regenerated with new labeled fields
       manualSpotsCount = existingSpots.filter(s => s.source === 'manual').length;
-      automatedSpotsCount = existingSpots.filter(s => s.source === 'automated').length;
-      if (manualSpotsCount > 0 || automatedSpotsCount > 0) {
-        log(`📋 Found ${existingSpots.length} existing spot(s): ${manualSpotsCount} manual + ${automatedSpotsCount} automated - will be preserved\n`);
+      if (manualSpotsCount > 0) {
+        log(`📋 Found ${manualSpotsCount} manual spot(s) - will be preserved\n`);
       }
     } catch (error) {
       log(`  ⚠️  Error reading existing spots.json: ${error.message}`);
@@ -308,23 +306,9 @@ function main() {
   // Extract manual spots (should never be removed)
   const manualSpots = existingSpots.filter(s => s.source === 'manual');
   
-  // Create a Set of venueIds that already have spots (by matching gold file names)
-  // Since gold files are named <venueId>.json, we can track which venueIds already have spots
-  // by checking existing spots against the gold files we're about to process
-  const existingSpotVenueIds = new Set();
-  
-  // Build a map of existing automated spots by venueId (if stored) or by lat/lng/title match
-  // We'll use gold file names to match: <venueId>.json
-  for (const existingSpot of existingSpots.filter(s => s.source === 'automated')) {
-    // Try to extract venueId from spot if stored, otherwise we'll match by coordinates/name later
-    if (existingSpot.venueId) {
-      existingSpotVenueIds.add(existingSpot.venueId);
-    }
-  }
-  
   // Process gold files and create spots
-  // Start with ALL existing spots (manual + automated) to preserve everything
-  const spots = [...existingSpots]; // Start with all existing spots
+  // Start with manual spots only - automated spots will be regenerated from gold
+  const spots = [...manualSpots]; // Start with manual spots only
   let processed = 0;
   let skipped = 0;
   let missingVenue = 0;
@@ -356,13 +340,13 @@ function main() {
         continue;
       }
       
-      // Check if this venue already has a spot (incremental: skip if already exists)
-      // Match by checking if venueId matches any existing automated spot
-      const hasExistingSpot = existingSpots.some(s => {
+      // Check if this venue already has a spot in the spots array we're building
+      // Match by venueId or lat/lng/title to prevent duplicates within this run
+      const hasExistingSpot = spots.some(s => {
         if (s.source !== 'automated') return false;
         // If spot has venueId, match by that
         if (s.venueId === venueId) return true;
-        // Otherwise match by lat/lng/title (fuzzy match for existing spots without venueId)
+        // Otherwise match by lat/lng/title
         const venueLat = venueData.lat || venueData.geometry?.location?.lat;
         const venueLng = venueData.lng || venueData.geometry?.location?.lng;
         const venueName = goldData.venueName || venueData.name;
@@ -370,7 +354,7 @@ function main() {
       });
       
       if (hasExistingSpot) {
-        // Spot already exists - skip (incremental behavior)
+        // Spot already added in this run - skip to prevent duplicates
         skipped++;
         continue;
       }
@@ -393,7 +377,7 @@ function main() {
         
         // Mark as automated and store venueId for future duplicate detection
         spot.source = 'automated';
-        spot.venueId = venueId; // Store venueId for future runs
+        spot.venueId = venueId; // Store venueId for duplicate detection
         
         spots.push(spot);
         processed++;

@@ -54,10 +54,16 @@ export async function GET() {
       lat: spot.lat,
       lng: spot.lng,
       title: spot.title,
-      description: spot.description || '',
+      description: spot.description || '', // Keep for backwards compatibility
       type: spot.type || spot.activity || 'Happy Hour', // Use type if available, fallback to activity
       photoUrl: spot.photoUrl,
       source: spot.source || 'automated', // Default to 'automated' for backward compatibility
+      // Include labeled fields if available
+      happyHourTime: spot.happyHourTime || undefined,
+      happyHourList: spot.happyHourList || undefined,
+      sourceUrl: spot.sourceUrl || undefined,
+      lastUpdateDate: spot.lastUpdateDate || undefined,
+      venueId: spot.venueId || undefined,
     };
     
     // Try to enrich with area information from venues

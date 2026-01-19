@@ -50,6 +50,8 @@ const SILVER_MERGED_DIR = path.join(__dirname, '../data/silver_merged');
 const SILVER_MERGED_ALL_DIR = path.join(__dirname, '../data/silver_merged/all');
 const SILVER_MERGED_PREVIOUS_DIR = path.join(__dirname, '../data/silver_merged/previous');
 const SILVER_MERGED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_merged/incremental');
+// Try reporting/venues.json first (primary), fallback to data/venues.json (backwards compatibility)
+const REPORTING_VENUES_PATH = path.join(__dirname, '../data/reporting/venues.json');
 const VENUES_PATH = path.join(__dirname, '../data/venues.json');
 
 // Ensure directories exist
@@ -111,6 +113,36 @@ function loadMetadata(venueId) {
 }
 
 /**
+ * Check if merged file needs update (incremental check)
+ */
+function needsUpdate(venueId, rawFiles) {
+  const mergedPath = path.join(SILVER_MERGED_ALL_DIR, `${venueId}.json`);
+  
+  // If merged file doesn't exist, needs update
+  if (!fs.existsSync(mergedPath)) {
+    return true;
+  }
+  
+  // Check if any raw file is newer than merged file
+  try {
+    const mergedStats = fs.statSync(mergedPath);
+    const mergedMtime = mergedStats.mtime;
+    
+    // If any raw file is newer, needs update
+    for (const rawFile of rawFiles) {
+      if (rawFile.modifiedAt > mergedMtime) {
+        return true;
+      }
+    }
+    
+    return false; // No changes detected
+  } catch (error) {
+    // If can't read merged file, assume needs update
+    return true;
+  }
+}
+
+/**
  * Process a single venue
  */
 function processVenue(venueId, venues) {
@@ -124,6 +156,12 @@ function processVenue(venueId, venues) {
   if (rawFiles.length === 0) {
     log(`  ⏭️  No raw files found for ${venue.name} (${venueId})`);
     return null;
+  }
+  
+  // INCREMENTAL: Skip if no changes detected
+  if (!needsUpdate(venueId, rawFiles)) {
+    log(`  ⏭️  Skipping ${venue.name} (${venueId}): No changes detected`);
+    return { venueId, venueName: venue.name, pages: 0, success: true, skipped: true };
   }
   
   log(`  🔗 Merging ${rawFiles.length} file(s) for ${venue.name} (${venueId})`);
@@ -233,13 +271,19 @@ function main() {
     log(`📍 Filtering by area: ${areaFilter}\n`);
   }
   
-  // Load venues
-  if (!fs.existsSync(VENUES_PATH)) {
-    log(`❌ Venues file not found: ${VENUES_PATH}`);
+  // Load venues - try reporting/venues.json first, fallback to data/venues.json
+  let venuesPath = VENUES_PATH;
+  if (fs.existsSync(REPORTING_VENUES_PATH)) {
+    venuesPath = REPORTING_VENUES_PATH;
+  } else if (!fs.existsSync(VENUES_PATH)) {
+    log(`❌ Venues file not found in either location:`);
+    log(`   ${REPORTING_VENUES_PATH}`);
+    log(`   ${VENUES_PATH}`);
+    log(`\n   Please run 'node scripts/seed-venues.js' first.`);
     process.exit(1);
   }
   
-  const venues = JSON.parse(fs.readFileSync(VENUES_PATH, 'utf8'));
+  const venues = JSON.parse(fs.readFileSync(venuesPath, 'utf8'));
   log(`📖 Loaded ${venues.length} venue(s) from venues.json\n`);
   
   // Check raw directory
@@ -283,11 +327,13 @@ function main() {
   }
   
   // Summary
-  const successful = results.filter(r => r.success).length;
+  const successful = results.filter(r => r.success && !r.skipped).length;
+  const skipped = results.filter(r => r.skipped).length;
   const totalPages = results.reduce((sum, r) => sum + (r.pages || 0), 0);
   
   log(`\n📊 Summary:`);
-  log(`   ✅ Merged: ${successful} venue(s)`);
+  log(`   ✅ Merged: ${successful}`);
+  log(`   ⏭️  Skipped (no changes): ${skipped}`);
   log(`   📄 Total pages: ${totalPages}`);
   log(`\n✨ Done! Merged files saved to: ${path.resolve(SILVER_MERGED_ALL_DIR)}`);
   log(`   Previous day's data: ${path.resolve(SILVER_MERGED_PREVIOUS_DIR)}`);

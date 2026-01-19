@@ -31,6 +31,8 @@ function log(message) {
 }
 
 // Paths - New structure: raw/all/ and raw/previous/
+// Try reporting/venues.json first (primary), fallback to data/venues.json (backwards compatibility)
+const REPORTING_VENUES_PATH = path.join(__dirname, '../data/reporting/venues.json');
 const VENUES_PATH = path.join(__dirname, '../data/venues.json');
 const RAW_DIR = path.join(__dirname, '../data/raw');
 const RAW_ALL_DIR = path.join(__dirname, '../data/raw/all');
@@ -429,6 +431,15 @@ async function main() {
   log(`📅 Today: ${today}`);
   log(`📅 Last download: ${lastDownload || 'Never'}\n`);
   
+  // CRITICAL: Skip entire download if it's the same day (incremental mode)
+  // Only download raw HTML on new days to minimize API calls
+  if (lastDownload && lastDownload === today) {
+    log(`⏭️  Same day as last download (${today}) - skipping raw HTML download`);
+    log(`   Raw files already exist for today. Run on a new day to download fresh data.`);
+    log(`\n✨ Skipped download (incremental mode)`);
+    return;
+  }
+  
   // Archive previous day if it's a new day
   const archived = archivePreviousDay();
   if (archived) {
@@ -444,13 +455,20 @@ async function main() {
     log(`📍 Filtering by area: ${areaFilter}\n`);
   }
   
-  // Load venues
-  if (!fs.existsSync(VENUES_PATH)) {
-    log(`❌ Venues file not found: ${VENUES_PATH}`);
+  // Load venues - try reporting/venues.json first, fallback to data/venues.json
+  let venuesPath = VENUES_PATH;
+  if (fs.existsSync(REPORTING_VENUES_PATH)) {
+    venuesPath = REPORTING_VENUES_PATH;
+    log(`📖 Loading venues from: ${path.relative(process.cwd(), venuesPath)}\n`);
+  } else if (!fs.existsSync(VENUES_PATH)) {
+    log(`❌ Venues file not found in either location:`);
+    log(`   ${REPORTING_VENUES_PATH}`);
+    log(`   ${VENUES_PATH}`);
+    log(`\n   Please run 'node scripts/seed-venues.js' first.`);
     process.exit(1);
   }
   
-  const venues = JSON.parse(fs.readFileSync(VENUES_PATH, 'utf8'));
+  const venues = JSON.parse(fs.readFileSync(venuesPath, 'utf8'));
   log(`📖 Loaded ${venues.length} venue(s) from venues.json\n`);
   
   // Filter by area if specified
