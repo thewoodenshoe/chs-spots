@@ -14,7 +14,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-const TEST_DIR = path.join(__dirname, '../../.test-data');
+const TEST_DIR = path.join(__dirname, '../../.test-data-process-bulk-llm');
 const TEST_GOLD_DIR = path.join(TEST_DIR, 'gold');
 const TEST_SILVER_MERGED_ALL_DIR = path.join(TEST_DIR, 'silver_merged/all');
 

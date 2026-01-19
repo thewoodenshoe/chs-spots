@@ -9,7 +9,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-const TEST_DIR = path.join(__dirname, '../../.test-data');
+const TEST_DIR = path.join(__dirname, '../../.test-data-pipeline-silver-merged');
 const TEST_RAW_DIR = path.join(TEST_DIR, 'raw');
 const TEST_SILVER_MERGED_DIR = path.join(TEST_DIR, 'silver_merged');
 

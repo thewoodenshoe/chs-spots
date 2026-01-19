@@ -8,7 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const TEST_DIR = path.join(__dirname, '../../.test-data');
+const TEST_DIR = path.join(__dirname, '../../.test-data-llm-incremental');
 const TEST_SILVER_MERGED_ALL_DIR = path.join(TEST_DIR, 'silver_merged/all');
 const TEST_GOLD_DIR = path.join(TEST_DIR, 'gold');
 
