@@ -447,6 +447,18 @@ function isInBounds(lat, lng, area) {
  * Falls back to address string parsing, zip code matching, then bounds checking
  */
 function findAreaForVenue(lat, lng, address, addressComponents, areasConfig) {
+  // EXCLUSION: Point Hope addresses should NEVER be assigned to Daniel Island
+  // Check this first before any other logic
+  const addressLower = address.toLowerCase();
+  if (addressLower.includes('point hope') || addressLower.includes('point hope pkwy')) {
+    // Point Hope is in North Charleston, exclude from Daniel Island
+    const northCharlestonArea = areasConfig.find(a => a.name === 'North Charleston');
+    if (northCharlestonArea) {
+      logVerbose(`  ✅ Point Hope address excluded from Daniel Island, assigned to North Charleston`);
+      return 'North Charleston';
+    }
+  }
+  
   // Priority 1: Use Google's sublocality (most reliable)
   const googleSublocality = extractSublocality(addressComponents);
   if (googleSublocality) {

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "jest",
+    "test": "NODE_OPTIONS=--max-old-space-size=4096 jest",
     "test:incremental": "jest __tests__/seed-incremental.test.js",
     "test:pipeline": "node scripts/__tests__/validate-pipeline.js",
     "test:pipeline:data": "node scripts/__tests__/validate-data-structures.js",

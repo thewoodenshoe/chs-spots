@@ -142,6 +142,11 @@ function processBulkResults(bulkResultsArray, goldDir = TEST_GOLD_DIR, silverMer
   }
   
   // Mark bulk as complete
+  // Ensure directory exists before writing
+  const bulkCompleteDir = path.dirname(bulkCompletePath);
+  if (!fs.existsSync(bulkCompleteDir)) {
+    fs.mkdirSync(bulkCompleteDir, { recursive: true });
+  }
   fs.writeFileSync(bulkCompletePath, new Date().toISOString(), 'utf8');
   
   return { skipped: false, results };
