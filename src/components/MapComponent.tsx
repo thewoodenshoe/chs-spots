@@ -151,13 +151,14 @@ export default function MapComponent({
     }
   }, []);
 
-  // Update center/zoom from props
+  // Reset map center and zoom when selectedArea or mapCenter changes
+  // This ensures the map resets even if user manually zoomed out
   useEffect(() => {
-    if (mapCenter) {
-      setCenter({ lat: mapCenter.lat, lng: mapCenter.lng });
-      setZoom(mapCenter.zoom);
+    if (map && mapCenter) {
+      map.setCenter({ lat: mapCenter.lat, lng: mapCenter.lng });
+      map.setZoom(mapCenter.zoom);
     }
-  }, [mapCenter]);
+  }, [selectedArea, mapCenter, map]);
 
   // Filter spots based on area and activity
   const filteredSpots = useMemo(() => {
@@ -436,8 +437,8 @@ export default function MapComponent({
       <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
         <GoogleMap
           mapContainerStyle={mapContainerStyle}
-          center={center}
-          zoom={zoom}
+          center={mapCenter ? { lat: mapCenter.lat, lng: mapCenter.lng } : center}
+          zoom={mapCenter ? mapCenter.zoom : zoom}
           onClick={handleMapClick}
           onLoad={(map) => setMap(map)}
           options={{
