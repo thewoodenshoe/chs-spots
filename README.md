@@ -78,7 +78,31 @@ Run these scripts **once** to set up the initial data:
 
 ## Incremental Load / Daily Run
 
-Run these scripts **daily** to update data:
+### Quick Start: Run Full Incremental Pipeline
+
+The easiest way to run the daily pipeline is using the master script:
+
+```bash
+node scripts/run-incremental-pipeline.js
+```
+
+Or for a specific area:
+```bash
+node scripts/run-incremental-pipeline.js "Daniel Island"
+```
+
+This script automatically:
+1. Downloads raw HTML (only on new days, or new venues on same day)
+2. Runs delta comparison to find changes
+3. Merges only changed raw files
+4. Trims only changed merged files
+5. Runs delta comparison on trimmed content (filters out dynamic noise)
+6. Extracts happy hours with LLM (only for actual content changes)
+7. Updates spots from gold data
+
+### Manual Step-by-Step (Advanced)
+
+If you need to run steps individually:
 
 1. **Download new/updated websites:**
    ```bash
@@ -89,23 +113,37 @@ Run these scripts **daily** to update data:
    node scripts/download-raw-html.js "Daniel Island"
    ```
 
-2. **Merge raw files:**
+2. **Delta comparison (raw HTML):**
+   ```bash
+   node scripts/delta-raw-files.js
+   ```
+   Compares `raw/all/` vs `raw/previous/` and populates `raw/incremental/` with only changed files.
+
+3. **Merge raw files:**
    ```bash
    node scripts/merge-raw-files.js
    ```
-   Or for a specific area:
-   ```bash
-   node scripts/merge-raw-files.js "Daniel Island"
-   ```
+   Only processes files in `raw/incremental/`.
 
-3. **Extract happy hours (Grok API - incremental):**
+4. **Trim silver HTML:**
    ```bash
-   npm run extract:incremental
+   node scripts/trim-silver-html.js
    ```
-   This automatically processes only new or changed venues using Grok API.
-   Requires `GROK_API_KEY` environment variable and `.bulk-complete` flag.
+   Only processes files in `silver_merged/incremental/`.
 
-6. **Update spots:**
+5. **Delta comparison (trimmed content):**
+   ```bash
+   node scripts/delta-trimmed-files.js
+   ```
+   Compares `silver_trimmed/all/` vs `silver_trimmed/previous/` using content hashes and populates `silver_trimmed/incremental/` with only actual content changes.
+
+6. **Extract happy hours (Grok API - incremental):**
+   ```bash
+   node scripts/extract-happy-hours.js --incremental
+   ```
+   Only processes files in `silver_trimmed/incremental/`.
+
+7. **Update spots:**
    ```bash
    node scripts/create-spots.js
    ```
@@ -486,6 +524,105 @@ npm run seed:incremental
 
 **Note:** The `silver_matched` filtering layer (Step 5) has been removed. All data flows through `silver_merged/all/`.
 
+---
+
+## Incremental Pipeline: 3-Day Scenario
+
+The incremental pipeline is designed to minimize LLM API costs by only processing actual changes. Here's how it works across multiple days:
+
+### Day 1: First Run Ever
+
+**Initial State:**
+- All folders are empty (`raw/all/`, `raw/previous/`, `raw/incremental/`)
+
+**What Happens:**
+1. `download-raw-html.js` detects no previous download date
+2. Downloads all venues from `venues.json` → saves to `raw/all/`
+3. Proceeds to silver layer (merge, trim)
+4. LLM extraction processes all venues → saves to `gold/`
+
+**Result:**
+- `raw/all/` contains all downloaded HTML files
+- `gold/` contains extracted happy hour data for all venues
+
+**If you run again on Day 1:**
+- `download-raw-html.js` detects same day → checks for new venues only
+- If no new venues found → skips download entirely
+- Pipeline stops early (no changes to process)
+
+### Day 2: New Day, Full Download
+
+**Initial State:**
+- `raw/all/` contains Day 1's data
+- `raw/previous/` is empty
+- `raw/incremental/` is empty
+
+**What Happens:**
+1. `download-raw-html.js` detects new day (Day 2 vs Day 1)
+2. **Archives Day 1:** Moves `raw/all/` → `raw/previous/` (clears `raw/previous/` first if needed)
+3. **Downloads all venues again** → saves to `raw/all/`
+4. `delta-raw-files.js` compares `raw/all/` (Day 2) vs `raw/previous/` (Day 1)
+   - Finds changed/new files → copies to `raw/incremental/`
+   - Unchanged files are NOT copied to incremental
+5. `merge-raw-files.js` processes only `raw/incremental/` → saves to `silver_merged/all/` and `silver_merged/incremental/`
+6. `trim-silver-html.js` processes only `silver_merged/incremental/` → saves to `silver_trimmed/all/`
+7. `delta-trimmed-files.js` compares `silver_trimmed/all/` vs `silver_trimmed/previous/` using **trimmed content hashes**
+   - Finds actual content changes (ignores dynamic HTML noise) → copies to `silver_trimmed/incremental/`
+8. `extract-happy-hours.js --incremental` processes only `silver_trimmed/incremental/` → updates `gold/`
+9. `create-spots.js` updates `reporting/spots.json` from `gold/`
+
+**Result:**
+- `raw/all/` contains Day 2's full download
+- `raw/previous/` contains Day 1's archived data
+- `raw/incremental/` contains only changed/new files from Day 2
+- `silver_trimmed/incremental/` contains only venues with actual content changes
+- `gold/` updated only for changed venues (minimizes LLM API costs)
+
+**If you run again on Day 2:**
+- `download-raw-html.js` detects same day → checks for new venues only
+- If no new venues found → skips download
+- Pipeline stops early (no changes to process)
+
+### Day 3: New Day, Full Download Again
+
+**Initial State:**
+- `raw/all/` contains Day 2's data
+- `raw/previous/` contains Day 1's data
+- `raw/incremental/` is empty (cleared at start of pipeline)
+
+**What Happens:**
+1. `download-raw-html.js` detects new day (Day 3 vs Day 2)
+2. **Archives Day 2:** Moves `raw/all/` → `raw/previous/` (Day 1's data is overwritten)
+3. **Downloads all venues again** → saves to `raw/all/`
+4. `delta-raw-files.js` compares `raw/all/` (Day 3) vs `raw/previous/` (Day 2)
+   - Finds changed/new files → copies to `raw/incremental/`
+5. Pipeline continues as in Day 2...
+
+**Key Points:**
+- **Same Day:** Only checks for new venues, skips if none found
+- **New Day:** Full download, then delta comparison finds only changes
+- **Raw Delta:** Compares raw HTML (may include dynamic content noise)
+- **Trimmed Delta:** Compares trimmed text content (filters out noise, only actual changes)
+- **LLM Only:** Processes venues with actual content changes (minimizes API costs)
+
+### Why Two Delta Steps?
+
+1. **Raw Delta (`delta-raw-files.js`):**
+   - Compares raw HTML files
+   - May flag many files as "changed" due to dynamic content (ads, timestamps, tracking scripts)
+   - Used to filter which files proceed to silver layer
+
+2. **Trimmed Delta (`delta-trimmed-files.js`):**
+   - Compares trimmed text content (visible text only)
+   - Filters out dynamic HTML noise
+   - Only flags actual content changes
+   - **This is the final filter before LLM extraction** (minimizes API costs)
+
+**Example:**
+- Raw HTML changes: 491 venues flagged (50% of total)
+- Trimmed content changes: 5 venues flagged (0.5% of total)
+- LLM processes: Only 5 venues (saves ~99% API costs)
+
 **For a fresh setup, run these commands in order:**
 
 ```bash
@@ -515,9 +652,30 @@ npm run dev
 
 ---
 
-## Data Files
+## Data Files and Git Tracking
 
-### `/data/venues.json`
+### Git Ignore Policy
+
+**All JSON files in `data/` are ignored by git** (except configuration files). This includes:
+- `data/venues.json` (generated by `seed-venues.js`)
+- `data/reporting/*.json` (generated by pipeline scripts)
+- `data/silver_trimmed/**/*.json` (generated by `trim-silver-html.js`)
+- `data/silver_merged/**/*.json` (generated by `merge-raw-files.js`)
+- `data/gold/**/*.json` (generated by `extract-happy-hours.js`)
+- All other generated JSON files
+
+**Exception:** Configuration files in `data/config/` are tracked:
+- `data/config/areas.json` (should be tracked)
+- `data/config/submenu-keywords.json` (should be tracked)
+
+This policy ensures:
+- Generated data files (which can be large and change frequently) are not committed
+- Configuration files (which define system behavior) are version controlled
+- Each developer/environment regenerates data files locally as needed
+
+### Data File Formats
+
+#### `/data/reporting/venues.json`
 All alcohol-serving venues discovered from Google Places API.
 ```json
 {
@@ -532,7 +690,7 @@ All alcohol-serving venues discovered from Google Places API.
 }
 ```
 
-### `/data/reporting/spots.json`
+#### `/data/reporting/spots.json`
 Curated spots with activity information.
 ```json
 {
