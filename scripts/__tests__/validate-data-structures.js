@@ -41,6 +41,20 @@ console.log('🔍 Data Structure Validation\n');
 // Validate Raw Directory Structure
 console.log('Step 1: Validating Raw Directory Structure\n');
 
+// Check if data directories exist - if not, skip validation (normal for CI/initial setup)
+if (!fs.existsSync(RAW_ALL_DIR)) {
+  console.log('⚠️  Raw directory does not exist - skipping validation');
+  console.log('   This is normal for CI or first-time setup.');
+  console.log('   Run download-raw-html.js to generate data.\n');
+  console.log('📊 Validation Summary:\n');
+  console.log(`   ✅ Passed: 0`);
+  console.log(`   ❌ Failed: 0`);
+  console.log(`   ⚠️  Warnings: 1`);
+  console.log(`   📊 Total:  1\n`);
+  console.log('✅ Validation skipped (no data directories found)\n');
+  process.exit(0);
+}
+
 if (fs.existsSync(RAW_ALL_DIR)) {
   const venueDirs = fs.readdirSync(RAW_ALL_DIR).filter(item => {
     const itemPath = path.join(RAW_ALL_DIR, item);
@@ -103,7 +117,9 @@ if (fs.existsSync(RAW_ALL_DIR)) {
 // Validate Silver Merged Directory Structure
 console.log('\nStep 2: Validating Silver Merged Directory Structure\n');
 
-if (fs.existsSync(SILVER_MERGED_ALL_DIR)) {
+if (!fs.existsSync(SILVER_MERGED_ALL_DIR)) {
+  warn('Silver merged directory does not exist', 'Run merge-raw-files.js first');
+} else if (fs.existsSync(SILVER_MERGED_ALL_DIR)) {
   const mergedFiles = fs.readdirSync(SILVER_MERGED_ALL_DIR).filter(f => f.endsWith('.json'));
   
   test(`Silver merged/all directory exists`, () => {
