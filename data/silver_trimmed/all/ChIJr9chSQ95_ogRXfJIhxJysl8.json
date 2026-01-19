@@ -3,17 +3,17 @@
   "venueName": "Mondo's Italian Restaurant",
   "venueArea": "James Island",
   "website": "http://eatatmondos.com/",
-  "scrapedAt": "2026-01-18T17:04:31.373Z",
-  "trimmedAt": "2026-01-18T17:12:47.722Z",
+  "scrapedAt": "2026-01-19T02:19:38.085Z",
+  "trimmedAt": "2026-01-19T02:27:29.473Z",
   "pages": [
     {
       "url": "http://eatatmondos.com/",
-      "text": "[Page Title: CloseLoading ...] Skip to Navigation Skip to Content Skip to Footer Close Monday through Saturday from 4:00 to 9:00 pm Come see what’s new at Mondo’s Italian Cuisine! New bar, same Mondo’s magic! More space, same Mondos flavor! Looking for everyone's favorite gift? Our gift cards are now available to purchase online. Click Here Now! Loading ... Close (Esc) Share Toggle Full-screen Zoom In/Out Previous Next",
+      "text": "[Page Title: Mondos Italian RestaurantLocationNavigationPhoneNavigationCloseLoading ...LocationPhoneTop]\n\nSkip to Navigation Skip to Content Skip to Footer Close \nMonday through Saturday from 4:00 to 9:00 pm Come see what’s new at Mondo’s Italian Cuisine! New bar, same Mondo’s magic! More space, same Mondos flavor! Looking for everyone's favorite gift? Our gift cards are now available to purchase online.\nClick Here Now! Loading ... Close (Esc) Share Toggle Full-screen Zoom In/Out Previous Next",
       "hash": "a3c23dab5937",
-      "downloadedAt": "2026-01-18T16:55:41.039Z",
-      "trimmedAt": "2026-01-18T17:12:47.722Z",
-      "sizeReduction": "99.3%"
+      "downloadedAt": "2026-01-19T02:10:15.560Z",
+      "trimmedAt": "2026-01-19T02:27:29.473Z",
+      "sizeReduction": "99.1%"
     }
   ],
-  "sizeReduction": "99.3%"
+  "sizeReduction": "99.1%"
 }

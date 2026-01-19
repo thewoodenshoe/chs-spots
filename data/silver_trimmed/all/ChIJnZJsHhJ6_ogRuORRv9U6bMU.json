@@ -3,17 +3,17 @@
   "venueName": "Toast! All Day Meeting Street",
   "venueArea": "Downtown Charleston",
   "website": "https://toastallday.com/toast-meeting-street/",
-  "scrapedAt": "2026-01-18T17:04:29.724Z",
-  "trimmedAt": "2026-01-18T17:11:48.307Z",
+  "scrapedAt": "2026-01-19T02:19:37.256Z",
+  "trimmedAt": "2026-01-19T02:26:26.602Z",
   "pages": [
     {
       "url": "https://toastallday.com/toast-meeting-street/",
-      "text": "",
+      "text": "[Page Title: Toast All Day - Award-Winning Breakfast, Brunch & Lunch in Charleston]",
       "hash": "6037f3fb6b1c",
-      "downloadedAt": "2026-01-18T16:55:10.692Z",
-      "trimmedAt": "2026-01-18T17:11:48.307Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:09:42.875Z",
+      "trimmedAt": "2026-01-19T02:26:26.602Z",
+      "sizeReduction": "97.3%"
     }
   ],
-  "sizeReduction": "100.0%"
+  "sizeReduction": "97.3%"
 }

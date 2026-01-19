@@ -3,17 +3,17 @@
   "venueName": "The Grocery",
   "venueArea": "Mount Pleasant",
   "website": "http://www.thegrocerycharleston.com/",
-  "scrapedAt": "2026-01-18T17:04:23.136Z",
-  "trimmedAt": "2026-01-18T17:04:46.990Z",
+  "scrapedAt": "2026-01-19T02:19:30.615Z",
+  "trimmedAt": "2026-01-19T02:19:53.022Z",
   "pages": [
     {
       "url": "http://www.thegrocerycharleston.com/",
-      "text": "A neighborhood gathering place featuring ingredients from our favorite farmers, fishermen, foragers and artisans. Learn More An experience to share. Menus Dinner / Beverage Welcoming you for every occasion. Tuesday - Sunday Opening at 5:00 Dinner Reservations",
+      "text": "[Page Title: The Grocery | Charleston, SC | Chef Kevin Johnson]\n\nA neighborhood gathering place featuring ingredients from our favorite farmers, fishermen, foragers and artisans.\nLearn More \nAn experience to share.\nMenus Dinner / Beverage \nWelcoming you for every occasion.\n\nTuesday - Sunday Opening at 5:00\nDinner Reservations",
       "hash": "2e60d368e861",
-      "downloadedAt": "2026-01-18T16:57:26.856Z",
-      "trimmedAt": "2026-01-18T17:04:46.990Z",
-      "sizeReduction": "98.0%"
+      "downloadedAt": "2026-01-19T02:12:26.415Z",
+      "trimmedAt": "2026-01-19T02:19:53.022Z",
+      "sizeReduction": "97.4%"
     }
   ],
-  "sizeReduction": "98.0%"
+  "sizeReduction": "97.4%"
 }

@@ -3,33 +3,33 @@
   "venueName": "The Harlow",
   "venueArea": "James Island",
   "website": "http://theharlowchs.com/",
-  "scrapedAt": "2026-01-18T17:04:28.753Z",
-  "trimmedAt": "2026-01-18T17:11:25.821Z",
+  "scrapedAt": "2026-01-19T02:19:36.579Z",
+  "trimmedAt": "2026-01-19T02:26:05.502Z",
   "pages": [
     {
       "url": "http://theharlowchs.com/menu-landing",
-      "text": "0 DINNER DINNER MENU DESSERT DESSERT MENU RAW BARHAPPY HOUR RAW BAR HAPPY HOUR",
+      "text": "[Page Title: Menu — The Harlow]\n\n0 DINNER DINNER MENU DESSERT DESSERT MENU RAW BARHAPPY HOUR RAW BAR HAPPY HOUR",
       "hash": "16c613c6e263",
-      "downloadedAt": "2026-01-18T16:55:40.936Z",
-      "trimmedAt": "2026-01-18T17:11:25.769Z",
+      "downloadedAt": "2026-01-19T02:10:15.429Z",
+      "trimmedAt": "2026-01-19T02:26:05.458Z",
       "sizeReduction": "99.9%"
     },
     {
       "url": "http://theharlowchs.com/",
-      "text": "0 Island-Americana Cuisine in The Heart of James Island Nestled in the picturesque James Island, The Harlow is a culinary beacon where the rich traditions of Lowcountry seafood effortlessly merge with timeless American classics. RESERVATIONS Call 843-459-2867 or Book Online THE MENU Good Eats Make Good Neighbors • Good Eats Make Good Neighbors • Good Eats Make Good Neighbors • Eat your heart out James Island MENU Let’s Get Social Follow Us Keep Me In The Loop Get updates on what’s cookin’ & special events Sign Me Up",
+      "text": "[Page Title: The Harlow Burger & Oyster Bar]\n\n0 \nIsland-Americana Cuisine in The Heart of James Island\n\nNestled in the picturesque James Island, The Harlow is a culinary beacon where the rich traditions of Lowcountry seafood effortlessly merge with timeless American classics.\nRESERVATIONS Call 843-459-2867 or Book Online THE MENU \nGood Eats Make Good Neighbors •\nGood Eats Make Good Neighbors • Good Eats Make Good Neighbors • \nEat your heart out James Island\nMENU \nLet’s Get Social\nFollow Us \nKeep Me In The Loop\n\nGet updates on what’s cookin’ & special events\nSign Me Up",
       "hash": "b6cea2777519",
-      "downloadedAt": "2026-01-18T16:55:40.654Z",
-      "trimmedAt": "2026-01-18T17:11:25.805Z",
+      "downloadedAt": "2026-01-19T02:10:15.247Z",
+      "trimmedAt": "2026-01-19T02:26:05.487Z",
       "sizeReduction": "99.8%"
     },
     {
       "url": "http://theharlowchs.com/location",
-      "text": "0 Welcome to The Harlow Coastal Americana & Seafood Located in the picturesque low country of James Island, SC. Reserve Your Table Now ADDRESS 1015 Harbor View Road, Charleston SC 29412 PHONE 843-459-2867 HOURS Mon-Thu • 5pm-10pm Fri-Sat • 5pm-10:30pm Sun Brunch • 11am-3:30pm \"Food, atmosphere, and service was AMAZING. The Harlow exceeded all my expectations. Will be taking my family and friends there!\" - KAYLA W. \"Great food and super nice staff!\" -NATHAN B. \"Amazing addition to JI. Staff is welcoming and knowledgeable and the food is drool worthy.\" -Katie I. \"Highly recommend! The Harlow burger is probably the best burger (definitely best cooked) I've had in Charleston….Will be going back very soon!\" -Mat G.",
+      "text": "[Page Title: Location — The Harlow]\n\n0 Welcome to The Harlow Coastal Americana & Seafood \nLocated in the picturesque low country of James Island, SC.\nReserve Your Table Now ADDRESS 1015 Harbor View Road, Charleston SC 29412 PHONE 843-459-2867 HOURS Mon-Thu • 5pm-10pm Fri-Sat • 5pm-10:30pm Sun Brunch • 11am-3:30pm \n\"Food, atmosphere, and service was AMAZING. The Harlow exceeded all my expectations. Will be taking my family and friends there!\"\n\n- KAYLA W.\n\n\"Great food and super nice staff!\"\n\n-NATHAN B.\n\n\"Amazing addition to JI. Staff is welcoming and knowledgeable and the food is drool worthy.\"\n\n-Katie I.\n\n\"Highly recommend! The Harlow burger is probably the best burger (definitely best cooked) I've had in Charleston….Will be going back very soon!\"\n\n-Mat G.",
       "hash": "fa265701e1a5",
-      "downloadedAt": "2026-01-18T16:55:41.572Z",
-      "trimmedAt": "2026-01-18T17:11:25.821Z",
+      "downloadedAt": "2026-01-19T02:10:16.089Z",
+      "trimmedAt": "2026-01-19T02:26:05.502Z",
       "sizeReduction": "99.6%"
     }
   ],
-  "sizeReduction": "99.8%"
+  "sizeReduction": "99.7%"
 }

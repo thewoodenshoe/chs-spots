@@ -3,41 +3,41 @@
   "venueName": "Berkeley's",
   "venueArea": "West Ashley",
   "website": "http://www.eatatberkeleys.com/",
-  "scrapedAt": "2026-01-18T17:04:27.860Z",
-  "trimmedAt": "2026-01-18T17:11:08.321Z",
+  "scrapedAt": "2026-01-19T02:19:35.754Z",
+  "trimmedAt": "2026-01-19T02:25:48.951Z",
   "pages": [
     {
       "url": "http://www.eatatberkeleys.com/drinks",
-      "text": "Make A Reservation Order Online",
+      "text": "[Page Title: DRINKS — Berkeley's]\n\nMake A Reservation Order Online",
       "hash": "1e97303d1f63",
-      "downloadedAt": "2026-01-18T17:02:00.980Z",
-      "trimmedAt": "2026-01-18T17:11:08.268Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:16:30.746Z",
+      "trimmedAt": "2026-01-19T02:25:48.929Z",
+      "sizeReduction": "99.9%"
     },
     {
       "url": "http://www.eatatberkeleys.com/",
-      "text": "Rutledge & Huger Order Online Charleston, SC NOW OPEN 7 DAYS A WEEK Make A Reservation Order Online",
+      "text": "[Page Title: Berkeley's]\n\nRutledge & Huger Order Online Charleston, SC NOW OPEN 7 DAYS A WEEK Make A Reservation Order Online",
       "hash": "63aa630f25a3",
-      "downloadedAt": "2026-01-18T17:02:00.190Z",
-      "trimmedAt": "2026-01-18T17:11:08.302Z",
+      "downloadedAt": "2026-01-19T02:16:29.968Z",
+      "trimmedAt": "2026-01-19T02:25:48.938Z",
       "sizeReduction": "99.9%"
     },
     {
       "url": "http://www.eatatberkeleys.com/menu",
-      "text": "Make A Reservation Order Online",
+      "text": "[Page Title: LUNCH & DINNER — Berkeley's]\n\nMake A Reservation Order Online",
       "hash": "9da244e3f75e",
-      "downloadedAt": "2026-01-18T17:02:00.344Z",
-      "trimmedAt": "2026-01-18T17:11:08.313Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:16:30.104Z",
+      "trimmedAt": "2026-01-19T02:25:48.944Z",
+      "sizeReduction": "99.9%"
     },
     {
       "url": "http://www.eatatberkeleys.com/menu-1",
-      "text": "Make A Reservation Order Online",
+      "text": "[Page Title: FOR THE KIDDOS — Berkeley's]\n\nMake A Reservation Order Online",
       "hash": "d420ae83ba65",
-      "downloadedAt": "2026-01-18T17:02:01.849Z",
-      "trimmedAt": "2026-01-18T17:11:08.321Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:16:31.385Z",
+      "trimmedAt": "2026-01-19T02:25:48.951Z",
+      "sizeReduction": "99.9%"
     }
   ],
-  "sizeReduction": "100.0%"
+  "sizeReduction": "99.9%"
 }

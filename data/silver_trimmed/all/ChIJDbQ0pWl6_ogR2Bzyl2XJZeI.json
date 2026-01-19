@@ -3,33 +3,33 @@
   "venueName": "Poke Tea House",
   "venueArea": "North Charleston",
   "website": "http://poketeahouse.com/",
-  "scrapedAt": "2026-01-18T17:04:24.373Z",
-  "trimmedAt": "2026-01-18T17:05:20.745Z",
+  "scrapedAt": "2026-01-19T02:19:32.067Z",
+  "trimmedAt": "2026-01-19T02:20:25.643Z",
   "pages": [
     {
       "url": "http://poketeahouse.com/menu.html",
-      "text": "Poke Tea House Home About Locations Menu order for pickup Menu ​​ Order Grubhub pick up only ORDER WITH UBER FOR PICK UP OR DELIVERY ​ Create Your Poke choose a base Poke bowl ( sushi rice or brown rice)Poke Salad (see store for options)Burrito (sushi or brown rice W. seaweed paper) Protein: Pick 1 $13.50 or Pick 2 $16 *Ahi tuna Chicken *Salmon Shrimp * Spicy Ahi Tofu Grilled Eel(seasonal)Mix In Ingredients: Pick 3 -cucumber -edamme -ogo seaweed -cilantro -shiso leaf(mint leaf) -mango -asparagus -tamago -sweet onion -scallion -jalapeno -pineapple-black bean -carrot -romaine lettuce - chickpeaSauces: (choose 1) -classic poke -oba dressing -ponzu dressing -sweet chili -wasabi mayo -sriracha mayo(spicy Mayo) -soy ginger -wasabi yuzu -mango sauce -eel sauce-spicy classic -creamy sauce topping : Pick 2 -avocado -seaweed salad *spicy tuna -crab salad *masago -corn *spicy salmon -squid salad -pickled cucumber Free Garnish: -sesame seeds fried onion Powered by Create your own unique website with customizable templates. Get Started Home About Locations Menu order for pickup",
+      "text": "[Page Title: Menu - Poke Tea House]\n\nPoke Tea House Home About Locations Menu order for pickup Menu \n​​\nOrder Grubhub pick up only ORDER WITH UBER FOR PICK UP OR DELIVERY ​ Create Your Poke   choose a base Poke bowl  ( sushi rice or brown rice)Poke Salad  (see store for options)Burrito  (sushi or brown rice W. seaweed paper)     Protein: Pick 1 $13.50 or Pick 2 $16   *Ahi tuna                     Chicken                        *Salmon                  Shrimp * Spicy Ahi          Tofu         Grilled Eel(seasonal)Mix In Ingredients: Pick 3  -cucumber        -edamme          -ogo seaweed   -cilantro           -shiso leaf(mint leaf)      -mango -asparagus         -tamago     -sweet onion     -scallion            -jalapeno     -pineapple-black bean       -carrot         -romaine lettuce      - chickpeaSauces: (choose 1) -classic poke         -oba dressing          -ponzu dressing     -sweet chili          -wasabi mayo            -sriracha mayo(spicy Mayo) -soy ginger        -wasabi yuzu       -mango sauce     -eel sauce-spicy classic     -creamy sauce topping : Pick 2    -avocado   -seaweed salad        *spicy tuna     -crab salad    *masago -corn         *spicy salmon -squid salad      -pickled cucumber  Free Garnish: -sesame seeds    fried onion \nPowered by\nCreate your own unique website with customizable templates. Get Started Home About Locations Menu order for pickup",
       "hash": "110f633520cc",
-      "downloadedAt": "2026-01-18T17:00:19.987Z",
-      "trimmedAt": "2026-01-18T17:05:20.731Z",
-      "sizeReduction": "98.7%"
+      "downloadedAt": "2026-01-19T02:15:00.878Z",
+      "trimmedAt": "2026-01-19T02:20:25.626Z",
+      "sizeReduction": "98.3%"
     },
     {
       "url": "http://poketeahouse.com/",
-      "text": "Poke Tea House Home About Locations Menu order for pickup Gift card Grubhub pick up only ORDER WITH UBER FOR PICK UP OR DELIVERY HOURS & LOCATION Poke Tea House (Downtown) 441 Meeting St UNIT EBETWEEN MEETING & KINGON SPRING STCharleston, SC 29403​Monday-Friday11am-8pm Saturday & Sunday12pm-8pm ​ 1(854)444-3591​ ©2016-2024 poketeahouse.com Powered by Create your own unique website with customizable templates. Get Started Home About Locations Menu order for pickup",
+      "text": "[Page Title: Poke Tea House - Home]\n\nPoke Tea House Home About Locations Menu order for pickup Gift card Grubhub pick up only ORDER WITH UBER FOR PICK UP OR DELIVERY HOURS & LOCATION Poke Tea House (Downtown) 441 Meeting St UNIT EBETWEEN MEETING & KINGON SPRING STCharleston, SC 29403​Monday-Friday11am-8pm Saturday & Sunday12pm-8pm ​ 1(854)444-3591​ ©2016-2024 poketeahouse.com \nPowered by\nCreate your own unique website with customizable templates. Get Started Home About Locations Menu order for pickup",
       "hash": "12e58145249b",
-      "downloadedAt": "2026-01-18T17:00:18.794Z",
-      "trimmedAt": "2026-01-18T17:05:20.740Z",
+      "downloadedAt": "2026-01-19T02:14:59.770Z",
+      "trimmedAt": "2026-01-19T02:20:25.636Z",
       "sizeReduction": "99.4%"
     },
     {
       "url": "http://poketeahouse.com/locations.html",
-      "text": "Poke Tea House Home About Locations Menu order for pickup Locations Poke Tea House (downtown charleston)441 Meeting St Unit ECharleston SC 29403​854-444-3591 Powered by Create your own unique website with customizable templates. Get Started Home About Locations Menu order for pickup",
+      "text": "[Page Title: Locations - Poke Tea House]\n\nPoke Tea House Home About Locations Menu order for pickup Locations Poke Tea House (downtown charleston)441 Meeting St Unit ECharleston SC 29403​854-444-3591 \nPowered by\nCreate your own unique website with customizable templates. Get Started Home About Locations Menu order for pickup",
       "hash": "5ea4edaca89a",
-      "downloadedAt": "2026-01-18T17:00:19.210Z",
-      "trimmedAt": "2026-01-18T17:05:20.745Z",
+      "downloadedAt": "2026-01-19T02:15:00.074Z",
+      "trimmedAt": "2026-01-19T02:20:25.643Z",
       "sizeReduction": "99.6%"
     }
   ],
-  "sizeReduction": "99.3%"
+  "sizeReduction": "99.1%"
 }

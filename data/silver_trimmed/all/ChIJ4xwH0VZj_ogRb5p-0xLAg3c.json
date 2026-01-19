@@ -3,17 +3,17 @@
   "venueName": "Firehouse Subs West Montague",
   "venueArea": "North Charleston",
   "website": "http://firehousesubs.com/menu?service-mode=TAKEOUT&store-number=389",
-  "scrapedAt": "2026-01-18T17:04:23.586Z",
-  "trimmedAt": "2026-01-18T17:04:59.091Z",
+  "scrapedAt": "2026-01-19T02:19:31.124Z",
+  "trimmedAt": "2026-01-19T02:20:04.606Z",
   "pages": [
     {
       "url": "http://firehousesubs.com/menu?service-mode=TAKEOUT&store-number=389",
-      "text": "",
+      "text": "[Page Title: Firehouse Subs]",
       "hash": "0272b558548f",
-      "downloadedAt": "2026-01-18T16:59:07.527Z",
-      "trimmedAt": "2026-01-18T17:04:59.091Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:14:18.223Z",
+      "trimmedAt": "2026-01-19T02:20:04.606Z",
+      "sizeReduction": "99.2%"
     }
   ],
-  "sizeReduction": "100.0%"
+  "sizeReduction": "99.2%"
 }

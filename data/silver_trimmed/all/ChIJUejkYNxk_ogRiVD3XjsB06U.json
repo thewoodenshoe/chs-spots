@@ -3,33 +3,33 @@
   "venueName": "COAST Brewing Company",
   "venueArea": "North Charleston",
   "website": "http://www.coastbrewing.com/",
-  "scrapedAt": "2026-01-18T17:04:26.746Z",
-  "trimmedAt": "2026-01-18T17:08:04.057Z",
+  "scrapedAt": "2026-01-19T02:19:34.394Z",
+  "trimmedAt": "2026-01-19T02:23:03.598Z",
   "pages": [
     {
       "url": "http://www.coastbrewing.com/beer",
-      "text": "Menu",
+      "text": "[Page Title: Beers — Coast Brewing Co.]\n\nMenu",
       "hash": "4994e703fe16",
-      "downloadedAt": "2026-01-18T16:58:33.963Z",
-      "trimmedAt": "2026-01-18T17:08:04.044Z",
+      "downloadedAt": "2026-01-19T02:13:42.435Z",
+      "trimmedAt": "2026-01-19T02:23:03.585Z",
       "sizeReduction": "100.0%"
     },
     {
       "url": "http://www.coastbrewing.com/",
-      "text": "Menu COAST Brewing Co. is a small, family owned craft brewery in Charleston, SC. COAST Brewing Company is a family owned craft brewery, on an old Navy base. We make beer we like to drink, simple and done well. We believe in choice organic and local ingredients. But it's not just about being organic, it's a certain mind set of considering the environment in everything we do. In fact, we're not certified organic and have no plans to be-we do it because we believe it's the right thing. All of our ingredients are listed, noting which are organic. Welcome and thanks for your continued support! Full Bar & Kitchen 1250 N 2nd StreetNorth Charleston, SC 29405 Thursday 3-8 Friday 1-9 Saturday 12-9 Sunday 12-8 🔥 in all the ways Follow Us on Instagram Email Address Sign Up We respect your privacy! Thank you! Sign Up for our Newsletter",
+      "text": "[Page Title: Coast Brewing Co.]\n\nMenu \nCOAST Brewing Co. is a small, family owned craft brewery in Charleston, SC.\n\nCOAST Brewing Company is a family owned craft brewery, on an old Navy base. We make beer we like to drink, simple and done well. We believe in choice organic and local ingredients. But it's not just about being organic, it's a certain mind set of considering the environment in everything we do. In fact, we're not certified organic and have no plans to be-we do it because we believe it's the right thing. All of our ingredients are listed, noting which are organic. Welcome and thanks for your continued support!\n\nFull Bar & Kitchen\n1250 N 2nd StreetNorth Charleston, SC 29405 \nThursday 3-8\n\nFriday 1-9\n\nSaturday 12-9\n\nSunday 12-8\n\n🔥 in all the ways\nFollow Us on Instagram Email Address Sign Up \nWe respect your privacy!\n\nThank you!\n\nSign Up for our Newsletter",
       "hash": "8f7f3eba7616",
-      "downloadedAt": "2026-01-18T16:58:33.623Z",
-      "trimmedAt": "2026-01-18T17:08:04.055Z",
-      "sizeReduction": "99.1%"
+      "downloadedAt": "2026-01-19T02:13:42.382Z",
+      "trimmedAt": "2026-01-19T02:23:03.596Z",
+      "sizeReduction": "99.0%"
     },
     {
       "url": "http://www.coastbrewing.com/calendar",
-      "text": "Menu",
+      "text": "[Page Title: COAST Brewing Co. | Calendar — Coast Brewing Co.]\n\nMenu",
       "hash": "f85d07a466e7",
-      "downloadedAt": "2026-01-18T16:58:34.649Z",
-      "trimmedAt": "2026-01-18T17:08:04.057Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:13:43.101Z",
+      "trimmedAt": "2026-01-19T02:23:03.598Z",
+      "sizeReduction": "99.9%"
     }
   ],
-  "sizeReduction": "99.7%"
+  "sizeReduction": "99.6%"
 }

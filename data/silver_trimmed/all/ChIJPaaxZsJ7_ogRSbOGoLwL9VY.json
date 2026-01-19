@@ -3,23 +3,23 @@
   "venueName": "The Archer",
   "venueArea": "North Charleston",
   "website": "http://www.thearchercharleston.com/",
-  "scrapedAt": "2026-01-18T17:04:25.905Z",
-  "trimmedAt": "2026-01-18T17:07:17.087Z",
+  "scrapedAt": "2026-01-19T02:19:33.565Z",
+  "trimmedAt": "2026-01-19T02:22:14.417Z",
   "pages": [
     {
       "url": "http://www.thearchercharleston.com/menu",
-      "text": "0 dinner Drinks",
+      "text": "[Page Title: The Archer's Menu is CRAZY! Check it out. — The Archer]\n\n0 dinner Drinks",
       "hash": "06c7669dfddb",
-      "downloadedAt": "2026-01-18T17:01:38.064Z",
-      "trimmedAt": "2026-01-18T17:07:17.080Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:16:05.384Z",
+      "trimmedAt": "2026-01-19T02:22:14.410Z",
+      "sizeReduction": "99.9%"
     },
     {
       "url": "http://www.thearchercharleston.com/",
-      "text": "0 Welcome to The Archer. We are a restaurant & cocktail bar located in downtown Charleston, South Carolina. Our philosophy is simple: ALL BULLSEYE, NO BS. We serve food until 11PM, make drinks until midnight & have happy hour… Every DAy. Oh, and we have free parking onsite, too.",
+      "text": "[Page Title: The Archer]\n\n0 Welcome to The Archer. \nWe are a restaurant & cocktail bar located in downtown Charleston, South Carolina.\nOur philosophy is simple: ALL BULLSEYE, NO BS. We serve food until 11PM, make drinks until midnight & have happy hour… Every DAy. Oh, and we have free parking onsite, too.",
       "hash": "eddf878cb798",
-      "downloadedAt": "2026-01-18T17:01:37.811Z",
-      "trimmedAt": "2026-01-18T17:07:17.087Z",
+      "downloadedAt": "2026-01-19T02:16:05.103Z",
+      "trimmedAt": "2026-01-19T02:22:14.417Z",
       "sizeReduction": "99.8%"
     }
   ],

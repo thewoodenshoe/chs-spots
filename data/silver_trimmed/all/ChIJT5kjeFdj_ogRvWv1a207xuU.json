@@ -3,17 +3,17 @@
   "venueName": "Comfort Inn & Suites Charleston Airport Convention Center",
   "venueArea": "North Charleston",
   "website": "https://www.choicehotels.com/south-carolina/north-charleston/comfort-inn-hotels/sc307?mc=llgoxxpx",
-  "scrapedAt": "2026-01-18T17:04:26.606Z",
-  "trimmedAt": "2026-01-18T17:08:02.346Z",
+  "scrapedAt": "2026-01-19T02:19:34.279Z",
+  "trimmedAt": "2026-01-19T02:23:01.739Z",
   "pages": [
     {
       "url": "https://www.choicehotels.com/south-carolina/north-charleston/comfort-inn-hotels/sc307?mc=llgoxxpx",
-      "text": "",
+      "text": "[Page Title: Challenge Page]",
       "hash": "18d5a75e0c5d",
-      "downloadedAt": "2026-01-18T16:58:33.951Z",
-      "trimmedAt": "2026-01-18T17:08:02.346Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:13:42.320Z",
+      "trimmedAt": "2026-01-19T02:23:01.739Z",
+      "sizeReduction": "98.9%"
     }
   ],
-  "sizeReduction": "100.0%"
+  "sizeReduction": "98.9%"
 }

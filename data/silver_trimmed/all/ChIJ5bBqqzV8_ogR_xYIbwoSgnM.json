@@ -3,17 +3,17 @@
   "venueName": "Clarion Pointe Charleston - West Ashley",
   "venueArea": "West Ashley",
   "website": "https://www.choicehotels.com/south-carolina/charleston/clarion-hotels/sc200?mc=llgoxxpx",
-  "scrapedAt": "2026-01-18T17:04:23.668Z",
-  "trimmedAt": "2026-01-18T17:05:02.919Z",
+  "scrapedAt": "2026-01-19T02:19:31.229Z",
+  "trimmedAt": "2026-01-19T02:20:08.056Z",
   "pages": [
     {
       "url": "https://www.choicehotels.com/south-carolina/charleston/clarion-hotels/sc200?mc=llgoxxpx",
-      "text": "",
+      "text": "[Page Title: Challenge Page]",
       "hash": "881b6aa4d60c",
-      "downloadedAt": "2026-01-18T17:02:13.614Z",
-      "trimmedAt": "2026-01-18T17:05:02.919Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:16:43.326Z",
+      "trimmedAt": "2026-01-19T02:20:08.056Z",
+      "sizeReduction": "98.9%"
     }
   ],
-  "sizeReduction": "100.0%"
+  "sizeReduction": "98.9%"
 }

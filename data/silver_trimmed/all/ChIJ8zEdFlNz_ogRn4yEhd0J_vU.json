@@ -3,17 +3,17 @@
   "venueName": "Toast! All Day",
   "venueArea": "Mount Pleasant",
   "website": "https://toastallday.com/toast-mt-pleasant/mt-pleasant-menu/",
-  "scrapedAt": "2026-01-18T17:04:23.843Z",
-  "trimmedAt": "2026-01-18T17:05:05.193Z",
+  "scrapedAt": "2026-01-19T02:19:31.556Z",
+  "trimmedAt": "2026-01-19T02:20:10.173Z",
   "pages": [
     {
       "url": "https://toastallday.com/toast-mt-pleasant/mt-pleasant-menu/",
-      "text": "",
+      "text": "[Page Title: Toast All Day - Award-Winning Breakfast, Brunch & Lunch in Charleston]",
       "hash": "abc105abca94",
-      "downloadedAt": "2026-01-18T16:57:45.852Z",
-      "trimmedAt": "2026-01-18T17:05:05.193Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:12:57.867Z",
+      "trimmedAt": "2026-01-19T02:20:10.173Z",
+      "sizeReduction": "97.3%"
     }
   ],
-  "sizeReduction": "100.0%"
+  "sizeReduction": "97.3%"
 }

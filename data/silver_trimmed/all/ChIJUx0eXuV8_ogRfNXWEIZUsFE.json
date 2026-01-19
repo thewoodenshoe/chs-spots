@@ -3,15 +3,15 @@
   "venueName": "The Mason Jar By Fatboys",
   "venueArea": "West Ashley",
   "website": "https://m.facebook.com/TheMasonJarByFatboys/",
-  "scrapedAt": "2026-01-18T17:04:26.749Z",
-  "trimmedAt": "2026-01-18T17:08:04.080Z",
+  "scrapedAt": "2026-01-19T02:19:34.396Z",
+  "trimmedAt": "2026-01-19T02:23:03.622Z",
   "pages": [
     {
       "url": "https://m.facebook.com/TheMasonJarByFatboys/",
-      "text": "",
+      "text": "[Page Title: The Mason Jar by Fatboys | Charleston SC]",
       "hash": "592779723a8e",
-      "downloadedAt": "2026-01-18T17:04:00.810Z",
-      "trimmedAt": "2026-01-18T17:08:04.080Z",
+      "downloadedAt": "2026-01-19T02:18:30.939Z",
+      "trimmedAt": "2026-01-19T02:23:03.622Z",
       "sizeReduction": "100.0%"
     }
   ],

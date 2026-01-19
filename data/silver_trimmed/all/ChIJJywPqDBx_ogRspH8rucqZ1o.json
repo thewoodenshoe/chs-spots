@@ -3,17 +3,17 @@
   "venueName": "Toast! All Day",
   "venueArea": "Mount Pleasant",
   "website": "https://toastallday.com/toast-coleman-boulevard/coleman-blvd-menu/",
-  "scrapedAt": "2026-01-18T17:04:25.271Z",
-  "trimmedAt": "2026-01-18T17:07:07.777Z",
+  "scrapedAt": "2026-01-19T02:19:32.960Z",
+  "trimmedAt": "2026-01-19T02:22:05.424Z",
   "pages": [
     {
       "url": "https://toastallday.com/toast-coleman-boulevard/coleman-blvd-menu/",
-      "text": "",
+      "text": "[Page Title: Toast All Day - Award-Winning Breakfast, Brunch & Lunch in Charleston]",
       "hash": "99be2ad22bd5",
-      "downloadedAt": "2026-01-18T16:57:45.823Z",
-      "trimmedAt": "2026-01-18T17:07:07.777Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:12:57.877Z",
+      "trimmedAt": "2026-01-19T02:22:05.424Z",
+      "sizeReduction": "97.3%"
     }
   ],
-  "sizeReduction": "100.0%"
+  "sizeReduction": "97.3%"
 }

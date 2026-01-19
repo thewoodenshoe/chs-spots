@@ -3,23 +3,23 @@
   "venueName": "Community Crafthouse",
   "venueArea": "Daniel Island",
   "website": "https://communitycrafthouse.com/",
-  "scrapedAt": "2026-01-18T17:04:22.850Z",
-  "trimmedAt": "2026-01-18T17:04:41.674Z",
+  "scrapedAt": "2026-01-19T02:19:30.374Z",
+  "trimmedAt": "2026-01-19T02:19:47.833Z",
   "pages": [
     {
       "url": "https://communitycrafthouse.com/menu",
-      "text": "0 Embed Block Add an embed URL or code. Learn more What’s on Tap …and on deck!",
+      "text": "[Page Title: Menu 1 — Community Crafthouse]\n\n0 \nEmbed Block\n\nAdd an embed URL or code.\nLearn more \nWhat’s on Tap\n\n…and on deck!",
       "hash": "07c43c64231e",
-      "downloadedAt": "2026-01-18T16:51:57.984Z",
-      "trimmedAt": "2026-01-18T17:04:41.662Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:06:17.587Z",
+      "trimmedAt": "2026-01-19T02:19:47.817Z",
+      "sizeReduction": "99.9%"
     },
     {
       "url": "https://communitycrafthouse.com/",
-      "text": "0 Bringing people together one pint at a time! Address 1049 Point Hope Pkwy Suite B, Charleston, SC 29492 (843) 377-8154 Phone Hours Tue-Thur 4pm-10pm Fri 1pm-11pm Sat 12pm-11pm Sunday1pm–9pm",
+      "text": "[Page Title: Community Crafthouse]\n\n0 \nBringing people together one pint at a time!\nAddress 1049 Point Hope Pkwy Suite B, Charleston, SC 29492 \n(843) 377-8154\nPhone Hours \nTue-Thur\n\n4pm-10pm\n\nFri 1pm-11pm\n\nSat\n\n12pm-11pm\n\nSunday1pm–9pm",
       "hash": "5e54df257ab7",
-      "downloadedAt": "2026-01-18T16:51:57.763Z",
-      "trimmedAt": "2026-01-18T17:04:41.674Z",
+      "downloadedAt": "2026-01-19T02:06:17.425Z",
+      "trimmedAt": "2026-01-19T02:19:47.833Z",
       "sizeReduction": "99.8%"
     }
   ],

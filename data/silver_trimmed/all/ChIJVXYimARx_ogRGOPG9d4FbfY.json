@@ -3,33 +3,33 @@
   "venueName": "Flaming Wok",
   "venueArea": "Mount Pleasant",
   "website": "http://flamingwok.weebly.com/",
-  "scrapedAt": "2026-01-18T17:04:26.826Z",
-  "trimmedAt": "2026-01-18T17:08:04.689Z",
+  "scrapedAt": "2026-01-19T02:19:34.460Z",
+  "trimmedAt": "2026-01-19T02:23:04.270Z",
   "pages": [
     {
       "url": "http://flamingwok.weebly.com/location.html",
-      "text": "Home Menu Location Home Page Menu Powered by Create your own unique website with customizable templates. Get Started Home Menu Location",
+      "text": "[Page Title: Location - Flamming Wok Chinese Restaurant]\n\nHome Menu Location Home Page Menu \nPowered by\nCreate your own unique website with customizable templates. Get Started Home Menu Location",
       "hash": "b2bda8353fc6",
-      "downloadedAt": "2026-01-18T16:56:06.800Z",
-      "trimmedAt": "2026-01-18T17:08:04.681Z",
-      "sizeReduction": "99.4%"
+      "downloadedAt": "2026-01-19T02:11:04.247Z",
+      "trimmedAt": "2026-01-19T02:23:04.261Z",
+      "sizeReduction": "99.2%"
     },
     {
       "url": "http://flamingwok.weebly.com/",
-      "text": "Home Menu Location Flaming WokChinese Restaurant Click here for MENU Location 730 Coleman Blvd, Mt Pleasant, SC 29464 (843) 884-7999 Powered by Create your own unique website with customizable templates. Get Started Home Menu Location",
+      "text": "[Page Title: Flamming Wok Chinese Restaurant - Home]\n\nHome Menu Location \nFlaming WokChinese Restaurant\nClick here for MENU Location 730 Coleman Blvd, Mt Pleasant, SC 29464 (843) 884-7999 \nPowered by\nCreate your own unique website with customizable templates. Get Started Home Menu Location",
       "hash": "d9fb5f87e822",
-      "downloadedAt": "2026-01-18T16:56:06.026Z",
-      "trimmedAt": "2026-01-18T17:08:04.685Z",
-      "sizeReduction": "98.9%"
+      "downloadedAt": "2026-01-19T02:11:03.439Z",
+      "trimmedAt": "2026-01-19T02:23:04.265Z",
+      "sizeReduction": "98.7%"
     },
     {
       "url": "http://flamingwok.weebly.com/menu.html",
-      "text": "Home Menu Location Home Page Location Powered by Create your own unique website with customizable templates. Get Started Home Menu Location",
+      "text": "[Page Title: Menu - Flamming Wok Chinese Restaurant]\n\nHome Menu Location Home Page Location \nPowered by\nCreate your own unique website with customizable templates. Get Started Home Menu Location",
       "hash": "f2c7a9349edd",
-      "downloadedAt": "2026-01-18T16:56:06.168Z",
-      "trimmedAt": "2026-01-18T17:08:04.689Z",
-      "sizeReduction": "99.4%"
+      "downloadedAt": "2026-01-19T02:11:03.586Z",
+      "trimmedAt": "2026-01-19T02:23:04.270Z",
+      "sizeReduction": "99.2%"
     }
   ],
-  "sizeReduction": "99.3%"
+  "sizeReduction": "99.0%"
 }

@@ -3,17 +3,17 @@
   "venueName": "Comfort Inn & Suites Patriots Point",
   "venueArea": "Mount Pleasant",
   "website": "https://www.choicehotels.com/south-carolina/mount-pleasant/comfort-inn-hotels/sc064?mc=llgoxxpx",
-  "scrapedAt": "2026-01-18T17:04:30.421Z",
-  "trimmedAt": "2026-01-18T17:12:04.182Z",
+  "scrapedAt": "2026-01-19T02:19:37.561Z",
+  "trimmedAt": "2026-01-19T02:26:45.042Z",
   "pages": [
     {
       "url": "https://www.choicehotels.com/south-carolina/mount-pleasant/comfort-inn-hotels/sc064?mc=llgoxxpx",
-      "text": "",
+      "text": "[Page Title: Challenge Page]",
       "hash": "8dc0674d7e21",
-      "downloadedAt": "2026-01-18T16:55:59.196Z",
-      "trimmedAt": "2026-01-18T17:12:04.182Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:10:56.433Z",
+      "trimmedAt": "2026-01-19T02:26:45.042Z",
+      "sizeReduction": "98.9%"
     }
   ],
-  "sizeReduction": "100.0%"
+  "sizeReduction": "98.9%"
 }

@@ -3,15 +3,15 @@
   "venueName": "Fabio's Italian TAKE-OUT",
   "venueArea": "West Ashley",
   "website": "https://www.facebook.com/fabioscharleston",
-  "scrapedAt": "2026-01-18T17:04:25.490Z",
-  "trimmedAt": "2026-01-18T17:07:12.791Z",
+  "scrapedAt": "2026-01-19T02:19:33.182Z",
+  "trimmedAt": "2026-01-19T02:22:09.944Z",
   "pages": [
     {
       "url": "https://www.facebook.com/fabioscharleston",
-      "text": "",
+      "text": "[Page Title: Fabio's Charleston]",
       "hash": "cdb6688a9ed3",
-      "downloadedAt": "2026-01-18T17:02:24.201Z",
-      "trimmedAt": "2026-01-18T17:07:12.791Z",
+      "downloadedAt": "2026-01-19T02:16:52.148Z",
+      "trimmedAt": "2026-01-19T02:22:09.944Z",
       "sizeReduction": "100.0%"
     }
   ],

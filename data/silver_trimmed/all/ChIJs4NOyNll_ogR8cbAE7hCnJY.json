@@ -3,17 +3,17 @@
   "venueName": "Azul Mexicano",
   "venueArea": "North Charleston",
   "website": "http://www.azulmexicanorestaurante.com/",
-  "scrapedAt": "2026-01-18T17:04:31.443Z",
-  "trimmedAt": "2026-01-18T17:12:49.424Z",
+  "scrapedAt": "2026-01-19T02:19:38.152Z",
+  "trimmedAt": "2026-01-19T02:27:31.684Z",
   "pages": [
     {
       "url": "http://www.azulmexicanorestaurante.com/",
-      "text": "",
+      "text": "[Page Title: Azul Mexicano- Landing Page]",
       "hash": "cff2cf6a8c39",
-      "downloadedAt": "2026-01-18T16:58:10.236Z",
-      "trimmedAt": "2026-01-18T17:12:49.424Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:13:27.163Z",
+      "trimmedAt": "2026-01-19T02:27:31.684Z",
+      "sizeReduction": "99.9%"
     }
   ],
-  "sizeReduction": "100.0%"
+  "sizeReduction": "99.9%"
 }

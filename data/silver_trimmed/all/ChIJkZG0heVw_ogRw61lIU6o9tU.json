@@ -3,17 +3,17 @@
   "venueName": "Wreck of the Richard & Charlene",
   "venueArea": "Mount Pleasant",
   "website": "http://www.wreckrc.com/",
-  "scrapedAt": "2026-01-18T17:04:29.020Z",
-  "trimmedAt": "2026-01-18T17:11:36.809Z",
+  "scrapedAt": "2026-01-19T02:19:36.822Z",
+  "trimmedAt": "2026-01-19T02:26:14.329Z",
   "pages": [
     {
       "url": "http://www.wreckrc.com/",
-      "text": "0 Eat Drink Story",
+      "text": "[Page Title: The Wreck of the Richard and Charlene]\n\n0 Eat Drink Story",
       "hash": "47eda3e89fbc",
-      "downloadedAt": "2026-01-18T16:58:04.228Z",
-      "trimmedAt": "2026-01-18T17:11:36.809Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:13:22.145Z",
+      "trimmedAt": "2026-01-19T02:26:14.329Z",
+      "sizeReduction": "99.9%"
     }
   ],
-  "sizeReduction": "100.0%"
+  "sizeReduction": "99.9%"
 }

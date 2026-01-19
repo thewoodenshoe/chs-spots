@@ -3,17 +3,17 @@
   "venueName": "Sultan Restaurant and Lounge",
   "venueArea": "West Ashley",
   "website": "https://www.sultanswestashley.com/",
-  "scrapedAt": "2026-01-18T17:04:29.224Z",
-  "trimmedAt": "2026-01-18T17:11:39.860Z",
+  "scrapedAt": "2026-01-19T02:19:37.008Z",
+  "trimmedAt": "2026-01-19T02:26:17.618Z",
   "pages": [
     {
       "url": "https://www.sultanswestashley.com/",
-      "text": "",
+      "text": "[Page Title: Sultan Restaurant and Lounge]",
       "hash": "7d7f40dc0c88",
-      "downloadedAt": "2026-01-18T17:03:20.782Z",
-      "trimmedAt": "2026-01-18T17:11:39.860Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:17:48.065Z",
+      "trimmedAt": "2026-01-19T02:26:17.618Z",
+      "sizeReduction": "99.3%"
     }
   ],
-  "sizeReduction": "100.0%"
+  "sizeReduction": "99.3%"
 }

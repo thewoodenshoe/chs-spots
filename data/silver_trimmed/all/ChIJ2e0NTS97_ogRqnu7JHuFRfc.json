@@ -3,15 +3,15 @@
   "venueName": "Striped Pig Distillery",
   "venueArea": "North Charleston",
   "website": "http://www.stripedpigdistillery.com/",
-  "scrapedAt": "2026-01-18T17:04:23.351Z",
-  "trimmedAt": "2026-01-18T17:04:51.948Z",
+  "scrapedAt": "2026-01-19T02:19:30.833Z",
+  "trimmedAt": "2026-01-19T02:19:57.946Z",
   "pages": [
     {
       "url": "http://www.stripedpigdistillery.com/",
       "text": "",
       "hash": "d83f23b27c73",
-      "downloadedAt": "2026-01-18T17:01:20.176Z",
-      "trimmedAt": "2026-01-18T17:04:51.948Z",
+      "downloadedAt": "2026-01-19T02:15:48.645Z",
+      "trimmedAt": "2026-01-19T02:19:57.946Z",
       "sizeReduction": "100.0%"
     }
   ],

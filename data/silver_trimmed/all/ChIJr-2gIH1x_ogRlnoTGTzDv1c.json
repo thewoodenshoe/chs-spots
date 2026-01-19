@@ -3,17 +3,17 @@
   "venueName": "Hutto Seafood Kitchen",
   "venueArea": "Mount Pleasant",
   "website": "https://huttoseafoodkitchen.fronteats.com/",
-  "scrapedAt": "2026-01-18T17:04:31.243Z",
-  "trimmedAt": "2026-01-18T17:12:43.782Z",
+  "scrapedAt": "2026-01-19T02:19:37.963Z",
+  "trimmedAt": "2026-01-19T02:27:23.932Z",
   "pages": [
     {
       "url": "https://huttoseafoodkitchen.fronteats.com/",
-      "text": "",
+      "text": "[Page Title: HUTTO SEAFOOD KITCHEN]",
       "hash": "9ad13dd3f4b8",
-      "downloadedAt": "2026-01-18T16:56:28.410Z",
-      "trimmedAt": "2026-01-18T17:12:43.782Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:11:27.015Z",
+      "trimmedAt": "2026-01-19T02:27:23.932Z",
+      "sizeReduction": "99.6%"
     }
   ],
-  "sizeReduction": "100.0%"
+  "sizeReduction": "99.6%"
 }

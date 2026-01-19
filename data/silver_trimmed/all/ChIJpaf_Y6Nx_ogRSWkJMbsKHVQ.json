@@ -3,17 +3,17 @@
   "venueName": "Belle Station Sports Bar & Grill",
   "venueArea": "Mount Pleasant",
   "website": "http://bellestationmtp.com/",
-  "scrapedAt": "2026-01-18T17:04:30.397Z",
-  "trimmedAt": "2026-01-18T17:12:04.123Z",
+  "scrapedAt": "2026-01-19T02:19:37.555Z",
+  "trimmedAt": "2026-01-19T02:26:44.975Z",
   "pages": [
     {
       "url": "http://bellestationmtp.com/",
-      "text": "Welcome to nginx! If you see this page, the nginx web server is successfully installed and working. Further configuration is required. For online documentation and support please refer to . Commercial support is available at . nginx.org nginx.com Thank you for using nginx.",
+      "text": "[Page Title: Welcome to nginx!]\n\nWelcome to nginx!\n\nIf you see this page, the nginx web server is successfully installed and\nworking. Further configuration is required.\n\nFor online documentation and support please refer to\n.\nCommercial support is available at\n.\nnginx.org nginx.com Thank you for using nginx.",
       "hash": "c3b0c6713700",
-      "downloadedAt": "2026-01-18T16:55:44.048Z",
-      "trimmedAt": "2026-01-18T17:12:04.123Z",
-      "sizeReduction": "55.4%"
+      "downloadedAt": "2026-01-19T02:10:28.399Z",
+      "trimmedAt": "2026-01-19T02:26:44.975Z",
+      "sizeReduction": "49.7%"
     }
   ],
-  "sizeReduction": "55.4%"
+  "sizeReduction": "49.7%"
 }

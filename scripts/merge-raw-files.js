@@ -341,6 +341,8 @@ function main() {
 
 try {
   main();
+  // Explicitly exit to ensure process terminates (important when called from pipeline)
+  process.exit(0);
 } catch (error) {
   log(`❌ Fatal error: ${error.message || error}`);
   console.error(error);

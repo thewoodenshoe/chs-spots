@@ -3,17 +3,17 @@
   "venueName": "Toast! All Day",
   "venueArea": "West Ashley",
   "website": "https://toastallday.com/toast-west-ashley/",
-  "scrapedAt": "2026-01-18T17:04:25.971Z",
-  "trimmedAt": "2026-01-18T17:07:18.550Z",
+  "scrapedAt": "2026-01-19T02:19:33.632Z",
+  "trimmedAt": "2026-01-19T02:22:16.017Z",
   "pages": [
     {
       "url": "https://toastallday.com/toast-west-ashley/",
-      "text": "",
+      "text": "[Page Title: Toast All Day - Award-Winning Breakfast, Brunch & Lunch in Charleston]",
       "hash": "e5e8890f5b1b",
-      "downloadedAt": "2026-01-18T17:04:11.631Z",
-      "trimmedAt": "2026-01-18T17:07:18.550Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:18:42.449Z",
+      "trimmedAt": "2026-01-19T02:22:16.017Z",
+      "sizeReduction": "97.3%"
     }
   ],
-  "sizeReduction": "100.0%"
+  "sizeReduction": "97.3%"
 }

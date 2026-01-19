@@ -3,31 +3,31 @@
   "venueName": "Marina Variety Store Restaurant",
   "venueArea": "Downtown Charleston",
   "website": "https://www.thevarietystorerestaurantandsaltymikes.com/",
-  "scrapedAt": "2026-01-18T17:04:26.766Z",
-  "trimmedAt": "2026-01-18T17:08:04.327Z",
+  "scrapedAt": "2026-01-19T02:19:34.410Z",
+  "trimmedAt": "2026-01-19T02:23:03.884Z",
   "pages": [
     {
       "url": "https://www.thevarietystorerestaurantandsaltymikes.com/",
-      "text": "top of page Marina Variety Store Restaurant is Temporarily Closed and reopening under a new name! bottom of page",
+      "text": "[Page Title: HOME | MVSR]\n\ntop of page Marina Variety Store Restaurant is Temporarily Closed and reopening under a new name! bottom of page",
       "hash": "133bedfe9e4b",
-      "downloadedAt": "2026-01-18T16:54:31.202Z",
-      "trimmedAt": "2026-01-18T17:08:04.295Z",
+      "downloadedAt": "2026-01-19T02:09:04.826Z",
+      "trimmedAt": "2026-01-19T02:23:03.851Z",
       "sizeReduction": "100.0%"
     },
     {
       "url": "https://www.thevarietystorerestaurantandsaltymikes.com/wines-beer-and-cocktails",
-      "text": "top of page Home bottom of page",
+      "text": "[Page Title: DRINK MENU & COCKTAILS | MVSR]\n\ntop of page Home bottom of page",
       "hash": "74133e60cf3f",
-      "downloadedAt": "2026-01-18T16:54:31.284Z",
-      "trimmedAt": "2026-01-18T17:08:04.308Z",
+      "downloadedAt": "2026-01-19T02:09:04.911Z",
+      "trimmedAt": "2026-01-19T02:23:03.864Z",
       "sizeReduction": "100.0%"
     },
     {
       "url": "https://www.thevarietystorerestaurantandsaltymikes.com/blank",
-      "text": "top of page Home ​ Hours of Operation: Wednesday & Thursday 3:00 - 9:30 Friday & Saturday 2:00-10:30​ Sunday 2:00 - 7:00 Salty Mike's Deck Bar Book your ​ events with us: (843) 937-0208 or (843) 723-6325 No patrons under 21 years of age, no coolers or large bags, & no outside beverages please bottom of page",
+      "text": "[Page Title: SALTY MIKE'S DECK BAR | MVSR]\n\ntop of page Home ​ Hours of Operation: Wednesday & Thursday  3:00 - 9:30 Friday & Saturday 2:00-10:30​ Sunday  2:00 - 7:00 Salty Mike's \nDeck Bar Book your ​ events with us: (843) 937-0208  or  (843) 723-6325 No patrons under 21 years of age, no coolers or large bags, & no outside beverages please bottom of page",
       "hash": "dfb47593e71a",
-      "downloadedAt": "2026-01-18T16:54:31.838Z",
-      "trimmedAt": "2026-01-18T17:08:04.327Z",
+      "downloadedAt": "2026-01-19T02:09:05.463Z",
+      "trimmedAt": "2026-01-19T02:23:03.884Z",
       "sizeReduction": "99.9%"
     }
   ],

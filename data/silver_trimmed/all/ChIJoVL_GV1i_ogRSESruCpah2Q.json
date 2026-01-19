@@ -3,15 +3,15 @@
   "venueName": "G Club",
   "venueArea": "North Charleston",
   "website": "http://gclub843.com/",
-  "scrapedAt": "2026-01-18T17:04:29.946Z",
-  "trimmedAt": "2026-01-18T17:11:49.732Z",
+  "scrapedAt": "2026-01-19T02:19:37.329Z",
+  "trimmedAt": "2026-01-19T02:26:28.846Z",
   "pages": [
     {
       "url": "http://gclub843.com/",
       "text": "",
       "hash": "e4dc870939aa",
-      "downloadedAt": "2026-01-18T16:59:07.032Z",
-      "trimmedAt": "2026-01-18T17:11:49.732Z",
+      "downloadedAt": "2026-01-19T02:14:17.729Z",
+      "trimmedAt": "2026-01-19T02:26:28.846Z",
       "sizeReduction": "100.0%"
     }
   ],

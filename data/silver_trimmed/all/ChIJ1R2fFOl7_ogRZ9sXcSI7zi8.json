@@ -3,17 +3,17 @@
   "venueName": "Nirlep Indian Restaurant",
   "venueArea": "West Ashley",
   "website": "https://nirlepindianrestaurant.com/store/",
-  "scrapedAt": "2026-01-18T17:04:23.082Z",
-  "trimmedAt": "2026-01-18T17:04:46.248Z",
+  "scrapedAt": "2026-01-19T02:19:30.564Z",
+  "trimmedAt": "2026-01-19T02:19:52.241Z",
   "pages": [
     {
       "url": "https://nirlepindianrestaurant.com/store/",
-      "text": "",
+      "text": "[Page Title: Redirecting...]",
       "hash": "e22b39180cd8",
-      "downloadedAt": "2026-01-18T17:02:58.603Z",
-      "trimmedAt": "2026-01-18T17:04:46.248Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:17:24.558Z",
+      "trimmedAt": "2026-01-19T02:19:52.241Z",
+      "sizeReduction": "99.4%"
     }
   ],
-  "sizeReduction": "100.0%"
+  "sizeReduction": "99.4%"
 }

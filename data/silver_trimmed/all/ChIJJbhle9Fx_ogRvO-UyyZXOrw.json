@@ -3,17 +3,17 @@
   "venueName": "Two Blokes Brewing",
   "venueArea": "Mount Pleasant",
   "website": "http://twoblokesbrewing.com/",
-  "scrapedAt": "2026-01-18T17:04:25.227Z",
-  "trimmedAt": "2026-01-18T17:07:06.803Z",
+  "scrapedAt": "2026-01-19T02:19:32.908Z",
+  "trimmedAt": "2026-01-19T02:22:04.464Z",
   "pages": [
     {
       "url": "http://twoblokesbrewing.com/",
-      "text": "",
+      "text": "[Page Title: Two Blokes Brewing | Craft Beer & Community]",
       "hash": "d352aa45fe17",
-      "downloadedAt": "2026-01-18T16:57:45.990Z",
-      "trimmedAt": "2026-01-18T17:07:06.803Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:12:57.575Z",
+      "trimmedAt": "2026-01-19T02:22:04.464Z",
+      "sizeReduction": "98.6%"
     }
   ],
-  "sizeReduction": "100.0%"
+  "sizeReduction": "98.6%"
 }

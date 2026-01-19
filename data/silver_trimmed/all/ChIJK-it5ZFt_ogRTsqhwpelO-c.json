@@ -3,15 +3,15 @@
   "venueName": "Golden Bowl",
   "venueArea": "Mount Pleasant",
   "website": "http://www.scgoldenbowl.com/",
-  "scrapedAt": "2026-01-18T17:04:25.272Z",
-  "trimmedAt": "2026-01-18T17:07:07.794Z",
+  "scrapedAt": "2026-01-19T02:19:32.963Z",
+  "trimmedAt": "2026-01-19T02:22:05.443Z",
   "pages": [
     {
       "url": "http://www.scgoldenbowl.com/",
-      "text": "Golden Bowl Welcome to our restaurant! Come and try our dishes! Online Order Amazingly Delicious Hungry? Order online now! Order your favorite food online at your convenience. Order Online Now Contact Us Mon - Sun 11:00 AM - 10:00 PM  843-216-8866  843-216-8884  2700 N Highway 17 #190l Mt Pleasant, SC 29466",
+      "text": "[Page Title: Golden Bowl｜Online Order｜Mt. Pleasant｜SC]\n\nGolden Bowl\n\nWelcome to our restaurant!\nCome and try our dishes! Online Order \nAmazingly Delicious\n\nHungry? Order online now!\n\nOrder your favorite food online at your convenience.\nOrder Online Now \nContact Us\n\nMon - Sun\n\n11:00 AM - 10:00 PM\n 843-216-8866  843-216-8884  2700 N Highway 17 #190l\nMt Pleasant, SC 29466",
       "hash": "8e304f68c468",
-      "downloadedAt": "2026-01-18T16:56:20.062Z",
-      "trimmedAt": "2026-01-18T17:07:07.794Z",
+      "downloadedAt": "2026-01-19T02:11:19.041Z",
+      "trimmedAt": "2026-01-19T02:22:05.443Z",
       "sizeReduction": "99.8%"
     }
   ],

@@ -3,39 +3,39 @@
   "venueName": "Muse Restaurant & Wine Bar",
   "venueArea": "Downtown Charleston",
   "website": "http://www.charlestonmuse.com/",
-  "scrapedAt": "2026-01-18T17:04:25.388Z",
-  "trimmedAt": "2026-01-18T17:07:09.668Z",
+  "scrapedAt": "2026-01-19T02:19:33.078Z",
+  "trimmedAt": "2026-01-19T02:22:07.109Z",
   "pages": [
     {
       "url": "https://www.charlestonmuse.com/menu",
-      "text": "top of page bottom of page",
+      "text": "[Page Title: MENU | Charleston Muse]\n\ntop of page bottom of page",
       "hash": "9a68cfadb515",
-      "downloadedAt": "2026-01-18T16:54:31.616Z",
-      "trimmedAt": "2026-01-18T17:07:09.617Z",
+      "downloadedAt": "2026-01-19T02:09:05.160Z",
+      "trimmedAt": "2026-01-19T02:22:07.046Z",
       "sizeReduction": "100.0%"
     },
     {
       "url": "http://www.charlestonmuse.com/",
-      "text": "top of page bottom of page",
+      "text": "[Page Title: HOME | Charleston Muse]\n\ntop of page bottom of page",
       "hash": "a29101fd72e4",
-      "downloadedAt": "2026-01-18T16:54:31.509Z",
-      "trimmedAt": "2026-01-18T17:07:09.634Z",
+      "downloadedAt": "2026-01-19T02:09:05.069Z",
+      "trimmedAt": "2026-01-19T02:22:07.067Z",
       "sizeReduction": "100.0%"
     },
     {
       "url": "https://www.charlestonmuse.com/events",
-      "text": "top of page bottom of page",
+      "text": "[Page Title: REVIEWS | Charleston Muse]\n\ntop of page bottom of page",
       "hash": "bc57440e8b8e",
-      "downloadedAt": "2026-01-18T16:54:32.724Z",
-      "trimmedAt": "2026-01-18T17:07:09.652Z",
+      "downloadedAt": "2026-01-19T02:09:06.258Z",
+      "trimmedAt": "2026-01-19T02:22:07.089Z",
       "sizeReduction": "100.0%"
     },
     {
       "url": "https://www.charlestonmuse.com/wine",
-      "text": "top of page bottom of page",
+      "text": "[Page Title: WINE | Charleston Muse]\n\ntop of page bottom of page",
       "hash": "ddd2e7a58c82",
-      "downloadedAt": "2026-01-18T16:54:32.170Z",
-      "trimmedAt": "2026-01-18T17:07:09.668Z",
+      "downloadedAt": "2026-01-19T02:09:05.709Z",
+      "trimmedAt": "2026-01-19T02:22:07.109Z",
       "sizeReduction": "100.0%"
     }
   ],

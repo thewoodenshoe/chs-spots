@@ -3,15 +3,15 @@
   "venueName": "Kairos Mediterranean",
   "venueArea": "West Ashley",
   "website": "https://www.eatkairos.com/",
-  "scrapedAt": "2026-01-18T17:04:28.709Z",
-  "trimmedAt": "2026-01-18T17:11:25.410Z",
+  "scrapedAt": "2026-01-19T02:19:36.535Z",
+  "trimmedAt": "2026-01-19T02:26:05.079Z",
   "pages": [
     {
       "url": "https://www.eatkairos.com/",
       "text": "",
       "hash": "c4bd0cd02ece",
-      "downloadedAt": "2026-01-18T17:02:43.246Z",
-      "trimmedAt": "2026-01-18T17:11:25.410Z",
+      "downloadedAt": "2026-01-19T02:17:05.944Z",
+      "trimmedAt": "2026-01-19T02:26:05.079Z",
       "sizeReduction": "100.0%"
     }
   ],

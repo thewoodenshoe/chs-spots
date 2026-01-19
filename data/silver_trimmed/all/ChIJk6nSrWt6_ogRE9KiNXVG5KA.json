@@ -3,31 +3,31 @@
   "venueName": "A.C.'s Bar & Grill",
   "venueArea": "Downtown Charleston",
   "website": "https://www.acsbar.com/",
-  "scrapedAt": "2026-01-18T17:04:28.965Z",
-  "trimmedAt": "2026-01-18T17:11:33.897Z",
+  "scrapedAt": "2026-01-19T02:19:36.770Z",
+  "trimmedAt": "2026-01-19T02:26:11.840Z",
   "pages": [
     {
       "url": "https://www.acsbar.com/contact",
-      "text": "top of page Contact Phone: (843) 577-6742 Address: 467 King St Charleston, SC 29403 ​ Bar Hours: 11a.m. - 2 a.m. ​ Kitchen Hours: Mon.-Sat.: 11 a.m. - 1:30 a.m. Sunday: 4 p.m. - 1:30 a.m. ​ bottom of page",
+      "text": "[Page Title: Contact | mysite]\n\ntop of page Contact Phone: (843) 577-6742 Address: 467 King St Charleston, SC 29403 ​ Bar Hours: 11a.m. - 2 a.m. ​ Kitchen Hours: Mon.-Sat.: 11 a.m. - 1:30 a.m. Sunday: 4 p.m. - 1:30 a.m. ​ bottom of page",
       "hash": "2b32cde41f93",
-      "downloadedAt": "2026-01-18T16:52:03.889Z",
-      "trimmedAt": "2026-01-18T17:11:33.876Z",
+      "downloadedAt": "2026-01-19T02:06:32.222Z",
+      "trimmedAt": "2026-01-19T02:26:11.818Z",
       "sizeReduction": "99.9%"
     },
     {
       "url": "https://www.acsbar.com/",
-      "text": "top of page Walk Through the Bar: bottom of page",
+      "text": "[Page Title: A.C.'s Bar & Grill | Late Night | Charleston, SC]\n\ntop of page Walk Through the Bar: bottom of page",
       "hash": "3279ebba77a6",
-      "downloadedAt": "2026-01-18T16:52:03.244Z",
-      "trimmedAt": "2026-01-18T17:11:33.888Z",
+      "downloadedAt": "2026-01-19T02:06:31.509Z",
+      "trimmedAt": "2026-01-19T02:26:11.829Z",
       "sizeReduction": "100.0%"
     },
     {
       "url": "https://www.acsbar.com/menu",
-      "text": "top of page bottom of page",
+      "text": "[Page Title: Menu | mysite]\n\ntop of page bottom of page",
       "hash": "dd5fca273389",
-      "downloadedAt": "2026-01-18T16:52:03.346Z",
-      "trimmedAt": "2026-01-18T17:11:33.897Z",
+      "downloadedAt": "2026-01-19T02:06:31.599Z",
+      "trimmedAt": "2026-01-19T02:26:11.840Z",
       "sizeReduction": "100.0%"
     }
   ],

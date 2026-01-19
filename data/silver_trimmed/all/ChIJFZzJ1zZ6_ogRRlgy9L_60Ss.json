@@ -3,17 +3,17 @@
   "venueName": "45 Waterside on lockwood",
   "venueArea": "Downtown Charleston",
   "website": "http://www.45waterside.com/",
-  "scrapedAt": "2026-01-18T17:04:24.593Z",
-  "trimmedAt": "2026-01-18T17:05:25.504Z",
+  "scrapedAt": "2026-01-19T02:19:32.298Z",
+  "trimmedAt": "2026-01-19T02:20:30.279Z",
   "pages": [
     {
       "url": "http://www.45waterside.com/",
-      "text": "",
+      "text": "[Page Title: Challenge Page]",
       "hash": "5badb92144c4",
-      "downloadedAt": "2026-01-18T16:52:03.556Z",
-      "trimmedAt": "2026-01-18T17:05:25.504Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:06:31.802Z",
+      "trimmedAt": "2026-01-19T02:20:30.279Z",
+      "sizeReduction": "98.9%"
     }
   ],
-  "sizeReduction": "100.0%"
+  "sizeReduction": "98.9%"
 }

@@ -3,15 +3,15 @@
   "venueName": "All My Exes",
   "venueArea": "West Ashley",
   "website": "https://allmyexeschs.com/",
-  "scrapedAt": "2026-01-18T17:04:28.054Z",
-  "trimmedAt": "2026-01-18T17:11:14.374Z",
+  "scrapedAt": "2026-01-19T02:19:35.937Z",
+  "trimmedAt": "2026-01-19T02:25:53.822Z",
   "pages": [
     {
       "url": "https://allmyexeschs.com/",
-      "text": "",
+      "text": "[Page Title: All My Exes]",
       "hash": "88e5db4bef24",
-      "downloadedAt": "2026-01-18T17:01:51.483Z",
-      "trimmedAt": "2026-01-18T17:11:14.374Z",
+      "downloadedAt": "2026-01-19T02:16:17.657Z",
+      "trimmedAt": "2026-01-19T02:25:53.822Z",
       "sizeReduction": "100.0%"
     }
   ],

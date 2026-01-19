@@ -3,17 +3,17 @@
   "venueName": "Comfort Suites at Isle of Palms Connector",
   "venueArea": "Mount Pleasant",
   "website": "https://www.choicehotels.com/south-carolina/mount-pleasant/comfort-suites-hotels/sc198?mc=llgoxxpx",
-  "scrapedAt": "2026-01-18T17:04:24.169Z",
-  "trimmedAt": "2026-01-18T17:05:09.852Z",
+  "scrapedAt": "2026-01-19T02:19:31.875Z",
+  "trimmedAt": "2026-01-19T02:20:14.582Z",
   "pages": [
     {
       "url": "https://www.choicehotels.com/south-carolina/mount-pleasant/comfort-suites-hotels/sc198?mc=llgoxxpx",
-      "text": "",
+      "text": "[Page Title: Challenge Page]",
       "hash": "28ecaa4fb8cc",
-      "downloadedAt": "2026-01-18T16:55:59.204Z",
-      "trimmedAt": "2026-01-18T17:05:09.852Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:10:56.430Z",
+      "trimmedAt": "2026-01-19T02:20:14.582Z",
+      "sizeReduction": "98.9%"
     }
   ],
-  "sizeReduction": "100.0%"
+  "sizeReduction": "98.9%"
 }

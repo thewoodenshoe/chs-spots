@@ -3,23 +3,23 @@
   "venueName": "SHIKI",
   "venueArea": "Downtown Charleston",
   "website": "http://shikicharleston.com/",
-  "scrapedAt": "2026-01-18T17:04:31.833Z",
-  "trimmedAt": "2026-01-18T17:12:56.869Z",
+  "scrapedAt": "2026-01-19T02:19:38.475Z",
+  "trimmedAt": "2026-01-19T02:27:38.847Z",
   "pages": [
     {
       "url": "http://shikicharleston.com/menu",
-      "text": "Menu Beverages Food 334 East Bay Street Downtown Charleston",
+      "text": "[Page Title: Menu — SHIKI]\n\nMenu Beverages Food \n334 East Bay Street Downtown Charleston",
       "hash": "2c439ca3f843",
-      "downloadedAt": "2026-01-18T16:54:48.205Z",
-      "trimmedAt": "2026-01-18T17:12:56.866Z",
+      "downloadedAt": "2026-01-19T02:09:21.859Z",
+      "trimmedAt": "2026-01-19T02:27:38.844Z",
       "sizeReduction": "99.9%"
     },
     {
       "url": "http://shikicharleston.com/",
-      "text": "334 East Bay Street Downtown Charleston",
+      "text": "[Page Title: SHIKI]\n\n334 East Bay Street Downtown Charleston",
       "hash": "f1595d0cf439",
-      "downloadedAt": "2026-01-18T16:54:48.017Z",
-      "trimmedAt": "2026-01-18T17:12:56.869Z",
+      "downloadedAt": "2026-01-19T02:09:21.674Z",
+      "trimmedAt": "2026-01-19T02:27:38.847Z",
       "sizeReduction": "99.9%"
     }
   ],

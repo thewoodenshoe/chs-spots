@@ -3,23 +3,23 @@
   "venueName": "Chez Nous",
   "venueArea": "Mount Pleasant",
   "website": "https://www.cheznouschs.com/",
-  "scrapedAt": "2026-01-18T17:04:24.656Z",
-  "trimmedAt": "2026-01-18T17:05:26.655Z",
+  "scrapedAt": "2026-01-19T02:19:32.356Z",
+  "trimmedAt": "2026-01-19T02:20:31.416Z",
   "pages": [
     {
       "url": "https://www.cheznouschs.com/",
-      "text": "top of page bottom of page",
+      "text": "[Page Title: OUR PLACE | chez-nous-html]\n\ntop of page bottom of page",
       "hash": "7c16f9c9133a",
-      "downloadedAt": "2026-01-18T16:55:48.064Z",
-      "trimmedAt": "2026-01-18T17:05:26.637Z",
+      "downloadedAt": "2026-01-19T02:10:32.334Z",
+      "trimmedAt": "2026-01-19T02:20:31.398Z",
       "sizeReduction": "100.0%"
     },
     {
       "url": "https://www.cheznouschs.com/location",
-      "text": "top of page bottom of page",
+      "text": "[Page Title: LOCATION | chez-nous-html]\n\ntop of page bottom of page",
       "hash": "d3af83d05d7c",
-      "downloadedAt": "2026-01-18T16:55:48.143Z",
-      "trimmedAt": "2026-01-18T17:05:26.655Z",
+      "downloadedAt": "2026-01-19T02:10:32.406Z",
+      "trimmedAt": "2026-01-19T02:20:31.416Z",
       "sizeReduction": "100.0%"
     }
   ],

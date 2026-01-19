@@ -3,17 +3,17 @@
   "venueName": "Country Inn & Suites By Radisson, Charleston North, SC",
   "venueArea": "North Charleston",
   "website": "https://www.choicehotels.com/south-carolina/north-charleston/country-inn-suites-hotels/sc260?mc=llgoxxpx",
-  "scrapedAt": "2026-01-18T17:04:23.786Z",
-  "trimmedAt": "2026-01-18T17:05:04.548Z",
+  "scrapedAt": "2026-01-19T02:19:31.501Z",
+  "trimmedAt": "2026-01-19T02:20:09.522Z",
   "pages": [
     {
       "url": "https://www.choicehotels.com/south-carolina/north-charleston/country-inn-suites-hotels/sc260?mc=llgoxxpx",
-      "text": "",
+      "text": "[Page Title: Challenge Page]",
       "hash": "28fd44f66c30",
-      "downloadedAt": "2026-01-18T16:58:33.954Z",
-      "trimmedAt": "2026-01-18T17:05:04.548Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:13:42.341Z",
+      "trimmedAt": "2026-01-19T02:20:09.522Z",
+      "sizeReduction": "98.9%"
     }
   ],
-  "sizeReduction": "100.0%"
+  "sizeReduction": "98.9%"
 }

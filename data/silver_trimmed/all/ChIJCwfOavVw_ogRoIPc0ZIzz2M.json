@@ -3,17 +3,17 @@
   "venueName": "Quality Inn Mt. Pleasant - Charleston",
   "venueArea": "Mount Pleasant",
   "website": "https://www.choicehotels.com/south-carolina/mount-pleasant/quality-inn-hotels/sc394?mc=llgoxxpx",
-  "scrapedAt": "2026-01-18T17:04:24.307Z",
-  "trimmedAt": "2026-01-18T17:05:19.740Z",
+  "scrapedAt": "2026-01-19T02:19:32.005Z",
+  "trimmedAt": "2026-01-19T02:20:24.681Z",
   "pages": [
     {
       "url": "https://www.choicehotels.com/south-carolina/mount-pleasant/quality-inn-hotels/sc394?mc=llgoxxpx",
-      "text": "",
+      "text": "[Page Title: Challenge Page]",
       "hash": "b5b840aec336",
-      "downloadedAt": "2026-01-18T16:56:53.210Z",
-      "trimmedAt": "2026-01-18T17:05:19.740Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:11:55.461Z",
+      "trimmedAt": "2026-01-19T02:20:24.681Z",
+      "sizeReduction": "98.9%"
     }
   ],
-  "sizeReduction": "100.0%"
+  "sizeReduction": "98.9%"
 }

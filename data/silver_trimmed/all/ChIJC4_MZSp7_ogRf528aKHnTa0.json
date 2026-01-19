@@ -3,15 +3,15 @@
   "venueName": "Frontier Lounge",
   "venueArea": "Downtown Charleston",
   "website": "https://www.instagram.com/frontierlounge",
-  "scrapedAt": "2026-01-18T17:04:24.182Z",
-  "trimmedAt": "2026-01-18T17:05:09.960Z",
+  "scrapedAt": "2026-01-19T02:19:31.884Z",
+  "trimmedAt": "2026-01-19T02:20:14.742Z",
   "pages": [
     {
       "url": "https://www.instagram.com/frontierlounge",
-      "text": "",
+      "text": "[Page Title: Frontier Lounge (@frontierlounge) • Instagram photos and videos]",
       "hash": "ea710c788e11",
-      "downloadedAt": "2026-01-18T16:53:56.911Z",
-      "trimmedAt": "2026-01-18T17:05:09.960Z",
+      "downloadedAt": "2026-01-19T02:08:36.897Z",
+      "trimmedAt": "2026-01-19T02:20:14.742Z",
       "sizeReduction": "100.0%"
     }
   ],

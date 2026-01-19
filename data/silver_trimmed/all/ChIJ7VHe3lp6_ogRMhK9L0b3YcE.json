@@ -3,15 +3,15 @@
   "venueName": "Faculty Lounge",
   "venueArea": "West Ashley",
   "website": "https://www.facebook.com/facultyloungechs/",
-  "scrapedAt": "2026-01-18T17:04:23.768Z",
-  "trimmedAt": "2026-01-18T17:05:04.401Z",
+  "scrapedAt": "2026-01-19T02:19:31.467Z",
+  "trimmedAt": "2026-01-19T02:20:09.399Z",
   "pages": [
     {
       "url": "https://www.facebook.com/facultyloungechs/",
-      "text": "",
+      "text": "[Page Title: Faculty Lounge | Charleston SC]",
       "hash": "20a8afefafc9",
-      "downloadedAt": "2026-01-18T17:02:24.093Z",
-      "trimmedAt": "2026-01-18T17:05:04.401Z",
+      "downloadedAt": "2026-01-19T02:16:52.267Z",
+      "trimmedAt": "2026-01-19T02:20:09.399Z",
       "sizeReduction": "100.0%"
     }
   ],

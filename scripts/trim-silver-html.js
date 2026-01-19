@@ -265,8 +265,7 @@ function processVenueFile(venueId, areaFilter = null) {
     : '0%';
   trimmedData.sizeReduction = overallReduction;
   
-  // Save trimmed file
-  const trimmedFilePath = path.join(SILVER_TRIMMED_ALL_DIR, `${venueId}.json`);
+  // Save trimmed file (trimmedFilePath already declared at top of function)
   try {
     fs.writeFileSync(trimmedFilePath, JSON.stringify(trimmedData, null, 2), 'utf8');
     log(`  ✅ Trimmed ${silverData.venueName} (${venueId}): ${overallReduction} reduction`);
@@ -359,6 +358,8 @@ function main() {
 // Run if called directly
 if (require.main === module) {
   main();
+  // Explicitly exit to ensure process terminates (important when called from pipeline)
+  process.exit(0);
 }
 
 // Export for testing

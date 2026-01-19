@@ -3,15 +3,15 @@
   "venueName": "LongHorn Steakhouse",
   "venueArea": "North Charleston",
   "website": "https://www.longhornsteakhouse.com/locations/sc/north-charleston/north-charleston/5202?cmpid=br:lh_ag:ie_ch:loc_ca:LHGMB_sn:gmb_gt:north-charleston-sc-5202_pl:locurl_rd:1156",
-  "scrapedAt": "2026-01-18T17:04:31.956Z",
-  "trimmedAt": "2026-01-18T17:13:03.090Z",
+  "scrapedAt": "2026-01-19T02:19:38.586Z",
+  "trimmedAt": "2026-01-19T02:27:44.869Z",
   "pages": [
     {
       "url": "https://www.longhornsteakhouse.com/locations/sc/north-charleston/north-charleston/5202?cmpid=br:lh_ag:ie_ch:loc_ca:LHGMB_sn:gmb_gt:north-charleston-sc-5202_pl:locurl_rd:1156",
       "text": "",
       "hash": "692f851fd84a",
-      "downloadedAt": "2026-01-18T17:00:04.266Z",
-      "trimmedAt": "2026-01-18T17:13:03.090Z",
+      "downloadedAt": "2026-01-19T02:14:48.961Z",
+      "trimmedAt": "2026-01-19T02:27:44.869Z",
       "sizeReduction": "100.0%"
     }
   ],

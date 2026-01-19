@@ -3,49 +3,49 @@
   "venueName": "Maria's Mexican Grill",
   "venueArea": "West Ashley",
   "website": "http://mariasjohnsisland.com/",
-  "scrapedAt": "2026-01-18T17:04:28.559Z",
-  "trimmedAt": "2026-01-18T17:11:22.607Z",
+  "scrapedAt": "2026-01-19T02:19:36.402Z",
+  "trimmedAt": "2026-01-19T02:26:02.534Z",
   "pages": [
     {
       "url": "https://mariasjohnsisland.com/location/",
-      "text": "2817 Suite 6 Maybank Hwy, Johns Island, SC 29455 Maria’s Mexican Grill (843) 557-1005 Sunday 12:00PM – 9:00PM Monday through Thursday 11:00 AM- 9:00PM Friday- Saturday 11:00 AM- 10:00PM Let's Get in Touch Name * First Last Email * Phone Your Message",
+      "text": "[Page Title: Mexican grill near me | location | Marias Mexican Restaurant]\n\n2817 Suite 6 Maybank Hwy,\nJohns Island, SC 29455\nMaria’s Mexican Grill (843) 557-1005 \nSunday 12:00PM – 9:00PM\nMonday through Thursday 11:00 AM- 9:00PM\nFriday- Saturday 11:00 AM- 10:00PM\n\nLet's Get in Touch\nName * First Last Email * Phone Your Message",
       "hash": "03b27e6d6eeb",
-      "downloadedAt": "2026-01-18T17:02:44.695Z",
-      "trimmedAt": "2026-01-18T17:11:22.593Z",
-      "sizeReduction": "99.7%"
+      "downloadedAt": "2026-01-19T02:17:07.395Z",
+      "trimmedAt": "2026-01-19T02:26:02.524Z",
+      "sizeReduction": "99.6%"
     },
     {
       "url": "http://mariasjohnsisland.com/menu",
-      "text": "Menu LUNCH marias lunch DINNER Marias Dinner",
+      "text": "[Page Title: Mexican Restaurant Menu | Marias Mexican Restaurant]\n\nMenu\n\nLUNCH\nmarias lunch \nDINNER\nMarias Dinner",
       "hash": "35fa39e47857",
-      "downloadedAt": "2026-01-18T17:02:45.414Z",
-      "trimmedAt": "2026-01-18T17:11:22.597Z",
-      "sizeReduction": "99.9%"
+      "downloadedAt": "2026-01-19T02:17:08.039Z",
+      "trimmedAt": "2026-01-19T02:26:02.527Z",
+      "sizeReduction": "99.8%"
     },
     {
       "url": "https://mariasjohnsisland.com/happy-hour/",
-      "text": "Happy Hour Everyday 4 to 7pm $1 off : House MargaritasWineDraft BeerWell Liquor",
+      "text": "[Page Title: Happy Hour | Marias Mexican Restaurant]\n\nHappy Hour\n\nEveryday 4 to 7pm\n\n$1 off :\nHouse MargaritasWineDraft BeerWell Liquor",
       "hash": "5dc5aec032ff",
-      "downloadedAt": "2026-01-18T17:02:44.142Z",
-      "trimmedAt": "2026-01-18T17:11:22.598Z",
-      "sizeReduction": "99.7%"
+      "downloadedAt": "2026-01-19T02:17:06.858Z",
+      "trimmedAt": "2026-01-19T02:26:02.528Z",
+      "sizeReduction": "99.6%"
     },
     {
       "url": "http://mariasjohnsisland.com/",
-      "text": "Welcome to Maria’s Mexican Grill Maria’s fresh twist on Mexican food is all you need to experience that south of the border taste you crave. Whether you’re hungry or thirsty, we’ve got everything you want here at Maria’s. Learn More View Our Menu Hola amigos! We are OPEN for dine in, outside seating, and take out Monday – Saturday 11AM-10PM and Sunday 12PM-9PM! (843) 557-1005 ×",
+      "text": "[Page Title: Mexican Grill | Marias Mexican Restaurant]\n\nWelcome to Maria’s Mexican Grill\n\nMaria’s fresh twist on Mexican food is all you need to experience that south of the border taste you crave. Whether you’re hungry or thirsty, we’ve got everything you want here at Maria’s.\nLearn More View Our Menu \nHola amigos!  We are OPEN for dine in, outside seating, and take out Monday – Saturday  11AM-10PM  and  Sunday 12PM-9PM!\n(843) 557-1005 ×",
       "hash": "a33376c52c0c",
-      "downloadedAt": "2026-01-18T17:02:43.534Z",
-      "trimmedAt": "2026-01-18T17:11:22.603Z",
-      "sizeReduction": "99.1%"
+      "downloadedAt": "2026-01-19T02:17:06.289Z",
+      "trimmedAt": "2026-01-19T02:26:02.531Z",
+      "sizeReduction": "99.0%"
     },
     {
       "url": "https://mariasjohnsisland.com/menu/",
-      "text": "Menu LUNCH marias lunch DINNER Marias Dinner",
+      "text": "[Page Title: Mexican Restaurant Menu | Marias Mexican Restaurant]\n\nMenu\n\nLUNCH\nmarias lunch \nDINNER\nMarias Dinner",
       "hash": "b4a613ee9d27",
-      "downloadedAt": "2026-01-18T17:02:43.596Z",
-      "trimmedAt": "2026-01-18T17:11:22.607Z",
-      "sizeReduction": "99.9%"
+      "downloadedAt": "2026-01-19T02:17:06.326Z",
+      "trimmedAt": "2026-01-19T02:26:02.534Z",
+      "sizeReduction": "99.8%"
     }
   ],
-  "sizeReduction": "99.7%"
+  "sizeReduction": "99.6%"
 }

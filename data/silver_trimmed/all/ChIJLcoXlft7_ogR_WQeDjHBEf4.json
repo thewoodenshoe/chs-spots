@@ -3,17 +3,17 @@
   "venueName": "Toast! All Day",
   "venueArea": "Downtown Charleston",
   "website": "https://toastallday.com/toast-king-st/king-st-menu/",
-  "scrapedAt": "2026-01-18T17:04:25.483Z",
-  "trimmedAt": "2026-01-18T17:07:12.704Z",
+  "scrapedAt": "2026-01-19T02:19:33.175Z",
+  "trimmedAt": "2026-01-19T02:22:09.859Z",
   "pages": [
     {
       "url": "https://toastallday.com/toast-king-st/king-st-menu/",
-      "text": "",
+      "text": "[Page Title: Toast All Day - Award-Winning Breakfast, Brunch & Lunch in Charleston]",
       "hash": "b9d925b3c94f",
-      "downloadedAt": "2026-01-18T16:55:10.737Z",
-      "trimmedAt": "2026-01-18T17:07:12.704Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:09:42.885Z",
+      "trimmedAt": "2026-01-19T02:22:09.859Z",
+      "sizeReduction": "97.3%"
     }
   ],
-  "sizeReduction": "100.0%"
+  "sizeReduction": "97.3%"
 }

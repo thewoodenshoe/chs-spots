@@ -3,17 +3,17 @@
   "venueName": "Burger King",
   "venueArea": "North Charleston",
   "website": "https://burgerking.com/store-locator/store/21776",
-  "scrapedAt": "2026-01-18T17:04:32.097Z",
-  "trimmedAt": "2026-01-18T17:13:05.845Z",
+  "scrapedAt": "2026-01-19T02:19:38.718Z",
+  "trimmedAt": "2026-01-19T02:27:46.946Z",
   "pages": [
     {
       "url": "https://burgerking.com/store-locator/store/21776",
-      "text": "",
+      "text": "[Page Title: Burger King]",
       "hash": "3047a2272d7e",
-      "downloadedAt": "2026-01-18T16:58:17.648Z",
-      "trimmedAt": "2026-01-18T17:13:05.845Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:13:34.799Z",
+      "trimmedAt": "2026-01-19T02:27:46.946Z",
+      "sizeReduction": "99.3%"
     }
   ],
-  "sizeReduction": "100.0%"
+  "sizeReduction": "99.3%"
 }

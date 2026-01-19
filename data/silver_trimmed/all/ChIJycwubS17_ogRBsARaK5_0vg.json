@@ -3,25 +3,25 @@
   "venueName": "Church's Texas Chicken",
   "venueArea": "North Charleston",
   "website": "https://locations.churchs.com/sc/north-charleston/3303-rivers-avenue",
-  "scrapedAt": "2026-01-18T17:04:32.148Z",
-  "trimmedAt": "2026-01-18T17:13:06.614Z",
+  "scrapedAt": "2026-01-19T02:19:38.766Z",
+  "trimmedAt": "2026-01-19T02:27:47.437Z",
   "pages": [
     {
       "url": "https://locations.churchs.com/sc/north-charleston/3303-rivers-avenue",
-      "text": "Church's® on 3303 Rivers Avenue in North Charleston, SC 3303 Rivers Avenue North Charleston, SC 29405 (843) 410-4715 START YOUR ORDER VIEW MENU Order Catering",
+      "text": "[Page Title: Church’s Texas Chicken – North Charleston, SC | Menu & Prices | Dine‑in, Takeout, Delivery]\n\nChurch's® on 3303 Rivers Avenue in North Charleston, SC\n3303 Rivers Avenue North Charleston, SC 29405 (843) 410-4715 START YOUR ORDER VIEW MENU Order Catering",
       "hash": "b11985cd9e5e",
-      "downloadedAt": "2026-01-18T16:58:33.783Z",
-      "trimmedAt": "2026-01-18T17:13:06.603Z",
-      "sizeReduction": "99.8%"
+      "downloadedAt": "2026-01-19T02:13:42.189Z",
+      "trimmedAt": "2026-01-19T02:27:47.432Z",
+      "sizeReduction": "99.7%"
     },
     {
       "url": "https://locations.churchs.com/index.html",
-      "text": "Church's Texas Chicken® U.S. Locations When autocomplete results are available, use up and down arrows to review and enter to select. Geolocate. Alabama Arkansas Arizona California Colorado District Of Columbia Florida Georgia Illinois Indiana Kansas Louisiana Michigan Missouri Mississippi North Carolina Nebraska New Mexico Nevada New York Ohio Oklahoma South Carolina Tennessee Texas Virginia Washington Wisconsin",
+      "text": "[Page Title: All Church's Texas Chicken locations in the United States | Fried Chicken, Biscuits, Mac & Cheese]\n\nChurch's Texas Chicken®\n\nU.S. Locations\n\nWhen autocomplete results are available, use up and down arrows to review and enter to select.\nGeolocate. Alabama Arkansas Arizona California Colorado District Of Columbia Florida Georgia Illinois Indiana Kansas Louisiana Michigan Missouri Mississippi North Carolina Nebraska New Mexico Nevada New York Ohio Oklahoma South Carolina Tennessee Texas Virginia Washington Wisconsin",
       "hash": "e7841c539738",
-      "downloadedAt": "2026-01-18T16:58:33.965Z",
-      "trimmedAt": "2026-01-18T17:13:06.614Z",
-      "sizeReduction": "98.9%"
+      "downloadedAt": "2026-01-19T02:13:42.257Z",
+      "trimmedAt": "2026-01-19T02:27:47.437Z",
+      "sizeReduction": "98.6%"
     }
   ],
-  "sizeReduction": "99.5%"
+  "sizeReduction": "99.3%"
 }

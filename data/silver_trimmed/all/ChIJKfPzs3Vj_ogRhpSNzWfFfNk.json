@@ -3,15 +3,15 @@
   "venueName": "Titanic Event Center",
   "venueArea": "North Charleston",
   "website": "https://www.facebook.com/Titanic-Event-Center-130736460342533/",
-  "scrapedAt": "2026-01-18T17:04:25.344Z",
-  "trimmedAt": "2026-01-18T17:07:08.849Z",
+  "scrapedAt": "2026-01-19T02:19:33.030Z",
+  "trimmedAt": "2026-01-19T02:22:06.271Z",
   "pages": [
     {
       "url": "https://www.facebook.com/Titanic-Event-Center-130736460342533/",
-      "text": "",
+      "text": "[Page Title: Titanic Event Center | North Charleston SC]",
       "hash": "3412e3ade117",
-      "downloadedAt": "2026-01-18T17:01:44.339Z",
-      "trimmedAt": "2026-01-18T17:07:08.849Z",
+      "downloadedAt": "2026-01-19T02:16:10.853Z",
+      "trimmedAt": "2026-01-19T02:22:06.271Z",
       "sizeReduction": "100.0%"
     }
   ],

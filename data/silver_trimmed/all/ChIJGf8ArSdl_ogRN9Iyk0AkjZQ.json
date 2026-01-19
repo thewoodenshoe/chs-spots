@@ -3,17 +3,17 @@
   "venueName": "Rebel Taqueria",
   "venueArea": "North Charleston",
   "website": "http://rebeltaqueria.com/",
-  "scrapedAt": "2026-01-18T17:04:24.752Z",
-  "trimmedAt": "2026-01-18T17:05:29.581Z",
+  "scrapedAt": "2026-01-19T02:19:32.453Z",
+  "trimmedAt": "2026-01-19T02:20:34.794Z",
   "pages": [
     {
       "url": "http://rebeltaqueria.com/",
-      "text": "",
+      "text": "[Page Title: Tacos & Tequila | Rebel Taqueria]",
       "hash": "34961eee7d6c",
-      "downloadedAt": "2026-01-18T17:00:23.218Z",
-      "trimmedAt": "2026-01-18T17:05:29.581Z",
-      "sizeReduction": "100.0%"
+      "downloadedAt": "2026-01-19T02:15:04.170Z",
+      "trimmedAt": "2026-01-19T02:20:34.794Z",
+      "sizeReduction": "99.9%"
     }
   ],
-  "sizeReduction": "100.0%"
+  "sizeReduction": "99.9%"
 }

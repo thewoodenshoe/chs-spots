@@ -3,15 +3,15 @@
   "venueName": "Asian Garden",
   "venueArea": "North Charleston",
   "website": "https://www.facebook.com/asiangardenCHS/",
-  "scrapedAt": "2026-01-18T17:04:25.973Z",
-  "trimmedAt": "2026-01-18T17:07:18.568Z",
+  "scrapedAt": "2026-01-19T02:19:33.636Z",
+  "trimmedAt": "2026-01-19T02:22:16.034Z",
   "pages": [
     {
       "url": "https://www.facebook.com/asiangardenCHS/",
-      "text": "",
+      "text": "[Page Title: Asian Garden | North Charleston SC]",
       "hash": "68930faa5489",
-      "downloadedAt": "2026-01-18T16:58:10.064Z",
-      "trimmedAt": "2026-01-18T17:07:18.568Z",
+      "downloadedAt": "2026-01-19T02:13:26.924Z",
+      "trimmedAt": "2026-01-19T02:22:16.034Z",
       "sizeReduction": "100.0%"
     }
   ],
