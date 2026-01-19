@@ -22,27 +22,29 @@ function cleanTestDir() {
   if (fs.existsSync(TEST_DIR)) {
     // Remove all contents first to avoid ENOTEMPTY errors
     try {
-      const files = fs.readdirSync(TEST_DIR);
-      for (const file of files) {
-        const filePath = path.join(TEST_DIR, file);
-        try {
-          const stat = fs.statSync(filePath);
-          if (stat.isDirectory()) {
-            fs.rmSync(filePath, { recursive: true, force: true });
-          } else {
-            fs.unlinkSync(filePath);
+      // Use a more robust removal that handles nested directories
+      fs.rmSync(TEST_DIR, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+    } catch (e) {
+      // If removal fails, try to remove individual files
+      try {
+        const files = fs.readdirSync(TEST_DIR);
+        for (const file of files) {
+          const filePath = path.join(TEST_DIR, file);
+          try {
+            const stat = fs.statSync(filePath);
+            if (stat.isDirectory()) {
+              fs.rmSync(filePath, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+            } else {
+              fs.unlinkSync(filePath);
+            }
+          } catch (e2) {
+            // Ignore individual file errors
           }
-        } catch (e) {
-          // Ignore individual file errors
         }
+        fs.rmSync(TEST_DIR, { recursive: true, force: true });
+      } catch (e3) {
+        // Ignore errors during cleanup
       }
-    } catch (e) {
-      // If readdir fails, try direct removal
-    }
-    try {
-      fs.rmSync(TEST_DIR, { recursive: true, force: true });
-    } catch (e) {
-      // Ignore errors during cleanup
     }
   }
   fs.mkdirSync(TEST_DIR, { recursive: true });

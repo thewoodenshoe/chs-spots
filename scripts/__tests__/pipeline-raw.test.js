@@ -19,17 +19,31 @@ const TEST_LAST_DOWNLOAD = path.join(TEST_RAW_DIR, '.last-download');
 function cleanTestDir() {
   if (fs.existsSync(TEST_DIR)) {
     // Remove all contents first to avoid ENOTEMPTY errors
-    const files = fs.readdirSync(TEST_DIR);
-    for (const file of files) {
-      const filePath = path.join(TEST_DIR, file);
-      const stat = fs.statSync(filePath);
-      if (stat.isDirectory()) {
-        fs.rmSync(filePath, { recursive: true, force: true });
-      } else {
-        fs.unlinkSync(filePath);
+    try {
+      // Use a more robust removal that handles nested directories
+      fs.rmSync(TEST_DIR, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+    } catch (e) {
+      // If removal fails, try to remove individual files
+      try {
+        const files = fs.readdirSync(TEST_DIR);
+        for (const file of files) {
+          const filePath = path.join(TEST_DIR, file);
+          try {
+            const stat = fs.statSync(filePath);
+            if (stat.isDirectory()) {
+              fs.rmSync(filePath, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+            } else {
+              fs.unlinkSync(filePath);
+            }
+          } catch (e2) {
+            // Ignore individual file errors
+          }
+        }
+        fs.rmSync(TEST_DIR, { recursive: true, force: true });
+      } catch (e3) {
+        // Ignore errors during cleanup
       }
     }
-    fs.rmSync(TEST_DIR, { recursive: true, force: true });
   }
   fs.mkdirSync(TEST_DIR, { recursive: true });
   fs.mkdirSync(TEST_RAW_DIR, { recursive: true });
