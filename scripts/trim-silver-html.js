@@ -269,12 +269,8 @@ function processVenueFile(venueId, areaFilter = null) {
   try {
     fs.writeFileSync(trimmedFilePath, JSON.stringify(trimmedData, null, 2), 'utf8');
     
-    // Also save to silver_trimmed/incremental/ for next step
-    if (!fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
-      fs.mkdirSync(SILVER_TRIMMED_INCREMENTAL_DIR, { recursive: true });
-    }
-    const incrementalPath = path.join(SILVER_TRIMMED_INCREMENTAL_DIR, `${venueId}.json`);
-    fs.writeFileSync(incrementalPath, JSON.stringify(trimmedData, null, 2), 'utf8');
+    // NOTE: Don't save to incremental/ here - delta-trimmed-files.js will populate it
+    // based on actual content changes, not just processing changes
     
     log(`  ✅ Trimmed ${silverData.venueName} (${venueId}): ${overallReduction} reduction`);
     return { 

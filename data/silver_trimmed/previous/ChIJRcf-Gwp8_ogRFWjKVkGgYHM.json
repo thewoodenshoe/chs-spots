@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJRcf-Gwp8_ogRFWjKVkGgYHM",
+  "venueName": "Sleep Inn Charleston - West Ashley",
+  "venueArea": "West Ashley",
+  "website": "https://www.choicehotels.com/south-carolina/charleston/sleep-inn-hotels/sc212?mc=llgoxxpx",
+  "scrapedAt": "2026-01-19T03:25:41.543Z",
+  "trimmedAt": "2026-01-19T03:28:33.334Z",
+  "pages": [
+    {
+      "url": "https://www.choicehotels.com/south-carolina/charleston/sleep-inn-hotels/sc212?mc=llgoxxpx",
+      "text": "[Page Title: Challenge Page]",
+      "hash": "2aae412ea0ae",
+      "downloadedAt": "2026-01-19T02:17:41.379Z",
+      "trimmedAt": "2026-01-19T03:28:33.334Z",
+      "sizeReduction": "98.9%"
+    }
+  ],
+  "sizeReduction": "98.9%"
+}

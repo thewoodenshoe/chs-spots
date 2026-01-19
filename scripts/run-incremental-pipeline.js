@@ -132,9 +132,23 @@ async function main() {
     // Step 3: Trim silver HTML (only changed files)
     console.log('\n✂️  Step 3: Trim Silver HTML (incremental)');
     await runScript('trim-silver-html.js', AREA_FILTER ? [AREA_FILTER] : []);
-    
-    // Step 4: Extract happy hours with LLM (only changed files via hash check)
-    console.log('\n🧠 Step 4: Extract Happy Hours with LLM (incremental hash-based)');
+
+    // Step 3.5: Delta comparison on trimmed content (finds actual content changes)
+    // Compares silver_trimmed/all/ vs silver_trimmed/previous/ and copies only changed files to silver_trimmed/incremental/
+    // This compares trimmed content (no ads/tracking), so much more accurate than raw HTML comparison
+    console.log('\n🔍 Step 3.5: Delta Comparison (Trimmed Content - find actual content changes)');
+    try {
+      await runScript('delta-trimmed-files.js');
+    } catch (error) {
+      if (error.message.includes('code 0')) {
+        console.log('   ⏭️  Delta step completed');
+      } else {
+        throw error;
+      }
+    }
+
+    // Step 4: Extract happy hours with LLM (only changed files via trimmed content delta)
+    console.log('\n🧠 Step 4: Extract Happy Hours with LLM (incremental - trimmed content delta)');
     await runScript('extract-happy-hours.js', ['--incremental']);
     
     // Step 5: Create spots from gold data
@@ -146,12 +160,13 @@ async function main() {
     console.log('='.repeat(60));
     console.log('\n📊 Summary:');
     console.log('   • Raw HTML: Same day = new venues only, New day = all venues');
-    console.log('   • Delta: Finds changes between days (new day only)');
+    console.log('   • Delta (Raw): Finds changes in raw HTML (new day only)');
     console.log('   • Merge: Only processes files in raw/incremental/');
     console.log('   • Trim: Only processes files in silver_merged/incremental/');
-    console.log('   • Gold (LLM): Only processes files in silver_trimmed/incremental/');
+    console.log('   • Delta (Trimmed): Finds actual content changes in trimmed text (ignores ads/tracking)');
+    console.log('   • Gold (LLM): Only processes files in silver_trimmed/incremental/ (actual content changes)');
     console.log('   • Spots: Updated from gold data');
-    console.log('\n💡 Result: Small batch per day - only changes are processed!\n');
+    console.log('\n💡 Result: Small batch per day - only actual content changes are processed!\n');
     
   } catch (error) {
     console.error('\n❌ Pipeline failed:', error.message);
