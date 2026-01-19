@@ -25,7 +25,11 @@
     "prepare": "husky install"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "jest --findRelatedTests"
+    ],
+    "src/**/*.{js,jsx}": [
       "eslint --fix",
       "jest --findRelatedTests"
     ]

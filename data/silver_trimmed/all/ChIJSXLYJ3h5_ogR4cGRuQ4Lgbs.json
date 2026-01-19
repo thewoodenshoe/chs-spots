@@ -3,15 +3,15 @@
   "venueName": "Randall's Curbside Griddle",
   "venueArea": "James Island",
   "website": "https://curbsidegriddle.com/",
-  "scrapedAt": "2026-01-19T02:19:34.201Z",
-  "trimmedAt": "2026-01-19T02:23:00.128Z",
+  "scrapedAt": "2026-01-19T03:25:42.006Z",
+  "trimmedAt": "2026-01-19T03:29:10.693Z",
   "pages": [
     {
       "url": "https://curbsidegriddle.com/",
       "text": "[Page Title: Redirecting...]",
       "hash": "93a8377926fa",
       "downloadedAt": "2026-01-19T02:10:14.570Z",
-      "trimmedAt": "2026-01-19T02:23:00.128Z",
+      "trimmedAt": "2026-01-19T03:29:10.693Z",
       "sizeReduction": "99.4%"
     }
   ],

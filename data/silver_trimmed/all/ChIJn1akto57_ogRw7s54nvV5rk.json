@@ -3,15 +3,15 @@
   "venueName": "Little Caesars Pizza",
   "venueArea": "West Ashley",
   "website": "https://littlecaesars.com/en-us/store/8725",
-  "scrapedAt": "2026-01-19T02:19:37.187Z",
-  "trimmedAt": "2026-01-19T02:26:25.070Z",
+  "scrapedAt": "2026-01-19T02:45:57.293Z",
+  "trimmedAt": "2026-01-19T02:53:06.609Z",
   "pages": [
     {
       "url": "https://littlecaesars.com/en-us/store/8725",
       "text": "",
       "hash": "f9799e8cf0f3",
       "downloadedAt": "2026-01-19T02:17:06.458Z",
-      "trimmedAt": "2026-01-19T02:26:25.070Z",
+      "trimmedAt": "2026-01-19T02:53:06.609Z",
       "sizeReduction": "100.0%"
     }
   ],

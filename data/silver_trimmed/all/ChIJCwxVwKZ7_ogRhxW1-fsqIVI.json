@@ -3,15 +3,15 @@
   "venueName": "Sweatman’s Garden",
   "venueArea": "West Ashley",
   "website": "http://sweatmansgarden.com/",
-  "scrapedAt": "2026-01-19T02:19:32.006Z",
-  "trimmedAt": "2026-01-19T02:20:24.698Z",
+  "scrapedAt": "2026-01-19T03:25:39.575Z",
+  "trimmedAt": "2026-01-19T03:26:35.966Z",
   "pages": [
     {
       "url": "http://sweatmansgarden.com/menu",
       "text": "[Page Title: Menu 1 — Sweatman's Garden]\n\nOur menu. We craft all our own sodas (aka fabulous mocktail and cocktail bases) in house using fresh real ingredients! We love to change up flavors and cocktails frequently - stop in to check out our rotating menu of craft cocktails, cannabis cocktails, seasonal sodas, and zero proof cocktails! Hungry? Fiddler’s Fire is in our kitchen serving Asian inspired street food like yakitori skewers, udon noodles, or gyoza alongside raw bar offerings. Check out our instagram or the Fiddler’s Fire site for an idea of the menu!",
       "hash": "065b158f4d06",
       "downloadedAt": "2026-01-19T02:17:48.301Z",
-      "trimmedAt": "2026-01-19T02:20:24.691Z",
+      "trimmedAt": "2026-01-19T03:26:35.959Z",
       "sizeReduction": "99.5%"
     },
     {
@@ -19,7 +19,7 @@
       "text": "[Page Title: Sweatman's Garden]\n\nWorld’s First ”Sodary”\nContact Us \nHere at Sweatman’s we craft our own house made sodas using fresh, natural, good for you ingredients! You can enjoy our sodas as delicious mocktails or add your favorite spirit for a high end cocktail experience.\n\nLooking to make a reservation? We love a laidback vibe here at Sweatman’s - we do first come first served seating so just drop in!\n\nSoda + Cocktails + Mocktails\n\n~\nSoda + Cocktails + Mocktails ~ Soda + Cocktails + Mocktails ~",
       "hash": "48b6f55272d1",
       "downloadedAt": "2026-01-19T02:17:48.114Z",
-      "trimmedAt": "2026-01-19T02:20:24.698Z",
+      "trimmedAt": "2026-01-19T03:26:35.966Z",
       "sizeReduction": "99.6%"
     }
   ],

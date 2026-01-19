@@ -3,15 +3,15 @@
   "venueName": "Charleston Crab House",
   "venueArea": "West Ashley",
   "website": "http://www.charlestoncrabhouse.com/",
-  "scrapedAt": "2026-01-19T02:19:38.448Z",
-  "trimmedAt": "2026-01-19T02:27:38.521Z",
+  "scrapedAt": "2026-01-19T02:45:59.035Z",
+  "trimmedAt": "2026-01-19T02:54:18.788Z",
   "pages": [
     {
       "url": "http://www.charlestoncrabhouse.com/",
       "text": "",
       "hash": "3ddacf6ef64d",
       "downloadedAt": "2026-01-19T02:16:34.889Z",
-      "trimmedAt": "2026-01-19T02:27:38.521Z",
+      "trimmedAt": "2026-01-19T02:54:18.788Z",
       "sizeReduction": "100.0%"
     }
   ],

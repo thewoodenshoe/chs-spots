@@ -7,6 +7,7 @@ const fetch = typeof fetchModule === 'function' ? fetchModule : fetchModule.defa
 const crypto = require('crypto');
 
 const SILVER_TRIMMED_DIR = path.join(__dirname, '../data/silver_trimmed/all');
+const SILVER_TRIMMED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_trimmed/incremental');
 const GOLD_DIR = path.join(__dirname, '../data/gold');
 const BULK_COMPLETE_FLAG = path.join(GOLD_DIR, '.bulk-complete');
 const INCREMENTAL_HISTORY_DIR = path.join(GOLD_DIR, 'incremental-history');
@@ -27,9 +28,23 @@ async function extractHappyHours(isIncremental = false) {
     const GROK_MODEL = 'grok-4-fast-reasoning'; // Faster model with good reasoning, higher rate limits
     console.log(`Starting happy hour extraction (${isIncremental ? 'incremental' : 'bulk'})...`);
 
+    // INCREMENTAL MODE: Only process venues in silver_trimmed/incremental/
     let venueFiles = [];
+    let sourceDir = SILVER_TRIMMED_DIR;
+    
+    if (isIncremental) {
+        // Incremental mode: only process files in incremental folder
+        if (!fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
+            console.log(`⏭️  No incremental files found in ${SILVER_TRIMMED_INCREMENTAL_DIR}`);
+            console.log(`   Incremental folder is empty - nothing to extract.`);
+            console.log(`\n✨ Skipped extraction (incremental mode - no changes)`);
+            return;
+        }
+        sourceDir = SILVER_TRIMMED_INCREMENTAL_DIR;
+    }
+    
     try {
-        venueFiles = fs.readdirSync(SILVER_TRIMMED_DIR).filter(file => file.endsWith('.json'));
+        venueFiles = fs.readdirSync(sourceDir).filter(file => file.endsWith('.json'));
     } catch (error) {
         console.error(`Error reading silver_trimmed directory: ${error.message}`);
         console.error(`Please run 'node scripts/trim-silver-html.js' first.`);
@@ -37,9 +52,19 @@ async function extractHappyHours(isIncremental = false) {
     }
     
     if (venueFiles.length === 0) {
-        console.log('No venue files found in silver_trimmed/all/ directory.');
-        console.log('Please run \'node scripts/trim-silver-html.js\' first.');
+        if (isIncremental) {
+            console.log(`⏭️  No incremental files found in ${SILVER_TRIMMED_INCREMENTAL_DIR}`);
+            console.log(`   Incremental folder is empty - nothing to extract.`);
+            console.log(`\n✨ Skipped extraction (incremental mode - no changes)`);
+        } else {
+            console.log('No venue files found in silver_trimmed/all/ directory.');
+            console.log('Please run \'node scripts/trim-silver-html.js\' first.');
+        }
         return;
+    }
+    
+    if (isIncremental) {
+        console.log(`📁 Found ${venueFiles.length} venue file(s) in incremental folder.`);
     }
 
     if (isIncremental && !fs.existsSync(BULK_COMPLETE_FLAG)) {
@@ -50,7 +75,7 @@ async function extractHappyHours(isIncremental = false) {
 
     for (const file of venueFiles) {
         const venueId = path.basename(file, '.json');
-        const silverFilePath = path.join(SILVER_TRIMMED_DIR, file);
+        const silverFilePath = path.join(sourceDir, file);
         const goldFilePath = path.join(GOLD_DIR, `${venueId}.json`);
 
         let venueData;

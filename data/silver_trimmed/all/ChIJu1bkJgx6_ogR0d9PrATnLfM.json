@@ -3,15 +3,15 @@
   "venueName": "The Gin Joint",
   "venueArea": "Downtown Charleston",
   "website": "http://www.theginjoint.com/",
-  "scrapedAt": "2026-01-19T02:19:38.264Z",
-  "trimmedAt": "2026-01-19T02:27:33.369Z",
+  "scrapedAt": "2026-01-19T02:45:58.813Z",
+  "trimmedAt": "2026-01-19T02:54:13.421Z",
   "pages": [
     {
       "url": "http://www.theginjoint.com/private-events",
       "text": "[Page Title: Private Events — The Gin Joint]\n\nPrivate Events \nLet’s Celebrate!\nLooking to host a unique event? We can help. \nWe offer buyouts of our intimate space for up to 45 guests. Each event is 100% customized to your liking. That’s right, no tiered packages or set menus. We’ll work with you to create the perfect food and drink menu for your group.\nwe’ve got you covered. \nHoliday gatherings, group spirit tastings, birthday parties, wedding events - if you can dream it up, chances are we can get it done.\nLike what you’re hearing? \nfor the details and let’s get planning.\nEmail us We ask that all private events are booked at least two months in advance.",
       "hash": "6b00fe4e6c4f",
       "downloadedAt": "2026-01-19T02:09:28.159Z",
-      "trimmedAt": "2026-01-19T02:27:33.367Z",
+      "trimmedAt": "2026-01-19T02:54:13.418Z",
       "sizeReduction": "99.2%"
     },
     {
@@ -19,7 +19,7 @@
       "text": "[Page Title: The Gin Joint]",
       "hash": "9985173cc993",
       "downloadedAt": "2026-01-19T02:09:28.019Z",
-      "trimmedAt": "2026-01-19T02:27:33.369Z",
+      "trimmedAt": "2026-01-19T02:54:13.421Z",
       "sizeReduction": "100.0%"
     }
   ],

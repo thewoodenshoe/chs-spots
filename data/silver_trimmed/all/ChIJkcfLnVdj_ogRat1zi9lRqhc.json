@@ -3,15 +3,15 @@
   "venueName": "Econo Lodge Coliseum",
   "venueArea": "North Charleston",
   "website": "https://www.choicehotels.com/south-carolina/north-charleston/econo-lodge-hotels/sc121?mc=llgoxxpx",
-  "scrapedAt": "2026-01-19T02:19:36.823Z",
-  "trimmedAt": "2026-01-19T02:26:14.330Z",
+  "scrapedAt": "2026-01-19T02:45:56.890Z",
+  "trimmedAt": "2026-01-19T02:52:54.535Z",
   "pages": [
     {
       "url": "https://www.choicehotels.com/south-carolina/north-charleston/econo-lodge-hotels/sc121?mc=llgoxxpx",
       "text": "[Page Title: Challenge Page]",
       "hash": "63d345e68808",
       "downloadedAt": "2026-01-19T02:14:08.862Z",
-      "trimmedAt": "2026-01-19T02:26:14.330Z",
+      "trimmedAt": "2026-01-19T02:52:54.535Z",
       "sizeReduction": "98.9%"
     }
   ],

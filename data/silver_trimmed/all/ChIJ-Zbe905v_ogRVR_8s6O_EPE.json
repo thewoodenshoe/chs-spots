@@ -3,15 +3,15 @@
   "venueName": "Community Crafthouse",
   "venueArea": "Daniel Island",
   "website": "https://communitycrafthouse.com/",
-  "scrapedAt": "2026-01-19T02:19:30.374Z",
-  "trimmedAt": "2026-01-19T02:19:47.833Z",
+  "scrapedAt": "2026-01-19T03:25:37.917Z",
+  "trimmedAt": "2026-01-19T03:25:57.078Z",
   "pages": [
     {
       "url": "https://communitycrafthouse.com/menu",
       "text": "[Page Title: Menu 1 — Community Crafthouse]\n\n0 \nEmbed Block\n\nAdd an embed URL or code.\nLearn more \nWhat’s on Tap\n\n…and on deck!",
       "hash": "07c43c64231e",
       "downloadedAt": "2026-01-19T02:06:17.587Z",
-      "trimmedAt": "2026-01-19T02:19:47.817Z",
+      "trimmedAt": "2026-01-19T03:25:57.064Z",
       "sizeReduction": "99.9%"
     },
     {
@@ -19,7 +19,7 @@
       "text": "[Page Title: Community Crafthouse]\n\n0 \nBringing people together one pint at a time!\nAddress 1049 Point Hope Pkwy Suite B, Charleston, SC 29492 \n(843) 377-8154\nPhone Hours \nTue-Thur\n\n4pm-10pm\n\nFri 1pm-11pm\n\nSat\n\n12pm-11pm\n\nSunday1pm–9pm",
       "hash": "5e54df257ab7",
       "downloadedAt": "2026-01-19T02:06:17.425Z",
-      "trimmedAt": "2026-01-19T02:19:47.833Z",
+      "trimmedAt": "2026-01-19T03:25:57.078Z",
       "sizeReduction": "99.8%"
     }
   ],

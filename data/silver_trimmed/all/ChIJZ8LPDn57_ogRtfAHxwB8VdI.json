@@ -3,15 +3,15 @@
   "venueName": "Berkeley's",
   "venueArea": "West Ashley",
   "website": "http://www.eatatberkeleys.com/",
-  "scrapedAt": "2026-01-19T02:19:35.754Z",
-  "trimmedAt": "2026-01-19T02:25:48.951Z",
+  "scrapedAt": "2026-01-19T03:25:43.504Z",
+  "trimmedAt": "2026-01-19T03:32:05.430Z",
   "pages": [
     {
       "url": "http://www.eatatberkeleys.com/drinks",
       "text": "[Page Title: DRINKS — Berkeley's]\n\nMake A Reservation Order Online",
       "hash": "1e97303d1f63",
       "downloadedAt": "2026-01-19T02:16:30.746Z",
-      "trimmedAt": "2026-01-19T02:25:48.929Z",
+      "trimmedAt": "2026-01-19T03:32:05.405Z",
       "sizeReduction": "99.9%"
     },
     {
@@ -19,7 +19,7 @@
       "text": "[Page Title: Berkeley's]\n\nRutledge & Huger Order Online Charleston, SC NOW OPEN 7 DAYS A WEEK Make A Reservation Order Online",
       "hash": "63aa630f25a3",
       "downloadedAt": "2026-01-19T02:16:29.968Z",
-      "trimmedAt": "2026-01-19T02:25:48.938Z",
+      "trimmedAt": "2026-01-19T03:32:05.414Z",
       "sizeReduction": "99.9%"
     },
     {
@@ -27,7 +27,7 @@
       "text": "[Page Title: LUNCH & DINNER — Berkeley's]\n\nMake A Reservation Order Online",
       "hash": "9da244e3f75e",
       "downloadedAt": "2026-01-19T02:16:30.104Z",
-      "trimmedAt": "2026-01-19T02:25:48.944Z",
+      "trimmedAt": "2026-01-19T03:32:05.424Z",
       "sizeReduction": "99.9%"
     },
     {
@@ -35,7 +35,7 @@
       "text": "[Page Title: FOR THE KIDDOS — Berkeley's]\n\nMake A Reservation Order Online",
       "hash": "d420ae83ba65",
       "downloadedAt": "2026-01-19T02:16:31.385Z",
-      "trimmedAt": "2026-01-19T02:25:48.951Z",
+      "trimmedAt": "2026-01-19T03:32:05.430Z",
       "sizeReduction": "99.9%"
     }
   ],

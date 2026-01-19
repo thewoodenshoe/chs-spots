@@ -3,15 +3,15 @@
   "venueName": "Paddock & Whisky",
   "venueArea": "West Ashley",
   "website": "http://www.paddockandwhisky.com/",
-  "scrapedAt": "2026-01-19T02:19:32.194Z",
-  "trimmedAt": "2026-01-19T02:20:29.085Z",
+  "scrapedAt": "2026-01-19T03:25:39.766Z",
+  "trimmedAt": "2026-01-19T03:26:40.846Z",
   "pages": [
     {
       "url": "http://www.paddockandwhisky.com/",
       "text": "",
       "hash": "ca785ddf7202",
       "downloadedAt": "2026-01-19T02:17:34.875Z",
-      "trimmedAt": "2026-01-19T02:20:29.085Z",
+      "trimmedAt": "2026-01-19T03:26:40.846Z",
       "sizeReduction": "100.0%"
     }
   ],

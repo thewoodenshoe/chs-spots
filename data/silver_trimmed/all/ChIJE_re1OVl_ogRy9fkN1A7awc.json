@@ -3,15 +3,15 @@
   "venueName": "Sissy Bar Park Circle",
   "venueArea": "North Charleston",
   "website": "https://www.sissybarparkcircle.com/",
-  "scrapedAt": "2026-01-19T02:19:32.241Z",
-  "trimmedAt": "2026-01-19T02:20:29.640Z",
+  "scrapedAt": "2026-01-19T03:25:39.808Z",
+  "trimmedAt": "2026-01-19T03:26:41.399Z",
   "pages": [
     {
       "url": "https://www.sissybarparkcircle.com/menu",
       "text": "[Page Title: Menu 1 — Sissy Bar]\n\n0",
       "hash": "733c3127c61c",
       "downloadedAt": "2026-01-19T02:15:48.219Z",
-      "trimmedAt": "2026-01-19T02:20:29.622Z",
+      "trimmedAt": "2026-01-19T03:26:41.381Z",
       "sizeReduction": "100.0%"
     },
     {
@@ -19,7 +19,7 @@
       "text": "[Page Title: Private Events — Sissy Bar]\n\n0 \nWe would love to host you for your next event.\n\nOur space features an indoor bar as well as indoor seating and standing room. The capacity of our space is 54 people. We are able to serve all of our famous, hand-crafted cocktails as well as beer, wine and food at events.\n\nFor more information about hosting an event at Sissy Bar, download our Private Events Information Package below or contact us directly at .\nevents@sissybarparkcircle.com Download Events Package",
       "hash": "db7226a222f3",
       "downloadedAt": "2026-01-19T02:15:48.817Z",
-      "trimmedAt": "2026-01-19T02:20:29.627Z",
+      "trimmedAt": "2026-01-19T03:26:41.386Z",
       "sizeReduction": "99.5%"
     },
     {
@@ -27,7 +27,7 @@
       "text": "[Page Title: Sissy Bar | Discover Unique Cocktails – Reserve Today]\n\n0 Check out our menu Get more info More about us Follow us on IG @ sissy_bar_parkcircle",
       "hash": "f0d9bead8671",
       "downloadedAt": "2026-01-19T02:15:48.158Z",
-      "trimmedAt": "2026-01-19T02:20:29.640Z",
+      "trimmedAt": "2026-01-19T03:26:41.399Z",
       "sizeReduction": "99.9%"
     }
   ],

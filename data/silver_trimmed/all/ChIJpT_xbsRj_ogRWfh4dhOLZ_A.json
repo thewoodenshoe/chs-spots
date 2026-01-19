@@ -3,15 +3,15 @@
   "venueName": "Wingstop",
   "venueArea": "North Charleston",
   "website": "https://www.wingstop.com/location/wingstop-617-north-charleston-sc-29406/menu?y_source=1_NTUyMDc1NjgtNzE1LWxvY2F0aW9uLndlYnNpdGU%3D",
-  "scrapedAt": "2026-01-19T02:19:37.549Z",
-  "trimmedAt": "2026-01-19T02:26:44.934Z",
+  "scrapedAt": "2026-01-19T02:45:57.666Z",
+  "trimmedAt": "2026-01-19T02:53:24.562Z",
   "pages": [
     {
       "url": "https://www.wingstop.com/location/wingstop-617-north-charleston-sc-29406/menu?y_source=1_NTUyMDc1NjgtNzE1LWxvY2F0aW9uLndlYnNpdGU%3D",
       "text": "[Page Title: Wingstop]",
       "hash": "f644d2f547bf",
       "downloadedAt": "2026-01-19T02:16:10.770Z",
-      "trimmedAt": "2026-01-19T02:26:44.934Z",
+      "trimmedAt": "2026-01-19T02:53:24.562Z",
       "sizeReduction": "99.9%"
     }
   ],

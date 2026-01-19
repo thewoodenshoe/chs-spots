@@ -3,15 +3,15 @@
   "venueName": "La Pizzeria",
   "venueArea": "Mount Pleasant",
   "website": "https://www.lapizzeriamtp.com/",
-  "scrapedAt": "2026-01-19T02:19:38.186Z",
-  "trimmedAt": "2026-01-19T02:27:32.274Z",
+  "scrapedAt": "2026-01-19T02:45:58.719Z",
+  "trimmedAt": "2026-01-19T02:54:11.334Z",
   "pages": [
     {
       "url": "https://www.lapizzeriamtp.com/",
       "text": "[Page Title: La Pizzeria]\n\n0 \nBenvenuto!\nRecommended \n2024\nLa Pizzeria Restaurant Guru",
       "hash": "05dee4bd4ca4",
       "downloadedAt": "2026-01-19T02:11:27.236Z",
-      "trimmedAt": "2026-01-19T02:27:32.264Z",
+      "trimmedAt": "2026-01-19T02:54:11.324Z",
       "sizeReduction": "99.9%"
     },
     {
@@ -19,7 +19,7 @@
       "text": "[Page Title: Menu — La Pizzeria]\n\n0 PDF Version Antipasti Insalate Main Courses Pizza Sides",
       "hash": "8043c78443ca",
       "downloadedAt": "2026-01-19T02:11:27.281Z",
-      "trimmedAt": "2026-01-19T02:27:32.274Z",
+      "trimmedAt": "2026-01-19T02:54:11.334Z",
       "sizeReduction": "99.9%"
     }
   ],

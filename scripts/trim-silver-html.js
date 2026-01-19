@@ -56,9 +56,10 @@ function log(message) {
 
 // Paths
 const SILVER_MERGED_DIR = path.join(__dirname, '../data/silver_merged/all');
+const SILVER_MERGED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_merged/incremental');
 const SILVER_TRIMMED_DIR = path.join(__dirname, '../data/silver_trimmed');
 const SILVER_TRIMMED_ALL_DIR = path.join(SILVER_TRIMMED_DIR, 'all');
-const SILVER_TRIMMED_PREVIOUS_DIR = path.join(SILVER_TRIMMED_DIR, 'previous');
+// Note: Silver doesn't need previous/ folder - only raw needs it for delta comparison
 const SILVER_TRIMMED_INCREMENTAL_DIR = path.join(SILVER_TRIMMED_DIR, 'incremental');
 const VENUES_PATH = path.join(__dirname, '../data/venues.json');
 
@@ -69,9 +70,7 @@ if (!fs.existsSync(SILVER_TRIMMED_DIR)) {
 if (!fs.existsSync(SILVER_TRIMMED_ALL_DIR)) {
   fs.mkdirSync(SILVER_TRIMMED_ALL_DIR, { recursive: true });
 }
-if (!fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)) {
-  fs.mkdirSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true });
-}
+// Silver only needs all/ and incremental/ - no previous/ needed
 if (!fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
   fs.mkdirSync(SILVER_TRIMMED_INCREMENTAL_DIR, { recursive: true });
 }
@@ -191,7 +190,8 @@ function needsUpdate(silverFilePath, trimmedFilePath) {
  * Process a single venue file
  */
 function processVenueFile(venueId, areaFilter = null) {
-  const silverFilePath = path.join(SILVER_MERGED_DIR, `${venueId}.json`);
+  // INCREMENTAL MODE: Read from silver_merged/incremental/
+  const silverFilePath = path.join(SILVER_MERGED_INCREMENTAL_DIR, `${venueId}.json`);
   const trimmedFilePath = path.join(SILVER_TRIMMED_ALL_DIR, `${venueId}.json`);
   
   if (!fs.existsSync(silverFilePath)) {
@@ -265,9 +265,17 @@ function processVenueFile(venueId, areaFilter = null) {
     : '0%';
   trimmedData.sizeReduction = overallReduction;
   
-  // Save trimmed file (trimmedFilePath already declared at top of function)
+  // Save trimmed file to silver_trimmed/all/ (main storage)
   try {
     fs.writeFileSync(trimmedFilePath, JSON.stringify(trimmedData, null, 2), 'utf8');
+    
+    // Also save to silver_trimmed/incremental/ for next step
+    if (!fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
+      fs.mkdirSync(SILVER_TRIMMED_INCREMENTAL_DIR, { recursive: true });
+    }
+    const incrementalPath = path.join(SILVER_TRIMMED_INCREMENTAL_DIR, `${venueId}.json`);
+    fs.writeFileSync(incrementalPath, JSON.stringify(trimmedData, null, 2), 'utf8');
+    
     log(`  ✅ Trimmed ${silverData.venueName} (${venueId}): ${overallReduction} reduction`);
     return { 
       success: true, 
@@ -283,6 +291,41 @@ function processVenueFile(venueId, areaFilter = null) {
 }
 
 /**
+ * On new day: Move yesterday's incremental to all/ before processing new incremental
+ */
+function moveIncrementalToAll() {
+  if (!fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
+    return false;
+  }
+  
+  const incrementalFiles = fs.readdirSync(SILVER_TRIMMED_INCREMENTAL_DIR).filter(f => f.endsWith('.json'));
+  
+  if (incrementalFiles.length === 0) {
+    return false;
+  }
+  
+  let moved = 0;
+  for (const file of incrementalFiles) {
+    try {
+      const sourcePath = path.join(SILVER_TRIMMED_INCREMENTAL_DIR, file);
+      const destPath = path.join(SILVER_TRIMMED_ALL_DIR, file);
+      
+      // Move incremental file to all/ (overwrites if exists)
+      fs.copyFileSync(sourcePath, destPath);
+      moved++;
+    } catch (error) {
+      log(`  ⚠️  Failed to move ${file} to all/: ${error.message}`);
+    }
+  }
+  
+  if (moved > 0) {
+    log(`  ✅ Moved ${moved} file(s) from incremental/ to all/`);
+  }
+  
+  return moved > 0;
+}
+
+/**
  * Main execution
  */
 function main() {
@@ -290,28 +333,69 @@ function main() {
   
   log(`\n📄 Starting HTML trimming${areaFilter ? ` (filter: ${areaFilter})` : ''}...`);
   
-  // Check if silver_merged directory exists
-  if (!fs.existsSync(SILVER_MERGED_DIR)) {
-    log(`❌ Error: ${SILVER_MERGED_DIR} does not exist.`);
-    log(`   Please run 'node scripts/merge-raw-files.js' first.`);
-    process.exit(1);
+  // On new day: Move yesterday's incremental to all/ before processing
+  const today = new Date().toISOString().split('T')[0];
+  const LAST_TRIM_PATH = path.join(__dirname, '../data/silver_trimmed/.last-trim');
+  let lastTrim = null;
+  if (fs.existsSync(LAST_TRIM_PATH)) {
+    try {
+      lastTrim = fs.readFileSync(LAST_TRIM_PATH, 'utf8').trim();
+    } catch (e) {
+      // Ignore
+    }
   }
   
-  // Get all venue files
+  // If new day, move yesterday's incremental to all/
+  if (lastTrim && lastTrim !== today) {
+    log(`📅 New day detected - moving yesterday's incremental to all/\n`);
+    moveIncrementalToAll();
+  }
+  
+  // Save today's date
+  fs.writeFileSync(LAST_TRIM_PATH, today, 'utf8');
+  
+  // INCREMENTAL MODE: Only process venues in silver_merged/incremental/
+  if (!fs.existsSync(SILVER_MERGED_INCREMENTAL_DIR)) {
+    log(`📁 Incremental directory not found: ${SILVER_MERGED_INCREMENTAL_DIR}`);
+    log(`   Creating directory...`);
+    fs.mkdirSync(SILVER_MERGED_INCREMENTAL_DIR, { recursive: true });
+  }
+  
+  // Clear output incremental folder at start
+  if (fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
+    try {
+      const existingFiles = fs.readdirSync(SILVER_TRIMMED_INCREMENTAL_DIR);
+      existingFiles.forEach(file => {
+        const filePath = path.join(SILVER_TRIMMED_INCREMENTAL_DIR, file);
+        if (fs.statSync(filePath).isFile()) {
+          fs.unlinkSync(filePath);
+        }
+      });
+    } catch (error) {
+      // Ignore errors when clearing
+    }
+  }
+  
+  // Get venue files from silver_merged/incremental/ (incremental mode)
   let venueFiles = [];
   try {
-    venueFiles = fs.readdirSync(SILVER_MERGED_DIR).filter(file => file.endsWith('.json'));
+    if (fs.existsSync(SILVER_MERGED_INCREMENTAL_DIR)) {
+      venueFiles = fs.readdirSync(SILVER_MERGED_INCREMENTAL_DIR).filter(file => file.endsWith('.json'));
+    }
   } catch (error) {
-    log(`❌ Error reading silver_merged directory: ${error.message}`);
+    log(`❌ Error reading silver_merged/incremental directory: ${error.message}`);
     process.exit(1);
   }
   
+  // If incremental folder is empty, stop processing
   if (venueFiles.length === 0) {
-    log('No venue files found in silver_merged/all/ directory.');
+    log(`⏭️  No incremental files found in ${SILVER_MERGED_INCREMENTAL_DIR}`);
+    log(`   Incremental folder is empty - nothing to trim.`);
+    log(`\n✨ Skipped trim (incremental mode - no changes)`);
     return;
   }
   
-  log(`Found ${venueFiles.length} venue file(s) to process.`);
+  log(`📁 Found ${venueFiles.length} venue file(s) in incremental folder.`);
   
   // Process each venue
   let processed = 0;

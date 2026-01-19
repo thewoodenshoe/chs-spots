@@ -3,15 +3,15 @@
   "venueName": "Ichiban Steak House & Asian Fusion",
   "venueArea": "West Ashley",
   "website": "https://maps.app.goo.gl/qNY6fiCXsgKSLwJRA",
-  "scrapedAt": "2026-01-19T02:19:38.299Z",
-  "trimmedAt": "2026-01-19T02:27:33.601Z",
+  "scrapedAt": "2026-01-19T02:45:58.854Z",
+  "trimmedAt": "2026-01-19T02:54:13.673Z",
   "pages": [
     {
       "url": "https://maps.app.goo.gl/qNY6fiCXsgKSLwJRA",
       "text": "[Page Title: Google Maps]",
       "hash": "70df9765cc67",
       "downloadedAt": "2026-01-19T02:17:01.764Z",
-      "trimmedAt": "2026-01-19T02:27:33.601Z",
+      "trimmedAt": "2026-01-19T02:54:13.673Z",
       "sizeReduction": "100.0%"
     }
   ],

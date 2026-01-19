@@ -3,15 +3,15 @@
   "venueName": "Yoshi Poke & Kitchen",
   "venueArea": "West Ashley",
   "website": "https://www.yoshipokekitchencharleston.com/",
-  "scrapedAt": "2026-01-19T02:19:32.605Z",
-  "trimmedAt": "2026-01-19T02:20:37.313Z",
+  "scrapedAt": "2026-01-19T03:25:40.235Z",
+  "trimmedAt": "2026-01-19T03:26:48.711Z",
   "pages": [
     {
       "url": "https://www.yoshipokekitchencharleston.com/?menu=All+Day+Menu",
       "text": "[Page Title: Best Japanese in Charleston, SC | Yoshi Poke & Kitchen | Order Online]\n\nSkip to main content",
       "hash": "7883bd6ef36d",
       "downloadedAt": "2026-01-19T02:18:52.638Z",
-      "trimmedAt": "2026-01-19T02:20:37.241Z",
+      "trimmedAt": "2026-01-19T03:26:48.651Z",
       "sizeReduction": "100.0%"
     },
     {
@@ -19,7 +19,7 @@
       "text": "[Page Title: Best Japanese in Charleston, SC | Yoshi Poke & Kitchen | Menu]\n\nSkip to main content",
       "hash": "7e38259803a0",
       "downloadedAt": "2026-01-19T02:18:50.208Z",
-      "trimmedAt": "2026-01-19T02:20:37.260Z",
+      "trimmedAt": "2026-01-19T03:26:48.667Z",
       "sizeReduction": "100.0%"
     },
     {
@@ -27,7 +27,7 @@
       "text": "[Page Title: Best Japanese in Charleston, SC | Yoshi Poke & Kitchen | Order Online]\n\nSkip to main content",
       "hash": "dd80197bf90c",
       "downloadedAt": "2026-01-19T02:18:51.418Z",
-      "trimmedAt": "2026-01-19T02:20:37.286Z",
+      "trimmedAt": "2026-01-19T03:26:48.689Z",
       "sizeReduction": "100.0%"
     },
     {
@@ -35,7 +35,7 @@
       "text": "[Page Title: Best Japanese in Charleston, SC | Yoshi Poke & Kitchen | Order Online]\n\nSkip to main content",
       "hash": "ecab3b49611b",
       "downloadedAt": "2026-01-19T02:18:49.917Z",
-      "trimmedAt": "2026-01-19T02:20:37.313Z",
+      "trimmedAt": "2026-01-19T03:26:48.711Z",
       "sizeReduction": "100.0%"
     }
   ],

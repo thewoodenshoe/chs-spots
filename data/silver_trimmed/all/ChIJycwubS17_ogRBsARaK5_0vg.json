@@ -3,15 +3,15 @@
   "venueName": "Church's Texas Chicken",
   "venueArea": "North Charleston",
   "website": "https://locations.churchs.com/sc/north-charleston/3303-rivers-avenue",
-  "scrapedAt": "2026-01-19T02:19:38.766Z",
-  "trimmedAt": "2026-01-19T02:27:47.437Z",
+  "scrapedAt": "2026-01-19T02:45:59.382Z",
+  "trimmedAt": "2026-01-19T02:54:28.632Z",
   "pages": [
     {
       "url": "https://locations.churchs.com/sc/north-charleston/3303-rivers-avenue",
       "text": "[Page Title: Church’s Texas Chicken – North Charleston, SC | Menu & Prices | Dine‑in, Takeout, Delivery]\n\nChurch's® on 3303 Rivers Avenue in North Charleston, SC\n3303 Rivers Avenue North Charleston, SC 29405 (843) 410-4715 START YOUR ORDER VIEW MENU Order Catering",
       "hash": "b11985cd9e5e",
       "downloadedAt": "2026-01-19T02:13:42.189Z",
-      "trimmedAt": "2026-01-19T02:27:47.432Z",
+      "trimmedAt": "2026-01-19T02:54:28.626Z",
       "sizeReduction": "99.7%"
     },
     {
@@ -19,7 +19,7 @@
       "text": "[Page Title: All Church's Texas Chicken locations in the United States | Fried Chicken, Biscuits, Mac & Cheese]\n\nChurch's Texas Chicken®\n\nU.S. Locations\n\nWhen autocomplete results are available, use up and down arrows to review and enter to select.\nGeolocate. Alabama Arkansas Arizona California Colorado District Of Columbia Florida Georgia Illinois Indiana Kansas Louisiana Michigan Missouri Mississippi North Carolina Nebraska New Mexico Nevada New York Ohio Oklahoma South Carolina Tennessee Texas Virginia Washington Wisconsin",
       "hash": "e7841c539738",
       "downloadedAt": "2026-01-19T02:13:42.257Z",
-      "trimmedAt": "2026-01-19T02:27:47.437Z",
+      "trimmedAt": "2026-01-19T02:54:28.632Z",
       "sizeReduction": "98.6%"
     }
   ],

@@ -3,15 +3,15 @@
   "venueName": "West Ashley Inn",
   "venueArea": "West Ashley",
   "website": "http://www.thewestashleyinn.com/",
-  "scrapedAt": "2026-01-19T02:19:34.468Z",
-  "trimmedAt": "2026-01-19T02:23:04.341Z",
+  "scrapedAt": "2026-01-19T03:25:42.384Z",
+  "trimmedAt": "2026-01-19T03:29:14.897Z",
   "pages": [
     {
       "url": "http://www.thewestashleyinn.com/",
       "text": "[Page Title: For Lowest Fares Book Directly on Hotel Website]",
       "hash": "6ec2016e73aa",
       "downloadedAt": "2026-01-19T02:18:48.873Z",
-      "trimmedAt": "2026-01-19T02:23:04.341Z",
+      "trimmedAt": "2026-01-19T03:29:14.896Z",
       "sizeReduction": "97.2%"
     }
   ],

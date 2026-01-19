@@ -125,6 +125,14 @@ function saveMetadata(venueId, url, hash) {
   metadata[hash] = url;
   const metadataPath = getMetadataPath(venueId);
   fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2), 'utf8');
+  
+  // Also save to incremental folder
+  const incrementalDir = path.join(RAW_INCREMENTAL_DIR, venueId);
+  if (!fs.existsSync(incrementalDir)) {
+    fs.mkdirSync(incrementalDir, { recursive: true });
+  }
+  const incrementalMetadataPath = path.join(incrementalDir, 'metadata.json');
+  fs.writeFileSync(incrementalMetadataPath, JSON.stringify(metadata, null, 2), 'utf8');
 }
 
 /**
@@ -241,11 +249,22 @@ function rawFileExists(venueId, url) {
 }
 
 /**
- * Save raw HTML to file
+ * Save raw HTML to file (saves to both all/ and incremental/)
  */
 function saveRawHtml(venueId, url, html) {
+  // Save to raw/all/ (main storage)
   const filePath = getRawFilePath(venueId, url);
   fs.writeFileSync(filePath, html, 'utf8');
+  
+  // Also copy to raw/incremental/ for incremental processing
+  const incrementalDir = path.join(RAW_INCREMENTAL_DIR, venueId);
+  if (!fs.existsSync(incrementalDir)) {
+    fs.mkdirSync(incrementalDir, { recursive: true });
+  }
+  const hash = urlToHash(url);
+  const incrementalPath = path.join(incrementalDir, `${hash}.html`);
+  fs.writeFileSync(incrementalPath, html, 'utf8');
+  
   return filePath;
 }
 
@@ -431,21 +450,6 @@ async function main() {
   log(`📅 Today: ${today}`);
   log(`📅 Last download: ${lastDownload || 'Never'}\n`);
   
-  // CRITICAL: Skip entire download if it's the same day (incremental mode)
-  // Only download raw HTML on new days to minimize API calls
-  if (lastDownload && lastDownload === today) {
-    log(`⏭️  Same day as last download (${today}) - skipping raw HTML download`);
-    log(`   Raw files already exist for today. Run on a new day to download fresh data.`);
-    log(`\n✨ Skipped download (incremental mode)`);
-    return;
-  }
-  
-  // Archive previous day if it's a new day
-  const archived = archivePreviousDay();
-  if (archived) {
-    log(`\n📦 Previous day's data archived to raw/previous/\n`);
-  }
-  
   // Parse command-line arguments
   const args = process.argv.slice(2);
   let areaFilter = null;
@@ -470,6 +474,118 @@ async function main() {
   
   const venues = JSON.parse(fs.readFileSync(venuesPath, 'utf8'));
   log(`📖 Loaded ${venues.length} venue(s) from venues.json\n`);
+  
+  // CRITICAL: If same day, only check for NEW venues (venues without raw files)
+  // Also check for REMOVED venues (venues with raw files but not in venues.json)
+  // If no new venues found, abort to minimize API calls
+  if (lastDownload && lastDownload === today) {
+    log(`⏭️  Same day as last download (${today}) - checking for new and removed venues`);
+    
+    // Get all venue IDs from venues.json
+    const venuesInJson = new Set();
+    venues.forEach(v => {
+      const venueId = v.id || v.place_id;
+      if (venueId) venuesInJson.add(venueId);
+    });
+    
+    // Check for new venues (venues not in raw/all/)
+    const existingVenueDirs = new Set();
+    if (fs.existsSync(RAW_ALL_DIR)) {
+      const dirs = fs.readdirSync(RAW_ALL_DIR).filter(item => {
+        const itemPath = path.join(RAW_ALL_DIR, item);
+        return fs.statSync(itemPath).isDirectory();
+      });
+      dirs.forEach(dir => existingVenueDirs.add(dir));
+    }
+    
+    // Check for removed venues (venues with raw files but not in venues.json)
+    const removedVenues = [];
+    existingVenueDirs.forEach(venueId => {
+      if (!venuesInJson.has(venueId)) {
+        removedVenues.push(venueId);
+      }
+    });
+    
+    if (removedVenues.length > 0) {
+      log(`   ⚠️  Found ${removedVenues.length} removed venue(s) (have raw files but not in venues.json):`);
+      removedVenues.slice(0, 10).forEach(venueId => {
+        log(`      - ${venueId}`);
+      });
+      if (removedVenues.length > 10) {
+        log(`      ... and ${removedVenues.length - 10} more`);
+      }
+      log(`   💡 These venues were removed from venues.json but still have raw files.`);
+      log(`   💡 Raw files are preserved but won't be processed in the pipeline.\n`);
+    }
+    
+    // Filter to only new venues (venues with websites that don't have raw files)
+    let newVenues = venues.filter(v => {
+      const venueId = v.id || v.place_id;
+      return v.website && !existingVenueDirs.has(venueId);
+    });
+    
+    // Apply area filter if specified
+    if (areaFilter && newVenues.length > 0) {
+      newVenues = newVenues.filter(v => 
+        (v.area && v.area.toLowerCase() === areaFilter.toLowerCase()) ||
+        (v.addressComponents && v.addressComponents.some(ac => 
+          ac.types.includes('sublocality') && ac.long_name.toLowerCase() === areaFilter.toLowerCase()
+        ))
+      );
+    }
+    
+    if (newVenues.length === 0) {
+      if (removedVenues.length > 0) {
+        log(`   No new venues found. All venues in venues.json already have raw files.`);
+        log(`\n✨ Skipped download (incremental mode - no new venues, ${removedVenues.length} removed venue(s) detected)`);
+      } else {
+        log(`   No new venues found. All venues already have raw files.`);
+        log(`\n✨ Skipped download (incremental mode - no new venues)`);
+      }
+      return;
+    }
+    
+    log(`   Found ${newVenues.length} new venue(s) to download\n`);
+    
+    // Process only new venues
+    const results = [];
+    for (let i = 0; i < newVenues.length; i += PARALLEL_WORKERS) {
+      const batch = newVenues.slice(i, i + PARALLEL_WORKERS);
+      const batchPromises = batch.map(venue => processVenue(venue));
+      const batchResults = await Promise.all(batchPromises);
+      results.push(...batchResults);
+      
+      log(`\n📊 Progress: ${results.length}/${newVenues.length} processed\n`);
+    }
+    
+    // Summary for new venues only
+    const successful = results.filter(r => r.success).length;
+    const skipped = results.filter(r => r.skipped).length;
+    const errors = results.filter(r => r.error).length;
+    const totalDownloaded = results.reduce((sum, r) => sum + (r.downloaded || 0), 0);
+    const totalSkipped = results.reduce((sum, r) => sum + (r.skipped || 0), 0);
+    
+    // Save last download date
+    saveLastDownloadDate();
+    
+    log(`\n📊 Summary:`);
+    log(`   ✅ Successful: ${successful}`);
+    log(`   ⏭️  Skipped: ${skipped}`);
+    log(`   ❌ Errors: ${errors}`);
+    log(`   📥 Files downloaded today: ${totalDownloaded}`);
+    log(`   💾 Files skipped (already downloaded today): ${totalSkipped}`);
+    log(`   📅 Download date: ${today}`);
+    log(`\n✨ Done! Raw HTML saved to: ${path.resolve(RAW_ALL_DIR)}`);
+    log(`   Previous day's data: ${path.resolve(RAW_PREVIOUS_DIR)}`);
+    return;
+  }
+  
+  // NEW DAY: Download all venues (full batch)
+  // Archive previous day if it's a new day
+  const archived = archivePreviousDay();
+  if (archived) {
+    log(`\n📦 Previous day's data archived to raw/previous/\n`);
+  }
   
   // Filter by area if specified
   let venuesToProcess = venues;

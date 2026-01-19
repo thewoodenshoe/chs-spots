@@ -3,15 +3,15 @@
   "venueName": "Bar on the Ave",
   "venueArea": "North Charleston",
   "website": "https://www.barontheave.com/",
-  "scrapedAt": "2026-01-19T02:19:38.738Z",
-  "trimmedAt": "2026-01-19T02:27:47.345Z",
+  "scrapedAt": "2026-01-19T02:45:59.351Z",
+  "trimmedAt": "2026-01-19T02:54:28.535Z",
   "pages": [
     {
       "url": "https://www.barontheave.com/order-online",
       "text": "[Page Title: Order Online | BAR On The Ave]\n\ntop of page Check out our new ordering page Ordering from this page is no longer available Go to New Ordering Page bottom of page",
       "hash": "202f863bbc26",
       "downloadedAt": "2026-01-19T02:13:29.696Z",
-      "trimmedAt": "2026-01-19T02:27:47.177Z",
+      "trimmedAt": "2026-01-19T02:54:28.397Z",
       "sizeReduction": "100.0%"
     },
     {
@@ -19,7 +19,7 @@
       "text": "[Page Title: Contact | BAR On The Ave]\n\ntop of page Contact Us bottom of page",
       "hash": "2c9436537cee",
       "downloadedAt": "2026-01-19T02:13:29.131Z",
-      "trimmedAt": "2026-01-19T02:27:47.201Z",
+      "trimmedAt": "2026-01-19T02:54:28.421Z",
       "sizeReduction": "100.0%"
     },
     {
@@ -27,7 +27,7 @@
       "text": "[Page Title: Reservations | BAR On The Ave]\n\ntop of page \nVIP Packages\n\n2 Person Table Indoor\n\n2 hr\nReserve \n4 Person Table Indoor\n\n2 hr\nReserve \n4 Person Booth Indoor\n\n2 hr\nReserve \n8 Person Section Indoor\n\n2 hr\nReserve \n4 Person Outside Table\n\n2 hr\nReserve \n7 Person Outdoor Cabana\n\n2 hr\nReserve Reservation Policies Parties of 7 - 8 guests MUST book a 7 or 8 Person VIP Package. All VIP Reservations require a non-refundable deposit at the time of booking which is applied towards the total cost of the package. ​ A  Bar Representative will contact you on the day of your scheduled reservation for fulfillment of remaining balance. Arrivals for VIP Reservations begin at 8pm each night with all members of the party arriving by 1030pm, and expire at the time of closing of the bar [NO EXCEPTIONS] ​ Absolutely NO standing on furniture. bottom of page",
       "hash": "c46ceee83cfc",
       "downloadedAt": "2026-01-19T02:13:28.548Z",
-      "trimmedAt": "2026-01-19T02:27:47.267Z",
+      "trimmedAt": "2026-01-19T02:54:28.465Z",
       "sizeReduction": "99.9%"
     },
     {
@@ -35,7 +35,7 @@
       "text": "[Page Title: Menus | BAR On The Ave]\n\ntop of page Menus On The Ave Hungry Already? Order Online bottom of page",
       "hash": "f9a509c17677",
       "downloadedAt": "2026-01-19T02:13:27.869Z",
-      "trimmedAt": "2026-01-19T02:27:47.292Z",
+      "trimmedAt": "2026-01-19T02:54:28.487Z",
       "sizeReduction": "100.0%"
     },
     {
@@ -43,7 +43,7 @@
       "text": "[Page Title: Home | Bar On The Ave | North Charleston]\n\ntop of page BAR\nOn The Ave Discover the epitome of vibe dining at Bar on the Ave, the premier lounge that raises the bar for nightlife experiences. ORDER ONLINE PREMIUM COCKTAILS & HOOHAK COME FOR THE EXPERIENCE, STAY FOR THE VIBE The Ultimate Dining and Experience - Indoors and Outdoors ORDER ONLINE VIP RESERVATIONS Indulge in the ultimate outdoor relaxation with BAR's Cabana and service. Unwind in style and enjoy the fresh air. RESERVE A CABANA bottom of page",
       "hash": "fe7e5a96a317",
       "downloadedAt": "2026-01-19T02:13:27.772Z",
-      "trimmedAt": "2026-01-19T02:27:47.345Z",
+      "trimmedAt": "2026-01-19T02:54:28.535Z",
       "sizeReduction": "99.9%"
     }
   ],

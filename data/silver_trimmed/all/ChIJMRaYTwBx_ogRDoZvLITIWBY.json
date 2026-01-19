@@ -3,15 +3,15 @@
   "venueName": "Buffalo Wild Wings",
   "venueArea": "Mount Pleasant",
   "website": "https://www.buffalowildwings.com/locations/us/sc/mount-pleasant/715-johnnie-dodds-blvd/sports-bar-1899/?utm_source=google-my-business&utm_medium=organic&utm_campaign=website-link&y_source=1_MjAxNjYyNjYyNi03MTUtbG9jYXRpb24ud2Vic2l0ZQ%3D%3D",
-  "scrapedAt": "2026-01-19T02:19:33.220Z",
-  "trimmedAt": "2026-01-19T02:22:10.224Z",
+  "scrapedAt": "2026-01-19T03:25:40.851Z",
+  "trimmedAt": "2026-01-19T03:28:21.736Z",
   "pages": [
     {
       "url": "https://www.buffalowildwings.com/menu/",
       "text": "[Page Title: Menu | Buffalo Wild Wings]\n\nskip to main content \nOur Menu",
       "hash": "00ea5b13de41",
       "downloadedAt": "2026-01-19T02:10:32.348Z",
-      "trimmedAt": "2026-01-19T02:22:10.208Z",
+      "trimmedAt": "2026-01-19T03:28:21.693Z",
       "sizeReduction": "100.0%"
     },
     {
@@ -19,7 +19,7 @@
       "text": "[Page Title: Location Details | Buffalo Wild Wings]\n\nskip to main content \nLocation Details | Buffalo Wild Wings",
       "hash": "37c82335b0cd",
       "downloadedAt": "2026-01-19T02:10:32.137Z",
-      "trimmedAt": "2026-01-19T02:22:10.212Z",
+      "trimmedAt": "2026-01-19T03:28:21.697Z",
       "sizeReduction": "99.9%"
     },
     {
@@ -27,7 +27,7 @@
       "text": "[Page Title: Promos & Wing Deals - Order Delivery or Pick Up | Buffalo Wild Wings]\n\nskip to main content Game Day Play \nPICK 6 MEAL FOR 2\n\nThe only game day play that matters. Get 2 entrees, 2 sides, and 2 drinks starting at $19.99. Dine-in, or order online or in the app.​\nView terms Order Now​ \nRewards Exclusive\n\nFree B-Dubs. All month long. Enjoy Month of Free deals in January​\nView terms ORDER NOW \nOnline Only\n\nNew Bundle for $19.99\n\nGet 15 boneless wings, 5 chicken tenders, large fries and 5 dips for $19.99 only available online or in the app.\nView terms Order Now \nNew Brown Sugar Heat\n\nOur latest sauce drop is the perfect balance of sweet & spicy.​\nView terms ORDER NOW \nEvery Tuesday\n\nBOGO Wing Tuesday\n\nRewards Members score BOGO 100% off bone-in wings.\nView terms FIND YOUR SPORTS BAR \nBoneless Thursdays\n\nGet Free Boneless Wings\n\nEvery Thursday with takeout & delivery from Buffalo Wild Wings GO.\nView terms ORDER NOW",
       "hash": "a658098f4465",
       "downloadedAt": "2026-01-19T02:10:33.555Z",
-      "trimmedAt": "2026-01-19T02:22:10.220Z",
+      "trimmedAt": "2026-01-19T03:28:21.708Z",
       "sizeReduction": "99.2%"
     },
     {
@@ -35,7 +35,7 @@
       "text": "[Page Title: Find Your Local BWW's Restaurant | Buffalo Wild Wings]\n\nskip to main content",
       "hash": "d1998ef293ce",
       "downloadedAt": "2026-01-19T02:10:32.935Z",
-      "trimmedAt": "2026-01-19T02:22:10.224Z",
+      "trimmedAt": "2026-01-19T03:28:21.736Z",
       "sizeReduction": "99.9%"
     }
   ],

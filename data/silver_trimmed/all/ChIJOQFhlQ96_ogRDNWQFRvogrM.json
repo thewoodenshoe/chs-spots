@@ -3,15 +3,15 @@
   "venueName": "Middleton Family Bed and Breakfast",
   "venueArea": "Downtown Charleston",
   "website": "http://www.charlestonbandb.net/",
-  "scrapedAt": "2026-01-19T02:19:33.396Z",
-  "trimmedAt": "2026-01-19T02:22:12.124Z",
+  "scrapedAt": "2026-01-19T03:25:41.027Z",
+  "trimmedAt": "2026-01-19T03:28:23.882Z",
   "pages": [
     {
       "url": "http://www.charlestonbandb.net/",
       "text": "Error. Page cannot be displayed. Please contact your service provider for more details.",
       "hash": "255dd6e02863",
       "downloadedAt": "2026-01-19T02:09:05.552Z",
-      "trimmedAt": "2026-01-19T02:22:12.124Z",
+      "trimmedAt": "2026-01-19T03:28:23.882Z",
       "sizeReduction": "28.7%"
     }
   ],

@@ -3,15 +3,15 @@
   "venueName": "A.C.'s Bar & Grill",
   "venueArea": "Downtown Charleston",
   "website": "https://www.acsbar.com/",
-  "scrapedAt": "2026-01-19T02:19:36.770Z",
-  "trimmedAt": "2026-01-19T02:26:11.840Z",
+  "scrapedAt": "2026-01-19T02:45:56.833Z",
+  "trimmedAt": "2026-01-19T02:52:51.912Z",
   "pages": [
     {
       "url": "https://www.acsbar.com/contact",
       "text": "[Page Title: Contact | mysite]\n\ntop of page Contact Phone: (843) 577-6742 Address: 467 King St Charleston, SC 29403 ​ Bar Hours: 11a.m. - 2 a.m. ​ Kitchen Hours: Mon.-Sat.: 11 a.m. - 1:30 a.m. Sunday: 4 p.m. - 1:30 a.m. ​ bottom of page",
       "hash": "2b32cde41f93",
       "downloadedAt": "2026-01-19T02:06:32.222Z",
-      "trimmedAt": "2026-01-19T02:26:11.818Z",
+      "trimmedAt": "2026-01-19T02:52:51.892Z",
       "sizeReduction": "99.9%"
     },
     {
@@ -19,7 +19,7 @@
       "text": "[Page Title: A.C.'s Bar & Grill | Late Night | Charleston, SC]\n\ntop of page Walk Through the Bar: bottom of page",
       "hash": "3279ebba77a6",
       "downloadedAt": "2026-01-19T02:06:31.509Z",
-      "trimmedAt": "2026-01-19T02:26:11.829Z",
+      "trimmedAt": "2026-01-19T02:52:51.903Z",
       "sizeReduction": "100.0%"
     },
     {
@@ -27,7 +27,7 @@
       "text": "[Page Title: Menu | mysite]\n\ntop of page bottom of page",
       "hash": "dd5fca273389",
       "downloadedAt": "2026-01-19T02:06:31.599Z",
-      "trimmedAt": "2026-01-19T02:26:11.840Z",
+      "trimmedAt": "2026-01-19T02:52:51.912Z",
       "sizeReduction": "100.0%"
     }
   ],

@@ -3,15 +3,15 @@
   "venueName": "Gilroy's Pizza Pub",
   "venueArea": "Downtown Charleston",
   "website": "http://www.gilroyspizza.com/",
-  "scrapedAt": "2026-01-19T02:19:34.251Z",
-  "trimmedAt": "2026-01-19T02:23:01.146Z",
+  "scrapedAt": "2026-01-19T03:25:42.098Z",
+  "trimmedAt": "2026-01-19T03:29:11.658Z",
   "pages": [
     {
       "url": "http://www.gilroyspizza.com/",
       "text": "[Page Title: Gilroys Pizza Pub]\n\nDesign by:\nWrapWorksOnline.com",
       "hash": "1508a0d88b1e",
       "downloadedAt": "2026-01-19T02:08:45.515Z",
-      "trimmedAt": "2026-01-19T02:23:01.146Z",
+      "trimmedAt": "2026-01-19T03:29:11.658Z",
       "sizeReduction": "98.5%"
     }
   ],

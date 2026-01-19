@@ -3,15 +3,15 @@
   "venueName": "Aura Latin Club",
   "venueArea": "Downtown Charleston",
   "website": "http://auracharleston.com/",
-  "scrapedAt": "2026-01-19T02:19:36.091Z",
-  "trimmedAt": "2026-01-19T02:25:56.557Z",
+  "scrapedAt": "2026-01-19T03:25:43.886Z",
+  "trimmedAt": "2026-01-19T03:32:14.717Z",
   "pages": [
     {
       "url": "http://auracharleston.com/",
       "text": "[Page Title: Welcome to nginx!]\n\nWelcome to nginx!\n\nIf you see this page, the nginx web server is successfully installed and\nworking. Further configuration is required.\n\nFor online documentation and support please refer to\n.\nCommercial support is available at\n.\nnginx.org nginx.com Thank you for using nginx.",
       "hash": "552a0766a610",
       "downloadedAt": "2026-01-19T02:06:31.596Z",
-      "trimmedAt": "2026-01-19T02:25:56.557Z",
+      "trimmedAt": "2026-01-19T03:32:14.717Z",
       "sizeReduction": "49.7%"
     }
   ],

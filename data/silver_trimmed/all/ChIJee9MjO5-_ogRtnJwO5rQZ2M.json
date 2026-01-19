@@ -3,15 +3,15 @@
   "venueName": "Maria's Mexican Grill",
   "venueArea": "West Ashley",
   "website": "http://mariasjohnsisland.com/",
-  "scrapedAt": "2026-01-19T02:19:36.402Z",
-  "trimmedAt": "2026-01-19T02:26:02.534Z",
+  "scrapedAt": "2026-01-19T02:45:56.403Z",
+  "trimmedAt": "2026-01-19T02:52:41.831Z",
   "pages": [
     {
       "url": "https://mariasjohnsisland.com/location/",
       "text": "[Page Title: Mexican grill near me | location | Marias Mexican Restaurant]\n\n2817 Suite 6 Maybank Hwy,\nJohns Island, SC 29455\nMaria’s Mexican Grill (843) 557-1005 \nSunday 12:00PM – 9:00PM\nMonday through Thursday 11:00 AM- 9:00PM\nFriday- Saturday 11:00 AM- 10:00PM\n\nLet's Get in Touch\nName * First Last Email * Phone Your Message",
       "hash": "03b27e6d6eeb",
       "downloadedAt": "2026-01-19T02:17:07.395Z",
-      "trimmedAt": "2026-01-19T02:26:02.524Z",
+      "trimmedAt": "2026-01-19T02:52:41.822Z",
       "sizeReduction": "99.6%"
     },
     {
@@ -19,7 +19,7 @@
       "text": "[Page Title: Mexican Restaurant Menu | Marias Mexican Restaurant]\n\nMenu\n\nLUNCH\nmarias lunch \nDINNER\nMarias Dinner",
       "hash": "35fa39e47857",
       "downloadedAt": "2026-01-19T02:17:08.039Z",
-      "trimmedAt": "2026-01-19T02:26:02.527Z",
+      "trimmedAt": "2026-01-19T02:52:41.825Z",
       "sizeReduction": "99.8%"
     },
     {
@@ -27,7 +27,7 @@
       "text": "[Page Title: Happy Hour | Marias Mexican Restaurant]\n\nHappy Hour\n\nEveryday 4 to 7pm\n\n$1 off :\nHouse MargaritasWineDraft BeerWell Liquor",
       "hash": "5dc5aec032ff",
       "downloadedAt": "2026-01-19T02:17:06.858Z",
-      "trimmedAt": "2026-01-19T02:26:02.528Z",
+      "trimmedAt": "2026-01-19T02:52:41.826Z",
       "sizeReduction": "99.6%"
     },
     {
@@ -35,7 +35,7 @@
       "text": "[Page Title: Mexican Grill | Marias Mexican Restaurant]\n\nWelcome to Maria’s Mexican Grill\n\nMaria’s fresh twist on Mexican food is all you need to experience that south of the border taste you crave. Whether you’re hungry or thirsty, we’ve got everything you want here at Maria’s.\nLearn More View Our Menu \nHola amigos!  We are OPEN for dine in, outside seating, and take out Monday – Saturday  11AM-10PM  and  Sunday 12PM-9PM!\n(843) 557-1005 ×",
       "hash": "a33376c52c0c",
       "downloadedAt": "2026-01-19T02:17:06.289Z",
-      "trimmedAt": "2026-01-19T02:26:02.531Z",
+      "trimmedAt": "2026-01-19T02:52:41.829Z",
       "sizeReduction": "99.0%"
     },
     {
@@ -43,7 +43,7 @@
       "text": "[Page Title: Mexican Restaurant Menu | Marias Mexican Restaurant]\n\nMenu\n\nLUNCH\nmarias lunch \nDINNER\nMarias Dinner",
       "hash": "b4a613ee9d27",
       "downloadedAt": "2026-01-19T02:17:06.326Z",
-      "trimmedAt": "2026-01-19T02:26:02.534Z",
+      "trimmedAt": "2026-01-19T02:52:41.831Z",
       "sizeReduction": "99.8%"
     }
   ],

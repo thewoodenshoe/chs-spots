@@ -3,15 +3,15 @@
   "venueName": "Little Caesars Pizza",
   "venueArea": "North Charleston",
   "website": "https://littlecaesars.com/en-us/store/10599",
-  "scrapedAt": "2026-01-19T02:19:38.378Z",
-  "trimmedAt": "2026-01-19T02:27:36.674Z",
+  "scrapedAt": "2026-01-19T02:45:58.944Z",
+  "trimmedAt": "2026-01-19T02:54:17.142Z",
   "pages": [
     {
       "url": "https://littlecaesars.com/en-us/store/10599",
       "text": "",
       "hash": "3853c5b6e53d",
       "downloadedAt": "2026-01-19T02:14:49.189Z",
-      "trimmedAt": "2026-01-19T02:27:36.674Z",
+      "trimmedAt": "2026-01-19T02:54:17.142Z",
       "sizeReduction": "100.0%"
     }
   ],

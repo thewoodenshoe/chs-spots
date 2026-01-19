@@ -3,15 +3,15 @@
   "venueName": "Basil",
   "venueArea": "Mount Pleasant",
   "website": "http://eatatbasil.com/",
-  "scrapedAt": "2026-01-19T02:19:32.252Z",
-  "trimmedAt": "2026-01-19T02:20:29.683Z",
+  "scrapedAt": "2026-01-19T03:25:39.818Z",
+  "trimmedAt": "2026-01-19T03:26:41.441Z",
   "pages": [
     {
       "url": "http://eatatbasil.com/",
       "text": "[Page Title: Basil Thai - Refined Thai Cuisine in the Carolinas |]",
       "hash": "b723089ad921",
       "downloadedAt": "2026-01-19T02:10:29.244Z",
-      "trimmedAt": "2026-01-19T02:20:29.683Z",
+      "trimmedAt": "2026-01-19T03:26:41.441Z",
       "sizeReduction": "99.7%"
     }
   ],

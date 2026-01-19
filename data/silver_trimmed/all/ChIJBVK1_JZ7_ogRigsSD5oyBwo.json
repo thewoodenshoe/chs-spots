@@ -3,15 +3,15 @@
   "venueName": "Three Girls on Spring",
   "venueArea": "Downtown Charleston",
   "website": "https://www.threegirlsonspring.com/",
-  "scrapedAt": "2026-01-19T02:19:31.856Z",
-  "trimmedAt": "2026-01-19T02:20:14.403Z",
+  "scrapedAt": "2026-01-19T03:25:39.408Z",
+  "trimmedAt": "2026-01-19T03:26:25.378Z",
   "pages": [
     {
       "url": "https://www.threegirlsonspring.com/",
       "text": "",
       "hash": "618c10779fcf",
       "downloadedAt": "2026-01-19T02:09:42.815Z",
-      "trimmedAt": "2026-01-19T02:20:14.403Z",
+      "trimmedAt": "2026-01-19T03:26:25.378Z",
       "sizeReduction": "100.0%"
     }
   ],

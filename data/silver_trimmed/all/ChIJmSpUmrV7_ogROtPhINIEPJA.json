@@ -3,15 +3,15 @@
   "venueName": "OK Donna",
   "venueArea": "West Ashley",
   "website": "https://ok-donna.com/",
-  "scrapedAt": "2026-01-19T02:19:37.026Z",
-  "trimmedAt": "2026-01-19T02:26:17.817Z",
+  "scrapedAt": "2026-01-19T02:45:57.120Z",
+  "trimmedAt": "2026-01-19T02:52:58.219Z",
   "pages": [
     {
       "url": "https://ok-donna.com/menu-1",
       "text": "[Page Title: OK DONNA]\n\nOK DONNA A NEIGHBORHOOD RESTAURANT LOCATED AT 1117 KING STREET \ni like pastai like winevodka with my olive brine\nsweet treats, cigarettesdriving fast in red corvettes\nR E S Y closed tuesdays 1117 KING STREET\nCHARLESTON, SC 29403",
       "hash": "b59f155a59fb",
       "downloadedAt": "2026-01-19T02:17:25.199Z",
-      "trimmedAt": "2026-01-19T02:26:17.813Z",
+      "trimmedAt": "2026-01-19T02:52:58.215Z",
       "sizeReduction": "99.7%"
     },
     {
@@ -19,7 +19,7 @@
       "text": "[Page Title: OK DONNA]\n\nOK DONNA A NEIGHBORHOOD RESTAURANT LOCATED AT 1117 KING STREET \ni like pastai like winevodka with my olive brine\nsweet treats, cigarettesdriving fast in red corvettes\nR E S Y closed tuesdays 1117 KING STREET\nCHARLESTON, SC 29403",
       "hash": "d94fda30a93e",
       "downloadedAt": "2026-01-19T02:17:24.673Z",
-      "trimmedAt": "2026-01-19T02:26:17.817Z",
+      "trimmedAt": "2026-01-19T02:52:58.219Z",
       "sizeReduction": "99.7%"
     }
   ],

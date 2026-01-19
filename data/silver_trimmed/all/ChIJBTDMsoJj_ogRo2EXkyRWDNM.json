@@ -3,15 +3,15 @@
   "venueName": "Popeyes Louisiana Kitchen",
   "venueArea": "North Charleston",
   "website": "https://www.popeyes.com/store-locator/store/restaurant_83109",
-  "scrapedAt": "2026-01-19T02:19:31.850Z",
-  "trimmedAt": "2026-01-19T02:20:14.363Z",
+  "scrapedAt": "2026-01-19T03:25:39.400Z",
+  "trimmedAt": "2026-01-19T03:26:25.335Z",
   "pages": [
     {
       "url": "https://www.popeyes.com/store-locator/store/restaurant_83109",
       "text": "",
       "hash": "d6cf398800de",
       "downloadedAt": "2026-01-19T02:14:59.628Z",
-      "trimmedAt": "2026-01-19T02:20:14.363Z",
+      "trimmedAt": "2026-01-19T03:26:25.335Z",
       "sizeReduction": "100.0%"
     }
   ],

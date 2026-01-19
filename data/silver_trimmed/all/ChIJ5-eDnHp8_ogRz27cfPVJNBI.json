@@ -3,15 +3,15 @@
   "venueName": "Firehouse Subs West Ashley",
   "venueArea": "West Ashley",
   "website": "http://firehousesubs.com/menu?service-mode=TAKEOUT&store-number=112",
-  "scrapedAt": "2026-01-19T02:19:31.148Z",
-  "trimmedAt": "2026-01-19T02:20:04.923Z",
+  "scrapedAt": "2026-01-19T03:25:38.789Z",
+  "trimmedAt": "2026-01-19T03:26:14.957Z",
   "pages": [
     {
       "url": "http://firehousesubs.com/menu?service-mode=TAKEOUT&store-number=112",
       "text": "[Page Title: Firehouse Subs]",
       "hash": "c90801d462ac",
       "downloadedAt": "2026-01-19T02:16:52.422Z",
-      "trimmedAt": "2026-01-19T02:20:04.923Z",
+      "trimmedAt": "2026-01-19T03:26:14.957Z",
       "sizeReduction": "99.2%"
     }
   ],

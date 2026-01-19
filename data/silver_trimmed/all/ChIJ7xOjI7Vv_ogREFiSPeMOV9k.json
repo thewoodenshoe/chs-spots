@@ -3,15 +3,15 @@
   "venueName": "Coastal Skillet",
   "venueArea": "Daniel Island",
   "website": "http://coastalskillet.com/",
-  "scrapedAt": "2026-01-19T02:19:31.506Z",
-  "trimmedAt": "2026-01-19T02:20:09.636Z",
+  "scrapedAt": "2026-01-19T03:25:39.006Z",
+  "trimmedAt": "2026-01-19T03:26:20.127Z",
   "pages": [
     {
       "url": "http://coastalskillet.com/",
       "text": "[Page Title: Coastal Skillet]\n\n0 \nBringing together food, drinks and good conversation. Where everyday is Sunday\n\nBREAKFAST | LUNCH | BRUNCH\n\nJoin us Thursday nights for a rotating dinner menu!",
       "hash": "4404aff1942e",
       "downloadedAt": "2026-01-19T02:06:17.376Z",
-      "trimmedAt": "2026-01-19T02:20:09.632Z",
+      "trimmedAt": "2026-01-19T03:26:20.122Z",
       "sizeReduction": "99.9%"
     },
     {
@@ -19,7 +19,7 @@
       "text": "[Page Title: Menu — Coastal Skillet]\n\n0",
       "hash": "a2df3f45413d",
       "downloadedAt": "2026-01-19T02:06:17.570Z",
-      "trimmedAt": "2026-01-19T02:20:09.636Z",
+      "trimmedAt": "2026-01-19T03:26:20.127Z",
       "sizeReduction": "100.0%"
     }
   ],
