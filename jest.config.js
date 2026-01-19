@@ -39,7 +39,11 @@ module.exports = {
       ],
       testEnvironment: 'node',
       transform: {
-        '^.+\\.js$': 'babel-jest',
+        '^.+\\.js$': ['ts-jest', {
+          tsconfig: {
+            allowJs: true,
+          },
+        }],
         '^.+\\.ts$': ['ts-jest', {
           tsconfig: {
             allowJs: true,
