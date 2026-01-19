@@ -1,0 +1,35 @@
+{
+  "venueId": "ChIJgVVLGgB7_ogRCmi2tEaVlx8",
+  "venueName": "King Street Hideout",
+  "venueArea": "Mount Pleasant",
+  "website": "https://www.hideoutchs.com/",
+  "scrapedAt": "2026-01-18T17:04:28.699Z",
+  "trimmedAt": "2026-01-18T17:11:25.293Z",
+  "pages": [
+    {
+      "url": "https://www.hideoutchs.com/menu-2",
+      "text": "0 MENUS",
+      "hash": "0c19df487725",
+      "downloadedAt": "2026-01-18T16:56:28.625Z",
+      "trimmedAt": "2026-01-18T17:11:25.255Z",
+      "sizeReduction": "100.0%"
+    },
+    {
+      "url": "https://www.hideoutchs.com/events-2-1",
+      "text": "0 Happy Hour Monday - Friday 4:00PM - 7:00PM $5 Domestics, $5 Wells, $5 House Wine $5 Frozen Drinks Free Pool! $5 Single Smashburgers EVERY MONDAY 4PM-LATE TACO TUESDAY EVERY TUESDAY 4PM-LATE $3 Tacos $5 Margaritas Wednesdays Mama Kim’s Pop-up Thursdays Live Music Outdoor Stage 7-10pm DJ Inside at 10pm Feb 17 $5 Smashburger Night Monday, February 17, 2025 4:00 PM 9:00 PM Google Calendar ICS $5 Smashburgers from 4:00PM to 9:00PM every Monday! View Event → Feb 12 Happy Hour! Wednesday, February 12, 2025 4:05 PM 7:00 PM Google Calendar ICS Enjoy Happy Hour Monday -Friday, 4:00pm - 7:00pm. $5 Domestics, $6 Imports, $7 Well liquor and specialty shots View Event → Jan 5 to Jan 7 Battle of The Bands Sun, Jan 5, 2025 7:30 PM Tue, Jan 7, 2025 8:30 PM Google Calendar ICS It all begins with an idea. Maybe you want to launch a business. Maybe you want to turn a hobby into something more. Or maybe you have a creative project to share with the world. Whatever it is, the way you tell your story online can make all the difference. View Event → Jan 4 to Jan 6 Pizza Night Sat, Jan 4, 2025 7:30 PM Mon, Jan 6, 2025 8:30 PM Google Calendar ICS It all begins with an idea. Maybe you want to launch a business. Maybe you want to turn a hobby into something more. Or maybe you have a creative project to share with the world. Whatever it is, the way you tell your story online can make all the difference. View Event → Jan 3 to Jan 5 Every Monday $5 Grilled Cheese Night Fri, Jan 3, 2025 7:30 PM Sun, Jan 5, 2025 8:30 PM Google Calendar ICS The entire grilled cheese menu…open to close… View Event →",
+      "hash": "20e1ce9a6395",
+      "downloadedAt": "2026-01-18T16:56:29.164Z",
+      "trimmedAt": "2026-01-18T17:11:25.286Z",
+      "sizeReduction": "99.3%"
+    },
+    {
+      "url": "https://www.hideoutchs.com/",
+      "text": "0 King Street Hideout pairs Charleston’s largest street level garden bar with live music and DJ nightlife. From weekend cabanas and VIP service to school night hangouts we welcome you to hideout with us. EVENTS AND SPECIALS VIP AND EVENT INQUIRY MENUS",
+      "hash": "d998857bcfa9",
+      "downloadedAt": "2026-01-18T16:56:28.580Z",
+      "trimmedAt": "2026-01-18T17:11:25.293Z",
+      "sizeReduction": "99.8%"
+    }
+  ],
+  "sizeReduction": "99.6%"
+}

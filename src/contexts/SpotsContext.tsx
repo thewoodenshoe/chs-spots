@@ -8,10 +8,15 @@ export interface Spot {
   lat: number;
   lng: number;
   title: string;
-  description: string;
+  description: string; // Keep for backwards compatibility
   type: SpotType;
   photoUrl?: string;
   source?: 'manual' | 'automated'; // Indicates if spot was added manually or by script
+  // New structured happy hour fields
+  happyHourTime?: string; // Time with days (e.g., "4pm-6pm • Monday, Wednesday")
+  happyHourList?: string[]; // Array of specials/deals
+  sourceUrl?: string; // Source URL
+  lastUpdateDate?: string; // ISO date string
 }
 
 interface SpotsContextType {

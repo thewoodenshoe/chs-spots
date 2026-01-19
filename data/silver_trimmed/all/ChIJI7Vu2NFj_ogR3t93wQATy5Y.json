@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJI7Vu2NFj_ogR3t93wQATy5Y",
+  "venueName": "Amici's Italian Bistro",
+  "venueArea": "North Charleston",
+  "website": "http://amicisitalianbistro.com/",
+  "scrapedAt": "2026-01-18T17:04:24.889Z",
+  "trimmedAt": "2026-01-18T17:05:31.799Z",
+  "pages": [
+    {
+      "url": "http://amicisitalianbistro.com/",
+      "text": "",
+      "hash": "0426e3e90236",
+      "downloadedAt": "2026-01-18T16:58:10.115Z",
+      "trimmedAt": "2026-01-18T17:05:31.799Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

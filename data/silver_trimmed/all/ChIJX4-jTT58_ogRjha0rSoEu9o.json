@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJX4-jTT58_ogRjha0rSoEu9o",
+  "venueName": "Comfort Suites Charleston West Ashley",
+  "venueArea": "West Ashley",
+  "website": "https://www.choicehotels.com/south-carolina/charleston/comfort-suites-hotels/sc369?mc=llgoxxpx",
+  "scrapedAt": "2026-01-18T17:04:26.942Z",
+  "trimmedAt": "2026-01-18T17:08:06.026Z",
+  "pages": [
+    {
+      "url": "https://www.choicehotels.com/south-carolina/charleston/comfort-suites-hotels/sc369?mc=llgoxxpx",
+      "text": "",
+      "hash": "55693cf1e1ae",
+      "downloadedAt": "2026-01-18T17:02:13.669Z",
+      "trimmedAt": "2026-01-18T17:08:06.026Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

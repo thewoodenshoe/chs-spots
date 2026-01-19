@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJXRlK5PB6_ogRDfhN_8kxVa8",
+  "venueName": "Fatty's Beer Works",
+  "venueArea": "North Charleston",
+  "website": "http://fattysbeer.com/",
+  "scrapedAt": "2026-01-18T17:04:26.959Z",
+  "trimmedAt": "2026-01-18T17:08:06.214Z",
+  "pages": [
+    {
+      "url": "http://fattysbeer.com/",
+      "text": "top of page It's Always a Great Day for a Fatty's BEER FINDER CALENDAR SHOP bottom of page",
+      "hash": "3ae1a58c486a",
+      "downloadedAt": "2026-01-18T16:59:07.421Z",
+      "trimmedAt": "2026-01-18T17:08:06.214Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

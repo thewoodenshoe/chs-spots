@@ -24,7 +24,7 @@ async function extractHappyHours(isIncremental = false) {
         process.exit(1);
     }
     const GROK_API_URL = 'https://api.x.ai/v1/chat/completions';
-    const GROK_MODEL = 'grok-4-latest'; // xAI Grok model (matches working curl example)
+    const GROK_MODEL = 'grok-4-fast-reasoning'; // Faster model with good reasoning, higher rate limits
     console.log(`Starting happy hour extraction (${isIncremental ? 'incremental' : 'bulk'})...`);
 
     let venueFiles = [];

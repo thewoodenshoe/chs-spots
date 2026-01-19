@@ -1,0 +1,27 @@
+{
+  "venueId": "ChIJZ5NDYBJ6_ogRWD0_bczq9Z4",
+  "venueName": "FIG",
+  "venueArea": "Downtown Charleston",
+  "website": "http://eatatfig.com/",
+  "scrapedAt": "2026-01-18T17:04:27.857Z",
+  "trimmedAt": "2026-01-18T17:11:08.249Z",
+  "pages": [
+    {
+      "url": "http://eatatfig.com/#menus",
+      "text": "Our approach is simple. We have a passion for pure flavor, quality ingredients, and for creating an atmosphere that is convivial, approachable, and a haven for people who simply love food. Our Menus Dinner Dessert Beverage We source products with integrity, flavor and soul, and incorporate these seasonal offerings into our menu nightly. The result is food that is honest, straightforward and pays homage to the Lowcountry, a special place we are privileged to call home. However, the FIG experience is about more than just food. A sincere effort to educate our staff on all aspects of food and beverage culture is the basis for our service philosophy. It is our goal that guests feel special, comfortable and well taken care of. Email Address Subscribe Dinner Dessert Beverage",
+      "hash": "0fd5d783dd5b",
+      "downloadedAt": "2026-01-18T16:53:56.808Z",
+      "trimmedAt": "2026-01-18T17:11:08.244Z",
+      "sizeReduction": "98.0%"
+    },
+    {
+      "url": "http://eatatfig.com/",
+      "text": "Our approach is simple. We have a passion for pure flavor, quality ingredients, and for creating an atmosphere that is convivial, approachable, and a haven for people who simply love food. Our Menus Dinner Dessert Beverage We source products with integrity, flavor and soul, and incorporate these seasonal offerings into our menu nightly. The result is food that is honest, straightforward and pays homage to the Lowcountry, a special place we are privileged to call home. However, the FIG experience is about more than just food. A sincere effort to educate our staff on all aspects of food and beverage culture is the basis for our service philosophy. It is our goal that guests feel special, comfortable and well taken care of. Email Address Subscribe Dinner Dessert Beverage",
+      "hash": "5a8cfee9f643",
+      "downloadedAt": "2026-01-18T16:53:56.616Z",
+      "trimmedAt": "2026-01-18T17:11:08.249Z",
+      "sizeReduction": "98.0%"
+    }
+  ],
+  "sizeReduction": "98.0%"
+}

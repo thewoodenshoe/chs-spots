@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJEXFzsQ1x_ogRZhUQ69lNjG0",
+  "venueName": "My Father's Moustache | Mt Pleasant British Pub & Restaurant",
+  "venueArea": "Mount Pleasant",
+  "website": "https://myfathersmustache.com/mt-pleasant/",
+  "scrapedAt": "2026-01-18T17:04:24.526Z",
+  "trimmedAt": "2026-01-18T17:05:24.626Z",
+  "pages": [
+    {
+      "url": "https://myfathersmustache.com/mt-pleasant/",
+      "text": "",
+      "hash": "0e79a07dab00",
+      "downloadedAt": "2026-01-18T16:56:50.068Z",
+      "trimmedAt": "2026-01-18T17:05:24.626Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

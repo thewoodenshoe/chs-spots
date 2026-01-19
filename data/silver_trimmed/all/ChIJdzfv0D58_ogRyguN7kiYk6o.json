@@ -1,0 +1,27 @@
+{
+  "venueId": "ChIJdzfv0D58_ogRyguN7kiYk6o",
+  "venueName": "Hardee's",
+  "venueArea": "West Ashley",
+  "website": "https://locations.hardees.com/sc/charleston/2109-savannah-hwy",
+  "scrapedAt": "2026-01-18T17:04:28.471Z",
+  "trimmedAt": "2026-01-18T17:11:21.565Z",
+  "pages": [
+    {
+      "url": "https://locations.hardees.com/sc/charleston/2109-savannah-hwy",
+      "text": "Return to Nav HARDEE'S 2109 Savannah Hwy Hardee's 2109 Savannah Hwy , , Charleston SC 29414 Temporarily Closed Directions DELIVERY AVAILABLE *Delivery options and availability vary by location. Menu prices for delivery are higher than at restaurant. Additional fees may apply. STORE FEATURES Green Burrito Wifi Drive-Thru Playground Featured Menu Grilled Cheese Breakfast Sandwich with Sausage View Details Cinnamon 'N' Raisin Biscuit 4 Pack View Details 3 Piece - Hand-Breaded Chicken Tenders™ View Details Hardee Breakfast Platter® View Details Get a Free Taste of Hardee's! Sign up for My Rewards™ today and get a FREE Sandwich w/ min. $1 purchase. Head to the App to choose one of our Member favorites. Join Now Download App from App Store Download App from Google Play Latest Cravings JOIN OUR TEAM At Hardee's the opportunities to shine are even bigger than our burgers! LEARN MORE Link Opens in New Tab SIGN UP FOR MY REWARDS New Members get a free sandwich with $1 min. purchase when you sign up. JOIN NOW Link Opens in New Tab PURCHASE A GIFT CARD Give the Gift of Delicious Burgers & Biscuits. BUY NOW Link Opens in New Tab",
+      "hash": "b90572dda3f2",
+      "downloadedAt": "2026-01-18T17:02:38.864Z",
+      "trimmedAt": "2026-01-18T17:11:21.560Z",
+      "sizeReduction": "99.3%"
+    },
+    {
+      "url": "https://locations.hardees.com/",
+      "text": "Return to Nav Hardee's In United States Hardee's In United States Alabama Arkansas Delaware Florida Georgia Illinois Indiana Iowa Kansas Kentucky Louisiana Maryland Michigan Minnesota Mississippi Missouri Montana Nebraska New York North Carolina North Dakota Ohio Oklahoma Pennsylvania South Carolina South Dakota Tennessee Virginia West Virginia Wisconsin Wyoming",
+      "hash": "c44f47b2ae07",
+      "downloadedAt": "2026-01-18T17:02:38.960Z",
+      "trimmedAt": "2026-01-18T17:11:21.565Z",
+      "sizeReduction": "99.2%"
+    }
+  ],
+  "sizeReduction": "99.3%"
+}

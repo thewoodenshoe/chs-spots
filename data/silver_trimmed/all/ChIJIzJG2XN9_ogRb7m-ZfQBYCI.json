@@ -1,0 +1,43 @@
+{
+  "venueId": "ChIJIzJG2XN9_ogRb7m-ZfQBYCI",
+  "venueName": "Yoshi Poke & Kitchen",
+  "venueArea": "West Ashley",
+  "website": "https://www.yoshipokekitchencharleston.com/",
+  "scrapedAt": "2026-01-18T17:04:24.916Z",
+  "trimmedAt": "2026-01-18T17:05:32.100Z",
+  "pages": [
+    {
+      "url": "https://www.yoshipokekitchencharleston.com/?menu=All+Day+Menu",
+      "text": "Skip to main content",
+      "hash": "7883bd6ef36d",
+      "downloadedAt": "2026-01-18T17:04:21.411Z",
+      "trimmedAt": "2026-01-18T17:05:32.035Z",
+      "sizeReduction": "100.0%"
+    },
+    {
+      "url": "https://www.yoshipokekitchencharleston.com/1xt05j85/yoshi-poke-and-kitchen-charleston-29414/menu",
+      "text": "Skip to main content",
+      "hash": "7e38259803a0",
+      "downloadedAt": "2026-01-18T17:04:18.929Z",
+      "trimmedAt": "2026-01-18T17:05:32.052Z",
+      "sizeReduction": "100.0%"
+    },
+    {
+      "url": "https://www.yoshipokekitchencharleston.com/#menu-section",
+      "text": "Skip to main content",
+      "hash": "dd80197bf90c",
+      "downloadedAt": "2026-01-18T17:04:20.260Z",
+      "trimmedAt": "2026-01-18T17:05:32.074Z",
+      "sizeReduction": "100.0%"
+    },
+    {
+      "url": "https://www.yoshipokekitchencharleston.com/",
+      "text": "Skip to main content",
+      "hash": "ecab3b49611b",
+      "downloadedAt": "2026-01-18T17:04:18.520Z",
+      "trimmedAt": "2026-01-18T17:05:32.099Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

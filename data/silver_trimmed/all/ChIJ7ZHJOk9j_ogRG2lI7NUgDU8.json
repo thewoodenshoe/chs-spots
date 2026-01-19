@@ -1,0 +1,99 @@
+{
+  "venueId": "ChIJ7ZHJOk9j_ogRG2lI7NUgDU8",
+  "venueName": "Chili's Grill & Bar",
+  "venueArea": "North Charleston",
+  "website": "https://www.chilis.com/locations?utm_source=google&utm_medium=local&utm_campaign=Chilis",
+  "scrapedAt": "2026-01-18T17:04:23.778Z",
+  "trimmedAt": "2026-01-18T17:05:04.521Z",
+  "pages": [
+    {
+      "url": "https://www.chilis.com/locations?utm_source=google&utm_medium=local&utm_campaign=Chilis",
+      "text": "[Page Title: location red searchunderline] Find a Chili’s Restaurant Near You Search by City, State, ZIP OR Address location red search Use My Location underline Browse Chili’s Locations In Your State a Alabama Alaska Alberta Arizona Arkansas c California Colorado Connecticut d Delaware f Florida g Georgia h Hawaii i Idaho Illinois Indiana Iowa k Kansas Kentucky l Louisiana m Maine Maryland Massachusetts Michigan Minnesota Mississippi Missouri Montana n Nebraska Nevada New Hampshire New Jersey New Mexico New York North Carolina North Dakota o Ohio Oklahoma p Pennsylvania r Rhode Island s South Carolina South Dakota t Tennessee Texas u Utah v Vermont Virginia w Washington West Virginia Wisconsin Wyoming",
+      "hash": "07d1b95d6a23",
+      "downloadedAt": "2026-01-18T16:58:33.591Z",
+      "trimmedAt": "2026-01-18T17:05:04.417Z",
+      "sizeReduction": "99.3%"
+    },
+    {
+      "url": "https://www.chilis.com/locations/us/colorado",
+      "text": "[Page Title: arrow circle left iconlocation red searchunderline] arrow circle left icon US Chili's restaurants Colorado Locations US Colorado a b c d f g h l m p s t w Browse Chili’s Locations In Your State a Alamosa Aurora b Brighton c Canon City Castle Rock Colorado Springs d Denver f Fort Collins g Glendale Glenwood Springs Grand Junction Greeley h Highlands Ranch l Lafayette Lakewood Littleton Lone Tree Longmont Loveland m Montrose p Parker Pueblo s Sheridan t Thornton w Westminster Search Location Search by City, State, ZIP OR Address location red search Use My Location underline",
+      "hash": "182418a619c6",
+      "downloadedAt": "2026-01-18T16:58:37.724Z",
+      "trimmedAt": "2026-01-18T17:05:04.429Z",
+      "sizeReduction": "99.4%"
+    },
+    {
+      "url": "https://www.chilis.com/locations/us/delaware",
+      "text": "[Page Title: arrow circle left iconlocation red searchunderline] arrow circle left icon US Chili's restaurants Delaware Locations US Delaware Browse Chili’s Locations In Your State m Middletown n Newark Search Location Search by City, State, ZIP OR Address location red search Use My Location underline",
+      "hash": "25014add6e53",
+      "downloadedAt": "2026-01-18T16:58:38.961Z",
+      "trimmedAt": "2026-01-18T17:05:04.437Z",
+      "sizeReduction": "99.6%"
+    },
+    {
+      "url": "https://www.chilis.com/locations/us/arkansas",
+      "text": "[Page Title: arrow circle left iconlocation red searchunderline] arrow circle left icon US Chili's restaurants Arkansas Locations US Arkansas Browse Chili’s Locations In Your State b Benton c Conway f Fayetteville Fort Smith h Hot Springs j Jacksonville Jonesboro l Little Rock m Mountain Home n North Little Rock p Paragould Pine Bluff r Rogers Russellville s Searcy Siloam Springs v Van Buren Search Location Search by City, State, ZIP OR Address location red search Use My Location underline",
+      "hash": "7a6b406daa58",
+      "downloadedAt": "2026-01-18T16:58:36.610Z",
+      "trimmedAt": "2026-01-18T17:05:04.445Z",
+      "sizeReduction": "99.5%"
+    },
+    {
+      "url": "https://www.chilis.com/locations/us/florida",
+      "text": "[Page Title: arrow circle left iconlocation red searchunderline] arrow circle left icon US Chili's restaurants Florida Locations US Florida a b c d e f g h i j k l m n o p s t v w y z Browse Chili’s Locations In Your State a Altamonte Springs Apopka Arcadia Auburndale Aventura b Boca Raton Boynton Beach Bradenton Brandon Brooksville c Cape Coral Clearwater Clermont Coral Springs Crestview Crystal River d Davenport Deland Delray Beach e Ellenton f Fleming Island Fort Lauderdale Fort Myers Fort Walton Beach g Gainesville Greenacres h Haines City Hialeah Hollywood Homestead i Inverness j Jacksonville Jacksonville Beach Jensen Beach k Key West Kissimmee l Lady Lake Lake City Lake Mary Lake Wales Lakeland Land O Lakes Largo m Melbourne Merritt Island Miami Miami Lakes Miramar Mount Dora n Naples o Ocala Odessa Oldsmar Orange City Orange Park Orlando Ormond Beach Oviedo p Pace Palatka Palm Bay Palm Beach Gardens Palm Springs Panama City Panama City Beach Pembroke Pines Pensacola Pinellas Park Plant City Plantation Pompano Beach Port Charlotte Port Orange Port Richey Port St Lucie s Saint Cloud Saint Petersburg Sarasota Sebring Spring Hill St Augustine Stuart Sunrise t Tallahassee Tampa Tarpon Springs Trinity v Valrico Venice Vero Beach Viera w Wellington Wesley Chapel West Palm Beach Weston Winter Garden Winter Haven Winter Park y Yulee z Zephyrhills Search Location Search by City, State, ZIP OR Address location red search Use My Location underline",
+      "hash": "8fae0986d2c6",
+      "downloadedAt": "2026-01-18T16:58:39.504Z",
+      "trimmedAt": "2026-01-18T17:05:04.463Z",
+      "sizeReduction": "98.8%"
+    },
+    {
+      "url": "https://www.chilis.com/locations/us/alaska",
+      "text": "[Page Title: arrow circle left iconlocation red searchunderline] arrow circle left icon US Chili's restaurants Alaska Locations US Alaska Browse Chili’s Locations In Your State a Anchorage Search Location Search by City, State, ZIP OR Address location red search Use My Location underline",
+      "hash": "b9497405227d",
+      "downloadedAt": "2026-01-18T16:58:34.909Z",
+      "trimmedAt": "2026-01-18T17:05:04.469Z",
+      "sizeReduction": "99.7%"
+    },
+    {
+      "url": "https://www.chilis.com/locations/us/california",
+      "text": "[Page Title: arrow circle left iconlocation red searchunderline] arrow circle left icon US Chili's restaurants California Locations US California a b c d e f g h i l m n o p r s t u v w y Browse Chili’s Locations In Your State a Antioch b Bakersfield Barstow Beaumont Buena Park c Capitola Carson Chico Chino Hills Chula Vista City of Industry Concord Corona Cypress d Diamond Bar Downey e El Centro Elk Grove Encino Escondido f Fair Oaks Folsom Fontana Fremont Fresno g Glendora Goleta h Hanford Hemet i Inglewood l La Habra La Mesa La Verne Lake Elsinore Lakewood Lancaster Livermore Lodi Long Beach Los Banos m Manhattan Beach Manteca Merced Mission Viejo Modesto Monrovia Montclair Moreno Valley Morgan Hill Mountain View Murrieta n Northridge o Oceanside Orange Oxnard p Palmdale Pico Rivera Pleasanton r Rancho Cordova Rancho Cucamonga Redlands Riverside Rohnert Park Roseville s Sacramento Salinas San Bernardino San Bruno San Diego San Jose San Leandro Santa Clara Santa Clarita Santee Seaside Simi Valley Stockton t Temecula Thousand Oaks Torrance Tracy Tulare Turlock u Union City Upland v Vacaville Victorville Visalia Vista w West Covina West Hills Whittier y Yorba Linda Yuba City Search Location Search by City, State, ZIP OR Address location red search Use My Location underline",
+      "hash": "bde43b40f3b1",
+      "downloadedAt": "2026-01-18T16:58:37.161Z",
+      "trimmedAt": "2026-01-18T17:05:04.487Z",
+      "sizeReduction": "98.9%"
+    },
+    {
+      "url": "https://www.chilis.com/locations/us/connecticut",
+      "text": "[Page Title: arrow circle left iconlocation red searchunderline] arrow circle left icon US Chili's restaurants Connecticut Locations US Connecticut Browse Chili’s Locations In Your State b Bristol c Cromwell d Danbury e East Haven g Glastonbury j Jewett City m Manchester Milford n New Britain New London Newington s Shelton Simsbury Southington u Uncasville w Wallingford Waterbury Windsor Search Location Search by City, State, ZIP OR Address location red search Use My Location underline",
+      "hash": "cda50c1ad305",
+      "downloadedAt": "2026-01-18T16:58:38.398Z",
+      "trimmedAt": "2026-01-18T17:05:04.496Z",
+      "sizeReduction": "99.5%"
+    },
+    {
+      "url": "https://www.chilis.com/locations/us/alberta",
+      "text": "[Page Title: arrow circle left iconlocation red searchunderline] arrow circle left icon US Chili's restaurants Alberta Locations US Alberta Browse Chili’s Locations In Your State b Banff Search Location Search by City, State, ZIP OR Address location red search Use My Location underline",
+      "hash": "d59c41c84b21",
+      "downloadedAt": "2026-01-18T16:58:35.492Z",
+      "trimmedAt": "2026-01-18T17:05:04.503Z",
+      "sizeReduction": "99.7%"
+    },
+    {
+      "url": "https://www.chilis.com/locations/us/arizona",
+      "text": "[Page Title: arrow circle left iconlocation red searchunderline] arrow circle left icon US Chili's restaurants Arizona Locations US Arizona b c f g k l m o p s t y Browse Chili’s Locations In Your State b Bullhead City c Casa Grande Chandler f Flagstaff g Gilbert Goodyear k Kingman l Lake Havasu City Laveen m Mesa o Oro Valley p Payson Peoria Phoenix Prescott Valley s Scottsdale Sierra Vista Surprise t Tempe Tucson y Yuma Search Location Search by City, State, ZIP OR Address location red search Use My Location underline",
+      "hash": "e065b8eb2872",
+      "downloadedAt": "2026-01-18T16:58:36.066Z",
+      "trimmedAt": "2026-01-18T17:05:04.513Z",
+      "sizeReduction": "99.5%"
+    },
+    {
+      "url": "https://www.chilis.com/locations/us/alabama",
+      "text": "[Page Title: arrow circle left iconlocation red searchunderline] arrow circle left icon US Chili's restaurants Alabama Locations US Alabama Browse Chili’s Locations In Your State b Birmingham d Decatur Dothan f Florence Fultondale g Gadsden h Homewood Huntsville m Madison Mobile Montgomery Search Location Search by City, State, ZIP OR Address location red search Use My Location underline",
+      "hash": "f84ffe674935",
+      "downloadedAt": "2026-01-18T16:58:34.299Z",
+      "trimmedAt": "2026-01-18T17:05:04.521Z",
+      "sizeReduction": "99.6%"
+    }
+  ],
+  "sizeReduction": "99.4%"
+}

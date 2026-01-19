@@ -91,9 +91,13 @@ describe('LLM Extraction - Incremental Detection', () => {
   test('Should detect changed venue (silver file newer than gold)', async () => {
     const venueId = 'ChIJTest123';
     
-    // Ensure directories exist
-    fs.mkdirSync(TEST_GOLD_DIR, { recursive: true });
-    fs.mkdirSync(TEST_SILVER_MERGED_ALL_DIR, { recursive: true });
+    // Ensure directories exist (cleanTestDir already creates them, but be safe)
+    if (!fs.existsSync(TEST_GOLD_DIR)) {
+      fs.mkdirSync(TEST_GOLD_DIR, { recursive: true });
+    }
+    if (!fs.existsSync(TEST_SILVER_MERGED_ALL_DIR)) {
+      fs.mkdirSync(TEST_SILVER_MERGED_ALL_DIR, { recursive: true });
+    }
     
     // Create gold file first (older)
     const goldPath = path.join(TEST_GOLD_DIR, `${venueId}.json`);
@@ -104,6 +108,11 @@ describe('LLM Extraction - Incremental Detection', () => {
       happyHour: { found: false }
     };
     fs.writeFileSync(goldPath, JSON.stringify(goldData, null, 2), 'utf8');
+    
+    // Verify file was written before trying to stat it
+    if (!fs.existsSync(goldPath)) {
+      throw new Error(`Gold file was not created at ${goldPath}`);
+    }
     
     // Wait a moment to ensure timestamp difference
     await new Promise(resolve => setTimeout(resolve, 200));

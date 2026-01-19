@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJoVL_GV1i_ogRSESruCpah2Q",
+  "venueName": "G Club",
+  "venueArea": "North Charleston",
+  "website": "http://gclub843.com/",
+  "scrapedAt": "2026-01-18T17:04:29.946Z",
+  "trimmedAt": "2026-01-18T17:11:49.732Z",
+  "pages": [
+    {
+      "url": "http://gclub843.com/",
+      "text": "",
+      "hash": "e4dc870939aa",
+      "downloadedAt": "2026-01-18T16:59:07.032Z",
+      "trimmedAt": "2026-01-18T17:11:49.732Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

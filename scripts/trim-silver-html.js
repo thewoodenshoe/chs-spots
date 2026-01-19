@@ -87,6 +87,9 @@ function trimHtml(html) {
   try {
     const $ = cheerio.load(html);
     
+    // Get page title if available (useful for context) - must do BEFORE removing head
+    const title = $('title').text().trim();
+    
     // Remove non-visible elements (and all their children)
     $('script, style, head, header, footer, nav, noscript, iframe').remove();
     
@@ -97,9 +100,6 @@ function trimHtml(html) {
     $('*').contents().filter(function() {
       return this.nodeType === 8; // Comment node
     }).remove();
-    
-    // Get page title if available (useful for context)
-    const title = $('title').text().trim();
     
     // Extract visible text with structure preservation
     let text = '';
@@ -150,11 +150,11 @@ function trimHtml(html) {
       text = bodyDirectText + '\n\n' + text;
     }
     
-    // Normalize whitespace
+    // Normalize whitespace - preserve line breaks but clean up excessive spaces
+    // Don't replace \n with spaces - preserve paragraph structure
     text = text
-      .replace(/\s+/g, ' ')           // Multiple spaces → single space
+      .replace(/[ \t]+/g, ' ')        // Multiple spaces/tabs → single space (but keep \n)
       .replace(/\n\s*\n\s*\n+/g, '\n\n')  // Multiple newlines → max 2
-      .replace(/[ \t]+/g, ' ')        // Multiple tabs/spaces → single space
       .trim();
     
     return text;

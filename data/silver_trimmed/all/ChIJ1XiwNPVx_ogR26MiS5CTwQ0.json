@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJ1XiwNPVx_ogR26MiS5CTwQ0",
+  "venueName": "Taverna Philosophia: Aegean Brasserie",
+  "venueArea": "Mount Pleasant",
+  "website": "http://www.tavernaphilosophia.com/",
+  "scrapedAt": "2026-01-18T17:04:23.095Z",
+  "trimmedAt": "2026-01-18T17:04:46.536Z",
+  "pages": [
+    {
+      "url": "http://www.tavernaphilosophia.com/",
+      "text": "",
+      "hash": "24cff7082feb",
+      "downloadedAt": "2026-01-18T16:57:25.761Z",
+      "trimmedAt": "2026-01-18T17:04:46.536Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

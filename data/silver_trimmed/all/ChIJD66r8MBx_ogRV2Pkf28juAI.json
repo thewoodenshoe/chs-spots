@@ -1,0 +1,27 @@
+{
+  "venueId": "ChIJD66r8MBx_ogRV2Pkf28juAI",
+  "venueName": "East Cooper Disco",
+  "venueArea": "Mount Pleasant",
+  "website": "https://east-cooper-disco.poi.place/",
+  "scrapedAt": "2026-01-18T17:04:24.322Z",
+  "trimmedAt": "2026-01-18T17:05:19.847Z",
+  "pages": [
+    {
+      "url": "https://east-cooper-disco.poi.place/extra",
+      "text": "East Cooper Disco 1162 Venning Rd, Mt Pleasant, SC 29464 (843) 972-8720 Manage Listing Unfortunately, this information is currently not available. There can be several reasons for this. Perhaps the owner has not yet provided this data or the available data was incomplete or incorrect. If you would like to help with more information, please send an email to: . Please write only if you want to provide this data. Menu [email protected] 1162 Venning Rd, Mt Pleasant, SC 29464 (843) 972-8720 Latest Feedback \"Great food,drink specials and music nice atmosphere.\"\"Crab rice, salmon rice, lima beans, collards, okra soup: all delicious!\"\"Perfectly cooked shrimp and fish, off the hook cornbread.\" How to go there Location Plan your visit Weather Mt Pleasant Temperature °F N/A feels like °F N/A Loc: 32.821 / -79.8368",
+      "hash": "5006e9a22771",
+      "downloadedAt": "2026-01-18T16:56:07.182Z",
+      "trimmedAt": "2026-01-18T17:05:19.843Z",
+      "sizeReduction": "96.3%"
+    },
+    {
+      "url": "https://east-cooper-disco.poi.place/",
+      "text": "East Cooper Disco 1162 Venning Rd, Mt Pleasant, SC 29464 (843) 972-8720 Manage Listing East Cooper Disco 1162 Venning Rd, Mt Pleasant, SC 29464 (843) 972-8720 Latest Feedback \"Great food,drink specials and music nice atmosphere.\"\"Crab rice, salmon rice, lima beans, collards, okra soup: all delicious!\"\"Perfectly cooked shrimp and fish, off the hook cornbread.\" How to go there Location Bar Loc: 32.821 / -79.8368 Plan your visit Weather Mt Pleasant Temperature °F N/A feels like °F N/A",
+      "hash": "ede7e2898c4f",
+      "downloadedAt": "2026-01-18T16:56:06.845Z",
+      "trimmedAt": "2026-01-18T17:05:19.847Z",
+      "sizeReduction": "98.2%"
+    }
+  ],
+  "sizeReduction": "97.4%"
+}

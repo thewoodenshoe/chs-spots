@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJoaay9gt8_ogRmSq-ZKMIWy8",
+  "venueName": "Early Bird Diner",
+  "venueArea": "West Ashley",
+  "website": "http://earlybirddiner.com/",
+  "scrapedAt": "2026-01-18T17:04:30.303Z",
+  "trimmedAt": "2026-01-18T17:12:03.904Z",
+  "pages": [
+    {
+      "url": "http://earlybirddiner.com/",
+      "text": "",
+      "hash": "84c06c989170",
+      "downloadedAt": "2026-01-18T17:02:24.621Z",
+      "trimmedAt": "2026-01-18T17:12:03.904Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

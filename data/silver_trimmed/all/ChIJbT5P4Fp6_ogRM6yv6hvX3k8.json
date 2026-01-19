@@ -1,0 +1,27 @@
+{
+  "venueId": "ChIJbT5P4Fp6_ogRM6yv6hvX3k8",
+  "venueName": "Renzo",
+  "venueArea": "West Ashley",
+  "website": "http://renzochs.com/",
+  "scrapedAt": "2026-01-18T17:04:28.096Z",
+  "trimmedAt": "2026-01-18T17:11:15.120Z",
+  "pages": [
+    {
+      "url": "http://renzochs.com/",
+      "text": "Renzo Wood-Fired Pizza & Natural Wine Cart 0",
+      "hash": "022d52a0b9e3",
+      "downloadedAt": "2026-01-18T17:03:07.746Z",
+      "trimmedAt": "2026-01-18T17:11:15.113Z",
+      "sizeReduction": "99.9%"
+    },
+    {
+      "url": "http://renzochs.com/menu",
+      "text": "Renzo Wood-Fired Pizza & Natural Wine Cart 0 PLEASE NOTE THAT THESE ARE SAMPLE MENUS AND SUBJECT TO CHANGE",
+      "hash": "86a712326160",
+      "downloadedAt": "2026-01-18T17:03:07.930Z",
+      "trimmedAt": "2026-01-18T17:11:15.120Z",
+      "sizeReduction": "99.9%"
+    }
+  ],
+  "sizeReduction": "99.9%"
+}

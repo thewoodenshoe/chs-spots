@@ -1,0 +1,35 @@
+{
+  "venueId": "ChIJQziy7tlj_ogREeau2h3sD3Q",
+  "venueName": "American Deli",
+  "venueArea": "North Charleston",
+  "website": "https://americandeli.com/",
+  "scrapedAt": "2026-01-18T17:04:26.132Z",
+  "trimmedAt": "2026-01-18T17:07:21.938Z",
+  "pages": [
+    {
+      "url": "https://americandeli.com/",
+      "text": "500 0 0 THE ORIGINAL LEMON PEPPER WET STRAIGHT FROM THE SOURCE order now ALL THE GOOD STUFF RICE THE WAY YOU LIKE IT order now FRESH TO ORDER order now EVERY ORDER PHILLY? WINGS? YES! + YES! PLEASE ANY SIZE CROWD HUNGRY? COMBO IT! FRIES COMBO 5 wings + Fries COMBO 5 wings COMBO ONLINE ORDER Satisfying your American Deli cravings has never been easier! Order right now for pickup or delivery through DoorDash, Uber Eats or Grubhub. order now SLOW-COOKED SAUCES HANDMADE IN SMALL BATCHES Taste the difference. We spice up every sauce we offer to bring you fresh, unforgettable flavors. order now We believe your data is your property and support your right to privacy and transparency. By clicking “accept” and using this website, you agree to our use of cookies. We use cookies to provide a great experience on this website and to help online ordering run effectively. Accept Decline",
+      "hash": "025db6c7e5ce",
+      "downloadedAt": "2026-01-18T16:58:09.739Z",
+      "trimmedAt": "2026-01-18T17:07:21.850Z",
+      "sizeReduction": "99.7%"
+    },
+    {
+      "url": "https://americandeli.com/menu",
+      "text": "500 0 0 MENU SALAD SUB GYRO PHILLY BURGER CHICKEN SANDWICH REUBEN WINGS FRIED RICE FISH SHRIMP TENDERS SIDES SAUCES DRINKS SALAD Garden More Details > Chef More Details > Grilled Chicken More Details > Fried Chicken More Details > SUB Ham More Details > Turkey More Details > Ham & Turkey More Details > GYRO Gyro Meat More Details > Beef More Details > Chicken More Details > PHILLY Beef More Details > Chicken More Details > BURGER More Details > CHICKEN TENDER SANDWICH More Details > REUBEN More Details > WINGS & BONELESS WINGS Wings More Details > Boneless Wings More Details > FRIED RICE Veg Fried Rice More Details > Chicken Fried Rice More Details > Shrimp Fried Rice More Details > Beef Fried Rice More Details > House Fried Rice More Details > FISH Tilapia More Details > Whiting More Details > SHRIMP More Details > CHICKEN TENDERS More Details SIDE MENU Fries Onion Rings WING FLAVORS Hot Sweet Chili Family Gold Lemon Pepper Sprinkle Teriyaki Medium Mild BBQ Seasoning Salt Garlic Parmesan Lemon Pepper Wet DRINKS Coke Hi-C Fruit Punch Fanta Cherry Coke Zero Hi-C Orange Fanta Orange Barqs Root Beer Hi-C Pink Lemonade Fanta Strawberry Mr. Pibb Mello Yellow Sprite Gold Peak Lemonade Peach Fruit Punch We're IN THE NEIGHBORHOOD With more than 200 locations nationwide (and counting), we’re growing all the time. Find your closest American Deli now! find a location We believe your data is your property and support your right to privacy and transparency. By clicking “accept” and using this website, you agree to our use of cookies. We use cookies to provide a great experience on this website and to help online ordering run effectively. Accept Decline",
+      "hash": "1001b3aaa385",
+      "downloadedAt": "2026-01-18T16:58:09.843Z",
+      "trimmedAt": "2026-01-18T17:07:21.932Z",
+      "sizeReduction": "99.7%"
+    },
+    {
+      "url": "https://americandeli.com/locations",
+      "text": "500 0 0 LOCATIONS We believe your data is your property and support your right to privacy and transparency. By clicking “accept” and using this website, you agree to our use of cookies. We use cookies to provide a great experience on this website and to help online ordering run effectively. Accept Decline",
+      "hash": "b815310cdbdc",
+      "downloadedAt": "2026-01-18T16:58:10.394Z",
+      "trimmedAt": "2026-01-18T17:07:21.938Z",
+      "sizeReduction": "99.8%"
+    }
+  ],
+  "sizeReduction": "99.7%"
+}

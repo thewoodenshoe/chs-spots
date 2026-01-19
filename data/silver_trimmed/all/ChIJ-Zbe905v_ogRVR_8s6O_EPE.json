@@ -1,0 +1,27 @@
+{
+  "venueId": "ChIJ-Zbe905v_ogRVR_8s6O_EPE",
+  "venueName": "Community Crafthouse",
+  "venueArea": "Daniel Island",
+  "website": "https://communitycrafthouse.com/",
+  "scrapedAt": "2026-01-18T17:04:22.850Z",
+  "trimmedAt": "2026-01-18T17:04:41.674Z",
+  "pages": [
+    {
+      "url": "https://communitycrafthouse.com/menu",
+      "text": "0 Embed Block Add an embed URL or code. Learn more What’s on Tap …and on deck!",
+      "hash": "07c43c64231e",
+      "downloadedAt": "2026-01-18T16:51:57.984Z",
+      "trimmedAt": "2026-01-18T17:04:41.662Z",
+      "sizeReduction": "100.0%"
+    },
+    {
+      "url": "https://communitycrafthouse.com/",
+      "text": "0 Bringing people together one pint at a time! Address 1049 Point Hope Pkwy Suite B, Charleston, SC 29492 (843) 377-8154 Phone Hours Tue-Thur 4pm-10pm Fri 1pm-11pm Sat 12pm-11pm Sunday1pm–9pm",
+      "hash": "5e54df257ab7",
+      "downloadedAt": "2026-01-18T16:51:57.763Z",
+      "trimmedAt": "2026-01-18T17:04:41.674Z",
+      "sizeReduction": "99.8%"
+    }
+  ],
+  "sizeReduction": "99.9%"
+}

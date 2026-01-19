@@ -1,0 +1,35 @@
+{
+  "venueId": "ChIJ0_0-EIll_ogRQ8SHaBbniso",
+  "venueName": "Salud Tacos + Tequila",
+  "venueArea": "North Charleston",
+  "website": "https://www.salud-chs.com/",
+  "scrapedAt": "2026-01-18T17:04:23.043Z",
+  "trimmedAt": "2026-01-18T17:04:46.073Z",
+  "pages": [
+    {
+      "url": "https://www.salud-chs.com/foodmenu",
+      "text": "top of page 1000 Tanner Ford blvd ste 280 Hanahan sc 29410 (843)203-4169 © 2025 Designed by Freshco Marketing bottom of page",
+      "hash": "2fc594261f27",
+      "downloadedAt": "2026-01-18T17:00:27.662Z",
+      "trimmedAt": "2026-01-18T17:04:45.981Z",
+      "sizeReduction": "100.0%"
+    },
+    {
+      "url": "https://www.salud-chs.com/",
+      "text": "top of page Chef's recommends Discover the must-try dishes handpicked by our chefs, crafted with passion and authentic Mexican flavors. AUTHENTIC TASTE Trio Enchiladas Salud Steak Picanha Tacos Salud Salad Salud Burrito PizzaBirria Previous Slide Next Slide Salud To Mexico! Bold, vibrant, and authentic flavors. ​ ​ Follow Us on Instagram Load more GIFT CARDS NOW AVAILABLE GET YOURS Taste the Next Level of Mexican Cuisine Every dish is crafted with the finest ingredients, ensuring a fresh and exciting dining experience. Whether you're craving classic tacos, zesty salsas, or unique regional specialties, our menu brings you a bold and unforgettable journey through the heart of Mexico. Prepare to indulge in a celebration of flavors that will elevate your taste buds to the next level! 1000 Tanner Ford blvd ste 280 Hanahan sc 29410 (843)203-4169 © 2025 Designed by Freshco Marketing bottom of page",
+      "hash": "9786f98ce4a6",
+      "downloadedAt": "2026-01-18T17:00:27.498Z",
+      "trimmedAt": "2026-01-18T17:04:46.055Z",
+      "sizeReduction": "99.9%"
+    },
+    {
+      "url": "https://www.salud-chs.com/drinksmenu",
+      "text": "top of page 1000 Tanner Ford blvd ste 280 Hanahan sc 29410 (843)203-4169 © 2025 Designed by Freshco Marketing bottom of page",
+      "hash": "a40d70be40eb",
+      "downloadedAt": "2026-01-18T17:00:28.231Z",
+      "trimmedAt": "2026-01-18T17:04:46.073Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

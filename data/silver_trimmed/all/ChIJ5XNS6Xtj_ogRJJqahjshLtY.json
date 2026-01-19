@@ -1,0 +1,27 @@
+{
+  "venueId": "ChIJ5XNS6Xtj_ogRJJqahjshLtY",
+  "venueName": "Phuong Vietnamese Restaurant",
+  "venueArea": "North Charleston",
+  "website": "https://www.phuongnorthcharleston.com/",
+  "scrapedAt": "2026-01-18T17:04:23.640Z",
+  "trimmedAt": "2026-01-18T17:04:59.831Z",
+  "pages": [
+    {
+      "url": "https://www.phuongnorthcharleston.com/2waqh8mc/phuong-vietnamese-restaurant-north-charleston-29406/order-online#menu-section",
+      "text": "Skip to main content",
+      "hash": "4f7b76687b31",
+      "downloadedAt": "2026-01-18T17:00:19.698Z",
+      "trimmedAt": "2026-01-18T17:04:59.825Z",
+      "sizeReduction": "100.0%"
+    },
+    {
+      "url": "https://www.phuongnorthcharleston.com/",
+      "text": "Skip to main content Dive into Authentic Delight! Discover the rich flavors of Vietnam at our North Charleston eatery! Enjoy fresh, authentic cuisine delivered right to your door or ready for takeout. Don't wait - place your online order now and experience the taste of tradition! Order Online View Menu About Us At Phuong Vietnamese Restaurant in North Charleston, we celebrate the rich flavors of authentic Vietnamese cuisine. Our menu boasts a variety of delectable dishes including pho, banh mi, spring rolls, and more. Savor these vibrant and fresh tastes right at home with our convenient delivery and takeout services. Discover your new favorite meal and place an online order now! Location Phuong Vietnamese Restaurant CLOSED NOW 5634 Rivers Ave, North Charleston, SC 29406 8437183781 Pickup Delivery Hours of Operation (Takeout) Monday 11:00 am - 02:30 pm Tuesday - Friday 11:00 am - 02:30 pm 05:30 pm - 08:30 pm Saturday 11:00 am - 03:00 pm 05:30 pm - 08:30 pm Sunday Closed Order Online View Menu",
+      "hash": "f9fab6333592",
+      "downloadedAt": "2026-01-18T17:00:18.753Z",
+      "trimmedAt": "2026-01-18T17:04:59.831Z",
+      "sizeReduction": "98.3%"
+    }
+  ],
+  "sizeReduction": "99.8%"
+}

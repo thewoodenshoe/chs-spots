@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJGxgBPup5_ogRKSf9b-mvbvk",
+  "venueName": "Aji Asian Bistro",
+  "venueArea": "James Island",
+  "website": "https://www.ajiasianbistro.com/",
+  "scrapedAt": "2026-01-18T17:04:24.777Z",
+  "trimmedAt": "2026-01-18T17:05:29.850Z",
+  "pages": [
+    {
+      "url": "https://www.ajiasianbistro.com/",
+      "text": "About us Business Hours: LunchMonday - Thursday: 11:00AM - 3:00PMFriday: 11:00AM - 3:00PM Tuesday: ClosedDinnerMonday - Thursday: 4:00PM - 9:30PMFriday: 4:00PM - 10:30PM Tuesday: ClosedWeekend Business Hours (No Break)Saturday: 11:30AM - 10:30PMSunday: 11:30AM - 9:30PM Aji Asian Bistro in Charleston, SC. Everything is prepared with high quality, rich taste and fresh food waiting for you to be served. Food in our restaurant are specially made for your taste and health that will capture and reach your expectations. Our experienced Chefs ensure to give you the best food service and make your every order with us a memorable one. We are now online to serve you more! We also provide all kinds of wine, beer, sake and cocktail for your meal. Our Menu Gallery",
+      "hash": "38e47369ea64",
+      "downloadedAt": "2026-01-18T16:55:26.337Z",
+      "trimmedAt": "2026-01-18T17:05:29.850Z",
+      "sizeReduction": "99.9%"
+    }
+  ],
+  "sizeReduction": "99.9%"
+}

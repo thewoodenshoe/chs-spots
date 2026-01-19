@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJLcoXlft7_ogR_WQeDjHBEf4",
+  "venueName": "Toast! All Day",
+  "venueArea": "Downtown Charleston",
+  "website": "https://toastallday.com/toast-king-st/king-st-menu/",
+  "scrapedAt": "2026-01-18T17:04:25.483Z",
+  "trimmedAt": "2026-01-18T17:07:12.704Z",
+  "pages": [
+    {
+      "url": "https://toastallday.com/toast-king-st/king-st-menu/",
+      "text": "",
+      "hash": "b9d925b3c94f",
+      "downloadedAt": "2026-01-18T16:55:10.737Z",
+      "trimmedAt": "2026-01-18T17:07:12.704Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

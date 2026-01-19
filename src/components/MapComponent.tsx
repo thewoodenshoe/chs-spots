@@ -511,12 +511,61 @@ export default function MapComponent({
             onCloseClick={handleInfoWindowClose}
           >
             <div className="text-sm min-w-[200px] max-w-[300px]">
-              <div className="font-bold text-gray-900 mb-2 text-base">{selectedSpot.title}</div>
-              {selectedSpot.description && (
+              <div className="font-bold text-gray-900 mb-3 text-base">{selectedSpot.title}</div>
+              
+              {/* Structured happy hour display with labels */}
+              {selectedSpot.happyHourTime && (
+                <div className="mb-2">
+                  <span className="font-semibold text-gray-700">Time: </span>
+                  <span className="text-gray-800">{selectedSpot.happyHourTime}</span>
+                </div>
+              )}
+              
+              {selectedSpot.happyHourList && selectedSpot.happyHourList.length > 0 && (
+                <div className="mb-2">
+                  <div className="font-semibold text-gray-700 mb-1">Happy Hour List:</div>
+                  <ul className="list-disc list-inside text-gray-800 space-y-0.5 ml-2">
+                    {selectedSpot.happyHourList.map((item, idx) => (
+                      <li key={idx} className="text-xs">{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {selectedSpot.sourceUrl && (
+                <div className="mb-2">
+                  <span className="font-semibold text-gray-700">Source: </span>
+                  <a 
+                    href={selectedSpot.sourceUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline text-xs break-all"
+                  >
+                    {selectedSpot.sourceUrl}
+                  </a>
+                </div>
+              )}
+              
+              {selectedSpot.lastUpdateDate && (
+                <div className="mb-2">
+                  <span className="font-semibold text-gray-700">Last Update Date: </span>
+                  <span className="text-gray-800 text-xs">
+                    {new Date(selectedSpot.lastUpdateDate).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </span>
+                </div>
+              )}
+              
+              {/* Fallback to description if new fields not available (backwards compatibility) */}
+              {!selectedSpot.happyHourTime && !selectedSpot.happyHourList && selectedSpot.description && (
                 <div className="mb-3">
                   {formatDescription(selectedSpot.description)}
                 </div>
               )}
+              
               <div className="mt-2 flex items-center gap-2 mb-2">
                 <span className="text-base">{typeIcons[selectedSpot.type]}</span>
                 <span className="rounded-full bg-teal-100 px-2 py-0.5 text-xs font-medium text-teal-800">

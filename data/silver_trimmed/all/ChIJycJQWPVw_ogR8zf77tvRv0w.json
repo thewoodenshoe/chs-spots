@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJycJQWPVw_ogR8zf77tvRv0w",
+  "venueName": "Sleep Inn Mt. Pleasant - Charleston",
+  "venueArea": "Mount Pleasant",
+  "website": "https://www.choicehotels.com/south-carolina/mount-pleasant/sleep-inn-hotels/sc036?mc=llgoxxpx",
+  "scrapedAt": "2026-01-18T17:04:32.146Z",
+  "trimmedAt": "2026-01-18T17:13:06.598Z",
+  "pages": [
+    {
+      "url": "https://www.choicehotels.com/south-carolina/mount-pleasant/sleep-inn-hotels/sc036?mc=llgoxxpx",
+      "text": "",
+      "hash": "abbd64736c4f",
+      "downloadedAt": "2026-01-18T16:57:06.620Z",
+      "trimmedAt": "2026-01-18T17:13:06.598Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

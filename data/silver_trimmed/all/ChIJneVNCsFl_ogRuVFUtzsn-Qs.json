@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJneVNCsFl_ogRuVFUtzsn-Qs",
+  "venueName": "Paddock & Whisky",
+  "venueArea": "North Charleston",
+  "website": "https://paddockandwhisky.com/",
+  "scrapedAt": "2026-01-18T17:04:29.727Z",
+  "trimmedAt": "2026-01-18T17:11:48.308Z",
+  "pages": [
+    {
+      "url": "https://paddockandwhisky.com/",
+      "text": "",
+      "hash": "db8666a6fd6b",
+      "downloadedAt": "2026-01-18T17:00:14.939Z",
+      "trimmedAt": "2026-01-18T17:11:48.308Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

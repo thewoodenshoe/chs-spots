@@ -1,0 +1,27 @@
+{
+  "venueId": "ChIJ24bXnMNt_ogRuYhikIfJIDs",
+  "venueName": "Big Bad Breakfast - Breakfast and Lunch",
+  "venueArea": "Mount Pleasant",
+  "website": "http://www.bigbadbreakfast.com/locations",
+  "scrapedAt": "2026-01-18T17:04:23.139Z",
+  "trimmedAt": "2026-01-18T17:04:47.018Z",
+  "pages": [
+    {
+      "url": "http://www.bigbadbreakfast.com/locations#",
+      "text": "[Page Title: Scroll to top] Locations Search Location Distance Range Radius: Km Status Loading... : Number Of Locations 0 × Store Direction GET DIRECTIONS × From: To: Km Miles GET DIRECTIONS Enter your location × LOCATE Description × Our Story Our Food Locations Employment Catering Contact ©2025 Big Bad Breakfast. Site by • Privacy Policy Nutrition Scroll to top Scroll to top Scroll to top",
+      "hash": "749450191524",
+      "downloadedAt": "2026-01-18T16:55:48.405Z",
+      "trimmedAt": "2026-01-18T17:04:47.005Z",
+      "sizeReduction": "99.7%"
+    },
+    {
+      "url": "http://www.bigbadbreakfast.com/locations",
+      "text": "[Page Title: Scroll to top] Locations Search Location Distance Range Radius: Km Status Loading... : Number Of Locations 0 × Store Direction GET DIRECTIONS × From: To: Km Miles GET DIRECTIONS Enter your location × LOCATE Description × Our Story Our Food Locations Employment Catering Contact ©2025 Big Bad Breakfast. Site by • Privacy Policy Nutrition Scroll to top Scroll to top Scroll to top",
+      "hash": "de482219a667",
+      "downloadedAt": "2026-01-18T16:55:48.236Z",
+      "trimmedAt": "2026-01-18T17:04:47.018Z",
+      "sizeReduction": "99.7%"
+    }
+  ],
+  "sizeReduction": "99.7%"
+}

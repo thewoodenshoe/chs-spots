@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJW15FfkZ6_ogRR1oupuIjXkc",
+  "venueName": "Mr.B's",
+  "venueArea": "West Ashley",
+  "website": "https://www.facebook.com/pages/Mr-bs-Private-club/894212663966334",
+  "scrapedAt": "2026-01-18T17:04:26.838Z",
+  "trimmedAt": "2026-01-18T17:08:04.794Z",
+  "pages": [
+    {
+      "url": "https://www.facebook.com/pages/Mr-bs-Private-club/894212663966334",
+      "text": "",
+      "hash": "fbbb862a855b",
+      "downloadedAt": "2026-01-18T17:02:58.612Z",
+      "trimmedAt": "2026-01-18T17:08:04.794Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

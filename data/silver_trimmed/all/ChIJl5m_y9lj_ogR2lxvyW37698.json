@@ -1,0 +1,43 @@
+{
+  "venueId": "ChIJl5m_y9lj_ogR2lxvyW37698",
+  "venueName": "Buffalo Wild Wings",
+  "venueArea": "North Charleston",
+  "website": "https://www.buffalowildwings.com/locations/us/sc/north-charleston/4959-centre-pointe-drive/sports-bar-592/?utm_source=google-my-business&utm_medium=organic&utm_campaign=website-link&y_source=1_MjAxNjYxMTAyMi03MTUtbG9jYXRpb24ud2Vic2l0ZQ%3D%3D",
+  "scrapedAt": "2026-01-18T17:04:29.092Z",
+  "trimmedAt": "2026-01-18T17:11:38.439Z",
+  "pages": [
+    {
+      "url": "https://www.buffalowildwings.com/menu/",
+      "text": "skip to main content Our Menu",
+      "hash": "00ea5b13de41",
+      "downloadedAt": "2026-01-18T16:58:17.264Z",
+      "trimmedAt": "2026-01-18T17:11:38.428Z",
+      "sizeReduction": "100.0%"
+    },
+    {
+      "url": "https://www.buffalowildwings.com/promos/",
+      "text": "skip to main content Game Day Play PICK 6 MEAL FOR 2 The only game day play that matters. Get 2 entrees, 2 sides, and 2 drinks starting at $19.99. Dine-in, or order online or in the app.​ View terms Order Now​",
+      "hash": "a658098f4465",
+      "downloadedAt": "2026-01-18T16:58:18.503Z",
+      "trimmedAt": "2026-01-18T17:11:38.433Z",
+      "sizeReduction": "99.8%"
+    },
+    {
+      "url": "https://www.buffalowildwings.com/locations/",
+      "text": "skip to main content",
+      "hash": "d1998ef293ce",
+      "downloadedAt": "2026-01-18T16:58:17.862Z",
+      "trimmedAt": "2026-01-18T17:11:38.436Z",
+      "sizeReduction": "100.0%"
+    },
+    {
+      "url": "https://www.buffalowildwings.com/locations/us/sc/north-charleston/4959-centre-pointe-drive/sports-bar-592/?utm_source=google-my-business&utm_medium=organic&utm_campaign=website-link&y_source=1_MjAxNjYxMTAyMi03MTUtbG9jYXRpb24ud2Vic2l0ZQ%3D%3D",
+      "text": "skip to main content Location Details | Buffalo Wild Wings",
+      "hash": "e4794a8260c4",
+      "downloadedAt": "2026-01-18T16:58:17.146Z",
+      "trimmedAt": "2026-01-18T17:11:38.439Z",
+      "sizeReduction": "99.9%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

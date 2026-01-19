@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJ8cD41gF9_ogRHSlz01tzQxk",
+  "venueName": "Stones Throw Tavern",
+  "venueArea": "West Ashley",
+  "website": "http://stonesthrowtavernwestashley.com/",
+  "scrapedAt": "2026-01-18T17:04:23.834Z",
+  "trimmedAt": "2026-01-18T17:05:05.019Z",
+  "pages": [
+    {
+      "url": "http://stonesthrowtavernwestashley.com/",
+      "text": "Welcome to nginx! If you see this page, the nginx web server is successfully installed and working. Further configuration is required. For online documentation and support please refer to . Commercial support is available at . nginx.org nginx.com Thank you for using nginx.",
+      "hash": "c45797372703",
+      "downloadedAt": "2026-01-18T17:03:20.438Z",
+      "trimmedAt": "2026-01-18T17:05:05.019Z",
+      "sizeReduction": "55.4%"
+    }
+  ],
+  "sizeReduction": "55.4%"
+}

@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJlSDeCNJj_ogRaZuRGDRg_ac",
+  "venueName": "Penalty Box Sports Lounge",
+  "venueArea": "North Charleston",
+  "website": "http://carolinaicepalace.com/",
+  "scrapedAt": "2026-01-18T17:04:29.110Z",
+  "trimmedAt": "2026-01-18T17:11:38.706Z",
+  "pages": [
+    {
+      "url": "http://carolinaicepalace.com/",
+      "text": "",
+      "hash": "aff4915f104c",
+      "downloadedAt": "2026-01-18T17:00:20.103Z",
+      "trimmedAt": "2026-01-18T17:11:38.706Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJVXYimARx_ogRW_Ak5Cix2JE",
+  "venueName": "The Southern Bar & Grill",
+  "venueArea": "Mount Pleasant",
+  "website": "https://www.facebook.com/pages/The-Southern-Bar-Grill/48551016004?rf=424717630881885",
+  "scrapedAt": "2026-01-18T17:04:26.833Z",
+  "trimmedAt": "2026-01-18T17:08:04.760Z",
+  "pages": [
+    {
+      "url": "https://www.facebook.com/pages/The-Southern-Bar-Grill/48551016004?rf=424717630881885",
+      "text": "",
+      "hash": "05434405e089",
+      "downloadedAt": "2026-01-18T16:57:38.896Z",
+      "trimmedAt": "2026-01-18T17:08:04.760Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

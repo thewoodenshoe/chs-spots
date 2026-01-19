@@ -121,12 +121,60 @@ function createSpot(goldData, venueData, spotId) {
     return null;
   }
   
-  // Format description from first entry (or combine multiple entries)
+  // Extract fields from first entry (or combine multiple entries)
+  // New structured format: separate fields instead of combined description
+  let happyHourTime = null;
+  let happyHourList = [];
+  let sourceUrl = null;
+  
+  if (entries.length === 1) {
+    const entry = entries[0];
+    // Time: combine days and times if available
+    if (entry.times) {
+      happyHourTime = entry.days ? `${entry.times} • ${entry.days}` : entry.times;
+    } else if (entry.days) {
+      happyHourTime = entry.days;
+    }
+    // Happy Hour List: specials array
+    happyHourList = entry.specials || [];
+    // Source URL
+    sourceUrl = entry.source || null;
+  } else if (entries.length > 1) {
+    // Multiple entries - combine times/days, collect all specials
+    const timeParts = [];
+    const allSpecials = [];
+    const sources = [];
+    
+    for (const entry of entries) {
+      if (entry.times) {
+        const timeStr = entry.days ? `${entry.times} • ${entry.days}` : entry.times;
+        if (!timeParts.includes(timeStr)) {
+          timeParts.push(timeStr);
+        }
+      }
+      if (entry.specials && Array.isArray(entry.specials)) {
+        allSpecials.push(...entry.specials);
+      }
+      if (entry.source && !sources.includes(entry.source)) {
+        sources.push(entry.source);
+      }
+    }
+    
+    happyHourTime = timeParts.length > 0 ? timeParts.join(', ') : null;
+    happyHourList = allSpecials;
+    sourceUrl = sources.length > 0 ? sources[0] : null; // Use first source
+  }
+  
+  // Need at least time or specials to create a spot
+  if (!happyHourTime && (!happyHourList || happyHourList.length === 0)) {
+    return null;
+  }
+  
+  // Format description for backwards compatibility (keep for now)
   let description = null;
   if (entries.length === 1) {
     description = formatHappyHourDescription(entries[0]);
   } else if (entries.length > 1) {
-    // Multiple entries - format each and combine
     const entryDescriptions = entries
       .map(entry => formatHappyHourDescription(entry))
       .filter(desc => desc !== null);
@@ -135,17 +183,17 @@ function createSpot(goldData, venueData, spotId) {
     }
   }
   
-  if (!description) {
-    // Incomplete data (e.g., only time with no days/specials)
-    return null;
-  }
-  
   const spot = {
     id: spotId,
     lat: venueData.lat || venueData.geometry?.location?.lat,
     lng: venueData.lng || venueData.geometry?.location?.lng,
     title: goldData.venueName || venueData.name || 'Unknown Venue',
-    description: description,
+    description: description, // Keep for backwards compatibility
+    // New structured fields
+    happyHourTime: happyHourTime,
+    happyHourList: happyHourList,
+    sourceUrl: sourceUrl,
+    lastUpdateDate: goldData.processedAt || null,
     type: 'Happy Hour',
     source: 'automated' // Mark as automated (vs manual)
   };
@@ -234,9 +282,10 @@ function main() {
     return;
   }
   
-  // Load existing spots.json to preserve manual spots
+  // Load existing spots.json to preserve all existing spots (manual + automated)
   let existingSpots = [];
   let manualSpotsCount = 0;
+  let automatedSpotsCount = 0;
   if (fs.existsSync(SPOTS_PATH)) {
     try {
       const existingContent = fs.readFileSync(SPOTS_PATH, 'utf8');
@@ -244,10 +293,11 @@ function main() {
       if (!Array.isArray(existingSpots)) {
         existingSpots = [];
       }
-      // Count and preserve manual spots
+      // Count manual and automated spots
       manualSpotsCount = existingSpots.filter(s => s.source === 'manual').length;
-      if (manualSpotsCount > 0) {
-        log(`📋 Found ${manualSpotsCount} manual spot(s) - will be preserved\n`);
+      automatedSpotsCount = existingSpots.filter(s => s.source === 'automated').length;
+      if (manualSpotsCount > 0 || automatedSpotsCount > 0) {
+        log(`📋 Found ${existingSpots.length} existing spot(s): ${manualSpotsCount} manual + ${automatedSpotsCount} automated - will be preserved\n`);
       }
     } catch (error) {
       log(`  ⚠️  Error reading existing spots.json: ${error.message}`);
@@ -258,8 +308,23 @@ function main() {
   // Extract manual spots (should never be removed)
   const manualSpots = existingSpots.filter(s => s.source === 'manual');
   
+  // Create a Set of venueIds that already have spots (by matching gold file names)
+  // Since gold files are named <venueId>.json, we can track which venueIds already have spots
+  // by checking existing spots against the gold files we're about to process
+  const existingSpotVenueIds = new Set();
+  
+  // Build a map of existing automated spots by venueId (if stored) or by lat/lng/title match
+  // We'll use gold file names to match: <venueId>.json
+  for (const existingSpot of existingSpots.filter(s => s.source === 'automated')) {
+    // Try to extract venueId from spot if stored, otherwise we'll match by coordinates/name later
+    if (existingSpot.venueId) {
+      existingSpotVenueIds.add(existingSpot.venueId);
+    }
+  }
+  
   // Process gold files and create spots
-  const spots = [...manualSpots]; // Start with manual spots
+  // Start with ALL existing spots (manual + automated) to preserve everything
+  const spots = [...existingSpots]; // Start with all existing spots
   let processed = 0;
   let skipped = 0;
   let missingVenue = 0;
@@ -291,11 +356,28 @@ function main() {
         continue;
       }
       
+      // Check if this venue already has a spot (incremental: skip if already exists)
+      // Match by checking if venueId matches any existing automated spot
+      const hasExistingSpot = existingSpots.some(s => {
+        if (s.source !== 'automated') return false;
+        // If spot has venueId, match by that
+        if (s.venueId === venueId) return true;
+        // Otherwise match by lat/lng/title (fuzzy match for existing spots without venueId)
+        const venueLat = venueData.lat || venueData.geometry?.location?.lat;
+        const venueLng = venueData.lng || venueData.geometry?.location?.lng;
+        const venueName = goldData.venueName || venueData.name;
+        return s.lat === venueLat && s.lng === venueLng && s.title === venueName;
+      });
+      
+      if (hasExistingSpot) {
+        // Spot already exists - skip (incremental behavior)
+        skipped++;
+        continue;
+      }
+      
       // Calculate next ID (max of existing spots + 1)
       const maxId = spots.length > 0 
         ? Math.max(...spots.map(s => s.id || 0))
-        : manualSpots.length > 0
-        ? Math.max(...manualSpots.map(s => s.id || 0))
         : 0;
       const nextId = maxId + 1;
       
@@ -309,8 +391,9 @@ function main() {
           continue;
         }
         
-        // Mark as automated
+        // Mark as automated and store venueId for future duplicate detection
         spot.source = 'automated';
+        spot.venueId = venueId; // Store venueId for future runs
         
         spots.push(spot);
         processed++;
@@ -347,16 +430,19 @@ function main() {
   }
   
   // Summary
+  const existingAutomatedCount = existingSpots.filter(s => s.source === 'automated').length;
+  const totalAutomatedCount = spots.filter(s => s.source === 'automated').length;
   log(`\n📊 Summary:`);
-  log(`   ✅ Automated spots created: ${processed}`);
+  log(`   ✅ New automated spots created: ${processed}`);
+  log(`   📋 Existing automated spots preserved: ${existingAutomatedCount}`);
   log(`   👤 Manual spots preserved: ${manualSpotsCount}`);
-  log(`   ⚠️  Skipped: ${skipped}`);
+  log(`   ⚠️  Skipped (already exists): ${skipped}`);
   log(`   ❌ Missing venue data: ${missingVenue}`);
   log(`   ℹ️  No happy hour: ${noHappyHour}`);
   log(`   📋 Incomplete data: ${incompleteData} (time only, no days/specials)`);
-  log(`   📄 Total spots in spots.json: ${spots.length} (${manualSpotsCount} manual + ${processed} automated)`);
-  log(`\n✨ Done! Created reporting folder with spots.json, venues.json, and areas.json`);
-  log(`   Total spots: ${spots.length} (${manualSpotsCount} manual + ${processed} automated)`);
+  log(`   📄 Total spots in spots.json: ${spots.length} (${manualSpotsCount} manual + ${totalAutomatedCount} automated)`);
+  log(`\n✨ Done! Updated reporting folder with spots.json, venues.json, and areas.json`);
+  log(`   Total spots: ${spots.length} (${manualSpotsCount} manual + ${totalAutomatedCount} automated)`);
 }
 
 try {

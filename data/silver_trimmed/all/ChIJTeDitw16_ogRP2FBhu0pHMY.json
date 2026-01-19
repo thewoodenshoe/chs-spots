@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJTeDitw16_ogRP2FBhu0pHMY",
+  "venueName": "Charleston Crab House",
+  "venueArea": "Downtown Charleston",
+  "website": "http://www.charlestoncrabhouse.com/",
+  "scrapedAt": "2026-01-18T17:04:26.694Z",
+  "trimmedAt": "2026-01-18T17:08:03.668Z",
+  "pages": [
+    {
+      "url": "http://www.charlestoncrabhouse.com/",
+      "text": "",
+      "hash": "3ddacf6ef64d",
+      "downloadedAt": "2026-01-18T16:52:19.401Z",
+      "trimmedAt": "2026-01-18T17:08:03.668Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

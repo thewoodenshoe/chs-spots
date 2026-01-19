@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJbxvpivwo_IgRRHWyb2HA7-Y",
+  "venueName": "Firefly Distillery",
+  "venueArea": "North Charleston",
+  "website": "https://www.fireflydistillery.com/",
+  "scrapedAt": "2026-01-18T17:04:28.167Z",
+  "trimmedAt": "2026-01-18T17:11:16.392Z",
+  "pages": [
+    {
+      "url": "https://www.fireflydistillery.com/",
+      "text": "",
+      "hash": "e5a2960bc4a2",
+      "downloadedAt": "2026-01-18T16:59:06.871Z",
+      "trimmedAt": "2026-01-18T17:11:16.392Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

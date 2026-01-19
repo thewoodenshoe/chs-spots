@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJV_b_1T98_ogR9JJU2QRqU2I",
+  "venueName": "West Ashley Inn",
+  "venueArea": "West Ashley",
+  "website": "http://www.thewestashleyinn.com/",
+  "scrapedAt": "2026-01-18T17:04:26.835Z",
+  "trimmedAt": "2026-01-18T17:08:04.761Z",
+  "pages": [
+    {
+      "url": "http://www.thewestashleyinn.com/",
+      "text": "",
+      "hash": "6ec2016e73aa",
+      "downloadedAt": "2026-01-18T17:04:17.620Z",
+      "trimmedAt": "2026-01-18T17:08:04.761Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

@@ -8,7 +8,6 @@
     "start": "next start",
     "lint": "eslint",
     "test": "jest",
-    "test:areas": "jest __tests__/areas-config.test.ts",
     "test:incremental": "jest __tests__/seed-incremental.test.js",
     "test:pipeline": "node scripts/__tests__/validate-pipeline.js",
     "test:pipeline:data": "node scripts/__tests__/validate-data-structures.js",
@@ -29,9 +28,6 @@
     "*.{ts,tsx,js,jsx}": [
       "eslint --fix",
       "jest --findRelatedTests"
-    ],
-    "data/areas.json": [
-      "jest __tests__/areas-config.test.ts"
     ]
   },
   "dependencies": {

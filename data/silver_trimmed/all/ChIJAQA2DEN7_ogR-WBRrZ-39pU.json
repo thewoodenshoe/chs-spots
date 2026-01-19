@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJAQA2DEN7_ogR-WBRrZ-39pU",
+  "venueName": "Bar Weems",
+  "venueArea": "North Charleston",
+  "website": "https://barweems.com/",
+  "scrapedAt": "2026-01-18T17:04:24.011Z",
+  "trimmedAt": "2026-01-18T17:05:07.705Z",
+  "pages": [
+    {
+      "url": "https://barweems.com/",
+      "text": "top of page 1/6 HOURS SUNDAY - TUESDAY CLOSED WEDNESDAY - SATURDAY 5PM - 1AM BAR WEEMS HOUSE MADE NOODLES LATE NITE MENU 10PM-12:30AM FIRST COME, FIRST SERVED NO TAKE-OUT, NO DELIVERY. WE PREPARE & SERVE ALL OUR FOOD WITH GREAT CARE AND LOVE ON-SITE. WE WOULD LOVE TO SEE YOU HERE! LOCATION TEL: 854-202-1175 1921 REYNOLDS AVENUE NORTH CHARLESTON, SC 29405 PARKING AVAILABLE IN FRONT OF RESTAURANT AND IN THE LAWN NEXT DOOR, AS WELL AS ON REYNOLDS AVE. FOLLOW US FOR LATEST bottom of page",
+      "hash": "0400f34e47e4",
+      "downloadedAt": "2026-01-18T16:58:10.265Z",
+      "trimmedAt": "2026-01-18T17:05:07.705Z",
+      "sizeReduction": "99.9%"
+    }
+  ],
+  "sizeReduction": "99.9%"
+}

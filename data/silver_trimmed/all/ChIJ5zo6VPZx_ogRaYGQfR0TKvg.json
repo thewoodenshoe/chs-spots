@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJ5zo6VPZx_ogRaYGQfR0TKvg",
+  "venueName": "LongHorn Steakhouse",
+  "venueArea": "Mount Pleasant",
+  "website": "https://www.longhornsteakhouse.com/locations/sc/mt-pleasant/mt-pleasant-towne-center/5152?cmpid=br:lh_ag:ie_ch:loc_ca:LHGMB_sn:gmb_gt:mount-pleasant-sc-5152_pl:locurl_rd:1111",
+  "scrapedAt": "2026-01-18T17:04:23.677Z",
+  "trimmedAt": "2026-01-18T17:05:02.973Z",
+  "pages": [
+    {
+      "url": "https://www.longhornsteakhouse.com/locations/sc/mt-pleasant/mt-pleasant-towne-center/5152?cmpid=br:lh_ag:ie_ch:loc_ca:LHGMB_sn:gmb_gt:mount-pleasant-sc-5152_pl:locurl_rd:1111",
+      "text": "",
+      "hash": "14eddec13733",
+      "downloadedAt": "2026-01-18T16:56:48.008Z",
+      "trimmedAt": "2026-01-18T17:05:02.973Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

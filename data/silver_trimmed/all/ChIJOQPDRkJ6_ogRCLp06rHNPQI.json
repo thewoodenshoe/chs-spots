@@ -1,0 +1,51 @@
+{
+  "venueId": "ChIJOQPDRkJ6_ogRCLp06rHNPQI",
+  "venueName": "D'Allesandro's Pizza",
+  "venueArea": "Mount Pleasant",
+  "website": "http://www.dalspizza.com/",
+  "scrapedAt": "2026-01-18T17:04:25.721Z",
+  "trimmedAt": "2026-01-18T17:07:15.041Z",
+  "pages": [
+    {
+      "url": "http://www.dalspizza.com/locations/greenville",
+      "text": "Search this site Embedded Files Skip to main content Skip to navigation Greenville Greenville, Since 2016 Order Online D'AL'S Pizza Greenville Page updated Google Sites Report abuse",
+      "hash": "0c7742c2045f",
+      "downloadedAt": "2026-01-18T16:56:08.377Z",
+      "trimmedAt": "2026-01-18T17:07:14.959Z",
+      "sizeReduction": "99.9%"
+    },
+    {
+      "url": "http://www.dalspizza.com/locations",
+      "text": "Search this site Embedded Files Skip to main content Skip to navigation Locations Find us at one of these 3 locations in South Carolina Downtown Charleston Nexton Square, Summerville Greenville Page updated Google Sites Report abuse",
+      "hash": "1c34de3a1455",
+      "downloadedAt": "2026-01-18T16:56:06.349Z",
+      "trimmedAt": "2026-01-18T17:07:14.974Z",
+      "sizeReduction": "99.8%"
+    },
+    {
+      "url": "http://www.dalspizza.com/locations/downtown-charleston",
+      "text": "Search this site Embedded Files Skip to main content Skip to navigation Downtown Charleston Order Now Downtown Charleston, Since 2006 Order Online Page updated Google Sites Report abuse",
+      "hash": "291d78781fb0",
+      "downloadedAt": "2026-01-18T16:56:07.021Z",
+      "trimmedAt": "2026-01-18T17:07:14.990Z",
+      "sizeReduction": "99.9%"
+    },
+    {
+      "url": "http://www.dalspizza.com/",
+      "text": "Search this site Embedded Files Skip to main content Skip to navigation Order Now Catering/Large Orders Neighborhood-Style Pizza in Charleston, Summerville and Greenville SC At D'Allesandro's Pizza, we take pride in serving the best neighborhood-style pizza in Charleston, Summerville and Greenville SC . Since 2006, our family-operated business has been handcrafting delicious pizzas using local ingredients. With our hand-tossed crust and mouthwatering toppings, every bite is a taste sensation. Whether you prefer delivery, pickup, or dining in, we've got you covered. Plus, we offer a 10 percent military discount every day to show our appreciation. Experience the authentic flavors with our handmade pizza. Contact us now to place your order or stop by our restaurant for a slice of pure pizza perfection. Our Products Hand-Tossed Pizza Signature Pizza Calzones Stromboli Garlic Bread Salad Meatballs Sandwiches Wings Catering D'AL'S Merch Our shirts are available online! D'AL'S Merch Job Application Check out our music video contact Pizza Watts Page updated Google Sites Report abuse",
+      "hash": "57ca5144f682",
+      "downloadedAt": "2026-01-18T16:56:06.185Z",
+      "trimmedAt": "2026-01-18T17:07:15.021Z",
+      "sizeReduction": "99.4%"
+    },
+    {
+      "url": "http://www.dalspizza.com/locations/nexton-square-summerville",
+      "text": "Search this site Embedded Files Skip to main content Skip to navigation Nexton Square, Summerville Order Now Nexton Square, Since 2020 Order Online EZ Cater Summerville Neighborhood-Style Pizza In Summerville, SC At D'Allesandro's Pizza Nexton, we take pride in serving the best neighborhood-style pizza in Summerville, SC. Since 2006, our family-operated business has been handcrafting delicious pizzas using local ingredients. With our hand-tossed crust and mouthwatering toppings, every bite is a taste sensation. Whether you prefer delivery, pickup, or dining in, we've got you covered. Plus, we offer a 10 percent military discount every day to show our appreciation. Experience the authentic flavors of Summerville with our handmade pizza. Contact us now to place your order or stop by our restaurant for a slice of pure pizza perfection. Our Products Hand-Tossed Pizza Signature Pizza Calzones Stromboli Garlic Bread Salad Meatballs Sandwiches Wings Catering Page updated Google Sites Report abuse",
+      "hash": "a2617888aa3d",
+      "downloadedAt": "2026-01-18T16:56:07.684Z",
+      "trimmedAt": "2026-01-18T17:07:15.041Z",
+      "sizeReduction": "99.3%"
+    }
+  ],
+  "sizeReduction": "99.6%"
+}

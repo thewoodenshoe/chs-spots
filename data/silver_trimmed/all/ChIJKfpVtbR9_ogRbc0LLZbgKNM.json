@@ -1,0 +1,27 @@
+{
+  "venueId": "ChIJKfpVtbR9_ogRbc0LLZbgKNM",
+  "venueName": "Asian Grill",
+  "venueArea": "West Ashley",
+  "website": "https://www.asiangrillsc.com/",
+  "scrapedAt": "2026-01-18T17:04:25.348Z",
+  "trimmedAt": "2026-01-18T17:07:08.926Z",
+  "pages": [
+    {
+      "url": "https://www.asiangrillsc.com/egibykti/asian-grill-charleston-29414/order-online#menu-section",
+      "text": "Skip to main content",
+      "hash": "4104aafb7c02",
+      "downloadedAt": "2026-01-18T17:01:52.318Z",
+      "trimmedAt": "2026-01-18T17:07:08.916Z",
+      "sizeReduction": "100.0%"
+    },
+    {
+      "url": "https://www.asiangrillsc.com/",
+      "text": "Skip to main content Roll in the Flavor, Grill up the Fun! Our top priority is to provide you with delicious food, quality customer service, and easy-to-use online ordering options. Order online from Beyond Menu today and come back for more! Order Online View Menu Asian Grill: Authentic Japanese Takeout Discover Asian Grill in Charleston, SC—a culinary journey through Japan. Savor our expertly crafted sushi rolls and flavorful Japanese dishes, all made with the freshest ingredients. Whether you're craving classic nigiri or inventive sashimi platters, our menu promises a delicious experience every time. Enjoy the convenience of takeout; place your online order now for an authentic taste of Asia at home! Location Asian Grill CLOSED NOW • Closes at 09:30 pm 3871 W Ashley Cir, Charleston, SC 29414 8437183478 Hours of Operation (Takeout) Monday - Sunday 11:00 am - 09:30 pm Order Online View Menu Review us on Google Having you as part of our food lovers family means the world to us. We kindly ask you to spread the word about our restaurant by leaving a Google Review. Leave a review",
+      "hash": "b98dcb613183",
+      "downloadedAt": "2026-01-18T17:01:51.864Z",
+      "trimmedAt": "2026-01-18T17:07:08.926Z",
+      "sizeReduction": "98.2%"
+    }
+  ],
+  "sizeReduction": "99.9%"
+}

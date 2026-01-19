@@ -1,0 +1,43 @@
+{
+  "venueId": "ChIJHzIunahz_ogRHZxazLFyRnU",
+  "venueName": "Coda Del Pesce",
+  "venueArea": "Isle of Palms",
+  "website": "http://codadelpesce.com/",
+  "scrapedAt": "2026-01-18T17:04:24.837Z",
+  "trimmedAt": "2026-01-18T17:05:31.458Z",
+  "pages": [
+    {
+      "url": "http://codadelpesce.com/isle-of-palms-coda-del-pesce-drink-menu",
+      "text": "Our Drinks Wine Menu",
+      "hash": "482ce352cf01",
+      "downloadedAt": "2026-01-18T16:55:18.266Z",
+      "trimmedAt": "2026-01-18T17:05:31.441Z",
+      "sizeReduction": "100.0%"
+    },
+    {
+      "url": "http://codadelpesce.com/isle-of-palms-coda-del-pesce-events",
+      "text": "Events We are updating our events Please stay tuned",
+      "hash": "50e0efbc4e7e",
+      "downloadedAt": "2026-01-18T16:55:18.923Z",
+      "trimmedAt": "2026-01-18T17:05:31.443Z",
+      "sizeReduction": "99.9%"
+    },
+    {
+      "url": "http://codadelpesce.com/",
+      "text": "1130 Ocean Blvd, 2nd Floor, Isle of Palms, SC 29451 natural materials About us Coda del Pesce (Italian for “tail of the fish”). The 70+ seat contemporary Italian influenced restaurant showcases the area’s most untapped asset—the ocean, the view and menu highlight this incredible bounty. Read more natural materials Our Chef Ken Vedrinski Owner and Executive Chef Ken Vedrinski is executive chef, owner, and sommelier of his all Italian seafood restaurant that overlooks the Atlantic Ocean, Coda del Pesce as well as his charming downtown Charleston restaurant, Trattoria Lucca, both recently ranked among Charleston’s Best Restaurants by Zagat. Our Staff Our menu changes daily featuring fresh local seafood! Reviews review by - Yelp Cynthia S.: This is another one of my Five Star finds...as a matter of fact this is beyond a five star find! The atmosphere is amazing and what I like to call \"Cozy Intimate Sophistication\". The view is amazing... review by - Yelp Alexandra P.: The most beautiful Italian spot with perfectly portioned pastas, delicious wine menu and an even more amazing dessert menu! review by - Yelp Brandon L.: I could bore you with a long description, but I'll save you the time. Best restaurant and service I've ever experienced. Go! review by - Yelp Frank G.: If you like spicy this is it. Great Italian food very well spiced. Great view of the ocean, the best. The atmosphere is really nice... Try this place, you will like it. review by - Yelp Julie S.: Beyond amazing, this place is a treasure! Amazing gnocchi, amazing fried calamari, impeccable service... If you only have a day in Charleston, YOU MUST COME HERE! The views of the ocean from the restaurant are also incredible! Newsletter stay tuned for updates Location 1130 Ocean Blvd, 2nd Floor Isle of Palms, SC 29451 Visit Our Sister LocationVolpe Hours Tuesday - Saturday 5:30 PM - close Find us on... Contact us (843)-242-8570 Powered by: Website design, Social Media marketing and Email marketing provided by SpotHopper.",
+      "hash": "5f698b06e2e4",
+      "downloadedAt": "2026-01-18T16:55:17.552Z",
+      "trimmedAt": "2026-01-18T17:05:31.455Z",
+      "sizeReduction": "99.1%"
+    },
+    {
+      "url": "http://codadelpesce.com/isle-of-palms-coda-del-pesce-food-menu",
+      "text": "Our Menu Menu",
+      "hash": "ce81484ca2bf",
+      "downloadedAt": "2026-01-18T16:55:17.645Z",
+      "trimmedAt": "2026-01-18T17:05:31.458Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "99.6%"
+}

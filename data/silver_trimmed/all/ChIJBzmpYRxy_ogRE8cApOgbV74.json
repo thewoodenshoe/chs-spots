@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJBzmpYRxy_ogRE8cApOgbV74",
+  "venueName": "Comfort Suites at Isle of Palms Connector",
+  "venueArea": "Mount Pleasant",
+  "website": "https://www.choicehotels.com/south-carolina/mount-pleasant/comfort-suites-hotels/sc198?mc=llgoxxpx",
+  "scrapedAt": "2026-01-18T17:04:24.169Z",
+  "trimmedAt": "2026-01-18T17:05:09.852Z",
+  "pages": [
+    {
+      "url": "https://www.choicehotels.com/south-carolina/mount-pleasant/comfort-suites-hotels/sc198?mc=llgoxxpx",
+      "text": "",
+      "hash": "28ecaa4fb8cc",
+      "downloadedAt": "2026-01-18T16:55:59.204Z",
+      "trimmedAt": "2026-01-18T17:05:09.852Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

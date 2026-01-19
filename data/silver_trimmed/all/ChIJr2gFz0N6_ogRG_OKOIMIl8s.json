@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJr2gFz0N6_ogRG_OKOIMIl8s",
+  "venueName": "Elliotborough Mini Bar",
+  "venueArea": "Mount Pleasant",
+  "website": "https://www.facebook.com/elliotboroughminibar/",
+  "scrapedAt": "2026-01-18T17:04:31.265Z",
+  "trimmedAt": "2026-01-18T17:12:44.152Z",
+  "pages": [
+    {
+      "url": "https://www.facebook.com/elliotboroughminibar/",
+      "text": "",
+      "hash": "f70631fa182f",
+      "downloadedAt": "2026-01-18T16:56:13.336Z",
+      "trimmedAt": "2026-01-18T17:12:44.152Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

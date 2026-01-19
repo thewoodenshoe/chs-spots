@@ -1,0 +1,59 @@
+{
+  "venueId": "ChIJj1OjnRty_ogRmfwuB5GsvuM",
+  "venueName": "Guadalajara Bar & Grill",
+  "venueArea": "Mount Pleasant",
+  "website": "http://guadalajarabarandgrill.com/",
+  "scrapedAt": "2026-01-18T17:04:28.912Z",
+  "trimmedAt": "2026-01-18T17:11:33.327Z",
+  "pages": [
+    {
+      "url": "https://guadalajarabarandgrill.com/about/",
+      "text": "About Guadalajara Bar & Grill welcomes you to the best Gourmet Mexican Restaurant in Mt, Pleasant. We strive to offer you the best service and authentic Mexican food prepared with quality ingredients.",
+      "hash": "30d7f7351a7c",
+      "downloadedAt": "2026-01-18T16:56:20.604Z",
+      "trimmedAt": "2026-01-18T17:11:33.315Z",
+      "sizeReduction": "99.7%"
+    },
+    {
+      "url": "https://guadalajarabarandgrill.com/happy-hour/",
+      "text": "Happy Hour Everyday 4 to 7pm $1 off : House MargaritasWineDraft BeerWell Liquor",
+      "hash": "410ddf0dab3f",
+      "downloadedAt": "2026-01-18T16:56:21.682Z",
+      "trimmedAt": "2026-01-18T17:11:33.316Z",
+      "sizeReduction": "99.7%"
+    },
+    {
+      "url": "https://guadalajarabarandgrill.com/",
+      "text": "Welcome to Guadalajara Bar & Grill Guadalajara’s fresh twist on Mexican food is all you need to experience that south of the border taste you crave. Whether you’re hungry or thirsty, we’ve got everything you want here at Guadalajara’s Learn More View Our Menu Hola amigos! We are OPEN for dine in, outside seating, and take out Monday – Saturday 11AM-10PM and Sunday 12PM-9PM (843) 936-6356 ×",
+      "hash": "7f7c3be94576",
+      "downloadedAt": "2026-01-18T16:56:20.068Z",
+      "trimmedAt": "2026-01-18T17:11:33.318Z",
+      "sizeReduction": "99.0%"
+    },
+    {
+      "url": "http://guadalajarabarandgrill.com/",
+      "text": "Welcome to Guadalajara Bar & Grill Guadalajara’s fresh twist on Mexican food is all you need to experience that south of the border taste you crave. Whether you’re hungry or thirsty, we’ve got everything you want here at Guadalajara’s Learn More View Our Menu Hola amigos! We are OPEN for dine in, outside seating, and take out Monday – Saturday 11AM-10PM and Sunday 12PM-9PM (843) 936-6356 ×",
+      "hash": "8801e1da6ace",
+      "downloadedAt": "2026-01-18T16:56:20.028Z",
+      "trimmedAt": "2026-01-18T17:11:33.320Z",
+      "sizeReduction": "99.0%"
+    },
+    {
+      "url": "https://guadalajarabarandgrill.com/menu/",
+      "text": "Menu LUNCH guadalajara lunch DINNER guadalajara dinner",
+      "hash": "a08a3e6338e7",
+      "downloadedAt": "2026-01-18T16:56:21.140Z",
+      "trimmedAt": "2026-01-18T17:11:33.325Z",
+      "sizeReduction": "99.9%"
+    },
+    {
+      "url": "http://guadalajarabarandgrill.com/menu",
+      "text": "Menu LUNCH guadalajara lunch DINNER guadalajara dinner",
+      "hash": "ce0f77829564",
+      "downloadedAt": "2026-01-18T16:56:27.736Z",
+      "trimmedAt": "2026-01-18T17:11:33.327Z",
+      "sizeReduction": "99.9%"
+    }
+  ],
+  "sizeReduction": "99.6%"
+}

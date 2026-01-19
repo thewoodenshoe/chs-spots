@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJe9PGxfxw_ogR8hSym7Q7d1c",
+  "venueName": "Shem Creek Crab House",
+  "venueArea": "Mount Pleasant",
+  "website": "http://www.shemcreekcrabhouse.com/",
+  "scrapedAt": "2026-01-18T17:04:28.532Z",
+  "trimmedAt": "2026-01-18T17:11:22.153Z",
+  "pages": [
+    {
+      "url": "http://www.shemcreekcrabhouse.com/",
+      "text": "",
+      "hash": "cf98ba7bff3a",
+      "downloadedAt": "2026-01-18T16:57:06.830Z",
+      "trimmedAt": "2026-01-18T17:11:22.153Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

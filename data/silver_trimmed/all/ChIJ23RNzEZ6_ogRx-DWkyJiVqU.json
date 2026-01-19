@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJ23RNzEZ6_ogRx-DWkyJiVqU",
+  "venueName": "The Grocery",
+  "venueArea": "Mount Pleasant",
+  "website": "http://www.thegrocerycharleston.com/",
+  "scrapedAt": "2026-01-18T17:04:23.136Z",
+  "trimmedAt": "2026-01-18T17:04:46.990Z",
+  "pages": [
+    {
+      "url": "http://www.thegrocerycharleston.com/",
+      "text": "A neighborhood gathering place featuring ingredients from our favorite farmers, fishermen, foragers and artisans. Learn More An experience to share. Menus Dinner / Beverage Welcoming you for every occasion. Tuesday - Sunday Opening at 5:00 Dinner Reservations",
+      "hash": "2e60d368e861",
+      "downloadedAt": "2026-01-18T16:57:26.856Z",
+      "trimmedAt": "2026-01-18T17:04:46.990Z",
+      "sizeReduction": "98.0%"
+    }
+  ],
+  "sizeReduction": "98.0%"
+}

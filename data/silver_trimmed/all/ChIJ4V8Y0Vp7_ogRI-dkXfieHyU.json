@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJ4V8Y0Vp7_ogRI-dkXfieHyU",
+  "venueName": "Cold Shoulder Gourmet",
+  "venueArea": "West Ashley",
+  "website": "http://coldshouldergourmet.com/",
+  "scrapedAt": "2026-01-18T17:04:23.551Z",
+  "trimmedAt": "2026-01-18T17:04:56.106Z",
+  "pages": [
+    {
+      "url": "http://coldshouldergourmet.com/",
+      "text": "",
+      "hash": "335bd4df8488",
+      "downloadedAt": "2026-01-18T17:02:13.739Z",
+      "trimmedAt": "2026-01-18T17:04:56.106Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

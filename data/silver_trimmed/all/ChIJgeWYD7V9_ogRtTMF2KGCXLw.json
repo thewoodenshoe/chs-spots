@@ -1,0 +1,43 @@
+{
+  "venueId": "ChIJgeWYD7V9_ogRtTMF2KGCXLw",
+  "venueName": "CHS Golf",
+  "venueArea": "West Ashley",
+  "website": "http://chs-golf.com/",
+  "scrapedAt": "2026-01-18T17:04:28.712Z",
+  "trimmedAt": "2026-01-18T17:11:25.431Z",
+  "pages": [
+    {
+      "url": "http://chs-golf.com/charleston-chs-golf-events",
+      "text": "Events We are updating our events Please stay tuned",
+      "hash": "436efa5159c8",
+      "downloadedAt": "2026-01-18T17:02:14.805Z",
+      "trimmedAt": "2026-01-18T17:11:25.414Z",
+      "sizeReduction": "99.9%"
+    },
+    {
+      "url": "http://chs-golf.com/",
+      "text": "× We are taking online reservations! Let’s ensure you get a bay: Book today! Book your Trackman Golf Bay today! Book Now Parties & Groups - Host your next party or get together Book your party Parties & Groups - Host your next party or get together 1919 Savannah Highway, Charleston, SC 29407 map marker pin welcome to CHS Golf Join us today Whiskey Bar Full bar available Up scale bar with top notch Whiskeys and bourbons. Drinks Unwind. Relax. Enjoy. Golf Bays with Trackman Technology Book Now Trackman golf Simulator Our menu, wherever you want it Our Menu Dot slide navigation number 1 Dot slide navigation number 2 slideshow start stop playing Newsletter Location 1919 Savannah Highway Charleston, SC 29407 Hours Monday-Saturday 12 pm-10 pm Sunday: 11 a.m.- 7 p.m. Find us on... Facebook page Instagram page Contact us (843)-268-8922 CHSgolf.info@gmail.com Powered by: Website design, Social Media marketing and Email marketing provided by SpotHopper. × Newsletter",
+      "hash": "706f5fa0d35a",
+      "downloadedAt": "2026-01-18T17:02:13.826Z",
+      "trimmedAt": "2026-01-18T17:11:25.427Z",
+      "sizeReduction": "99.2%"
+    },
+    {
+      "url": "http://chs-golf.com/charleston-chs-golf-drink-menu",
+      "text": "Our Drinks We are updating our menu Please stay tuned",
+      "hash": "82eedcd7d462",
+      "downloadedAt": "2026-01-18T17:02:15.465Z",
+      "trimmedAt": "2026-01-18T17:11:25.429Z",
+      "sizeReduction": "99.9%"
+    },
+    {
+      "url": "http://chs-golf.com/charleston-chs-golf-food-menu",
+      "text": "Our Menu Menu",
+      "hash": "8920ea6c8c4b",
+      "downloadedAt": "2026-01-18T17:02:13.943Z",
+      "trimmedAt": "2026-01-18T17:11:25.431Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "99.7%"
+}

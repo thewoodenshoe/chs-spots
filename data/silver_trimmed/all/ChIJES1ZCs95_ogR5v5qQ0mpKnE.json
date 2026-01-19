@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJES1ZCs95_ogR5v5qQ0mpKnE",
+  "venueName": "Paddock & Whisky",
+  "venueArea": "West Ashley",
+  "website": "http://www.paddockandwhisky.com/",
+  "scrapedAt": "2026-01-18T17:04:24.499Z",
+  "trimmedAt": "2026-01-18T17:05:24.226Z",
+  "pages": [
+    {
+      "url": "http://www.paddockandwhisky.com/",
+      "text": "",
+      "hash": "ca785ddf7202",
+      "downloadedAt": "2026-01-18T17:03:07.363Z",
+      "trimmedAt": "2026-01-18T17:05:24.226Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

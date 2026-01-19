@@ -1,0 +1,35 @@
+{
+  "venueId": "ChIJVXYimARx_ogRGOPG9d4FbfY",
+  "venueName": "Flaming Wok",
+  "venueArea": "Mount Pleasant",
+  "website": "http://flamingwok.weebly.com/",
+  "scrapedAt": "2026-01-18T17:04:26.826Z",
+  "trimmedAt": "2026-01-18T17:08:04.689Z",
+  "pages": [
+    {
+      "url": "http://flamingwok.weebly.com/location.html",
+      "text": "Home Menu Location Home Page Menu Powered by Create your own unique website with customizable templates. Get Started Home Menu Location",
+      "hash": "b2bda8353fc6",
+      "downloadedAt": "2026-01-18T16:56:06.800Z",
+      "trimmedAt": "2026-01-18T17:08:04.681Z",
+      "sizeReduction": "99.4%"
+    },
+    {
+      "url": "http://flamingwok.weebly.com/",
+      "text": "Home Menu Location Flaming WokChinese Restaurant Click here for MENU Location 730 Coleman Blvd, Mt Pleasant, SC 29464 (843) 884-7999 Powered by Create your own unique website with customizable templates. Get Started Home Menu Location",
+      "hash": "d9fb5f87e822",
+      "downloadedAt": "2026-01-18T16:56:06.026Z",
+      "trimmedAt": "2026-01-18T17:08:04.685Z",
+      "sizeReduction": "98.9%"
+    },
+    {
+      "url": "http://flamingwok.weebly.com/menu.html",
+      "text": "Home Menu Location Home Page Location Powered by Create your own unique website with customizable templates. Get Started Home Menu Location",
+      "hash": "f2c7a9349edd",
+      "downloadedAt": "2026-01-18T16:56:06.168Z",
+      "trimmedAt": "2026-01-18T17:08:04.689Z",
+      "sizeReduction": "99.4%"
+    }
+  ],
+  "sizeReduction": "99.3%"
+}

@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJ5-eDnHp8_ogRZFBza8ajeIA",
+  "venueName": "R Pub",
+  "venueArea": "West Ashley",
+  "website": "https://www.facebook.com/R-PUB-126466520238/",
+  "scrapedAt": "2026-01-18T17:04:23.603Z",
+  "trimmedAt": "2026-01-18T17:04:59.341Z",
+  "pages": [
+    {
+      "url": "https://www.facebook.com/R-PUB-126466520238/",
+      "text": "",
+      "hash": "cd0913053b4d",
+      "downloadedAt": "2026-01-18T17:03:07.638Z",
+      "trimmedAt": "2026-01-18T17:04:59.341Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

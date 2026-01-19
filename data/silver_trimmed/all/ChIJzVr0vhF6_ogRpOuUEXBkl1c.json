@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJzVr0vhF6_ogRpOuUEXBkl1c",
+  "venueName": "Husk",
+  "venueArea": "Downtown Charleston",
+  "website": "http://huskrestaurant.com/",
+  "scrapedAt": "2026-01-18T17:04:32.192Z",
+  "trimmedAt": "2026-01-18T17:13:07.321Z",
+  "pages": [
+    {
+      "url": "http://huskrestaurant.com/",
+      "text": "Welcome to Husk Since 2011, Husk has been at the forefront of defining Southern cuisine, celebrating the flavors, traditions, and communities that embody the American South. With locations in Charleston, Nashville, and Savannah, Husk embraces a modern approach to Southern culinary traditions, showcasing seasonal ingredients sourced from local purveyors in each city. Located in these fine Southern cities Charleston Nashville Savannah Southern Ingredients A modern approach to Husk’s talented culinary team together with a carefully compiled network of local farmers and purveyors, builds on the South’s illustrious culinary legacy, enhancing heirloom flavors and long-standing food traditions with subtle global influences to reflect the modern American South.",
+      "hash": "0cfee64e9cfb",
+      "downloadedAt": "2026-01-18T16:54:14.692Z",
+      "trimmedAt": "2026-01-18T17:13:07.321Z",
+      "sizeReduction": "97.1%"
+    }
+  ],
+  "sizeReduction": "97.1%"
+}

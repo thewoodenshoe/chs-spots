@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJ7VHe3lp6_ogRMhK9L0b3YcE",
+  "venueName": "Faculty Lounge",
+  "venueArea": "West Ashley",
+  "website": "https://www.facebook.com/facultyloungechs/",
+  "scrapedAt": "2026-01-18T17:04:23.768Z",
+  "trimmedAt": "2026-01-18T17:05:04.401Z",
+  "pages": [
+    {
+      "url": "https://www.facebook.com/facultyloungechs/",
+      "text": "",
+      "hash": "20a8afefafc9",
+      "downloadedAt": "2026-01-18T17:02:24.093Z",
+      "trimmedAt": "2026-01-18T17:05:04.401Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

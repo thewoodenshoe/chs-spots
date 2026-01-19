@@ -126,7 +126,55 @@ export default function Map({ spots, selectedArea, selectedActivity }: MapProps)
                   {selectedSpot.activity}
                 </p>
               )}
-              {selectedSpot.description && (
+              
+              {/* Structured happy hour display with labels */}
+              {selectedSpot.happyHourTime && (
+                <div className="mb-2">
+                  <span className="font-semibold text-gray-700 text-sm">Time: </span>
+                  <span className="text-gray-800 text-sm">{selectedSpot.happyHourTime}</span>
+                </div>
+              )}
+              
+              {selectedSpot.happyHourList && selectedSpot.happyHourList.length > 0 && (
+                <div className="mb-2">
+                  <div className="font-semibold text-gray-700 text-sm mb-1">Happy Hour List:</div>
+                  <ul className="list-disc list-inside text-gray-800 space-y-0.5 ml-2">
+                    {selectedSpot.happyHourList.map((item, idx) => (
+                      <li key={idx} className="text-xs">{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {selectedSpot.sourceUrl && (
+                <div className="mb-2">
+                  <span className="font-semibold text-gray-700 text-sm">Source: </span>
+                  <a 
+                    href={selectedSpot.sourceUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline text-xs break-all"
+                  >
+                    {selectedSpot.sourceUrl}
+                  </a>
+                </div>
+              )}
+              
+              {selectedSpot.lastUpdateDate && (
+                <div className="mb-2">
+                  <span className="font-semibold text-gray-700 text-sm">Last Update Date: </span>
+                  <span className="text-gray-800 text-xs">
+                    {new Date(selectedSpot.lastUpdateDate).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </span>
+                </div>
+              )}
+              
+              {/* Fallback to description if new fields not available (backwards compatibility) */}
+              {!selectedSpot.happyHourTime && !selectedSpot.happyHourList && selectedSpot.description && (
                 <div className="text-sm text-gray-700 whitespace-pre-wrap">
                   {selectedSpot.description.substring(0, 200)}
                   {selectedSpot.description.length > 200 ? '...' : ''}

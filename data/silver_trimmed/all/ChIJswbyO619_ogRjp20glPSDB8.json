@@ -1,0 +1,35 @@
+{
+  "venueId": "ChIJswbyO619_ogRjp20glPSDB8",
+  "venueName": "Chef Loong Dim Sum & Soup Dumplings 笼师傅",
+  "venueArea": "West Ashley",
+  "website": "https://www.chefloongdimsum.com/",
+  "scrapedAt": "2026-01-18T17:04:31.460Z",
+  "trimmedAt": "2026-01-18T17:12:49.632Z",
+  "pages": [
+    {
+      "url": "https://www.chefloongdimsum.com/beverage-menu",
+      "text": "top of page bottom of page",
+      "hash": "400e641b49d4",
+      "downloadedAt": "2026-01-18T17:02:05.963Z",
+      "trimmedAt": "2026-01-18T17:12:49.531Z",
+      "sizeReduction": "100.0%"
+    },
+    {
+      "url": "https://www.chefloongdimsum.com/menu",
+      "text": "top of page Menu Tap to Open PDF Version Menu Gallery Scaillion Pancake ⭐️ Three Cup Chicken ⭐️ Beef Noodle Soup ⭐️ Mapo Tofu Five-Spice Drumstick General Tsao Chicken Sautéed Shanghai Bok Choy Signature Pork Soup Dumpling ⭐️ Peking Roast Duck w. Bun ⭐️ Mustard Dressing Jumbo Shrimp ⭐️ HK style Shumai ⭐️ Crab Rangoon Singapore Noodle oatmeal purple rice bun Pan Seared Pork Dumpling ⭐️ House Chicken Wing ⭐️ ChefLoong Beef ⭐️ HK style Hargow Yangzhou Fried Rice sticky rice with brown sugar dressing Pork Wonton Soup bottom of page",
+      "hash": "6c5059c68895",
+      "downloadedAt": "2026-01-18T17:02:05.378Z",
+      "trimmedAt": "2026-01-18T17:12:49.594Z",
+      "sizeReduction": "99.9%"
+    },
+    {
+      "url": "https://www.chefloongdimsum.com/",
+      "text": "top of page ORDER NOW ONLINE ORDERING ONLINE ORDERING WELCOME TO Chef Loong Dim Sum Address : 1662 Savannah Hwy, Charleston, SC 29407 Phone Number : 843-225-8225 RESERVE Savor the Taste of Tradition Welcome to Chef Loong Dim Sum, the premier Chinese restaurant in Charleston. We provide an authentic culinary experience and we use the freshest ingredients to create an extensive menu of Chinese dishes. Our cozy atmosphere adds to the experience. Come and join us for lunch or dinner, and you will enjoy a delectable meal that will leave you wanting more. Explore Food Menu Beverage Menu bottom of page",
+      "hash": "aeaabe8137f3",
+      "downloadedAt": "2026-01-18T17:02:05.246Z",
+      "trimmedAt": "2026-01-18T17:12:49.632Z",
+      "sizeReduction": "99.9%"
+    }
+  ],
+  "sizeReduction": "99.9%"
+}

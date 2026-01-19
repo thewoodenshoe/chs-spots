@@ -1,0 +1,43 @@
+{
+  "venueId": "ChIJMRaYTwBx_ogRDoZvLITIWBY",
+  "venueName": "Buffalo Wild Wings",
+  "venueArea": "Mount Pleasant",
+  "website": "https://www.buffalowildwings.com/locations/us/sc/mount-pleasant/715-johnnie-dodds-blvd/sports-bar-1899/?utm_source=google-my-business&utm_medium=organic&utm_campaign=website-link&y_source=1_MjAxNjYyNjYyNi03MTUtbG9jYXRpb24ud2Vic2l0ZQ%3D%3D",
+  "scrapedAt": "2026-01-18T17:04:25.529Z",
+  "trimmedAt": "2026-01-18T17:07:13.068Z",
+  "pages": [
+    {
+      "url": "https://www.buffalowildwings.com/menu/",
+      "text": "skip to main content Our Menu",
+      "hash": "00ea5b13de41",
+      "downloadedAt": "2026-01-18T16:55:48.077Z",
+      "trimmedAt": "2026-01-18T17:07:13.057Z",
+      "sizeReduction": "100.0%"
+    },
+    {
+      "url": "https://www.buffalowildwings.com/locations/us/sc/mount-pleasant/715-johnnie-dodds-blvd/sports-bar-1899/?utm_source=google-my-business&utm_medium=organic&utm_campaign=website-link&y_source=1_MjAxNjYyNjYyNi03MTUtbG9jYXRpb24ud2Vic2l0ZQ%3D%3D",
+      "text": "skip to main content Location Details | Buffalo Wild Wings",
+      "hash": "37c82335b0cd",
+      "downloadedAt": "2026-01-18T16:55:47.901Z",
+      "trimmedAt": "2026-01-18T17:07:13.060Z",
+      "sizeReduction": "99.9%"
+    },
+    {
+      "url": "https://www.buffalowildwings.com/promos/",
+      "text": "skip to main content Game Day Play PICK 6 MEAL FOR 2 The only game day play that matters. Get 2 entrees, 2 sides, and 2 drinks starting at $19.99. Dine-in, or order online or in the app.​ View terms Order Now​",
+      "hash": "a658098f4465",
+      "downloadedAt": "2026-01-18T16:55:49.281Z",
+      "trimmedAt": "2026-01-18T17:07:13.064Z",
+      "sizeReduction": "99.8%"
+    },
+    {
+      "url": "https://www.buffalowildwings.com/locations/",
+      "text": "skip to main content",
+      "hash": "d1998ef293ce",
+      "downloadedAt": "2026-01-18T16:55:48.678Z",
+      "trimmedAt": "2026-01-18T17:07:13.068Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

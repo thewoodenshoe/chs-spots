@@ -1,15 +1,267 @@
 [
   {
     "id": 1,
-    "lat": 32.8584797,
-    "lng": -79.91157559999999,
-    "title": "Orlando's Brick Oven Pizza",
-    "description": "11am-2:30pm • Monday-Friday\nPizza slices offered (lunch availability)",
+    "lat": 32.8972421,
+    "lng": -79.8210081,
+    "title": "Rivertowne Public House",
+    "description": "12pm-3pm • Sundays\n$9 Mimosas\n$18 Carafe Mimosa\n\n---\n\n4pm-7pm • Mondays\n$6 House Margaritas\n\n---\n\n12pm-4pm • Tuesdays\n$12 Taco Tuesday\n\n---\n\n4pm-7pm • Tuesdays\nKids Night! Half Price under 12 Menu\n\n---\n\n12pm-9pm • Wednesdays\n$12 RTPH House Wings\n\n---\n\n4pm-7pm • Wednesdays\n$1 Off All Wine Glasses\nHalf Price Wine Bottles\n\n---\n\n12pm-4pm • Thursdays\n$12 RTPH Burger & Pub Fries\n\n---\n\n4pm-7pm • Thursdays\n$8 Signature Martinis\n\n---\n\n12pm-4pm • Fridays\n$12 Pizzas",
     "type": "Happy Hour",
     "source": "automated"
   },
   {
     "id": 2,
+    "lat": 32.804287,
+    "lng": -80.0144093,
+    "title": "King Claw - Juicy Seafood & Bar",
+    "description": "12pm-3pm • Monday-Friday\nLunch specials starting at $9\nFried baskets, po’ boys, and select seafood boil options",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 3,
+    "lat": 32.7885131,
+    "lng": -79.9378189,
+    "title": "Halls Chophouse",
+    "description": "12:00pm-3:00pm • Specific: Saturday February 7th\n5-course wine lunch with pairings for $175++ per person (includes mussels & shrimp, gnocchi with boar ragù, duck breast, elk loin, cherry clafoutis)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 4,
+    "lat": 32.8076424,
+    "lng": -79.94484589999999,
+    "title": "The Kickin' Chicken",
+    "description": "4pm-7pm • Monday-Friday\nHappy Hour specials (details not specified)\n\n---\n\n11am-11pm • Monday\nAppetizer deals (details not specified)\n\n---\n\n11am-11pm • Tuesday\n3 Tacos for $10 - dine in only\n\n---\n\n11am-11pm • Wednesday\n10 Piece Nugget + side $7 - Dine In Only",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 5,
+    "lat": 32.8022428,
+    "lng": -79.9529594,
+    "title": "Moe's Crosstown Tavern",
+    "description": "4pm-7pm • Monday-Friday\nDrink specials",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 6,
+    "lat": 32.7825896,
+    "lng": -79.9860971,
+    "title": "Mellow Mushroom Charleston - West Ashley",
+    "description": "4:00-7:00PM • Monday-Friday\nBeer, Wine, and Cocktail Specials",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 7,
+    "lat": 32.8665174,
+    "lng": -80.0129872,
+    "title": "Holiday Inn Express & Suites Charleston Arpt-Conv Ctr Area by IHG",
+    "description": "6:00 AM – 10:00 AM • Daily\nComplimentary Express Start™ Breakfast buffet including eggs, bacon, pancakes, cinnamon rolls, cereal, yogurt, fruit, and coffee",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 8,
+    "lat": 32.7978268,
+    "lng": -80.024699,
+    "title": "Villa Cantina",
+    "description": "4pm-8pm • Daily\n\n---\n\n11am-10pm • Tuesday\nTaco Tuesday specials\n\n---\n\n10:30am-10pm • Sunday\nMimosa specials\nBirria toast and other brunch favorites",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 9,
+    "lat": 32.8216592,
+    "lng": -79.9913057,
+    "title": "The Kickin' Chicken",
+    "description": "4pm-7pm • Monday-Friday\n\n---\n\nMondays\nAppetizer deals (details not specified)\n\n---\n\nTuesdays\n3 Tacos for $10 (dine in only)\n\n---\n\nWednesdays\n10 Piece Nugget + side for $7 (dine in only)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 10,
+    "lat": 32.7932819,
+    "lng": -79.8650324,
+    "title": "Taco Bell",
+    "description": "2pm-5pm • Daily\n$1 medium drinks",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 11,
+    "lat": 32.8304275,
+    "lng": -79.82846769999999,
+    "title": "Condado Tacos",
+    "description": "Not specified • Not specified\nHappy Hour Specials\n\n---\n\nNot specified • Daily\nNew Daily Deals",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 12,
+    "lat": 32.7823137,
+    "lng": -79.9318736,
+    "title": "Matador Charleston",
+    "description": "11am-3pm • Monday-Friday\nMix & Match: Soup, choice of salad, and choice of entree for $16 (proteins: Chicken, Carnitas, Beyond Picadillo; add guacamole and cilantro-lime sour cream $3)\n\n---\n\n4pm-6pm • Daily\n$7 Romaine Salad\n$7 Crispy Brussels Sprouts\n$7 Black Bean Dip\n$7 Fried Tacos (2)\n$7 Chicken Tortilla Soup\n$7 Quesadilla (Cheese or with protein; +$2 for Steak or Shrimp)\n$8 Grande Nachos (add protein)\n$8 Matador Guacamole\n$8 Haba Prawns\n$8 Steak or Shrimp Tacos (2)\n$8 Baja Fish Tacos (2)\n$8 Queso Con Chorizo\nStreet Tacos: 3 for $8, 5 for $11 (choice of protein)\n\n---\n\n10pm-Close • Daily\n$7 Romaine Salad\n$7 Crispy Brussels Sprouts\n$7 Black Bean Dip\n$7 Fried Tacos (2)\n$7 Chicken Tortilla Soup\n$7 Quesadilla (Cheese or with protein; +$2 for Steak or Shrimp)\n$8 Grande Nachos (add protein)\n$8 Matador Guacamole\n$8 Haba Prawns\n$8 Steak or Shrimp Tacos (2)\n$8 Baja Fish Tacos (2)\n$8 Queso Con Chorizo\nStreet Tacos: 3 for $8, 5 for $11 (choice of protein)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 13,
+    "lat": 32.8584797,
+    "lng": -79.91157559999999,
+    "title": "Orlando's Brick Oven Pizza",
+    "description": "11am-2:30pm • Monday-Friday\nPizza slices offered (lunch special)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 14,
+    "lat": 32.7911939,
+    "lng": -79.940124,
+    "title": "Vintage Lounge",
+    "description": "6pm-8pm • Monday\nFlight of three Sicilian wines - complimentary to Gold Card members, $15 for non-members\n\n---\n\nUnspecified cocktail hour • Daily\nCocktail Hour - implied cocktail specials or focus",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 15,
+    "lat": 32.7235845,
+    "lng": -80.07711019999999,
+    "title": "Somm Wine Bar",
+    "description": "5:30pm-7:30pm • Wednesdays\n$10 smash burgers dine-in only\nNightly pour pairing suggested\n\n---\n\n11:00am-6:00pm • First Sunday of every month\nTwo bottles of wine (predominantly red)\nSamples of wines\nComplimentary charcuterie items\n10% off charcuterie, small plates and desserts\nAccess to purchase previous wines\n\n---\n\n11:00am-6:00pm • Second Sunday of every month\nTwo bottles of wine (predominantly red)\nSamples of wines including OG Club\nComplimentary premium charcuterie and small plates\n10% off charcuterie, small plates and desserts\n10% off at High Steaks Butcher Shop on pickup weekend\nAccess to purchase previous wines\n\n---\n\n3:00pm-6:00pm • Third Sunday of every month\nTwo bottles of wine (sparkling, rosé, white)\nSamples of wines\nComplimentary charcuterie items\n10% off charcuterie, small plates and desserts\nAccess to purchase previous wines\n\n---\n\n3:00pm-6:00pm • Fourth Sunday of every month\nTwo bottles of wine paired with book theme\nComplimentary charcuterie\n10% off charcuterie, small plates and desserts\nAccess to purchase previous wines\nBook discussion",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 16,
+    "lat": 32.8036062,
+    "lng": -80.0185657,
+    "title": "Señor Tequila",
+    "description": "11:00 AM - 09:30 PM • Specific: February 22nd (National Margarita Day)\nCelebrate National Margarita Day (implied margarita specials)\n\n---\n\n11:00 AM - 11:00 PM • Specific: February 14th (Valentine's Day)\nPerfect romantic evening (implied special experience)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 17,
+    "lat": 32.7354809,
+    "lng": -80.05454970000001,
+    "title": "Cabana Burgers & Shakes",
+    "description": "4pm-7pm • Monday-Friday\n$1 off all Draft Beer\n$4 Shots\n$1 off Wine By the Glass\n$1 off Signature Cocktails\n\n---\n\n11am-4pm • Monday-Friday\nCabana 2 for $16\n\n---\n\n4pm-9pm • Monday\n$2 off your favorite Starter\n\n---\n\n4pm-9pm • Tuesday\n$2 off Fish, Chicken and Shrimp Tacos\n\n---\n\n4pm-9pm • Wednesday\n$2 off your favorite Wings, Tenders, and More\n\n---\n\n4pm-9pm • Thursday\n$2 off your favorite Salad\n\n---\n\n4pm-10pm • Friday\n$2 Off your favorite entree\n\n---\n\n11am-10pm • Saturday\n$22 Pitchers of Beer for Pacifico, Ultra, and Kona\n$20 Bucket of bottle beer for Coors Light, Bud Light and Miller Lite\n$20 Bucket of Angry Orchard\n$5 off all bottles of wine\nNFL Playoff and Super Bowl Specials\n$2 Off Desserts and Milkshakes\n\n---\n\n11am-9pm • Sunday\n$22 Pitchers of Beer for Pacifico, Ultra, and Kona\n$20 Bucket of bottle beer for Coors Light, Bud Light and Miller Lite\n$20 Bucket of Angry Orchard\n$5 off all bottles of wine\nNFL Playoff and Super Bowl Specials\n$2 off your favorite Angus Burger",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 18,
+    "lat": 32.781288,
+    "lng": -79.9276941,
+    "title": "Church and Union Charleston",
+    "description": "5pm - close • Daily\n3-course prix-fixe menu for $50 per person (offered in addition to regular menu)\n\n---\n\n9am-3:30pm • Friday-Sunday\nMimosa $6\nFlavored Mimosa $7\nCadillac Mimosa $7\nMimosa Carafe $19-20\nMimosa Flight $18\nBloody Mary $14\nHouse-Infused Spicy Bloody $14\nEspresso Martini $17\n\n---\n\n3:30pm-5pm • Daily\nMidday menu items including Southern Salad $17\nMoroccan Meatballs $20\nChef Jamie’s Lamb Burger $23\nWagyu Bulgogi Lettuce Wraps $25\nPEI Mussels $24",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 19,
+    "lat": 32.7818603,
+    "lng": -79.93458550000001,
+    "title": "The Watch Rooftop Kitchen and Spirits",
+    "description": "4pm-7pm • Monday-Thursday\n$4 Cheeseburger Slider\n$7 Truffle Fries\n$5 Deviled Eggs\n$9 Fried Buffalo Brussels\n$7 Cocktails (Classic Margarita, Old Fashioned, Classic Daiquiri)\n$6 House Wines (Red, White, Rose, Sparkling)\n$5 Beers (Bud Light, Michelob Ultra, Miller High Life)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 20,
+    "lat": 32.88172659999999,
+    "lng": -79.97648559999999,
+    "title": "Basil Park Circle",
+    "description": "11am-3pm • Monday-Friday\nLower prices on menu items compared to dinner\ne.g., Pad Thai $10.95 (vs $19.50), Appetizers from $3.95 (vs higher)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 21,
+    "lat": 32.8823878,
+    "lng": -79.9754682,
+    "title": "LoLA",
+    "description": "Evenings (likely 4pm onward based on opening hours) • Tuesday-Friday\nGreat discounts on food and drinks",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 22,
+    "lat": 32.7928047,
+    "lng": -79.88187669999999,
+    "title": "Water's Edge",
+    "description": "4pm-7pm • Monday-Friday\n$2.75 Domestic Beers\n$3.75 Well Liquors\n$5 Select Wines\n$10 Bar Bites\n\n---\n\n11am-4pm • Saturday\n$3 Mexican Beers\n$5 Margaritas\n\n---\n\n10am-2pm • Sunday\nBrunch Buffet ($21)\nBuild Your Own Bloody Mary Bar (pick spirit + 15 mixes, 20 pickled vegetables, 30 hot sauces, and more)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 23,
+    "lat": 32.788346,
+    "lng": -80.01912,
+    "title": "Hunley's Neighborhood Grill",
+    "description": "4:00pm-7:00pm • Monday-Friday\nDrink specials",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 24,
+    "lat": 32.7823071,
+    "lng": -79.9278811,
+    "title": "Big John's Tavern",
+    "description": "4:00 PM - 7:00 PM • Monday-Friday\nBeat the Clock: All OTH Drafts start at $4.00 at 4 PM and increase by $1 until 7 PM\n\n---\n\n4:00 PM - 2:00 AM • Monday-Wednesday\nTwo For One Martinis\n\n---\n\n11:00 AM - 2:00 AM • Thursday-Sunday\nTwo For One Martinis\n\n---\n\n11:00 AM - 2:00 AM • Saturday-Sunday\n$25 Select Domestic Buckets\n$5 Shots\n\n---\n\n4:00 PM - 2:00 AM • Monday\n$25 Select Domestic Buckets\n$5 Shots\n\n---\n\nAll Evening • Tuesday\n$12 Big Johns Double Bacon Cheeseburger or East Bay Burger with Fries",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 25,
+    "lat": 32.7934868,
+    "lng": -79.9386135,
+    "title": "Bedford Falls CHS",
+    "description": "4:00pm-7:00pm • Monday-Friday\nHappy Hour (implied drink and food discounts)\n\n---\n\n9:30am-2:30pm • Saturday-Sunday\n$7 Bloody Marys and Mimosas",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 26,
+    "lat": 32.8816953,
+    "lng": -79.9765226,
+    "title": "Stems & Skins",
+    "description": "4pm-6pm • Monday-Friday\nAperitivo Hour (implied drinks and small plates specials)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 27,
+    "lat": 32.83124129999999,
+    "lng": -79.8298396,
+    "title": "P.F. Chang's",
+    "description": "Not specified • Daily\nHappy Hour specials (details not provided)\n\n---\n\n11:00 AM - Close (varies by day) • All Day Every Day\nHalf Priced Half Apps\n\n---\n\n3:00 PM - Close (varies by day) • Daily\nDinner Specials: Individual portions of popular entrees with starter and rice/noodles",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 28,
+    "lat": 32.8638763,
+    "lng": -80.0228652,
+    "title": "The Grit Counter - North Charleston",
+    "description": "3pm-6pm • Friday-Saturday\n$5 Craft Draft Beers\n$4 Mimosas\n$5 Mellow Creme Soda, Honeysuckle Spritzer & Frose\n$5 Pimp & Pups (Pimento Hushpuppies & Hot Pimento Cheese)\n$4.50 Lil' Counter Fries (Gouda Mornay, House Ranch, Scallions)\n$7 Waffle Slider (Hot Chicken, Hot Honey Drizzle, Syrup)\n$7 Lil' Smasher (Smashburger Patty, Fried Pickles, American Cheese, Ranch Dressing, Toasted Sesame Seed Bun)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 29,
+    "lat": 32.780588,
+    "lng": -79.927347,
+    "title": "Mac's Place",
+    "description": "4pm-7pm • Monday-Friday\n$1 off all liquor\n$1 off all beer\n$1 off all wine",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 30,
     "lat": 32.8619906,
     "lng": -79.90698689999999,
     "title": "Heavy's Barburger",
@@ -18,7 +270,367 @@
     "source": "automated"
   },
   {
-    "id": 3,
+    "id": 31,
+    "lat": 32.78105540000001,
+    "lng": -79.9300308,
+    "title": "TBonz Gill & Grill",
+    "description": "4pm-6pm • Monday-Friday\n$1 off all pints\n$5 house wine (Chardonnay, White Zinfandel, Cabernet Sauvignon, Merlot)\n$5 house liquors\n$7 Lowcountry Fried Pickles\n$10 Macho Nachos\n$7 Mozzarella Sticks",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 32,
+    "lat": 32.7796071,
+    "lng": -79.932841,
+    "title": "Kings Courtyard Inn",
+    "description": "Evening • Daily\nComplimentary wine & cheese reception\nComplimentary evening sherry",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 33,
+    "lat": 32.7929632,
+    "lng": -79.865819,
+    "title": "The Red Drum",
+    "description": "4pm-5pm • Tue-Sat\nLimited menu",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 34,
+    "lat": 32.94420540000001,
+    "lng": -80.04375879999999,
+    "title": "Locker Room Sports Cafe",
+    "description": "Pre-game • Varies (pre-game events)\nHappy hours\nUnbeatable specials",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 35,
+    "lat": 32.8563748,
+    "lng": -79.9710125,
+    "title": "Bar Weems",
+    "description": "10PM-12:30AM • Wednesday-Saturday\nLate Nite Menu",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 36,
+    "lat": 32.7630824,
+    "lng": -79.98576059999999,
+    "title": "Crust Wood Fired Pizza",
+    "description": "Not specified • Not specified\nUnbeatable happy hour specials\n\n---\n\n3pm-5pm • Daily\nQuiet hours - skip the wait",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 37,
+    "lat": 32.7955392,
+    "lng": -79.9543472,
+    "title": "Lillian’s Petite Market & Eatery",
+    "description": "4pm-6pm • Daily\nHappy Hour at the bar (craft cocktails, local beer, and natural wines)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 38,
+    "lat": 32.7148792,
+    "lng": -79.9656145,
+    "title": "California Tortilla",
+    "description": "after 5pm • Monday\nBuy a regular sized burrito and spin the Burrito Wheel - guaranteed to win something tasty",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 39,
+    "lat": 32.7774551,
+    "lng": -79.8104403,
+    "title": "The Boathouse at Breach Inlet",
+    "description": "4pm-6pm • Monday-Friday\nHappy Hour at the bar (drinks and appetizers)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 40,
+    "lat": 32.8099183,
+    "lng": -79.9473679,
+    "title": "Edmund's Original (Formerly Edmund's Oast)",
+    "description": "3pm-6pm • Monday-Friday\nSnacks: Chicken Salad Sliders (2) $7, Fried Bologna Sandwich $7, Coney Dog $7, Small Fry $4\nDrink Specials: $4 any Edmund's Original beer, $6 House White/Red/Rosé wine, $8 Edmund’s Old Fashioned or House Gimlet cocktails\n\n---\n\n11am-3pm • Every Sunday\nRotating Brunch Buffet: Adults $32, Children under 12 $20",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 41,
+    "lat": 32.7899652,
+    "lng": -79.9389803,
+    "title": "Uncork Charleston",
+    "description": "5pm-7pm • Sunday, Wednesday, Thursday, Friday, Saturday\n$10 Craft Cocktails\n$9-$10 Select Dishes\n$7.25 Local Draft Beers\n15% Off Wine\n\n---\n\n4pm-11pm • Tuesday\n$6 Vodka or Tequila Sodas\n$6 Lemon Drop Martinis\n\n---\n\n4pm-10pm • Wednesday\n$15 Pastas",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 42,
+    "lat": 32.7706007,
+    "lng": -79.9308234,
+    "title": "20 South Battery",
+    "description": "Afternoon • Daily\nArtisanal cheeses, charcuterie, and refreshments in the Grand Ballroom",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 43,
+    "lat": 32.7826083,
+    "lng": -79.93202819999999,
+    "title": "Little Palm",
+    "description": "4pm-6pm • Monday-Thursday\nHappy Hour specials (details not specified in menu; likely drink and bar discounts based on explicit naming)\n\n---\n\n11am-5pm • Monday-Friday\nLunch Combo: Half Cuban Sando with choice of seasonal soup or salad and soft drink or iced tea for $24",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 44,
+    "lat": 32.729864,
+    "lng": -79.9351787,
+    "title": "Edison James Island",
+    "description": "4pm-9pm • Wednesday\nAll wine bottles half price",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 45,
+    "lat": 32.7920452,
+    "lng": -79.8813182,
+    "title": "Red's Ice House",
+    "description": "All Day • Daily\nCold beer\nFresh seafood",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 46,
+    "lat": 32.779717,
+    "lng": -79.92697439999999,
+    "title": "New York City Pizza",
+    "description": "Not specified • Not specified\nSpecial Happy Hour Menu",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 47,
+    "lat": 32.7352752,
+    "lng": -80.05484,
+    "title": "Tolli’s Trattoria",
+    "description": "11am-3pm • Monday\nHandwich combos $12.50 (reduced from $15 full subs, includes choice of side)\nN.Y. Steak Bomb sub available only until 3pm",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 48,
+    "lat": 32.8758647,
+    "lng": -80.0216968,
+    "title": "Sportsbook Cheesesteaks & Wings",
+    "description": "11:00 AM - 09:00 PM • Tuesday\nTwo Cheesesteak Tacos for $6\n$6 Margaritas\n\n---\n\n11:00 AM - 09:00 PM • Wednesday\nHalf-priced bone-in wings\n$6 Wicked Weed Pints",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 49,
+    "lat": 32.8223929,
+    "lng": -79.99231520000001,
+    "title": "Ms. Rose's Fine Food & Cocktails",
+    "description": "Not specified • Not specified\nHappy Hour menu available\n\n---\n\nNot specified • Weeknights\nWeeknight Specials",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 50,
+    "lat": 32.7779542,
+    "lng": -79.9324936,
+    "title": "82 Queen",
+    "description": "2:00pm-5:00pm • Daily\nMid-Day Menu",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 51,
+    "lat": 32.78492589999999,
+    "lng": -79.9359022,
+    "title": "The Bangkok Lounge",
+    "description": "5pm onward • Mondays\nHalf-Priced Punch Bowls\n\n---\n\n5pm onward • Tuesdays\n$3 Bourbon Rock\n\n---\n\n5pm onward • Daily\nDaily specials on signature Bangkok Punch and frozen drinks",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 52,
+    "lat": 32.7157128,
+    "lng": -79.967795,
+    "title": "Fam's Brewing Co. featuring Famulari's Pizzeria",
+    "description": "4pm-7pm • Monday-Friday\n$5 FBC Drafts (under 7% ABV)\n$5 Glasses of House Red or White Wine\n$5 House Liquor Drinks\n$5 House Draft Margaritas (dine-in only)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 53,
+    "lat": 32.79201,
+    "lng": -79.873423,
+    "title": "The Perch",
+    "description": "4pm-7pm • Monday-Friday\n$5 beers\nHalf off appetizers",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 54,
+    "lat": 32.8134556,
+    "lng": -80.0418675,
+    "title": "Baroni's New York Pizza",
+    "description": "4pm-9pm • Sunday\n18\" JUMBO New York Cheese Pizza for $16.00 (carry-out or dine-in)\n\n---\n\n4pm-9pm • Monday\nBuy any size pizza at menu price, get second of equal or lesser value 50% off\n\n---\n\n11am-9pm • Tuesday\nBuy any calzone at menu price, get second of equal or lesser value 50% off\n\n---\n\n4pm-9pm • Wednesday\nHalf-price appetizers (dine-in only, excludes chicken wings & tenders)\n\n---\n\n4pm-9pm • Thursday\nHalf-price desserts (dine-in only)\n\n---\n\n11am-10pm • Friday\n14\" Large 2-Topping Pizza + Dozen Wings for $30.95 (online order only; upgrade to 16\" for $32.95)\n\n---\n\n11am-10pm • Saturday\nTwo 14\" Large 2-Topping Pizzas for $30.95 (online order only; upgrade to two 16\" for $35.95)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 55,
+    "lat": 32.81680089999999,
+    "lng": -79.9534182,
+    "title": "Edmund's Oast Brewing Co.",
+    "description": "4pm-6pm • Monday-Friday\nHalf off draft beers\nRotating food and drink specials",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 56,
+    "lat": 32.7331172,
+    "lng": -80.0572174,
+    "title": "The Southern General",
+    "description": "4pm-7pm • Tuesday-Friday\nAll House Specialty Items $2.00 Off",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 57,
+    "lat": 32.76246799999999,
+    "lng": -79.836618,
+    "title": "Wine Shop Sullivan's",
+    "description": "Anytime • Daily\n1 complimentary glass of vino voucher with Wine Club membership",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 58,
+    "lat": 32.78611009999999,
+    "lng": -79.93501359999999,
+    "title": "Big Gun Burger Shop & Bar",
+    "description": "4pm-6pm • Monday-Friday\n$3 Tacos (Pork or Vegan)\n$4 House Liquor\n$10 Classic Burger with Fries\n$2.50 Pabst",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 59,
+    "lat": 32.7922967,
+    "lng": -79.9434821,
+    "title": "Bistronomy By Nico",
+    "description": "5pm-6pm • Monday, Wednesday, Thursday\nHouse Wine $6\nHouse Beer $6\nWell Drink $6\nProper Champagne $15 Bottle of Veuve Clicquot\n1/2-Off Select Food Items\n\n---\n\n4pm-6pm • Friday-Sunday\nHouse Wine $6\nHouse Beer $6\nWell Drink $6\nProper Champagne $15 Bottle of Veuve Clicquot\n1/2-Off Select Food Items\n\n---\n\nAll day (inferred from business hours) • Monday\nHalf-Off Burger",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 60,
+    "lat": 32.8036194,
+    "lng": -79.88835139999999,
+    "title": "Graze Restaurant",
+    "description": "5pm-7pm • Monday-Thursday\nFood and Drink Specials",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 61,
+    "lat": 32.8052379,
+    "lng": -79.8924535,
+    "title": "Grace & Grit",
+    "description": "4:00pm-6:30pm • Wednesday-Friday\nHappy Hour (discounted drinks and/or appetizers implied)\n\n---\n\n5:00pm-9:00pm • Thursday\nLobster Night: 3 Cold Water Petite Lobster Tails with Choice of 2 Sides for $42",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 62,
+    "lat": 32.84069760000001,
+    "lng": -79.8574702,
+    "title": "Dog and Duck",
+    "description": "4pm-7pm • Daily\n$3.50 House Liquor\n$3 Domestic Bottles\n$4 House Wine\n$5 Cecchi Wines\n$5 Rumplemintz / Jager / Jameson / Jack Daniels / Lunazul / Fireball\n\n---\n\n11am-4pm • Saturday-Sunday\n$15 Buckets of Mimosas\n$5 Hair-of-the-Dog Bloody Marys",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 63,
+    "lat": 32.8126718,
+    "lng": -79.9538176,
+    "title": "Container Bar",
+    "description": "Not specified • Not specified\nPBR $2.50\nTecate $3\nYuengling Draft $3\nBud Light $3.00\nNarragansett Lager $3.50\nHouse Wine $5\nWell Liquor $4\nJameson $5\nEspolon $5\nTitos $5\nFireball Whiskey $5\nHot Dog $1\nChips $2\n\n---\n\n1pm-4pm • Sundays\nCrab Leg Buckets $25\n\n---\n\nEvening • Wednesdays\nDiscounts for F&B Peeps",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 64,
+    "lat": 32.7620964,
+    "lng": -79.98461569999999,
+    "title": "The James",
+    "description": "5pm-6pm • Monday-Tuesday\nHappy Hour specials (Bar & Lounge only)\n\n---\n\n4pm-6pm • Wednesday-Friday\nHappy Hour specials (Bar & Lounge only)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 65,
+    "lat": 32.81136739999999,
+    "lng": -79.9493361,
+    "title": "Heavy's Barburger",
+    "description": "4pm-6pm • Monday-Friday\n$5 Shorty Margaritas\nNeighborhood Draft Beer\nGlass of House Wine\nJack & Coke\nTito’s Vodka & Soda",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 66,
+    "lat": 32.812153,
+    "lng": -79.8794727,
+    "title": "Community Table",
+    "description": "4:00pm-5:30pm • Mon-Sat",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 67,
+    "lat": 32.8557926,
+    "lng": -80.0420396,
+    "title": "Jungle's Bar and Grill",
+    "description": "4pm-8pm • Daily\n$1 off All Drinks\n$5 Wing Baskets\n\n---\n\n4pm-8pm • Monday\nLima Beans $14 with rice, smoked turkey, or neckbone\n\n---\n\n11:30am-10pm • Thursday\nOxtail specials with Rice, Beans, and mixed Veggies (corn, beans, cabbage) - served until sold out",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 68,
+    "lat": 32.74040859999999,
+    "lng": -79.9664844,
+    "title": "Locals Sushi & Sports Pub - James Island",
+    "description": "Happy Hour (specific times not provided) • Not specified (implied daily or weekly)\nHappy hour specials\nWeekly specials",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 69,
+    "lat": 32.8107944,
+    "lng": -79.86480379999999,
+    "title": "Tru Blues House of Wings",
+    "description": "4pm onwards • Monday\nMeatloaf special",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 70,
+    "lat": 32.8792875,
+    "lng": -79.97993699999999,
+    "title": "Katsubō",
+    "description": "4pm-6pm • Monday-Friday\n$9 House Cocktails\n$6 Well Liquor\n$8 Hitachino Nest White Ale\n$4 Kirin\n$12 Ramen Bowls\n$5 Fry Baskets",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 71,
     "lat": 32.8637094,
     "lng": -79.90362089999999,
     "title": "Dragon Palace Chinese Bistro",
@@ -27,7 +639,115 @@
     "source": "automated"
   },
   {
-    "id": 4,
+    "id": 72,
+    "lat": 32.8348274,
+    "lng": -80.04576109999999,
+    "title": "Cedar Creek Tavern Charleston",
+    "description": "Not specified • Daily\nHappy Hour specials implied but details unavailable",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 73,
+    "lat": 32.7918624,
+    "lng": -80.033638,
+    "title": "Hachiya Japanese Steakhouse and Sushi Bar",
+    "description": "4pm-5pm • Tuesday-Sunday\nEarly Bird Specials: Filet Mignon Dinner $26\nTeriyaki Chicken $21\nHibachi Chicken $22\nRibeye Steak & Shrimp $28\nRibeye Steak & Teriyaki Chicken $27.50\nTeriyaki Chicken & Shrimp $24\n*No Sharing on Early Bird Specials\n*Dine-In Only, seated before 5pm to qualify",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 74,
+    "lat": 32.7774484,
+    "lng": -79.8103782,
+    "title": "Crow Bar",
+    "description": "4pm-6pm • Monday-Friday\nHappy Hour at bar only (drinks and appetizers implied)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 75,
+    "lat": 32.9407184,
+    "lng": -80.0459254,
+    "title": "Holiday Inn Express & Suites Charleston - Northwoods by IHG",
+    "description": "5:30pm-7pm • Tuesday-Wednesday\nComplimentary local craft beer, wines, sodas and snacks",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 76,
+    "lat": 32.7900542,
+    "lng": -79.9390403,
+    "title": "Silver Dollar",
+    "description": "6pm-8pm • Monday-Friday\n$5 Local Drafts\n$5 House Liquors & Wines\n\n---\n\n6pm-2am • Sunday, Monday, Tuesday\n$5 Fernet, Tullamore Dew, and Lunazul drinks or shooters\n$5 local drafts\n\n---\n\n9pm-2am • Wednesday\n$5 Wild Bill Shots\n\n---\n\n6pm-2am • Thursday\nDollaRitas ($1 Margs) while supplies last\nMug Night: Buy a mug for $7 and fill with $5 house liquors or drafts\n$5 well drinks",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 77,
+    "lat": 32.8010943,
+    "lng": -80.0192137,
+    "title": "Metro Diner",
+    "description": "after 3pm • Daily\nDin(n)er Deals: entrée combos starting at $10.99 including salad or soup and drink\n\n---\n\nAll day • Every Friday\nFish Fry Fridays: Fish & Chips with free soup or salad for $12.99",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 78,
+    "lat": 32.7814812,
+    "lng": -79.9299322,
+    "title": "Frannie & The Fox",
+    "description": "5pm-7pm • Tuesday-Saturday\nFoxy Hour: elegant cocktails paired with savory bites",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 79,
+    "lat": 32.7970536,
+    "lng": -79.99849859999999,
+    "title": "Café Roca",
+    "description": "4pm onward (wine bar hours) • Wednesdays\n1/2 off select bottles of wine",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 80,
+    "lat": 32.8027804,
+    "lng": -79.9448572,
+    "title": "The Archer",
+    "description": "Not specified • Every Day\nHappy hour available (details not provided)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 81,
+    "lat": 32.7803192,
+    "lng": -79.93452409999999,
+    "title": "AZUR",
+    "description": "5:00 PM - 9:00 PM • Saturday\n4 course Valentine's Dinner for $135 pp\n\n---\n\n6:30 PM - 11:00 PM • Wednesday\n4 course South Africa Wine Pairing Dinner for $135 pp\n\n---\n\n5:30 PM - 11:00 PM • Wednesday\n5 Course New Year's Celebration Dinner for $110 pp\n\n---\n\n6:30 PM - 10:00 PM • Wednesday\n4 Course Champagne Dinner for $165\n\n---\n\n6:15 PM - 9:00 PM • Wednesday\nCurated sampling of 6 wines with gourmet bites for $165",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 82,
+    "lat": 32.77642240000001,
+    "lng": -79.93361159999999,
+    "title": "John Rutledge House Inn",
+    "description": "Afternoon • Daily\nComplimentary tea & light hors d’oeuvres\n\n---\n\nEvening • Daily\nComplimentary port, sherry, or brandy; night cap option",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 83,
+    "lat": 32.8298574,
+    "lng": -79.82862449999999,
+    "title": "SAVI Cucina + Wine Bar",
+    "description": "3pm-6pm • Daily\nspecially priced beverages\nhappy hour bites\n\n---\n\n3pm-6pm • Daily\nAperitivo Hour (implied drinks and light bites)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 84,
     "lat": 32.8620785,
     "lng": -79.9046341,
     "title": "Wasabi of Daniel Island",
@@ -36,7 +756,142 @@
     "source": "automated"
   },
   {
-    "id": 5,
+    "id": 85,
+    "lat": 32.7411971,
+    "lng": -80.04151110000001,
+    "title": "Low Tide Brewing",
+    "description": "12pm-4pm • Super Bowl Sunday\nTo-Go Beer Special\n\n---\n\n12pm-4pm • New Year's Eve\nNYE Specials\n\n---\n\n5pm-8pm • Daily (inferred from patterns)\nFood truck availability (various trucks)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 86,
+    "lat": 32.776716,
+    "lng": -79.92719699999999,
+    "title": "Bar Vauté",
+    "description": "4pm-6pm • Monday-Friday\nSpéciale French Happy Meal: burger de la banque, pommes frites, & a martini for $25\nSalade de maison for $12 (regular $16)\nChilled oysters: half dozen $18, dozen $36 (regular half $24, dozen $48)\nSmoked fish rillette for $13 (regular $16)\nEscargots for $15 (regular $19)\nBurger de la Banque for $18 (includes pommes frites; regular $23+)\nPommes frites for $5 (regular $8)\nSelect cocktails: French 75 $12, Fleur De Lis $12, Lillet Spritz $11, French Martini $12, Old Fashioned $12\nSelect wines: Renjardiere Côtes-du-Rhône $9, Maison Mirabeau Rosé $9, Domaine de Bernier Chardonnay $9\nBeer: Kronenbourg 1664 $7",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 87,
+    "lat": 32.70974100000001,
+    "lng": -79.966638,
+    "title": "Cannon Distillery",
+    "description": "11am-2pm • Every Saturday\n$7 Signal Point Bloody Mary's\n$7 Early Bird Coffee Drinks\nBrunch buffet and cereal bar\n\n---\n\n7pm-10pm • Every Friday\nSpecial drink from Virgil Kaine",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 88,
+    "lat": 32.81160500000001,
+    "lng": -80.0443548,
+    "title": "Underground Chuck’s",
+    "description": "Bar hours (specific times not detailed) • Monday-Friday\nGreat drinks and craveable bites at better prices\nGreat selection of local craft beer, creative cocktails and more",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 89,
+    "lat": 32.876,
+    "lng": -80.0130219,
+    "title": "Lasso Gaucho Brazilian Steakhouse Charleston",
+    "description": "Not specified • Not specified\nSpecials updating - please stay tuned",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 90,
+    "lat": 32.7768528,
+    "lng": -79.92864879999999,
+    "title": "Blind Tiger Pub",
+    "description": "4pm-7pm • Monday, Tuesday, Wednesday, Friday\n$5 Local Drafts\n$5 House Liquor\n$5 Draft Wine\n\n---\n\n11am-2am • Sunday\n$15 Mimosa Carafes\n$10 Bloody Marys\n$8 High Noons\n$5 Irish Breakfast Shooters\n\n---\n\n11am-2am • Tuesday\nSpecials on Food + Select Draft Beers for all Hospitality & Food & Bev workers\n\n---\n\n11am-12am • Wednesday\n25% off all bottles of wine\n$2 off all appetizers\n\n---\n\n11am-2am • Thursday\n$6 Zest Shots\n$10 Frozen Drinks\n$25 Domestic Buckets",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 91,
+    "lat": 32.8098276,
+    "lng": -79.9471066,
+    "title": "Edmund's Oast Exchange",
+    "description": "3pm-6pm • Monday-Friday\n$4 any Edmund's Original beer\n$6 House White, Red, or Rosé wine\n$8 Edmund’s Old Fashioned or House Gimlet cocktails\n$7 Chicken Salad Sliders (2)\n$7 Fried Bologna Sandwich\n$7 Coney Dog\n$4 Small Fry",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 92,
+    "lat": 32.7933653,
+    "lng": -79.8681137,
+    "title": "MIX",
+    "description": "4pm-8pm • Monday-Friday\n$2 off drafts\n$4 wells\n$5 John Dalys\n50% off wine\n$1 wings\n$5 cheese pizza\n\n---\n\nAll Day (during NCAA football games) • Saturday\n$1 wings (min 6 bone-in or boneless)\n$2.50 PBR tall boys",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 93,
+    "lat": 32.8113694,
+    "lng": -79.86155509999999,
+    "title": "Five Loaves Cafe",
+    "description": "3pm-5pm • Wednesday, Saturday\nDiscounted wine, cocktails, and small plates\n\n---\n\nevenings • Monday\nHalf price appetizers and entrees for Food & Beverage industry with proof of paystub\n\n---\n\nall day • Monday\nHalf price bottles of wine\n\n---\n\n5pm-9pm • Tuesday\nFree entrée with purchase of any appetizer and drink (dine-in via Blackbird app; Summerville only)\n\n---\n\n5pm-9pm • December 31\nSpecial New Year's Eve dinner for two at $80/couple including appetizer, two entrees, dessert, and champagne (walk-in only; both locations)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 94,
+    "lat": 32.8031182,
+    "lng": -79.9413659,
+    "title": "Taco Boy Charleston",
+    "description": "3pm-6pm • Daily\nFree chips & salsa\nChips & Queso $5\nMini Nachos $6\nAmericano Taco $3\nTinga Taco $4\nCarnitas Taco $4\n$5 house margaritas\n\n---\n\nAll day • Monday\n1/2 price wings\n$2 PBRs\n\n---\n\nAll day • Tuesday\n$5 Casa Margaritas (rocks, frozen, skinny)\n\n---\n\nUntil 4pm • Monday-Friday\nWeekday Lunch Combo $14 (2 tacos, rice & beans, plus a drink; add chips & guac +$5)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 95,
+    "lat": 32.7810877,
+    "lng": -79.932321,
+    "title": "Thoroughbred Club",
+    "description": "4pm-7pm • Daily\n$5 beers\nHalf off appetizers",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 96,
+    "lat": 32.8813739,
+    "lng": -79.97745220000002,
+    "title": "Jackrabbit Filly",
+    "description": "During transition from lunch to dinner menu • Daily\nSnacks and drink specials at the bar",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 97,
+    "lat": 32.7779266,
+    "lng": -79.93233230000001,
+    "title": "The Elliott House Inn",
+    "description": "Every evening • Daily\nComplimentary Wine & Cheese reception",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 98,
+    "lat": 32.785785,
+    "lng": -79.7902498,
+    "title": "Sea Biscuit Cafe",
+    "description": "Not specified • Not specified\nHappy hour specials including alcohol",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 99,
+    "lat": 32.8539098,
+    "lng": -79.97400669999999,
+    "title": "PC Caribbean Delight",
+    "description": "4pm-6pm • Tuesday\nKids eat free",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 100,
     "lat": 32.8555203,
     "lng": -79.9032301,
     "title": "The Kingstide",
@@ -45,7 +900,115 @@
     "source": "automated"
   },
   {
-    "id": 6,
+    "id": 101,
+    "lat": 32.7922522,
+    "lng": -79.88305609999999,
+    "title": "Vickery's Bar & Grill",
+    "description": "4pm-7pm • Monday-Friday\n$3 Domestic Drafts\n$4 House Liquor\n$3 Domestic Bottles\n$4 House Wine\n$3 French Fries & Gravy\n$5.50 Black Bean Cake\n$5 Hushpuppies\n$6 Fried Green Tomato Tower\n$6 Artichoke Dip\n$6 Spring Rolls\n\n---\n\n5pm-10pm • Tuesday\n$10 Firefly Trio (Lime / Blueberry / Peach)\n$10 Tequila Trio (Dulce Vida Lime / Pineapple Jalapeño / Grapefruit)\n$8 Cheeseburger (lettuce, tomato, pickle & onion; choice of cheese)\nHalf off Appetizers (Fried Green Tomato Tower / Artichoke Dip / Spring Rolls / Black Bean Cake / Hush Puppies / French Fries & Gravy)\n\n---\n\n11am-2pm • Sunday\nBrunch dishes: Fried Chicken & French Toast $14\nHam or Crab Benedict $14 (Ham) / $16 (Crab)\nGrilled Breakfast Sandwich $14\nHangover Burger $17\n$6 Peach Bellini\n$7 Tito’s Bloody Mary\n$8 Patrón Cristalino Tequila Sunrise",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 102,
+    "lat": 32.81648609999999,
+    "lng": -79.9929167,
+    "title": "TBonz Gill & Grill",
+    "description": "4pm-6pm • Monday-Friday\n$1 off all pints\n$5 house wine (Chardonnay / White Zinfandel, Cabernet Sauvignon / Merlot)\n$5 house liquors\n$7 Lowcountry Fried Pickles (dill pickle chips, ranch dressing)\n$10 Macho Nachos (tortilla chips, chili, mixed cheese, lettuce, pico de gallo, sour cream, marinara sauce)\n$7 Mozzarella Sticks",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 103,
+    "lat": 32.872197,
+    "lng": -80.01570629999999,
+    "title": "Mellow Mushroom North Charleston",
+    "description": "4:00PM-7:00PM • Monday-Friday\nFeatured Munchie, Beer, Wine and Cocktail Specials",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 104,
+    "lat": 32.7914809,
+    "lng": -79.9403859,
+    "title": "King Street Dispensary",
+    "description": "4pm-6pm • Monday\n$5 local beers\n$5 glasses of wine\n\n---\n\n4pm-12am • Wednesday\n$6 glasses of Pinot Grigio\n$6 glasses of Pinot Noir\n$20 bottles of wine\n\n---\n\n11am-8pm • Thursday\n30% off bundle: caesar salad, truffle fries + espresso martini\n\n---\n\n11am-7pm • Friday\n25% off espresso martinis\n\n---\n\n1pm-11pm • Saturday\n$30 buckets of Modelo, Corona or Happy Dad\n\n---\n\n11am-10pm • Sunday\n$25 buckets of domestic beer",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 105,
+    "lat": 32.8588958,
+    "lng": -79.9690452,
+    "title": "Maya Del Sol Kitchen",
+    "description": "after 3pm • Tuesday-Friday\nLite bites\nDinner special",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 106,
+    "lat": 32.7769905,
+    "lng": -79.9282666,
+    "title": "The Establishment",
+    "description": "5pm-7pm • Tuesday-Saturday\nDiscounts on select wine and beer at the bar\nMartini Hour specials: Tito's Vodka-based martinis $12 (traditional, sweet, savory, spicy, winter varieties)\nFeatured wines by the glass $9 (Vinho Verde, Rosé of Grenache La Plage)\nHappy Hour beers: Island Coastal Lager $6, Revely Poke the Bear APA $7\nDiscounts on select spirits and cocktails",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 107,
+    "lat": 32.76246799999999,
+    "lng": -79.836618,
+    "title": "High Thyme Cuisine",
+    "description": "5pm-10pm • Monday\nHalf-price bottles of wine (excludes Reserve Wines)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 108,
+    "lat": 32.723982,
+    "lng": -79.967964,
+    "title": "Garage 75",
+    "description": "11:00am-3:00pm • Saturday-Sunday\nBallpark & Brunch Menu\n\n---\n\nAll day • Monday\n1/2 price burgers\n\n---\n\n10:00pm-2:00am • Tuesday\n$2.50 PBR\n$3 House Liquor\n$5 Car Bombs\n$4 Deep Eddys, Tullamore Dew, Milagro, Jager & Rumple\n\n---\n\n5:00pm-9:00pm • Wednesday\nSmash Burgers on the patio\n\n---\n\n5:00pm-10:00pm • Thursday\n20 Wings for $13.75\n\n---\n\n5:00pm-10:00pm • Friday\nNew Chef Specials",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 109,
+    "lat": 32.7901354,
+    "lng": -79.9390796,
+    "title": "Charleston Beer Works",
+    "description": "Monday-Friday\nHouse Liquor, House Wine and Local Draughts all $6 each\n\n---\n\n7pm • Wednesday\n$5 Local Brews for all runners",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 110,
+    "lat": 32.872673,
+    "lng": -79.97842399999999,
+    "title": "Holy City Brewing",
+    "description": "4pm-6pm • Monday-Thursday\nHalf-off 16oz. Flagship Draft Beer\n$6 Well Liquor, Wine and Cider\n$5 Featured Apps\n\n---\n\n4pm-6pm • Wednesday-Thursday\nHalf-Off Oysters (Raw Bar Happy Hour)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 111,
+    "lat": 32.77976209999999,
+    "lng": -79.9328039,
+    "title": "Fulton Lane Inn",
+    "description": "Evening • Daily\nWine & cheese reception (happy hour)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 112,
+    "lat": 32.7896534,
+    "lng": -79.9375659,
+    "title": "Share House",
+    "description": "4pm-8pm • Monday-Sunday\n1/2 Off Entire Bar\nChips & Salsa $3\nChips & Queso $3",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 113,
     "lat": 32.8590054,
     "lng": -79.90998499999999,
     "title": "Mac's Daniel Island",
@@ -54,7 +1017,241 @@
     "source": "automated"
   },
   {
-    "id": 7,
+    "id": 114,
+    "lat": 32.7939186,
+    "lng": -80.0554737,
+    "title": "Southern Roots Smokehouse",
+    "description": "Not specified • Every Wednesday\nHalf-priced prime brisket smash burgers\nLocal drink specials",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 115,
+    "lat": 32.7786744,
+    "lng": -79.9265571,
+    "title": "The Rooftop at the Vendue",
+    "description": "4pm-6pm • Sunday-Thursday\n$12 Signature Cocktails\n$9 Wines By The Glass (Chalk Hill Chardonnay, Intrinsic Cabernet Sauvignon, Costaross Prosecco)\n$6 Local Craft Beers (Coast HopArt IPA, Commonhouse White Point Lager, Frothy Beard Tides of Galway Irish Red Ale, Holy City Pluff Mud Porter, Revelry Never Sunny New England IPA, Trop Hop Peachy Wheat Ale, Trop Hop Tropical IPA, Westbrook White Thai)\n$4 Michelob Ultra\n$3 Miller High Life\n$4 Miller Lite\n$10 Flatbreads (Margherita, Seared Steak)\n$10 Mac & Cheese Bites",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 116,
+    "lat": 32.780193,
+    "lng": -79.9273161,
+    "title": "Amen Street Fish & Raw Bar",
+    "description": "4:00pm-7:00pm • Monday-Friday\nHappy Hour drink and bar bites specials\n\n---\n\n11:00am-10:00pm • Monday\n$12 mussels",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 117,
+    "lat": 32.8847749,
+    "lng": -80.03591569999999,
+    "title": "Charleston Beer Works",
+    "description": "4pm-7pm • Monday-Friday\nHouse Liquor, House Wine and Local Draughts all $6 each\n\n---\n\n7pm • Wednesday\n$5 Local Brews for all runners\n\n---\n\nEvening (during Sam Adams Music Series) • Friday\n$5 Sam Lager and Sam Seasonal",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 118,
+    "lat": 32.7800901,
+    "lng": -79.9320102,
+    "title": "Meeting Street Inn",
+    "description": "Evening • Daily\nComplimentary wine and cheese reception\n\n---\n\nEvening • Daily\nComplimentary milk and cookies in the lobby",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 119,
+    "lat": 32.79158,
+    "lng": -79.939881,
+    "title": "Indaco",
+    "description": "5pm-7pm • Monday-Friday\nLight bites: Marinated Olives $6, Polpette $10, Little Gem Lettuce $9, Pizza of the Day $12, Prosciutto Di Parma $16\nDrink specials: Peroni $7, Negroni $9, House Wine (Red, White, Rose) $9, Old Fashioned $9, Moscow Mule $9",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 120,
+    "lat": 32.7988362,
+    "lng": -80.03115989999999,
+    "title": "Sarku Japan",
+    "description": "All day (inferred) • Thursdays (Jan 8, 15, 22, 29)\nBOGO $2.99 Chicken Teriyaki Entrée (buy one regular-priced, get second for $2.99 + tax, app/online only)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 121,
+    "lat": 32.9204465,
+    "lng": -79.8689692,
+    "title": "Accent on Wine Point Hope",
+    "description": "5pm-7pm • Monday\nBeer Flight: 4 beers (4oz each) for $5\n\n---\n\nTuesday\nWine tasting: 4 wines for $15\n\n---\n\nWednesday\nWine tasting: 4 wines for $15 (Park Circle location only)\n\n---\n\nThursday\nTwo new wines by the glass (all locations)\n\n---\n\nFriday\nWine tasting: 4 wines for $15 (Point Hope location)\n\n---\n\nSaturday\nBellini or Mimosa special by the glass or carafe (all locations)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 122,
+    "lat": 32.79009459999999,
+    "lng": -79.93728229999999,
+    "title": "The Brick",
+    "description": "4pm-7pm • Monday-Friday\n$5 select drinks\n$5 bar snacks (e.g., Fried Pickles, Mac ‘n Cheese Bites, Loaded Fries)\n\n---\n\n4pm-10pm • Tuesday\n$3 tacos\n$5 Cazadores tequila",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 123,
+    "lat": 32.737363,
+    "lng": -79.9665349,
+    "title": "Taco Bell",
+    "description": "Not specified • Daily\nHappier Hour deals (details not provided in content)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 124,
+    "lat": 32.8389816,
+    "lng": -79.8175459,
+    "title": "Bricco Bracco",
+    "description": "Not specified (likely late afternoon/early evening based on business hours starting at 3pm) • Not specified\nHappy hour specials (details not provided)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 125,
+    "lat": 32.78026210000001,
+    "lng": -79.9285706,
+    "title": "Veranda Lounge",
+    "description": "11am-5pm • Thursday-Sunday\nAfternoon Tea Service $85 including scones, tea sandwiches, sweets, and pot of loose-leaf tea; optional cocktail additions available",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 126,
+    "lat": 32.8546509,
+    "lng": -79.9741834,
+    "title": "King BBQ",
+    "description": "3pm-6pm • Daily (Wed-Sun)\nfun snacks\n$6 drinks",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 127,
+    "lat": 32.7798671,
+    "lng": -79.93990099999999,
+    "title": "Circa 1886 Restaurant",
+    "description": "5pm-9pm • Monday-Tuesday, Thursday-Saturday\nThree courses from à la carte menu for $85 per person\n10% off tasting menus with wine pairings",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 128,
+    "lat": 32.7798744,
+    "lng": -79.9398818,
+    "title": "Wentworth Mansion, an SLH Hotel",
+    "description": "Afternoon • Daily\nComplimentary wine and hors d’oeuvres\n\n---\n\nEvening • Daily\nComplimentary port, sherry, and brandy",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 129,
+    "lat": 32.7804295,
+    "lng": -79.92922879999999,
+    "title": "French Quarter Inn",
+    "description": "Early evening (before stepping out) • Daily\nComplimentary wine & cheese reception with cured meats, cheeses, and bites\n\n---\n\nEvening • Daily\nLobby bar for cocktails and spirits",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 130,
+    "lat": 32.7359358,
+    "lng": -80.0540549,
+    "title": "Blu Smoke Pit",
+    "description": "3pm-6pm • Monday-Friday\n$1 Off Beer on Tap\n½ Price Bottles of Wine\n$2.75 Natural Light (all day)\n$4 Lunazul & Jameson\n½ Price Oysters",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 131,
+    "lat": 32.7963078,
+    "lng": -79.88674499999999,
+    "title": "The Kickin' Chicken",
+    "description": "4pm-7pm • Monday-Friday\nHappy Hour (details not specified; likely drink and food discounts)\n\n---\n\nAll day • Monday\nAppetizer DEALS (dine-in only)\n\n---\n\nAll day • Tuesday\n3 Tacos for $10 (dine-in only)\n\n---\n\nAll day • Wednesday\n10 Piece Nugget + side $7 (dine-in only)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 132,
+    "lat": 32.821458,
+    "lng": -79.8172597,
+    "title": "Opal Restaurant & Bar",
+    "description": "4pm-6pm • Daily\nChef’s Choice Charcuterie (2 meats and 1 cheese selected by the chef) $6\nSpicy Local Shrimp Bruschetta with Chiles and Garlic $6\nWarm House-made Mozzarella with Pickled Pepper Relish and Estate Olive Oil $8\nVeal & Ricotta Meatballs with Pomodoro $5\nOysters on the Half-Shell $2 each\nHouse Liquors $5\nSelected Wines by the Glass $6\nDraft Beer $5",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 133,
+    "lat": 32.7343444,
+    "lng": -80.0568618,
+    "title": "Minero Mexican Grill & Cantina",
+    "description": "4pm-6pm • Monday-Friday\nHappy Hour specials",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 134,
+    "lat": 32.8300722,
+    "lng": -79.8240312,
+    "title": "Nick's German Kitchen",
+    "description": "4pm-8pm • Thursday\n50% off wines by the bottle ($100 & under)\n\n---\n\n4pm-9pm • Tuesday-Wednesday\n$5 off authentic Pork Schnitzel Specialties",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 135,
+    "lat": 32.7854361,
+    "lng": -79.7899016,
+    "title": "The Dinghy",
+    "description": "4pm-7pm • Monday-Friday\nGreat drinks specials\nLive music",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 136,
+    "lat": 32.79265910000001,
+    "lng": -79.8529888,
+    "title": "Stack’s Evening Eats",
+    "description": "5pm-close (inferred from business hours) • Wednesdays\nHalf off all bottles of wine $40 and below",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 137,
+    "lat": 32.7777455,
+    "lng": -79.9314752,
+    "title": "Iron Rose",
+    "description": "4pm-6pm • Daily\n$10 Gin or Vodka Martini\n$5 Draft Beers\n$6 House Wine by the Glass\n$6 Smoked Fish Dip\n$6 Butterbean Hummus\n$6 Pimento Cheese\n$6 Old Bay Kettle Chips\n\n---\n\nAll day • Tuesdays\nHalf off bottles of wine",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 138,
+    "lat": 32.7765724,
+    "lng": -79.9316521,
+    "title": "Sorelle",
+    "description": "8:00AM-4:00PM • Saturday\nWeekly drink and panino special",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 139,
+    "lat": 32.7890017,
+    "lng": -79.93863739999999,
+    "title": "O-Ku",
+    "description": "5pm-7pm • Monday-Tuesday-Wednesday\n\n---\n\n5pm-7pm • Sunday-Thursday, Friday-Saturday",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 140,
     "lat": 32.915732,
     "lng": -79.88425,
     "title": "Dog and Duck",
@@ -63,7 +1260,547 @@
     "source": "automated"
   },
   {
-    "id": 8,
+    "id": 141,
+    "lat": 32.8393676,
+    "lng": -79.85447490000001,
+    "title": "The Wine Bar",
+    "description": "4pm-6pm • Monday-Saturday\nDaily specials\n\n---\n\n4pm-12am • Wednesday\n1/2 off wine",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 142,
+    "lat": 32.9346194,
+    "lng": -79.9979165,
+    "title": "Famulari's Pizzeria: Hanahan",
+    "description": "4pm-7pm • Monday-Friday\n$5 FBC Drafts (under 7% abv)\n$5 Glasses of Wine\n$4 House Liquor Drinks\n\n---\n\n4pm-7pm • Monday\n$5 Moscow Mules\n\n---\n\n4pm-7pm • Tuesday\n$5 Margaritas\n\n---\n\n4pm-7pm • Wednesday\n1/2 Price Wine Bottles",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 143,
+    "lat": 32.7292704,
+    "lng": -80.0645222,
+    "title": "The Natural",
+    "description": "11:00 AM - 11:00 PM • Tuesday\n1/2 price burgers\n\n---\n\n11:00 AM - 11:00 PM • Wednesday\n1/2 price Chicken Sandwiches\nall drafts $5\n\n---\n\n11:00 AM - 11:00 PM • Thursday\nHalf Price Pizza\nHalf Price Wine\n\n---\n\nDaily\nHappy Hour Menu available (details not specified)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 144,
+    "lat": 32.739114,
+    "lng": -79.967246,
+    "title": "Flat and Drum Wings",
+    "description": "3pm-5pm • Monday-Friday\n$20 for 20 wings\n$40 for 40 wings",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 145,
+    "lat": 32.7422602,
+    "lng": -80.0388256,
+    "title": "Maria's Mexican Grill",
+    "description": "4pm-7pm • Daily\n$1 off House Margaritas\n$1 off Wine\n$1 off Draft Beer\n$1 off Well Liquor",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 146,
+    "lat": 32.7838671,
+    "lng": -79.99811059999999,
+    "title": "The Glass Onion",
+    "description": "4pm-6pm • Monday-Saturday\n$1 off Specialty Cocktails\n$1 off Glasses of Wine\n$1 off all beer",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 147,
+    "lat": 32.8223728,
+    "lng": -79.9512773,
+    "title": "The Whale A Craft Beer Collective",
+    "description": "4pm-10pm • Tuesday\nIndustry Tuesday (implied discounts for hospitality workers)\n\n---\n\n4pm-10pm • Wednesday\nWine Down Wednesday (implied wine discounts or specials)\n\n---\n\n6pm-8pm • Wednesday\nUnwine’d Wednesday (implied wine unwinding specials)\n\n---\n\n4pm-10pm • Tuesday\nIndustry Tuesday (implied discounts for hospitality workers)\n\n---\n\n4pm-7pm • Thursday\nNot So Thirsty Thursday (implied drink discounts)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 148,
+    "lat": 32.8663724,
+    "lng": -80.01624369999999,
+    "title": "Bonefish Grill",
+    "description": "4pm start • Daily\nHand-crafted cocktails starting at $7\nNew Social Hour menu items",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 149,
+    "lat": 32.93175000000001,
+    "lng": -80.048912,
+    "title": "Staybridge Suites Charleston-Ashley Phosphate by IHG",
+    "description": "5:30pm-7:00pm • Monday-Wednesday\nFree appetizers and beverages",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 150,
+    "lat": 32.7953011,
+    "lng": -79.9428369,
+    "title": "King Street Hideout",
+    "description": "4:00PM-7:00PM • Monday-Friday\n$5 Domestics\n$5 Wells\n$5 House Wine\n$5 Frozen Drinks\n\n---\n\n4:00PM-late • Monday\n$5 Single Smashburgers\n\n---\n\n4:00PM-late • Tuesday\n$3 Tacos\n$5 Margaritas\n\n---\n\n4:00PM-7:00PM • Monday-Friday\n$5 Domestics\n$6 Imports\n$7 Well liquor and specialty shots\n\n---\n\n4:00PM-9:00PM • Monday\n$5 Smashburgers",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 151,
+    "lat": 32.79241919999999,
+    "lng": -80.02981190000001,
+    "title": "Zen Asian Fusion",
+    "description": "4pm-6pm • Monday-Friday\n$1 off all beer\n$3 well liquors\n$5 house wine\n$5 large hot sake\n\n---\n\n4pm-6pm • Monday\nBuy 1 entrée get 1 half off (food and bev only)\n\n---\n\n4pm-6pm • Tuesday\nLadies Night: $6 sake\n$4 well liquor\n$5 wine\n$6 sake sangria\n$1 off all beer\n$3 Harumaki\n$4 Crab Rangoon\n$6 Veggie Lettuce Wraps\n$3.50 Edamame\n$4.50 Gyoza\n\n---\n\n4pm-6pm • Wednesday\n$6 sake\n$4 well liquor\n$5 wine\n$6 sake sangria\n$1 off all beer\n$3 Harumaki\n$4 Crab Rangoon\n$6 Veggie Lettuce Wraps\n$3.50 Edamame\n$4.50 Gyoza",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 152,
+    "lat": 32.869225,
+    "lng": -80.016504,
+    "title": "Topgolf Charleston",
+    "description": "All day • Daily (January only)\nFree unlimited Pepsi drinks for members (per bay, every visit)\n\n---\n\nAnytime • Monday-Thursday\nLocked-in low hourly price per bay\n\n---\n\nAll day • Sundays\n$40 per hour per bay\n\n---\n\nNights • Unspecified (implied evenings/nights)\nDropped prices (prizes, beats, and overall cost reduction)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 153,
+    "lat": 32.8166357,
+    "lng": -79.9531511,
+    "title": "Rancho Lewis",
+    "description": "11am-4pm • Monday-Friday\nEl Duo: Small Chile Con Queso y Guacamole with Stone Ground Tortillas\nLunch Break Fajitas: Lunch-Sized Portion of Sizzling Steak + Chicken Fajitas, Peppers + Onions, Corn or Flour Tortillas, served with Charro Beans, Spanish Rice, Guacamole, Sour Cream, Lettuce, Pico De Gallo\nVegetarian Combo: One Veggie Rajas Enchilada + One Chile Relleno Smothered in Sun-Dried Red Chile + Cheese, served with Spanish Rice + Pinto Beans\nJuan's Combo: Choice of One Enchilada (Smoked Brisket or Chicken Verde) + Choice of One Street Taco (Mesquite Grilled Steak or Chicken), served with Spanish Rice + Pinto Beans\n\n---\n\n4pm-6pm • Monday-Friday\nHappy Hour specials (details available via menu PDF)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 154,
+    "lat": 32.7425058,
+    "lng": -79.9372075,
+    "title": "The Harlow",
+    "description": "Not specified • Not specified\nRaw Bar Happy Hour",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 155,
+    "lat": 32.79124,
+    "lng": -79.94024499999999,
+    "title": "Prohibition",
+    "description": "4pm-6pm • Monday-Thursday\nBar specials (implied drink discounts, details not specified)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 156,
+    "lat": 32.7972181,
+    "lng": -79.93443649999999,
+    "title": "Bar Mash",
+    "description": "4pm-6pm • Monday-Saturday\nEvan Williams 1783 (1 oz pour) $3\nDaily Red or White Wine $6\nHouse Daiquiri $7\nFounders All Day IPA $4\n$1 off Draft Beers\nHigh Life Draft $2.50\nSpinach Artichoke Dip $7\nSingle Burger $7\nChips and House Made Queso $5\nSingle Taco $5\nSoft Pretzel $5\n\n---\n\nAll day • Tuesday\n$8 Palomas or Margaritas\n\n---\n\nAll day • Wednesday\nMash Burger, fries, and a High Life for $12",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 157,
+    "lat": 32.7823121,
+    "lng": -79.92984609999999,
+    "title": "Andrew Pinckney Inn",
+    "description": "Afternoon • Daily\nComplimentary wine & cheese reception\nComplimentary charcuterie",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 158,
+    "lat": 32.7978959,
+    "lng": -79.88870059999999,
+    "title": "Charlotte's Wine Bar & Tapas",
+    "description": "4pm-6pm • Monday-Friday\nQuick Pours Happy Hour (drink specials)\n\n---\n\n7pm-9pm • Monday-Friday\nSmall Bites Happy Hour (food specials)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 159,
+    "lat": 32.8294857,
+    "lng": -79.8232385,
+    "title": "Guadalajara Bar & Grill",
+    "description": "4pm-7pm • Daily\n$1 off House Margaritas\n$1 off Wine\n$1 off Draft Beer\n$1 off Well Liquor",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 160,
+    "lat": 32.7893754,
+    "lng": -79.8508805,
+    "title": "Mainland Container Co. Kitchen & Bar",
+    "description": "12pm-4pm • Saturdays-Sundays\n$21 Buckets of oysters",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 161,
+    "lat": 32.8141855,
+    "lng": -79.86601759999999,
+    "title": "Locals Sushi & Sports Pub - Mt Pleasant",
+    "description": "4pm-6pm • Monday-Friday\nHalf off apps\nHalf off draft beer\nHalf off all sake\nHalf off bottled wine\n$4 Tito’s\n\n---\n\n3pm onwards • Monday\n1/2 Price Sushi Rolls\n\n---\n\nAll day • Thursday\nBuy One Get One Half Off Sushi Rolls",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 162,
+    "lat": 32.8306661,
+    "lng": -79.83081849999999,
+    "title": "Burtons Grill & Bar",
+    "description": "4:00PM-6:00PM • Monday-Friday\nDeals on select cocktails, beers & wines\nElevated bar bites (e.g., Bang Bang Broccoli, Nashville Hot Chicken Slider, Chips & Guac, Crab Cake Slider)\n\n---\n\nAll day • Wednesday\nHalf-priced wine bottles",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 163,
+    "lat": 32.8807774,
+    "lng": -79.9800052,
+    "title": "Sesame Burgers & Beer",
+    "description": "4pm-7pm • Monday-Friday\n$1 off Domestic Beers (Bud Light, Budweiser, Miller Lite, Coors Light, PBR, Michelob Ultra, Yuengling)\n$2 off Well Liquor (Gin, Bourbon, Rum, Tequila, Vodka) and Wine (Sauvignon Blanc, Pinot Grigio, Chardonnay, Pinot Noir, Cabernet Sauvignon)\nHalf off Appetizers",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 164,
+    "lat": 32.8030459,
+    "lng": -79.9532158,
+    "title": "Park & Grove",
+    "description": "3pm-6pm • Monday-Friday\n$9 cocktails (Garden Gimlet, Golden Hour, Grove Negroni, Garden Cosmo)\n$8 wine (grüner veltliner, rosato, gamay)\n$5 beer (sour, Edmund's Oast N/A, Untitled Art)\n$5 spirit-free choices (October Sky, Fall Breeze, Cherry Picking)\n$20 P&G Smash Burger\n$8 side of fries\n$8 Fritto Misto\n$15 Butter Bean Hummus\n\n---\n\nall night • Tuesday\n1/2 price select bottles of wine\n\n---\n\ndinner hours • Wednesday\n$10 single patty smash burger\n$6 kid’s burger (dine-in only)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 165,
+    "lat": 32.7626736,
+    "lng": -79.8362614,
+    "title": "The Longboard",
+    "description": "11am-5pm • Monday-Friday\nOyster Happy Hour: Raw oysters $12/half dozen (vs $18 regular)\nGrilled oysters $12/half dozen\nOyster shooters $8 each\nDressed oysters $5 each\n$10 craft cocktails (LowCountry Creations & Longboard Legends)\n$10 frozen cocktails\n$6 draft wine glass ($20 carafe)\n1/2 off wine by the glass selections\n$5 local beer (draft or can)\n$2 Miller High Life pony\n$2 off well liquors\n\n---\n\n3pm-5pm • Saturday-Sunday\nOyster Happy Hour: Raw oysters $12/half dozen (vs $18 regular), rotating selection\nGrilled oysters $12/half dozen\nOyster shooters $8 each\nDressed oysters $5 each\n$10 craft cocktails (LowCountry Creations & Longboard Legends)\n$10 frozen cocktails\n$6 draft wine glass ($20 carafe)\n1/2 off wine by the glass selections\n$5 local beer (draft or can)\n$2 Miller High Life pony\n$2 off well liquors\nOyster Happy Hour Menu only available (no full brunch or dinner)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 166,
+    "lat": 32.83000570000001,
+    "lng": -79.83112750000001,
+    "title": "Grimaldi's Pizzeria",
+    "description": "3pm-5pm • Daily\nSignature Cocktails $10\n$3 Off Starters & Salads\n$2 Off Beer, Spritzes, Mocktails, Wine & Sangria\n$10 Off Bottles of Wine\n\n---\n\n11am-3pm • Monday-Friday\n$10.99 Slice, Salad, & Drink Combo\n$7.49 Slice & Drink Combo\n$4 Slice Only\nAdd toppings for $0.75 each\n\n---\n\nAll Day • Tuesday\n50% Off glasses and bottles of wine\n50% Off glasses of sangria",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 167,
+    "lat": 32.7426106,
+    "lng": -79.9375196,
+    "title": "Grumpy Goat Seafood Cantina",
+    "description": "4pm-6pm • Monday\nMargarita Monday\n\n---\n\n4pm-7pm • Monday-Friday\nHappy Hour",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 168,
+    "lat": 32.7981495,
+    "lng": -79.85883140000001,
+    "title": "LoLA Mt Pleasant",
+    "description": "Tuesday-Friday\ngreat discounts on food and drinks",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 169,
+    "lat": 32.7921151,
+    "lng": -79.88295699999999,
+    "title": "Muddy's Dockside Bar",
+    "description": "4pm-7pm • Monday-Friday\n$3 Domestic Drafts\n$4 House Liquor\n$3 Domestic Bottles\n$4 House Wine\n$3 French Fries & Gravy\n$5.50 Black Bean Cake\n$5 Hushpuppies\n$6 Fried Green Tomato Tower\n$6 Artichoke Dip\n$6 Spring Rolls\n\n---\n\n5pm-10pm • Tuesday\n$10 Firefly Trio (Lime / Blueberry / Peach)\n$10 Tequila Trio (Dulce Vida Lime / Pineapple Jalapeño / Grapefruit)\n$8 Cheeseburger\nHalf off Appetizers (Fried Green Tomato Tower / Artichoke Dip / Spring Rolls / Black Bean Cake / Hush Puppies / French Fries & Gravy)\n\n---\n\n11am-2pm • Sunday\n$6 Peach Bellini\n$7 Tito’s Bloody Mary\n$8 Patrón Cristalino Tequila Sunrise",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 170,
+    "lat": 32.8758804,
+    "lng": -80.0208952,
+    "title": "Mario’s Peruvian Chicken Tanger outlets",
+    "description": "4pm-9pm • Sunday\nWeekend Special: Tallarines Verdes and Picarones",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 171,
+    "lat": 32.7781838,
+    "lng": -79.9272106,
+    "title": "Pearlz Oyster Bar",
+    "description": "Daily\nHappy Hour (details in PDF menu)\n\n---\n\nAll Day • Tuesday\n$1 House Oysters\n\n---\n\nAll Day • Sunday\n1/2 Priced Wine\n\n---\n\nDaily\nHappy Hour\n\n---\n\nAll Day • Wednesday\n$2 Premium Oysters\n\n---\n\nAll Day • Wednesday\n1/2 Priced Wine\n\n---\n\nDaily\nHappy Hour (details in PDF menu)\n\n---\n\n12pm-9pm • Sunday\nHalf Priced Bottles (select bottles, dine-in only)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 172,
+    "lat": 32.7818741,
+    "lng": -79.9858895,
+    "title": "Gene's Haufbrau",
+    "description": "11:30am-4:00pm • Monday-Friday\nBlue Plate Specials (daily featured dish like Fried Pork Chop, Fried Chicken, Pot Roast, Country Fried Steak, Fried Flounder)\n\n---\n\n11:00am-3:00pm • Sunday\nSunday Brunch specials\n\n---\n\n4:00pm-7:00pm • Daily\nHappy Hour (implied drink and food discounts)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 173,
+    "lat": 32.9171395,
+    "lng": -80.0283671,
+    "title": "843 Korean BBQ & Sushi House",
+    "description": "4pm-6pm • Tuesday-Friday\nHappy Hour (specific discounts not detailed on site)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 174,
+    "lat": 32.7898379,
+    "lng": -79.7864486,
+    "title": "The Refuge",
+    "description": "2pm-5pm • Daily\nLow Tide Menu\n\n---\n\n5pm-9pm • Sunday\nLobster Night: $47 for 1.5 lb steamed Maine lobster with two sides\n\n---\n\n8am-9pm • Tuesday\nSteakhouse Night: Special cuts of meat like Rib-eye with sauces and sides\n\n---\n\n5pm-9pm • Thursday\nPrime Rib Night: 10 oz or 12 oz prime rib with sides, au jus, and horseradish cream",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 175,
+    "lat": 32.93266090000001,
+    "lng": -79.9996067,
+    "title": "LG's By The Creek",
+    "description": "4pm-7pm • Monday-Friday\nHappy Hour drink specials (specific details not listed on site)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 176,
+    "lat": 32.836612,
+    "lng": -79.821867,
+    "title": "SOL Mt. Pleasant",
+    "description": "4pm-6pm • Monday-Friday\nDrink specials\nHappy hour bites",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 177,
+    "lat": 32.79222,
+    "lng": -79.9404072,
+    "title": "The Ordinary",
+    "description": "5:00pm-6:30pm • Monday, Wednesday, Thursday, Friday, Saturday, Sunday\n$4 oysters (single lady*, SC carolina crowns*, NC steamers*, SC littleneck clams*, SC)\n$5 beers (half off appetizers)\n$10 lager, $4 IPA\n$6 Mexican Coke + Sprite\n$5 Boylan ginger ale, ginger beer, + black cherry\nOther specials like $12 gin fizz, $12 Negroni, etc.",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 178,
+    "lat": 32.7766196,
+    "lng": -79.9278501,
+    "title": "Oak Steakhouse",
+    "description": "5pm-6:30pm • Monday-Friday\n$3 East Coast Oysters\n$4 Oysters Rockefeller\n$8 Roasted Garlic Hummus\n$8 Baked Smoked Gouda Mac & Cheese\n$7 Beef-Fat Fries\n$14 Ceviche\n$21 Burger & Beer Special\n\n---\n\nevenings • Sunday\nHalf-off bottles of wine up to $100\n$50 off bottles of wine $100 or more\n\n---\n\nevenings • Monday\nHalf off bottles of wine priced up to $100\n$50 off bottles over $100",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 179,
+    "lat": 32.7901818,
+    "lng": -79.9450887,
+    "title": "Southbound",
+    "description": "5:00pm-9:00pm • Sunday-Thursday\n\n---\n\n5:00pm-10:00pm • Friday-Saturday",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 180,
+    "lat": 32.7877778,
+    "lng": -79.9066556,
+    "title": "Charleston Harbor Fish House - Southern Fare from the Land and Sea",
+    "description": "Afternoon/evening (implied for group gatherings with sunset views) • Not specified (available for private events)\nGroup happy hour (custom event option for parties of 18+)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 181,
+    "lat": 32.7306862,
+    "lng": -79.96920229999999,
+    "title": "Lowdown Oven and Bar",
+    "description": "10:30am-2:30pm • Sunday\nBrunch\n\n---\n\n11:00am-2:00am • Monday\n$6 Specialty Cocktails\n\n---\n\n11:00am-12:00am • Tuesday\n1/2 price cheesesteaks\n$5 local drafts\n\n---\n\n11:00am-12:00am • Wednesday\n1/2 price pizza and wine\n\n---\n\n11:00am-12:00am • Thursday\n1/2 price burgers",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 182,
+    "lat": 32.78455069999999,
+    "lng": -79.93415999999999,
+    "title": "The Barksdale House Inn",
+    "description": "Afternoon • Daily\nIced Tea and refreshing delicate bites",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 183,
+    "lat": 32.9409482,
+    "lng": -80.0425739,
+    "title": "Hooters",
+    "description": "Not specified • Daily\nHappy hour specials\nDrink specials",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 184,
+    "lat": 32.7913661,
+    "lng": -79.9399487,
+    "title": "Benny Ravello's",
+    "description": "11am-6pm • Daily\nBaby stixx available (3 warm garlic butter breadsticks for $4)\nMommy stixx available (6 warm garlic butter breadsticks for $7)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 185,
+    "lat": 32.7927239,
+    "lng": -80.03762549999999,
+    "title": "Ireland's Own / Jagerhaus Pub",
+    "description": "3pm-10pm • Tuesday\nChicken Broccoli Alfredo Special (grilled chicken, broccoli, Alfredo sauce over fettuccine)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 186,
+    "lat": 32.776716,
+    "lng": -79.92719699999999,
+    "title": "Brasserie La Banque",
+    "description": "4:00pm-6:00pm • Monday-Friday\nSpéciale French Happy Meal: burger de la banque, pommes frites, & a martini for $25\nSalade de maison for $12\nChilled oysters (1/2 dozen) for $18, (dozen) for $36\nSmoked fish rillette for $13\nEscargots for $15\nBurger de la Banque for $18\nPommes frites for $5\nCocktails (e.g., French 75, Fleur De Lis, French Martini, Old Fashioned) for $11-$12\nLillet Spritz for $11\nWines (e.g., Côtes-du-Rhône, Rosé, Chardonnay) for $9\nKronenbourg 1664 beer for $7",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 187,
+    "lat": 32.9444967,
+    "lng": -80.0413981,
+    "title": "Carrabba's Italian Grill",
+    "description": "4pm-7pm • Daily\n$8 Cocktails\n$8 Bites\nand more",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 188,
+    "lat": 32.7916493,
+    "lng": -79.9373489,
+    "title": "Chopsticks House",
+    "description": "11:00am-3:00pm • Daily\nLunch specials: Various entrees (e.g., Beef with Broccoli, Chicken with Broccoli, General Tso's Chicken) for $8.80 each, includes Pork Fried Rice and Soft Drink",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 189,
+    "lat": 32.785884,
+    "lng": -79.935519,
+    "title": "Ritual Rooftop Restaurant & Lounge",
+    "description": "4pm-6pm • Monday, Wednesday, Thursday\n$9 house cocktails\n$10 tapas/empanadas\n$6 single tacos\n$7 surfsides\n$8 select wines\nfull menu\n\n---\n\nWednesday\n½ off all bottles of wine\nlive music",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 190,
+    "lat": 32.8097961,
+    "lng": -79.87720879999999,
+    "title": "TIERRA AL MAR",
+    "description": "3pm - 5pm • Monday - Friday\nLimited menu\n\n---\n\n4pm - 5pm • Saturday & Sunday\nLimited menu",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 191,
+    "lat": 32.8817027,
+    "lng": -79.97489329999999,
+    "title": "The Mill",
+    "description": "4pm-7pm • Monday-Friday\nGreat prices on drinks\n$1 PBR cans",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 192,
+    "lat": 32.8762592,
+    "lng": -80.021271,
+    "title": "Grand Buffet",
+    "description": "11:00am-3:50pm • Monday-Saturday\nLunch Buffet $12.99 adults (lower than dinner rate of $15.99)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 193,
+    "lat": 32.8812857,
+    "lng": -79.9752166,
+    "title": "Southern Roots Smokehouse",
+    "description": "Wednesday\nHalf-priced prime brisket smash burgers\nLocal drink specials\n\n---\n\n1pm-4pm • Sunday, January 25\nAll-you-can-eat oyster roast for $35\nBloody Mary Bar\n$10 gift card with dog food donation",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 194,
+    "lat": 32.781901,
+    "lng": -79.929904,
+    "title": "Hank's Seafood Restaurant",
+    "description": "4pm-6pm • Tuesday-Sunday\n$2.50 Oysters on the Half Shell (minimum two)\n$13 Lump Crabcake\n$10 Ceviche\n$13 Fried Chicken Sandwich\n$8 Oyster Casino\n$12 Fried Calamari\n$6 Fried Green Tomatoes\n$6 She Crab Soup (cup)\n$10 Classic Cocktails (Old Fashioned, Negroni, Vodka Martini, Traditional Margarita)\n$5 Draft Beer\n$10 NA Cocktails\n$5 NA Beer\n$8 Wine (Bubbles, Rosé, White, Red)\n\n---\n\nAll evening (inferred during dinner service) • Every Wednesday\n$2 Oysters",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 195,
+    "lat": 32.7975425,
+    "lng": -79.88874179999999,
+    "title": "Agaves Cantina",
+    "description": "4pm-7pm • Daily\n$1 off all draft and bottle beers (Excludes Local)\n$1 off House Margaritas\n$5 House liquors",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 196,
+    "lat": 32.7423141,
+    "lng": -80.038786,
+    "title": "ZEPPELIN PIZZA CO. Johns Island",
+    "description": "4pm-7pm • Monday-Friday\n$3 Domestic Bottles\n$3.50 House Liquors\n$1 OFF House Wines\n$1 OFF ZPC Cocktails\n$1 OFF Low Tide Drafts\n$4 Select Shots\n\n---\n\n11am-10pm • Monday\n$2 OFF Deluxe Vinyls\n$3 Margaritas\n\n---\n\n11am-3pm • Saturday-Sunday\n$4 Mimosa (choice of orange juice or cranberry)\n$15 Bottomless Mimosa\n$5 Bloody Mary (tito's vodka, Bloody Mary mix, olive)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 197,
+    "lat": 32.7823512,
+    "lng": -79.98586209999999,
+    "title": "Pearlz Oyster Bar",
+    "description": "All Day • Tuesday\n$1 House Oysters\n\n---\n\n12pm-9pm • Sunday\nHalf Priced Bottles of Wine\n\n---\n\nAll Day • Wednesday\n$2 Premium Oysters\nHalf Priced Wine\n\n---\n\nAll Day • Daily\nFrosé All Day\n\n---\n\nUnknown • Unknown\nHappy Hour Specials (details in PDF)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 198,
+    "lat": 32.7933355,
+    "lng": -79.9384209,
+    "title": "Hot Mustard",
+    "description": "10:30am-3:00pm • Monday-Friday\nLunch specials: Various entrees (e.g., Chicken/Beef/Shrimp with Broccoli, Mixed Vegetables, Lo Mein, Garlic Sauce, Sweet & Sour, Chow Mein, Hunan Sauce, Curry, Mongolian, Kung Pao, Cashew, General Tso's, Sesame, Orange Chicken, Moo Goo Gai Pan, Pepper Steak, Shrimp with Lobster Sauce, Double Happiness, Jalapeno Chicken/Beef) at $9.05 each, includes Pork Fried Rice and Can Soft Drink\nJapanese Teriyaki Lunch: Vegetable/Chicken Teriyaki $9.05, Beef/Shrimp Teriyaki $9.95, Combo Teriyakis $10.95-$12.95, with Zucchini, Carrot, Broccoli in Sweet Teriyaki Sauce, White Rice, and White Sauce",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 199,
+    "lat": 32.796679,
+    "lng": -79.9970058,
+    "title": "Tin Roof",
+    "description": "4pm onwards • Monday-Friday\nHell of a happy hour (implied affordable drinks)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 200,
+    "lat": 32.7901698,
+    "lng": -80.0299957,
+    "title": "Taco Bell",
+    "description": "Not specified • Daily\nHappier Hour (implied value deals or discounts)",
+    "type": "Happy Hour",
+    "source": "automated"
+  },
+  {
+    "id": 201,
     "lat": 32.8614384,
     "lng": -79.9082524,
     "title": "Ristorante LIDI",
@@ -72,12 +1809,213 @@
     "source": "automated"
   },
   {
-    "id": 9,
+    "id": 202,
     "lat": 32.8623763,
     "lng": -79.9041836,
     "title": "Ali Baba Deli & Catering",
     "description": "11:00 AM - 9:00 PM • Sunday (specific date: January 18th)\nMediterranean Sandwich and a side with a drink for special price",
     "type": "Happy Hour",
     "source": "automated"
+  },
+  {
+    "id": 203,
+    "lat": 32.8124748,
+    "lng": -79.8795445,
+    "title": "O'Brion's Pub & Grille",
+    "description": "4pm-7pm • Monday-Friday\n$1 Off Domestic Beers\n$1 Off House Wine\n$1 Off House Liquor\n\n---\n\n4pm-9:30pm • Tuesday\n$1 Off Domestic Beers\n$1 Off House Wine\n$1 Off House Liquor\n$8 Steak or Chicken Philly (Dine In Only)",
+    "type": "Happy Hour",
+    "source": "automated",
+    "venueId": "ChIJwT76JVJw_ogRoPdXd2USi9Y"
+  },
+  {
+    "id": 204,
+    "lat": 32.780521,
+    "lng": -79.9284481,
+    "title": "The Bar at The Spectator",
+    "description": "6:00 PM - 9:00 PM • Every Third Thursday\nHalf-price bottles from The Spectator's wine program",
+    "type": "Happy Hour",
+    "source": "automated",
+    "venueId": "ChIJwXiSIp97_ogR81S_Th4qiVs"
+  },
+  {
+    "id": 205,
+    "lat": 32.783008,
+    "lng": -79.93206870000002,
+    "title": "Élevé Rooftop Restaurant & Lounge",
+    "description": "2:00pm-5:00pm • Monday-Friday\nHappy Hour (implied drink/food discounts)",
+    "happyHourTime": "2:00pm-5:00pm • Monday-Friday",
+    "happyHourList": [
+      "Happy Hour (implied drink/food discounts)"
+    ],
+    "sourceUrl": "https://www.elevecharleston.com/",
+    "lastUpdateDate": "2026-01-19T00:07:07.421Z",
+    "type": "Happy Hour",
+    "source": "automated",
+    "venueId": "ChIJxQJq8RJ6_ogRtMsanKP8irM"
+  },
+  {
+    "id": 206,
+    "lat": 32.7831237,
+    "lng": -79.93217179999999,
+    "title": "Grand Bohemian Wine Bar",
+    "description": "2:00 pm • Jan 20, Jan 21, Jan 22",
+    "happyHourTime": "2:00 pm • Jan 20, Jan 21, Jan 22",
+    "happyHourList": [],
+    "sourceUrl": "http://www.grandbohemiancharleston.com/events/",
+    "lastUpdateDate": "2026-01-19T00:07:21.542Z",
+    "type": "Happy Hour",
+    "source": "automated",
+    "venueId": "ChIJxQJq8RJ6_ogRx2T83liST0E"
+  },
+  {
+    "id": 207,
+    "lat": 32.78956259999999,
+    "lng": -79.93858519999999,
+    "title": "Republic Garden & Lounge",
+    "description": "4pm-7pm • Monday-Friday\n$5 Loverboys\n$5 Wells\n$7 Crown Salted Caramel Mules\n$7 Teeling Irish whiskey shots\n$7 glasses of Chandon garden spritz\n$3 mystery beers",
+    "happyHourTime": "4pm-7pm • Monday-Friday",
+    "happyHourList": [
+      "$5 Loverboys",
+      "$5 Wells",
+      "$7 Crown Salted Caramel Mules",
+      "$7 Teeling Irish whiskey shots",
+      "$7 glasses of Chandon garden spritz",
+      "$3 mystery beers"
+    ],
+    "sourceUrl": "http://republicreign.com/charleston-king-st-republic-garden-and-lounge-events",
+    "lastUpdateDate": "2026-01-19T00:07:32.261Z",
+    "type": "Happy Hour",
+    "source": "automated",
+    "venueId": "ChIJxVL1smt6_ogRZ0f3hqvk8Ww"
+  },
+  {
+    "id": 208,
+    "lat": 32.89464409999999,
+    "lng": -79.8183542,
+    "title": "Blues Coastal Bar & Grill",
+    "description": "After 5pm • Daily\n25% Off Wings\n\n---\n\nAfter 6pm • Mondays\n25% Off Burgers\n$3 Beer\n\n---\n\nNot specified • Daily\nPriced Bites & Beverages (e.g., Wing Buckets)",
+    "happyHourTime": "After 5pm • Daily, After 6pm • Mondays, Not specified • Daily",
+    "happyHourList": [
+      "25% Off Wings",
+      "25% Off Burgers",
+      "$3 Beer",
+      "Priced Bites & Beverages (e.g., Wing Buckets)"
+    ],
+    "sourceUrl": "https://eatblues.com/weekly-events",
+    "lastUpdateDate": "2026-01-19T00:07:47.123Z",
+    "type": "Happy Hour",
+    "source": "automated",
+    "venueId": "ChIJx_2XHy5s_ogRc739Biahw_4"
+  },
+  {
+    "id": 209,
+    "lat": 32.793794,
+    "lng": -79.939151,
+    "title": "Wine & Company",
+    "description": "5:30pm-7:30pm • Tuesday\n$10 wine tasting featuring 5 wines",
+    "happyHourTime": "5:30pm-7:30pm • Tuesday",
+    "happyHourList": [
+      "$10 wine tasting featuring 5 wines"
+    ],
+    "sourceUrl": "http://chswine.com/tuesday-wine-tastings",
+    "lastUpdateDate": "2026-01-19T00:08:05.210Z",
+    "type": "Happy Hour",
+    "source": "automated",
+    "venueId": "ChIJxw47qWl6_ogRlocIO1Jk6aM"
+  },
+  {
+    "id": 210,
+    "lat": 32.7811766,
+    "lng": -79.9288304,
+    "title": "Henry's On The Market",
+    "description": "11:00 AM - 10:00 PM • Daily\nDaily featured drink special (varies by day: e.g., Mary's Bloody Mary on Sunday, Cowboy Gold on Monday, Henry’s Margarita on Tuesday, Spiked Arnold Palmer on Wednesday, Raspberry Mule on Thursday, White/Red Sangria on Friday, Mimosa on Saturday)\n\n---\n\n4:00 PM - 6:00 PM • Monday-Thursday\n$4 Domestic Beers\n$6 Well Liquor\n\n---\n\n11:00 AM - 10:00 PM • Tuesday\nTaco Tuesday - Tacos change weekly",
+    "happyHourTime": "11:00 AM - 10:00 PM • Daily, 4:00 PM - 6:00 PM • Monday-Thursday, 11:00 AM - 10:00 PM • Tuesday",
+    "happyHourList": [
+      "Daily featured drink special (varies by day: e.g., Mary's Bloody Mary on Sunday, Cowboy Gold on Monday, Henry’s Margarita on Tuesday, Spiked Arnold Palmer on Wednesday, Raspberry Mule on Thursday, White/Red Sangria on Friday, Mimosa on Saturday)",
+      "$4 Domestic Beers",
+      "$6 Well Liquor",
+      "Taco Tuesday - Tacos change weekly"
+    ],
+    "sourceUrl": "http://www.henrysonthemarket.com/charleston-henry-s-on-the-market-happy-hours-specials",
+    "lastUpdateDate": "2026-01-19T00:08:31.679Z",
+    "type": "Happy Hour",
+    "source": "automated",
+    "venueId": "ChIJxyKLuw16_ogRPnMyVsir2eo"
+  },
+  {
+    "id": 211,
+    "lat": 32.7871011,
+    "lng": -79.87680089999999,
+    "title": "Post House",
+    "description": "Dinner hours (5pm-10pm) • January 8-18\n3-course dinner for $55/person",
+    "happyHourTime": "Dinner hours (5pm-10pm) • January 8-18",
+    "happyHourList": [
+      "3-course dinner for $55/person"
+    ],
+    "sourceUrl": "https://www.theposthouseinn.com/menus/",
+    "lastUpdateDate": "2026-01-19T00:09:03.171Z",
+    "type": "Happy Hour",
+    "source": "automated",
+    "venueId": "ChIJy5sQLuJw_ogRnxFgqpnQ1SY"
+  },
+  {
+    "id": 212,
+    "lat": 32.88121,
+    "lng": -79.975903,
+    "title": "DIG In The Park",
+    "description": "4pm-7pm • Monday-Friday\n$1 off appetizers\n$1 off house liquor\n$1 off domestic drafts\n$1 off house wine",
+    "happyHourTime": "4pm-7pm • Monday-Friday",
+    "happyHourList": [
+      "$1 off appetizers",
+      "$1 off house liquor",
+      "$1 off domestic drafts",
+      "$1 off house wine"
+    ],
+    "sourceUrl": "http://diginthepark.com/events-specials",
+    "lastUpdateDate": "2026-01-19T00:09:06.341Z",
+    "type": "Happy Hour",
+    "source": "automated",
+    "venueId": "ChIJyUgfhuhk_ogR-v2Ca01_6Us"
+  },
+  {
+    "id": 213,
+    "lat": 32.7511445,
+    "lng": -79.9526843,
+    "title": "Ellis Creek Fish Camp",
+    "description": "3pm-5pm • Monday-Friday\n$5 House Liquor\n$2 off Frozen Drinks\n$1 off Draft Beers\n$5 House Wine (White or Red)\n$5 Catfish Bites, Fried Okra, Fried Pickles, Pimento Cheese or Hushpuppies\n\n---\n\n3pm-5pm • Thursday\n$5 Specialty Cocktails (Thirsty Thursday addition during happy hour)\n\n---\n\n11am-9pm • Tuesday\nTaco Tuesday specials (implied menu deals, details not specified)\n\n---\n\n11am-9pm • Daily\nAll Whiskey $5 (Daily Camp Specials on Wednesdays, but listed as daily in some contexts)",
+    "happyHourTime": "3pm-5pm • Monday-Friday, 3pm-5pm • Thursday, 11am-9pm • Tuesday, 11am-9pm • Daily",
+    "happyHourList": [
+      "$5 House Liquor",
+      "$2 off Frozen Drinks",
+      "$1 off Draft Beers",
+      "$5 House Wine (White or Red)",
+      "$5 Catfish Bites, Fried Okra, Fried Pickles, Pimento Cheese or Hushpuppies",
+      "$5 Specialty Cocktails (Thirsty Thursday addition during happy hour)",
+      "Taco Tuesday specials (implied menu deals, details not specified)",
+      "All Whiskey $5 (Daily Camp Specials on Wednesdays, but listed as daily in some contexts)"
+    ],
+    "sourceUrl": "http://www.elliscreekfishcamp.com/charleston-james-island-ellis-creek-fish-camp-specials-and-events",
+    "lastUpdateDate": "2026-01-19T00:09:32.741Z",
+    "type": "Happy Hour",
+    "source": "automated",
+    "venueId": "ChIJyaqfZpB5_ogRBo_Y9ae41lk"
+  },
+  {
+    "id": 214,
+    "lat": 32.82945939999999,
+    "lng": -79.82374999999999,
+    "title": "King Street Grille",
+    "description": "4pm-7pm • Every day\n50% off drinks (beer, wine, house liquor; excludes signature cocktails, wine bottles, liquor over $14)\nDiscounts on select appetizers and food specials\n\n---\n\n8pm-10pm • Friday\n50% off signature Wings",
+    "happyHourTime": "4pm-7pm • Every day, 8pm-10pm • Friday",
+    "happyHourList": [
+      "50% off drinks (beer, wine, house liquor; excludes signature cocktails, wine bottles, liquor over $14)",
+      "Discounts on select appetizers and food specials",
+      "50% off signature Wings"
+    ],
+    "sourceUrl": "https://pleasant.thekingstreetgrille.com/mt-pleasant-myrtle-beach-king-street-grille-mt-pleasant-happy-hours-specials",
+    "lastUpdateDate": "2026-01-19T00:10:01.331Z",
+    "type": "Happy Hour",
+    "source": "automated",
+    "venueId": "ChIJz9tebJJx_ogR91jjOg3jXqE"
   }
 ]

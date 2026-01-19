@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJFxA_Z9pj_ogRgZOaRDa8PqE",
+  "venueName": "Olive Garden Italian Restaurant",
+  "venueArea": "North Charleston",
+  "website": "https://www.olivegarden.com/locations/sc/north-charleston/north-charleston-northwoods-mall/1150?cmpid=br:og_ag:ie_ch:loc_ca:OGGMB_sn:gmb_gt:north-charleston-sc-1150_pl:locurl_rd:1102",
+  "scrapedAt": "2026-01-18T17:04:24.626Z",
+  "trimmedAt": "2026-01-18T17:05:26.435Z",
+  "pages": [
+    {
+      "url": "https://www.olivegarden.com/locations/sc/north-charleston/north-charleston-northwoods-mall/1150?cmpid=br:og_ag:ie_ch:loc_ca:OGGMB_sn:gmb_gt:north-charleston-sc-1150_pl:locurl_rd:1102",
+      "text": "",
+      "hash": "8d1862e1ceff",
+      "downloadedAt": "2026-01-18T17:00:14.853Z",
+      "trimmedAt": "2026-01-18T17:05:26.435Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

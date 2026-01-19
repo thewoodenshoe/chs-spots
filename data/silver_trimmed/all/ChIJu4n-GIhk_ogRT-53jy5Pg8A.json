@@ -1,0 +1,43 @@
+{
+  "venueId": "ChIJu4n-GIhk_ogRT-53jy5Pg8A",
+  "venueName": "Green Garden Asian Cuisine",
+  "venueArea": "North Charleston",
+  "website": "https://smorefood.com/order-online/green-garden-north-charleston-29406-njz3nmta?utm_source=gmb&utm_medium=website",
+  "scrapedAt": "2026-01-18T17:04:31.582Z",
+  "trimmedAt": "2026-01-18T17:12:51.090Z",
+  "pages": [
+    {
+      "url": "https://smorefood.com/order-online/green-garden-north-charleston-29406-njz3nmta?menu=All+Day+Menu",
+      "text": "Skip to main content",
+      "hash": "29400c0f8abb",
+      "downloadedAt": "2026-01-18T16:59:10.293Z",
+      "trimmedAt": "2026-01-18T17:12:50.964Z",
+      "sizeReduction": "100.0%"
+    },
+    {
+      "url": "https://smorefood.com/order-online/green-garden-north-charleston-29406-njz3nmta?menu=Lunch+Menu",
+      "text": "Skip to main content",
+      "hash": "58e63b3e3be6",
+      "downloadedAt": "2026-01-18T16:59:11.485Z",
+      "trimmedAt": "2026-01-18T17:12:50.998Z",
+      "sizeReduction": "100.0%"
+    },
+    {
+      "url": "https://smorefood.com/order-online/green-garden-north-charleston-29406-njz3nmta?utm_source=gmb&utm_medium=website#menu-section",
+      "text": "Skip to main content",
+      "hash": "5ffd05c69903",
+      "downloadedAt": "2026-01-18T16:59:09.071Z",
+      "trimmedAt": "2026-01-18T17:12:51.044Z",
+      "sizeReduction": "100.0%"
+    },
+    {
+      "url": "https://smorefood.com/order-online/green-garden-north-charleston-29406-njz3nmta?utm_source=gmb&utm_medium=website",
+      "text": "Skip to main content",
+      "hash": "e96412264b9e",
+      "downloadedAt": "2026-01-18T16:59:07.999Z",
+      "trimmedAt": "2026-01-18T17:12:51.090Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

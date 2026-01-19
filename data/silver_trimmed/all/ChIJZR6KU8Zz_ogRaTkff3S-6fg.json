@@ -1,0 +1,35 @@
+{
+  "venueId": "ChIJZR6KU8Zz_ogRaTkff3S-6fg",
+  "venueName": "IOPizza Co",
+  "venueArea": "Isle of Palms",
+  "website": "http://iopizzaco.com/",
+  "scrapedAt": "2026-01-18T17:04:27.916Z",
+  "trimmedAt": "2026-01-18T17:11:12.509Z",
+  "pages": [
+    {
+      "url": "http://iopizzaco.com/isle-of-palms-iopizza-co-food-menu",
+      "text": "Our Menu Menu Menu",
+      "hash": "a44e2cc5bec1",
+      "downloadedAt": "2026-01-18T16:55:17.644Z",
+      "trimmedAt": "2026-01-18T17:11:12.490Z",
+      "sizeReduction": "100.0%"
+    },
+    {
+      "url": "http://iopizzaco.com/",
+      "text": "× Call to Inquire × Call to Inquire × Call to Inquire × Now Hiring - All positions for the 2025 Season! Come In or Apply On Our Website Job Listings Catering - Cater your birthday party, holiday party, corporate events, wedding festivities and more! Catering Packages Catering - Cater your birthday party, holiday party, corporate events, wedding festivities and more! Parties & Groups - Host your next party or get together with us! Book your party Parties & Groups - Host your next party or get together with us! Order online Order here 1101 Ocean Blvd., Isle of Palms, SC 29451 map marker pin About us Located in Isle of Palms, SC. Pizza, subs, salads, wraps, pasta, etc along with a full service bar Our Menu Parties Family Atmosphere IOPizza Co. has the perfect space for birthday bashes, holiday parties, corporate events, wedding festivities, and more! Parties Reviews review by - Yelp Asheton Q.: This is the BEST pizza place ever !! Craig has the best customer service ever, if in need of a good time and good food come here review by - Yelp Neil J.: Getting a couple of pizzas on IOP can be challenging. LnO was slammed on a Saturday night, but still produced a really good white pizza and a pepperoni review by - Yelp Lynda H.: Loved this pizza! The crust is so yummy and love the red sauce on the pizza. Friendly staff too! Will definitely be back! review by - Yelp Jonathan S.: Some of the best pizza ive ever had. Great location in Isle of Palms, if I am ever down at the beach this is my first choice when I am hungry. Great service too! Stop reviews carousel Play reviews carousel Newsletter Location 1101 Ocean Blvd. Isle of Palms, SC 29451 Hours OPEN DAILY AT 11AM Delivery available through DoorDash! Find us on... Facebook page Instagram page Yelp page Contact us (843)-242-8121 iopizza29451@gmail.com Powered by: Website design, Social Media marketing and Email marketing provided by SpotHopper. × Newsletter",
+      "hash": "cc6092bb0c07",
+      "downloadedAt": "2026-01-18T16:55:17.542Z",
+      "trimmedAt": "2026-01-18T17:11:12.505Z",
+      "sizeReduction": "98.4%"
+    },
+    {
+      "url": "http://iopizzaco.com/isle-of-palms-iopizza-co-drink-menu",
+      "text": "Our Drinks Cocktails Wine Beer Non-alcoholic Drinks",
+      "hash": "e1bafa73b787",
+      "downloadedAt": "2026-01-18T16:55:18.260Z",
+      "trimmedAt": "2026-01-18T17:11:12.509Z",
+      "sizeReduction": "99.9%"
+    }
+  ],
+  "sizeReduction": "99.3%"
+}

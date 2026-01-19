@@ -1,0 +1,35 @@
+{
+  "venueId": "ChIJPbB5Wzp6_ogRwBEY5_d9jzk",
+  "venueName": "Salty Mike's",
+  "venueArea": "Downtown Charleston",
+  "website": "http://www.thevarietystorerestaurantandsaltymikes.com/",
+  "scrapedAt": "2026-01-18T17:04:25.911Z",
+  "trimmedAt": "2026-01-18T17:07:17.146Z",
+  "pages": [
+    {
+      "url": "https://www.thevarietystorerestaurantandsaltymikes.com/wines-beer-and-cocktails",
+      "text": "top of page Home bottom of page",
+      "hash": "74133e60cf3f",
+      "downloadedAt": "2026-01-18T16:54:47.968Z",
+      "trimmedAt": "2026-01-18T17:07:17.110Z",
+      "sizeReduction": "100.0%"
+    },
+    {
+      "url": "http://www.thevarietystorerestaurantandsaltymikes.com/",
+      "text": "top of page Marina Variety Store Restaurant is Temporarily Closed and reopening under a new name! bottom of page",
+      "hash": "9cfc61b19b0b",
+      "downloadedAt": "2026-01-18T16:54:47.888Z",
+      "trimmedAt": "2026-01-18T17:07:17.127Z",
+      "sizeReduction": "100.0%"
+    },
+    {
+      "url": "https://www.thevarietystorerestaurantandsaltymikes.com/blank",
+      "text": "top of page Home ​ Hours of Operation: Wednesday & Thursday 3:00 - 9:30 Friday & Saturday 2:00-10:30​ Sunday 2:00 - 7:00 Salty Mike's Deck Bar Book your ​ events with us: (843) 937-0208 or (843) 723-6325 No patrons under 21 years of age, no coolers or large bags, & no outside beverages please bottom of page",
+      "hash": "dfb47593e71a",
+      "downloadedAt": "2026-01-18T16:54:48.525Z",
+      "trimmedAt": "2026-01-18T17:07:17.146Z",
+      "sizeReduction": "99.9%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

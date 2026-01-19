@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJPz2zYRZj_ogRAN5mCyDPvy4",
+  "venueName": "DeSano Pizza Bakery",
+  "venueArea": "North Charleston",
+  "website": "http://www.desanopizza.com/",
+  "scrapedAt": "2026-01-18T17:04:25.928Z",
+  "trimmedAt": "2026-01-18T17:07:17.356Z",
+  "pages": [
+    {
+      "url": "http://www.desanopizza.com/",
+      "text": "",
+      "hash": "79c811a30246",
+      "downloadedAt": "2026-01-18T16:58:57.768Z",
+      "trimmedAt": "2026-01-18T17:07:17.356Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

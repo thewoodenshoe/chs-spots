@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJkcfLnVdj_ogRat1zi9lRqhc",
+  "venueName": "Econo Lodge Coliseum",
+  "venueArea": "North Charleston",
+  "website": "https://www.choicehotels.com/south-carolina/north-charleston/econo-lodge-hotels/sc121?mc=llgoxxpx",
+  "scrapedAt": "2026-01-18T17:04:29.022Z",
+  "trimmedAt": "2026-01-18T17:11:36.810Z",
+  "pages": [
+    {
+      "url": "https://www.choicehotels.com/south-carolina/north-charleston/econo-lodge-hotels/sc121?mc=llgoxxpx",
+      "text": "",
+      "hash": "63d345e68808",
+      "downloadedAt": "2026-01-18T16:58:57.861Z",
+      "trimmedAt": "2026-01-18T17:11:36.810Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJ-4O_5jd6_ogRhfWbh6uV3qk",
+  "venueName": "Wendy's",
+  "venueArea": "Downtown Charleston",
+  "website": "https://locations.wendys.com/?utm_source=google&utm_medium=local&utm_campaign=google-distrib",
+  "scrapedAt": "2026-01-18T17:04:22.750Z",
+  "trimmedAt": "2026-01-18T17:04:33.044Z",
+  "pages": [
+    {
+      "url": "https://locations.wendys.com/?utm_source=google&utm_medium=local&utm_campaign=google-distrib",
+      "text": "Skip to content Return to Nav All Wendy's Locations Canada (451) United States (5831)",
+      "hash": "f080c6650dd4",
+      "downloadedAt": "2026-01-18T16:55:10.669Z",
+      "trimmedAt": "2026-01-18T17:04:33.044Z",
+      "sizeReduction": "99.6%"
+    }
+  ],
+  "sizeReduction": "99.6%"
+}

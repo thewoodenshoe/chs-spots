@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJUx0eXuV8_ogRfNXWEIZUsFE",
+  "venueName": "The Mason Jar By Fatboys",
+  "venueArea": "West Ashley",
+  "website": "https://m.facebook.com/TheMasonJarByFatboys/",
+  "scrapedAt": "2026-01-18T17:04:26.749Z",
+  "trimmedAt": "2026-01-18T17:08:04.080Z",
+  "pages": [
+    {
+      "url": "https://m.facebook.com/TheMasonJarByFatboys/",
+      "text": "",
+      "hash": "592779723a8e",
+      "downloadedAt": "2026-01-18T17:04:00.810Z",
+      "trimmedAt": "2026-01-18T17:08:04.080Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

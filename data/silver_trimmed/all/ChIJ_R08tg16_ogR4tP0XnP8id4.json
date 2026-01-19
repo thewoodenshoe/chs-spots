@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJ_R08tg16_ogR4tP0XnP8id4",
+  "venueName": "Oyster House Seafood & O-Bar",
+  "venueArea": "Downtown Charleston",
+  "website": "http://www.oysterhouse.menu/",
+  "scrapedAt": "2026-01-18T17:04:28.047Z",
+  "trimmedAt": "2026-01-18T17:11:14.314Z",
+  "pages": [
+    {
+      "url": "http://www.oysterhouse.menu/",
+      "text": "",
+      "hash": "26133870d427",
+      "downloadedAt": "2026-01-18T16:54:39.887Z",
+      "trimmedAt": "2026-01-18T17:11:14.314Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

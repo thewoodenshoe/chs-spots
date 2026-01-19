@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJoVL_ZFlj_ogRTDhleKy_m6s",
+  "venueName": "Quality Inn Coliseum",
+  "venueArea": "North Charleston",
+  "website": "https://www.choicehotels.com/south-carolina/north-charleston/quality-inn-hotels/sc408?mc=llgoxxpx",
+  "scrapedAt": "2026-01-18T17:04:29.950Z",
+  "trimmedAt": "2026-01-18T17:11:49.733Z",
+  "pages": [
+    {
+      "url": "https://www.choicehotels.com/south-carolina/north-charleston/quality-inn-hotels/sc408?mc=llgoxxpx",
+      "text": "",
+      "hash": "89c8be93b66c",
+      "downloadedAt": "2026-01-18T17:00:22.336Z",
+      "trimmedAt": "2026-01-18T17:11:49.733Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

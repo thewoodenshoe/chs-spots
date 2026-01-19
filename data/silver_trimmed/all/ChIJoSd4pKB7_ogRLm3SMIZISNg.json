@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJoSd4pKB7_ogRLm3SMIZISNg",
+  "venueName": "Southbound",
+  "venueArea": "Mount Pleasant",
+  "website": "http://southboundchs.com/",
+  "scrapedAt": "2026-01-18T17:04:29.869Z",
+  "trimmedAt": "2026-01-18T17:11:49.142Z",
+  "pages": [
+    {
+      "url": "http://southboundchs.com/",
+      "text": "top of page RESERVATIONS LIVE FIRE COOKING IN DOWNTOWN CHARLESTON Whether it’s a sense of familiarity you find yourself longing for or it's new stories, new friends, new laughs—our hope for you is remedy will be found inside the old walls of Southbound. Wild meats, perfectly balanced cocktails, and uncommon wines await. Please make our live-fire kitchen your home for the evening and may you leave with a story of your own to tell . Come Alive Hours: Sunday - Thursday 5:00pm - 9:00pm Friday - Saturday 5:00pm - 10:00pm (CLOSED MONDAYS) Wild Meats Balanced Cocktails Uncommon Wines bottom of page",
+      "hash": "cb13bb64cb49",
+      "downloadedAt": "2026-01-18T16:57:25.670Z",
+      "trimmedAt": "2026-01-18T17:11:49.142Z",
+      "sizeReduction": "99.9%"
+    }
+  ],
+  "sizeReduction": "99.9%"
+}

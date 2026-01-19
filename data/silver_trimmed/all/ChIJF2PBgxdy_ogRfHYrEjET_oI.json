@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJF2PBgxdy_ogRfHYrEjET_oI",
+  "venueName": "Basil",
+  "venueArea": "Mount Pleasant",
+  "website": "http://eatatbasil.com/",
+  "scrapedAt": "2026-01-18T17:04:24.547Z",
+  "trimmedAt": "2026-01-18T17:05:24.882Z",
+  "pages": [
+    {
+      "url": "http://eatatbasil.com/",
+      "text": "",
+      "hash": "b723089ad921",
+      "downloadedAt": "2026-01-18T16:55:44.841Z",
+      "trimmedAt": "2026-01-18T17:05:24.882Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJC4_MZSp7_ogRf528aKHnTa0",
+  "venueName": "Frontier Lounge",
+  "venueArea": "Downtown Charleston",
+  "website": "https://www.instagram.com/frontierlounge",
+  "scrapedAt": "2026-01-18T17:04:24.182Z",
+  "trimmedAt": "2026-01-18T17:05:09.960Z",
+  "pages": [
+    {
+      "url": "https://www.instagram.com/frontierlounge",
+      "text": "",
+      "hash": "ea710c788e11",
+      "downloadedAt": "2026-01-18T16:53:56.911Z",
+      "trimmedAt": "2026-01-18T17:05:09.960Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

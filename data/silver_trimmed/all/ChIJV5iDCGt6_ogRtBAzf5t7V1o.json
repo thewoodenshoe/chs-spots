@@ -1,0 +1,27 @@
+{
+  "venueId": "ChIJV5iDCGt6_ogRtBAzf5t7V1o",
+  "venueName": "Juanita Greenberg's Nacho Royale",
+  "venueArea": "Downtown Charleston",
+  "website": "http://www.juanitagreenbergs.com/",
+  "scrapedAt": "2026-01-18T17:04:26.793Z",
+  "trimmedAt": "2026-01-18T17:08:04.488Z",
+  "pages": [
+    {
+      "url": "http://www.juanitagreenbergs.com/",
+      "text": "Skip to main content Top Charleston Mexican Restaurant Order Online: Take Out & Delivery WELCOME TO JUANITA GREENBERG’S At Juanita Greenberg’s Nacho Royale we make real Mexican-ish food prepared fresh and fast. Over a decade ago, we first opened Juanita Greenberg’s Burrito Palace on Wentworth Street in Historic Charleston and featured original style nachos, quesadillas, and big fat healthy burritos. Now we have 2 locations – Upper King in downtown Charleston and Coleman Boulevard right near Shem Creek in Mt. Pleasant. Big Screen TV, 13 TVs and Pool Table in Mt. Pleasant Mexican Food and a Whole Lot More Juanita’s has also grown from just awesome Mexican food to a whole lot more. Seating inside and outside at both locations, margaritas that will make you want to jump right into the glass, TV’s all around (so yeah we have that sports-bar thing going on too) and a casual, groovy, retro-cool atmosphere that’ll make you want to stick around long after your food’s gone! So ANDELE ANDELE, ARIBA ARIBA! Get a group together and get to Juanita’s – the food’s cookin’ and the margaritas are waiting.We are dog friendly and smoking is allowed on the patio!",
+      "hash": "0f7824034625",
+      "downloadedAt": "2026-01-18T16:54:15.934Z",
+      "trimmedAt": "2026-01-18T17:08:04.485Z",
+      "sizeReduction": "97.9%"
+    },
+    {
+      "url": "http://www.juanitagreenbergs.com/menu",
+      "text": "Skip to main content Our Menu",
+      "hash": "6a08b1fd7029",
+      "downloadedAt": "2026-01-18T16:54:16.227Z",
+      "trimmedAt": "2026-01-18T17:08:04.488Z",
+      "sizeReduction": "99.9%"
+    }
+  ],
+  "sizeReduction": "98.8%"
+}

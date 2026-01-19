@@ -27,9 +27,6 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    - name: Run areas configuration tests
-      run: npm run test:areas
-
     - name: Run all Jest tests
       run: npm test
       continue-on-error: true

@@ -1,0 +1,27 @@
+{
+  "venueId": "ChIJ6aro_jB9_ogRV6wmOSaTKNo",
+  "venueName": "Platia Greek Goodness",
+  "venueArea": "North Charleston",
+  "website": "http://platiagreekfood.com/",
+  "scrapedAt": "2026-01-18T17:04:23.745Z",
+  "trimmedAt": "2026-01-18T17:05:04.120Z",
+  "pages": [
+    {
+      "url": "http://platiagreekfood.com/",
+      "text": "0 OPA! brings a taste of Athens to the heart of Charleston. Platia We use locally sourced produce to serve fresh, traditional Greek cuisine Whether you’re craving our must-try lamb gyro, the local favorite “Hill Billy,” or a vegetarian-friendly option, we’ve got you covered. We’re proud to be named Best Gyro in Charleston 2025. Order Now Gift Cards West Ashley Patio Dining Only 720 Magnolia Rd, Charleston, SC 29407 (843) 882-7443 Mon-Wed: 11 AM – 10 PM Thu: 11 AM – 11 PM Fri–Sat: 11 AM – 12 AM Sun: 12 PM – 10 PM Directions Call North Charleston 5060 Dorchester Rd, Unit 230, North Charleston, SC 29418 (843) 864-1273 Mon–Sat: 10 AM – 9 PM Sun: 12 PM – 8 PM Directions Call Mt Pleasant Now Opened! 920 Houston Northcutt Blvd, Suite A2, Mount Pleasant, SC 29464 (843) 936-2617 Mon–Sat: 11 AM – 9 PM Sun: 12 PM – 8 PM Directions Call Bring Platia to Your Event! From weddings to office lunches, we make every event OPA-worthy. Ask about our catering or food truck! Custom Catering Email Address Sign Up We respect your privacy. Efharistó poli | Thank you very much! Greek goodness will soon be hitting your mailbox!",
+      "hash": "3295e636f293",
+      "downloadedAt": "2026-01-18T17:00:19.028Z",
+      "trimmedAt": "2026-01-18T17:05:04.110Z",
+      "sizeReduction": "99.5%"
+    },
+    {
+      "url": "http://platiagreekfood.com/menu",
+      "text": "0 Greek Food Menu — Gyros, Bowls & More Platia Order Now",
+      "hash": "697b32bb117f",
+      "downloadedAt": "2026-01-18T17:00:19.285Z",
+      "trimmedAt": "2026-01-18T17:05:04.120Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "99.7%"
+}

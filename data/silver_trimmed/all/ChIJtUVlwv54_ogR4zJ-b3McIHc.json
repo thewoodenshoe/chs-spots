@@ -1,0 +1,27 @@
+{
+  "venueId": "ChIJtUVlwv54_ogR4zJ-b3McIHc",
+  "venueName": "Great Wall",
+  "venueArea": "James Island",
+  "website": "https://charlestongreatwall.com/",
+  "scrapedAt": "2026-01-18T17:04:31.549Z",
+  "trimmedAt": "2026-01-18T17:12:50.675Z",
+  "pages": [
+    {
+      "url": "https://charlestongreatwall.com/",
+      "text": "Skip to content Great Wall （1291 Folly Rd Ste 118） Asian, Chinese Order Online ABOUT US Great Wall offers delicious dining and takeout to Charleston, SC. Great Wall is a cornerstone in the Charleston community and has been recognized for its outstanding Chinese cuisine, excellent service and friendly staff. Our restaurant is known for its modern interpretation of classic dishes and its insistence on only using high quality fresh ingredients. Location Great Wall （1291 Folly Rd Ste 118） 1291 Folly Rd Ste 118,Charleston,SC,29412 Phone: (843) 762-1726 Store Hours Monday 11:00 AM - 9:00 PM Tuesday 11:00 AM - 9:00 PM Wednesday 11:00 AM - 9:00 PM Thursday 11:00 AM - 9:00 PM Friday 11:00 AM - 9:30 PM Saturday 11:00 AM - 9:30 PM Sunday Closed",
+      "hash": "6d130948794c",
+      "downloadedAt": "2026-01-18T16:55:32.957Z",
+      "trimmedAt": "2026-01-18T17:12:50.672Z",
+      "sizeReduction": "91.7%"
+    },
+    {
+      "url": "https://charlestongreatwall.com/#Location",
+      "text": "Skip to content Great Wall （1291 Folly Rd Ste 118） Asian, Chinese Order Online ABOUT US Great Wall offers delicious dining and takeout to Charleston, SC. Great Wall is a cornerstone in the Charleston community and has been recognized for its outstanding Chinese cuisine, excellent service and friendly staff. Our restaurant is known for its modern interpretation of classic dishes and its insistence on only using high quality fresh ingredients. Location Great Wall （1291 Folly Rd Ste 118） 1291 Folly Rd Ste 118,Charleston,SC,29412 Phone: (843) 762-1726 Store Hours Monday 11:00 AM - 9:00 PM Tuesday 11:00 AM - 9:00 PM Wednesday 11:00 AM - 9:00 PM Thursday 11:00 AM - 9:00 PM Friday 11:00 AM - 9:30 PM Saturday 11:00 AM - 9:30 PM Sunday Closed",
+      "hash": "e12a7e32e198",
+      "downloadedAt": "2026-01-18T16:55:32.998Z",
+      "trimmedAt": "2026-01-18T17:12:50.675Z",
+      "sizeReduction": "91.7%"
+    }
+  ],
+  "sizeReduction": "91.7%"
+}

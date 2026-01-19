@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJNxf0LNl6_ogRfl1ujpEpgJc",
+  "venueName": "Bertha's Kitchen",
+  "venueArea": "North Charleston",
+  "website": "https://m.facebook.com/pages/Berthas-Kitchen/168600646485662",
+  "scrapedAt": "2026-01-18T17:04:25.658Z",
+  "trimmedAt": "2026-01-18T17:07:14.183Z",
+  "pages": [
+    {
+      "url": "https://m.facebook.com/pages/Berthas-Kitchen/168600646485662",
+      "text": "",
+      "hash": "b176f2d881f5",
+      "downloadedAt": "2026-01-18T16:58:10.453Z",
+      "trimmedAt": "2026-01-18T17:07:14.183Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

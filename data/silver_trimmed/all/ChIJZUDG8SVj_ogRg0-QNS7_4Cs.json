@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJZUDG8SVj_ogRg0-QNS7_4Cs",
+  "venueName": "Raise the Roost",
+  "venueArea": "North Charleston",
+  "website": "https://raisetheroostchicken.com/?utm_source=G&utm_medium=local&utm_campaign=google-local",
+  "scrapedAt": "2026-01-18T17:04:27.919Z",
+  "trimmedAt": "2026-01-18T17:11:12.515Z",
+  "pages": [
+    {
+      "url": "https://raisetheroostchicken.com/?utm_source=G&utm_medium=local&utm_campaign=google-local",
+      "text": "",
+      "hash": "a8fa2f9ad48f",
+      "downloadedAt": "2026-01-18T17:00:22.936Z",
+      "trimmedAt": "2026-01-18T17:11:12.515Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

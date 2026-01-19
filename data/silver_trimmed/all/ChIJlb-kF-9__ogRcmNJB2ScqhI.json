@@ -1,0 +1,27 @@
+{
+  "venueId": "ChIJlb-kF-9__ogRcmNJB2ScqhI",
+  "venueName": "Lost Isle",
+  "venueArea": "West Ashley",
+  "website": "https://www.lostislechs.com/",
+  "scrapedAt": "2026-01-18T17:04:29.121Z",
+  "trimmedAt": "2026-01-18T17:11:38.857Z",
+  "pages": [
+    {
+      "url": "https://www.lostislechs.com/visit",
+      "text": "0 Welcome to Lost Isle. Nestled on Johns Island, we’re the island’s first fire-to-table restaurant and bar, located at 3338 Maybank Highway beside The Tattooed Moose! Our entire dining experience unfolds outdoors, tucked behind the building beneath a sprawling pecan tree and an open sky. Settle in by the glow of the fire, cozy up under the heaters, or wrap yourself in a warm blanket as the night settles in. Slow down, linger a little longer, and let the evening do the rest. We hope you find your vibe at Lost Isle! FAQ’s | We do have Handicap Accessible Parking & Seating | Rainy Day Policy - We Open Rain or Shine, but will announce on social media if weather hinders our operations | We do not take reservations - Come during the week to avoid wait times! | Dog Policy - We allow happy, healthy, well-behaved dogs who are on a leash and go potty before arrival | We do not have High Chairs or a Children’s Menu, but we cater to guests of all ages",
+      "hash": "4e366c8441c1",
+      "downloadedAt": "2026-01-18T17:02:43.508Z",
+      "trimmedAt": "2026-01-18T17:11:38.850Z",
+      "sizeReduction": "99.4%"
+    },
+    {
+      "url": "https://www.lostislechs.com/",
+      "text": "0 Charleston’s First Fire To Table Restaurant & Bar Eat Drink Visit Located on beautiful Johns Island, just minutes from downtown Charleston & Kiawah Island. Lost Isle is a fire-to-table restaurant inspired by the natural beauty and easygoing spirit of Johns Island. Inspired by Lowcountry flavors and thoughtful hospitality, we’re a place to gather, unwind, and enjoy great food in good company. Consider it a little escape—without ever leaving the island. Please note we are a walk-in only restaurant and we do not accept reservations.",
+      "hash": "7079b79f1bcf",
+      "downloadedAt": "2026-01-18T17:02:43.451Z",
+      "trimmedAt": "2026-01-18T17:11:38.857Z",
+      "sizeReduction": "99.6%"
+    }
+  ],
+  "sizeReduction": "99.5%"
+}

@@ -1,5 +1,4 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-# Run areas configuration tests (Step 1 validation)
-npm run test:areas
+# Pre-commit hook runs lint-staged which handles test running

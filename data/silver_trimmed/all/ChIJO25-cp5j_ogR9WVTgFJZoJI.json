@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJO25-cp5j_ogR9WVTgFJZoJI",
+  "venueName": "Hideaway Lounge",
+  "venueArea": "North Charleston",
+  "website": "https://www.facebook.com/pages/hideaway-lounge/279932455834479?mibextid=LQQJ4d",
+  "scrapedAt": "2026-01-18T17:04:25.688Z",
+  "trimmedAt": "2026-01-18T17:07:14.515Z",
+  "pages": [
+    {
+      "url": "https://www.facebook.com/pages/hideaway-lounge/279932455834479?mibextid=LQQJ4d",
+      "text": "",
+      "hash": "67aa7d33848c",
+      "downloadedAt": "2026-01-18T16:59:25.246Z",
+      "trimmedAt": "2026-01-18T17:07:14.515Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

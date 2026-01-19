@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJWx2OinV__ogR_Mgn0NDsKKI",
+  "venueName": "The Heyday",
+  "venueArea": "West Ashley",
+  "website": "https://www.theheydaysc.com/",
+  "scrapedAt": "2026-01-18T17:04:26.851Z",
+  "trimmedAt": "2026-01-18T17:08:05.039Z",
+  "pages": [
+    {
+      "url": "https://www.theheydaysc.com/",
+      "text": "0 ALL-DAY CAFE AND BAR “ CATCH YOU THERE ” BY THE TEAM AT ISLAND PROVISIONS BY THE TEAM AT ISLAND PROVISIONS COFFEE + COCKTAILS BREAKFAST + LUNCH 605 KINDRED COURT JOHNS ISLAND, SC 29455 843-654-0400 SUN 9AM–3PMMON 9AM-3PMWED 9AM-3PMTHUR-SAT 9AM-9PMCLOSED TUESDAYS @THEHEYDAYSC WE ARE HIRING! HELLO@THEHEYDAYSC.COM",
+      "hash": "23c2e21e0dae",
+      "downloadedAt": "2026-01-18T17:04:00.434Z",
+      "trimmedAt": "2026-01-18T17:08:05.039Z",
+      "sizeReduction": "99.8%"
+    }
+  ],
+  "sizeReduction": "99.8%"
+}

@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJm3X4uxN8_ogR2-yaXjJcgd8",
+  "venueName": "Sultan Restaurant and Lounge",
+  "venueArea": "West Ashley",
+  "website": "https://www.sultanswestashley.com/",
+  "scrapedAt": "2026-01-18T17:04:29.224Z",
+  "trimmedAt": "2026-01-18T17:11:39.860Z",
+  "pages": [
+    {
+      "url": "https://www.sultanswestashley.com/",
+      "text": "",
+      "hash": "7d7f40dc0c88",
+      "downloadedAt": "2026-01-18T17:03:20.782Z",
+      "trimmedAt": "2026-01-18T17:11:39.860Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

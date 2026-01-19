@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJY-ZvVb1x_ogRc0YMn1_z91g",
+  "venueName": "Kairos Mediterranean",
+  "venueArea": "Mount Pleasant",
+  "website": "https://www.eatkairos.com/",
+  "scrapedAt": "2026-01-18T17:04:27.764Z",
+  "trimmedAt": "2026-01-18T17:11:05.684Z",
+  "pages": [
+    {
+      "url": "https://www.eatkairos.com/",
+      "text": "",
+      "hash": "c4bd0cd02ece",
+      "downloadedAt": "2026-01-18T16:56:28.490Z",
+      "trimmedAt": "2026-01-18T17:11:05.684Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

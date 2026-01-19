@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJv3CR0tpj_ogRjkjQ5cIiV2c",
+  "venueName": "Poblanos Mexican Restaurant",
+  "venueArea": "North Charleston",
+  "website": "http://poblanosmexcuisine.com/",
+  "scrapedAt": "2026-01-18T17:04:31.694Z",
+  "trimmedAt": "2026-01-18T17:12:54.764Z",
+  "pages": [
+    {
+      "url": "http://poblanosmexcuisine.com/",
+      "text": "",
+      "hash": "ab8f29054f99",
+      "downloadedAt": "2026-01-18T17:00:20.143Z",
+      "trimmedAt": "2026-01-18T17:12:54.764Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJH10F8PNw_ogRWzqIT5t4cyg",
+  "venueName": "Chicken Salad Chick",
+  "venueArea": "Mount Pleasant",
+  "website": "https://chickensaladchick.com/mt-pleasant-fl",
+  "scrapedAt": "2026-01-18T17:04:24.799Z",
+  "trimmedAt": "2026-01-18T17:05:30.920Z",
+  "pages": [
+    {
+      "url": "https://chickensaladchick.com/mt-pleasant-fl",
+      "text": "Dismiss",
+      "hash": "efba5428276e",
+      "downloadedAt": "2026-01-18T16:55:59.504Z",
+      "trimmedAt": "2026-01-18T17:05:30.920Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

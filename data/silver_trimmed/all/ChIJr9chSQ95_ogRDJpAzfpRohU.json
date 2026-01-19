@@ -1,0 +1,27 @@
+{
+  "venueId": "ChIJr9chSQ95_ogRDJpAzfpRohU",
+  "venueName": "Thai Elephants Restaurant (James Island)",
+  "venueArea": "James Island",
+  "website": "https://thaielephantsrestaurant.com/",
+  "scrapedAt": "2026-01-18T17:04:31.370Z",
+  "trimmedAt": "2026-01-18T17:12:47.716Z",
+  "pages": [
+    {
+      "url": "https://thaielephantsrestaurant.com/menu/",
+      "text": "Skip to content Scroll to Top",
+      "hash": "18af54909d4a",
+      "downloadedAt": "2026-01-18T16:55:41.338Z",
+      "trimmedAt": "2026-01-18T17:12:47.674Z",
+      "sizeReduction": "100.0%"
+    },
+    {
+      "url": "https://thaielephantsrestaurant.com/",
+      "text": "[Page Title: Layer 1] Skip to content Layer 1 CHEF’S SPECIALITIES OUR MASTER CHEF SPECIALS order online Fried Spring Rolls Price: $8.99 Crab Won Tons Price: $8.99 Larb Chicken Price: $13.99 Curry Puffs Price: $9.99 (3 pieces) Pineapple Fried Rice Price: $16.99 Pad Thai Price: $15.95 Shrimp Fresh Rolls Price: $11.99 Green Curry Price: $15.99 Chicken Satay Price: $10.99 Thai Elephant Fried Rice Price: $14.99 Sum Tum ( Papaya Salad) Price: $12.99 Pad See Ew Price: $15.95 order online Enjoy a taste of traditional, authentic, made-from-scratch Thai recipes. Every dish is prepared from fresh ingredients and herbs & spices that are a signature of Thai cuisine. Experience the flavor and aroma of a beautifully presented Thai meal! We are open Monday through Saturday, so come in and experience the taste of Thai! James Ward 5 Stars! Amazing! Best Thai food in the city! Ameena G. 5 Stars! Best Pad Thai ever. Great waiters and nice and friendly. Johnny Rivera 5 Stars! Every time I ask my 5 year old where do want to get dinner. she request Thai elephants coconut soup with chicken (Tom kha gai) and chicken lollipops (satay). I can keep going on about the food like massaman curry, pineapple fried rice served in a half pineapple shell, taro root custard and pumpkin custard. Enough about the food the service is fast and friendly. Chris B. Best Thai food I've had outside of Thailand. Can't wait to come back! make a reservation Scroll to Top",
+      "hash": "3fa45087d50e",
+      "downloadedAt": "2026-01-18T16:55:41.173Z",
+      "trimmedAt": "2026-01-18T17:12:47.716Z",
+      "sizeReduction": "99.4%"
+    }
+  ],
+  "sizeReduction": "99.7%"
+}

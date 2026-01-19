@@ -1,0 +1,35 @@
+{
+  "venueId": "ChIJIR4LnjV__ogR9Tf6a5QnUgk",
+  "venueName": "Tacos La Familia",
+  "venueArea": "West Ashley",
+  "website": "http://www.antojitos.me/",
+  "scrapedAt": "2026-01-18T17:04:24.900Z",
+  "trimmedAt": "2026-01-18T17:05:31.931Z",
+  "pages": [
+    {
+      "url": "http://www.antojitos.me/",
+      "text": "0 Welcome to Tacos La Familimia At Tacos La Familimia, we serve more than just food — we serve tradition, love, and family. We’re a small, family-run food truck rooted in authentic Mexican cooking. Our tortillas, beans, rice, and aguas frescas are made from scratch, just like we would at home — because they made at home. No cans, no shortcuts — just real, homemade flavor you can taste. are Our story began in Mexico, where the owner once ran a cozy soup shop and cooked daily for her family. When the pandemic changed everything, our family came together and poured our hearts into this truck. It started with the daughters, then Mom took the reins when the eldest became a new mother — and business has been thriving thanks to the amazing food and our loyal community. Now, we’ve added , where we fire up chicken and ribs the way we do at home — loud, smoky, and full of life. Grilled Out Weekends If you're looking for fancy, this isn't it. But if you want to hear grandmas, babies laughing, siblings shouting, and smell tortillas hitting the comal — you’re in the right place. We’re Tacos La Familia — because this business is run by family, and we treat everyone who visits like family too. Have you ever tried birria before? It’s our specialty… It’s a . It’s served with a “” (soup) that’s used to and add extra flavor. slow-roasted beef brisket cooked in spices and marinade side of consume dip the tacos in Kick it up a notch by ordering , and get your tortilla lined with . QUESO-BIRRIA tacos fresh melted mozzarella cheese Birria is , so don’t be afraid to try something new! also available on burritos, quesadillas, and nachos",
+      "hash": "20c8ed68a2d3",
+      "downloadedAt": "2026-01-18T17:03:20.935Z",
+      "trimmedAt": "2026-01-18T17:05:31.881Z",
+      "sizeReduction": "98.6%"
+    },
+    {
+      "url": "http://www.antojitos.me/location",
+      "text": "0 Location 3546 Maybank Hwy Johns Island, South Carolina 29455 Look for the bright yellow food truck and the outdoor eating area!",
+      "hash": "e4ea24b0870a",
+      "downloadedAt": "2026-01-18T17:03:22.178Z",
+      "trimmedAt": "2026-01-18T17:05:31.887Z",
+      "sizeReduction": "99.9%"
+    },
+    {
+      "url": "http://www.antojitos.me/menu",
+      "text": "0",
+      "hash": "fc2ba6596de5",
+      "downloadedAt": "2026-01-18T17:03:21.230Z",
+      "trimmedAt": "2026-01-18T17:05:31.931Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "99.8%"
+}

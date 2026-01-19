@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJlVVw71t7_ogRB4WO-BQvJLQ",
+  "venueName": "Freehouse Brewery",
+  "venueArea": "North Charleston",
+  "website": "http://freehousebeer.com/",
+  "scrapedAt": "2026-01-18T17:04:29.111Z",
+  "trimmedAt": "2026-01-18T17:11:38.720Z",
+  "pages": [
+    {
+      "url": "http://freehousebeer.com/",
+      "text": "Welcome to Freehouse Brewery Organic Beer. Wood-Fired Kitchen. Public and Private Events. Please select location Charleston Walhalla",
+      "hash": "a96eb30fdf09",
+      "downloadedAt": "2026-01-18T16:59:07.236Z",
+      "trimmedAt": "2026-01-18T17:11:38.720Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

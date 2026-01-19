@@ -1,0 +1,35 @@
+{
+  "venueId": "ChIJE_re1OVl_ogRy9fkN1A7awc",
+  "venueName": "Sissy Bar Park Circle",
+  "venueArea": "North Charleston",
+  "website": "https://www.sissybarparkcircle.com/",
+  "scrapedAt": "2026-01-18T17:04:24.539Z",
+  "trimmedAt": "2026-01-18T17:05:24.839Z",
+  "pages": [
+    {
+      "url": "https://www.sissybarparkcircle.com/menu",
+      "text": "0",
+      "hash": "733c3127c61c",
+      "downloadedAt": "2026-01-18T17:01:19.981Z",
+      "trimmedAt": "2026-01-18T17:05:24.820Z",
+      "sizeReduction": "100.0%"
+    },
+    {
+      "url": "https://www.sissybarparkcircle.com/private-events",
+      "text": "0 We would love to host you for your next event. Our space features an indoor bar as well as indoor seating and standing room. The capacity of our space is 54 people. We are able to serve all of our famous, hand-crafted cocktails as well as beer, wine and food at events. For more information about hosting an event at Sissy Bar, download our Private Events Information Package below or contact us directly at . events@sissybarparkcircle.com Download Events Package",
+      "hash": "db7226a222f3",
+      "downloadedAt": "2026-01-18T17:01:20.564Z",
+      "trimmedAt": "2026-01-18T17:05:24.825Z",
+      "sizeReduction": "99.5%"
+    },
+    {
+      "url": "https://www.sissybarparkcircle.com/",
+      "text": "0 Check out our menu Get more info More about us Follow us on IG @ sissy_bar_parkcircle",
+      "hash": "f0d9bead8671",
+      "downloadedAt": "2026-01-18T17:01:19.765Z",
+      "trimmedAt": "2026-01-18T17:05:24.839Z",
+      "sizeReduction": "99.9%"
+    }
+  ],
+  "sizeReduction": "99.8%"
+}

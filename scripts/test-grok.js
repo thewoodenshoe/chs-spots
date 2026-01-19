@@ -49,7 +49,7 @@ async function testGrok() {
     console.log("✅ GROK_API_KEY is set.");
 
     const GROK_API_URL = 'https://api.x.ai/v1/chat/completions';
-    const GROK_MODEL = 'grok-4-latest'; // xAI Grok model (matches working curl example)
+    const GROK_MODEL = 'grok-4-fast-reasoning'; // Faster model with good reasoning, higher rate limits
 
     try {
         console.log(`\nTesting Grok API with model: ${GROK_MODEL}...`);

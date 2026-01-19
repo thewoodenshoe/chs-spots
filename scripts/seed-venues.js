@@ -425,6 +425,11 @@ function extractAreaFromAddress(address) {
     return 'Daniel Island';
   }
   
+  // Point Hope Pkwy: North Charleston (exclude from Daniel Island)
+  if (addressLower.includes('point hope') || addressLower.includes('point hope pkwy')) {
+    return 'North Charleston';
+  }
+  
   return null;
 }
 
@@ -472,9 +477,11 @@ function findAreaForVenue(lat, lng, address, addressComponents, areasConfig) {
       const isEastBayStreet = address.toLowerCase().includes('east bay street') || 
                               address.toLowerCase().includes('east bay st');
       const isClementsFerry = address.toLowerCase().includes('clements ferry');
+      const isPointHope = address.toLowerCase().includes('point hope') || 
+                          address.toLowerCase().includes('point hope pkwy');
       
-      // East Bay Street and street number-based assignments are authoritative
-      if (isStreetNumberBased || isEastBayStreet) {
+      // East Bay Street, Point Hope Pkwy, and street number-based assignments are authoritative
+      if (isStreetNumberBased || isEastBayStreet || isPointHope) {
         logVerbose(`  ✅ Area from address string: "${addressArea}" (street-based, authoritative)`);
         return addressArea;
       }

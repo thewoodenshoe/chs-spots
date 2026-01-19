@@ -148,7 +148,9 @@ describe('extractHappyHours', () => {
         expect(writtenGoldContent.happyHour.entries[0].days).toBe('Monday-Friday');
         expect(writtenGoldContent.happyHour.entries[0].specials).toEqual(['$5 draft beers', 'half-off appetizers']);
         expect(writtenGoldContent.happyHour.entries[0].confidence).toBe(95);
-        expect(writtenGoldContent.sourceHash).toBe(crypto.createHash('md5').update(JSON.stringify(mockSilverContent.pages)).digest('hex'));
+        // Hash calculation must match script: pages.map(p => p.text || p.html || '').join('\n')
+        const expectedHash = crypto.createHash('md5').update(mockSilverContent.pages.map(p => p.text || p.html || '').join('\n')).digest('hex');
+        expect(writtenGoldContent.sourceHash).toBe(expectedHash);
     });
 
     test('should handle cases where no happy hour is found', async () => {
@@ -250,8 +252,8 @@ describe('extractHappyHours', () => {
             venueName: venueName,
             pages: [{ url: 'https://incremental.com', text: 'No happy hour.' }]
         };
-        // Hash should match script's calculation: JSON.stringify(venueData.pages)
-        const mockSourceHash = crypto.createHash('md5').update(JSON.stringify(mockSilverContent.pages)).digest('hex');
+        // Hash should match script's calculation: pages.map(p => p.text || p.html || '').join('\n')
+        const mockSourceHash = crypto.createHash('md5').update(mockSilverContent.pages.map(p => p.text || p.html || '').join('\n')).digest('hex');
 
         const mockGoldContent = {
             venueId: venueId,
@@ -290,15 +292,15 @@ describe('extractHappyHours', () => {
             venueName: venueName,
             pages: [{ url: 'https://changed.com', text: 'No happy hour.' }]
         };
-        // Hash should match script's calculation: JSON.stringify(venueData.pages)
-        const oldSourceHash = crypto.createHash('md5').update(JSON.stringify(oldSilverContent.pages)).digest('hex');
+        // Hash should match script's calculation: pages.map(p => p.text || p.html || '').join('\n')
+        const oldSourceHash = crypto.createHash('md5').update(oldSilverContent.pages.map(p => p.text || p.html || '').join('\n')).digest('hex');
 
         const newSilverContent = {
             venueName: venueName,
             pages: [{ url: 'https://changed.com', text: 'Happy Hour: 5-7pm!' }] // Content changed
         };
-        // Hash should match script's calculation: JSON.stringify(venueData.pages)
-        const newSourceHash = crypto.createHash('md5').update(JSON.stringify(newSilverContent.pages)).digest('hex');
+        // Hash should match script's calculation: pages.map(p => p.text || p.html || '').join('\n')
+        const newSourceHash = crypto.createHash('md5').update(newSilverContent.pages.map(p => p.text || p.html || '').join('\n')).digest('hex');
 
         const mockGoldContent = {
             venueId: venueId,

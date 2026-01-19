@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJ8zEdFlNz_ogRn4yEhd0J_vU",
+  "venueName": "Toast! All Day",
+  "venueArea": "Mount Pleasant",
+  "website": "https://toastallday.com/toast-mt-pleasant/mt-pleasant-menu/",
+  "scrapedAt": "2026-01-18T17:04:23.843Z",
+  "trimmedAt": "2026-01-18T17:05:05.193Z",
+  "pages": [
+    {
+      "url": "https://toastallday.com/toast-mt-pleasant/mt-pleasant-menu/",
+      "text": "",
+      "hash": "abc105abca94",
+      "downloadedAt": "2026-01-18T16:57:45.852Z",
+      "trimmedAt": "2026-01-18T17:05:05.193Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

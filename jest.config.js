@@ -88,6 +88,4 @@ module.exports = {
       moduleFileExtensions: ['js', 'ts', 'json'],
     },
   ],
-  // Explicitly set testSequencer to avoid missing module error
-  testSequencer: undefined,
 }

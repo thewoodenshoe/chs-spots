@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJPa8ZZi97_ogRaBNKFyFL_q0",
+  "venueName": "Pancakes & Sandwiches",
+  "venueArea": "North Charleston",
+  "website": "https://usmapiqs.org/details/pancakes-sandwiches-ChIJPa8",
+  "scrapedAt": "2026-01-18T17:04:25.903Z",
+  "trimmedAt": "2026-01-18T17:07:17.071Z",
+  "pages": [
+    {
+      "url": "https://usmapiqs.org/details/pancakes-sandwiches-ChIJPa8",
+      "text": "",
+      "hash": "6c2f0f0b3a90",
+      "downloadedAt": "2026-01-18T17:00:18.632Z",
+      "trimmedAt": "2026-01-18T17:07:17.071Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

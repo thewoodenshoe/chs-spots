@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJaWhQy_Z5_ogR_XWFvrHRSRI",
+  "venueName": "Bar George",
+  "venueArea": "West Ashley",
+  "website": "http://bar-georgechs.com/",
+  "scrapedAt": "2026-01-18T17:04:28.080Z",
+  "trimmedAt": "2026-01-18T17:11:14.928Z",
+  "pages": [
+    {
+      "url": "http://bar-georgechs.com/",
+      "text": "top of page seanmoneyelizabethfay-bargeorgev-003 1/5 BAR GEO RGE CONTACT CONTACT MENU MENU HOURS HOURS bottom of page",
+      "hash": "83c31aa77f0d",
+      "downloadedAt": "2026-01-18T17:02:00.515Z",
+      "trimmedAt": "2026-01-18T17:11:14.928Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

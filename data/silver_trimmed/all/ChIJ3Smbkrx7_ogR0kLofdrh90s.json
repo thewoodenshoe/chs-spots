@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJ3Smbkrx7_ogR0kLofdrh90s",
+  "venueName": "The Tippling House",
+  "venueArea": "Mount Pleasant",
+  "website": "http://www.thetipplinghousechs.com/",
+  "scrapedAt": "2026-01-18T17:04:23.453Z",
+  "trimmedAt": "2026-01-18T17:04:53.486Z",
+  "pages": [
+    {
+      "url": "http://www.thetipplinghousechs.com/",
+      "text": "Skip to content Photo by Mike Ledford Instagram",
+      "hash": "3751b651b00d",
+      "downloadedAt": "2026-01-18T16:57:45.966Z",
+      "trimmedAt": "2026-01-18T17:04:53.486Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

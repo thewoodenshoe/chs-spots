@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJQSIPXLZk_ogReIQNkU6l6ow",
+  "venueName": "Asian Garden",
+  "venueArea": "North Charleston",
+  "website": "https://www.facebook.com/asiangardenCHS/",
+  "scrapedAt": "2026-01-18T17:04:25.973Z",
+  "trimmedAt": "2026-01-18T17:07:18.568Z",
+  "pages": [
+    {
+      "url": "https://www.facebook.com/asiangardenCHS/",
+      "text": "",
+      "hash": "68930faa5489",
+      "downloadedAt": "2026-01-18T16:58:10.064Z",
+      "trimmedAt": "2026-01-18T17:07:18.568Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

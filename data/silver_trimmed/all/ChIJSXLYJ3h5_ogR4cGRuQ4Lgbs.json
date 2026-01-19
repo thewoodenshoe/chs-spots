@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJSXLYJ3h5_ogR4cGRuQ4Lgbs",
+  "venueName": "Randall's Curbside Griddle",
+  "venueArea": "James Island",
+  "website": "https://curbsidegriddle.com/",
+  "scrapedAt": "2026-01-18T17:04:26.513Z",
+  "trimmedAt": "2026-01-18T17:08:00.841Z",
+  "pages": [
+    {
+      "url": "https://curbsidegriddle.com/",
+      "text": "",
+      "hash": "93a8377926fa",
+      "downloadedAt": "2026-01-18T16:55:40.324Z",
+      "trimmedAt": "2026-01-18T17:08:00.841Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

@@ -1,0 +1,27 @@
+{
+  "venueId": "ChIJycwubS17_ogRBsARaK5_0vg",
+  "venueName": "Church's Texas Chicken",
+  "venueArea": "North Charleston",
+  "website": "https://locations.churchs.com/sc/north-charleston/3303-rivers-avenue",
+  "scrapedAt": "2026-01-18T17:04:32.148Z",
+  "trimmedAt": "2026-01-18T17:13:06.614Z",
+  "pages": [
+    {
+      "url": "https://locations.churchs.com/sc/north-charleston/3303-rivers-avenue",
+      "text": "Church's® on 3303 Rivers Avenue in North Charleston, SC 3303 Rivers Avenue North Charleston, SC 29405 (843) 410-4715 START YOUR ORDER VIEW MENU Order Catering",
+      "hash": "b11985cd9e5e",
+      "downloadedAt": "2026-01-18T16:58:33.783Z",
+      "trimmedAt": "2026-01-18T17:13:06.603Z",
+      "sizeReduction": "99.8%"
+    },
+    {
+      "url": "https://locations.churchs.com/index.html",
+      "text": "Church's Texas Chicken® U.S. Locations When autocomplete results are available, use up and down arrows to review and enter to select. Geolocate. Alabama Arkansas Arizona California Colorado District Of Columbia Florida Georgia Illinois Indiana Kansas Louisiana Michigan Missouri Mississippi North Carolina Nebraska New Mexico Nevada New York Ohio Oklahoma South Carolina Tennessee Texas Virginia Washington Wisconsin",
+      "hash": "e7841c539738",
+      "downloadedAt": "2026-01-18T16:58:33.965Z",
+      "trimmedAt": "2026-01-18T17:13:06.614Z",
+      "sizeReduction": "98.9%"
+    }
+  ],
+  "sizeReduction": "99.5%"
+}

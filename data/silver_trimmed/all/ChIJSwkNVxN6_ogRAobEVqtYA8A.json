@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJSwkNVxN6_ogRAobEVqtYA8A",
+  "venueName": "Gilroy's Pizza Pub",
+  "venueArea": "Downtown Charleston",
+  "website": "http://www.gilroyspizza.com/",
+  "scrapedAt": "2026-01-18T17:04:26.569Z",
+  "trimmedAt": "2026-01-18T17:08:01.792Z",
+  "pages": [
+    {
+      "url": "http://www.gilroyspizza.com/",
+      "text": "Design by: WrapWorksOnline.com",
+      "hash": "1508a0d88b1e",
+      "downloadedAt": "2026-01-18T16:54:05.733Z",
+      "trimmedAt": "2026-01-18T17:08:01.792Z",
+      "sizeReduction": "99.3%"
+    }
+  ],
+  "sizeReduction": "99.3%"
+}

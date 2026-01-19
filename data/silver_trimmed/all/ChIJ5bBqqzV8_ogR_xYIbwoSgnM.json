@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJ5bBqqzV8_ogR_xYIbwoSgnM",
+  "venueName": "Clarion Pointe Charleston - West Ashley",
+  "venueArea": "West Ashley",
+  "website": "https://www.choicehotels.com/south-carolina/charleston/clarion-hotels/sc200?mc=llgoxxpx",
+  "scrapedAt": "2026-01-18T17:04:23.668Z",
+  "trimmedAt": "2026-01-18T17:05:02.919Z",
+  "pages": [
+    {
+      "url": "https://www.choicehotels.com/south-carolina/charleston/clarion-hotels/sc200?mc=llgoxxpx",
+      "text": "",
+      "hash": "881b6aa4d60c",
+      "downloadedAt": "2026-01-18T17:02:13.614Z",
+      "trimmedAt": "2026-01-18T17:05:02.919Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

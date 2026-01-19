@@ -1,0 +1,27 @@
+{
+  "venueId": "ChIJ1yipyhV8_ogRmvCsMFEoQuk",
+  "venueName": "Ruby Tuesday",
+  "venueArea": "West Ashley",
+  "website": "https://rubytuesday.com/",
+  "scrapedAt": "2026-01-18T17:04:23.121Z",
+  "trimmedAt": "2026-01-18T17:04:46.720Z",
+  "pages": [
+    {
+      "url": "https://rubytuesday.com/#",
+      "text": "New & Featured Our Highlights Refreshing Cold & Order now Pasta Americana Favorites Robust Order now burgers and Handhelds Juicy melty Order now steak, chicken & seafood flavorful Order now RIBS & COMBOS sAUCY tENDER Order now Catering Ruby Tuesday makes your catering fresh and your life simple. order catering Now Hiring Ready to shine? Hit the button below or text HireMe to 22633 See Careers Follow @Rubytuesday Do you like free food? Join Ruby Rewards! Download App",
+      "hash": "99691c09c330",
+      "downloadedAt": "2026-01-18T17:03:13.973Z",
+      "trimmedAt": "2026-01-18T17:04:46.713Z",
+      "sizeReduction": "99.1%"
+    },
+    {
+      "url": "https://rubytuesday.com/",
+      "text": "New & Featured Our Highlights Refreshing Cold & Order now Pasta Americana Favorites Robust Order now burgers and Handhelds Juicy melty Order now steak, chicken & seafood flavorful Order now RIBS & COMBOS sAUCY tENDER Order now Catering Ruby Tuesday makes your catering fresh and your life simple. order catering Now Hiring Ready to shine? Hit the button below or text HireMe to 22633 See Careers Follow @Rubytuesday Do you like free food? Join Ruby Rewards! Download App",
+      "hash": "a7550dc4abb1",
+      "downloadedAt": "2026-01-18T17:03:13.869Z",
+      "trimmedAt": "2026-01-18T17:04:46.720Z",
+      "sizeReduction": "99.1%"
+    }
+  ],
+  "sizeReduction": "99.1%"
+}

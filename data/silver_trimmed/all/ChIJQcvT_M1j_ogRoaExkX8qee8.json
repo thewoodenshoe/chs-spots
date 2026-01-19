@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJQcvT_M1j_ogRoaExkX8qee8",
+  "venueName": "Hawthorn Suites by Wyndham North Charleston SC",
+  "venueArea": "North Charleston",
+  "website": "http://extendedstaycharleston.com/",
+  "scrapedAt": "2026-01-18T17:04:26.094Z",
+  "trimmedAt": "2026-01-18T17:07:20.830Z",
+  "pages": [
+    {
+      "url": "http://extendedstaycharleston.com/",
+      "text": "",
+      "hash": "acf5db8d0d38",
+      "downloadedAt": "2026-01-18T16:59:07.896Z",
+      "trimmedAt": "2026-01-18T17:07:20.830Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

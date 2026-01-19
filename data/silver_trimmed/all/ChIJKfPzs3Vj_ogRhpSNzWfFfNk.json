@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJKfPzs3Vj_ogRhpSNzWfFfNk",
+  "venueName": "Titanic Event Center",
+  "venueArea": "North Charleston",
+  "website": "https://www.facebook.com/Titanic-Event-Center-130736460342533/",
+  "scrapedAt": "2026-01-18T17:04:25.344Z",
+  "trimmedAt": "2026-01-18T17:07:08.849Z",
+  "pages": [
+    {
+      "url": "https://www.facebook.com/Titanic-Event-Center-130736460342533/",
+      "text": "",
+      "hash": "3412e3ade117",
+      "downloadedAt": "2026-01-18T17:01:44.339Z",
+      "trimmedAt": "2026-01-18T17:07:08.849Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

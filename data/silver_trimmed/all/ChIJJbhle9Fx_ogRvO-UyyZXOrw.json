@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJJbhle9Fx_ogRvO-UyyZXOrw",
+  "venueName": "Two Blokes Brewing",
+  "venueArea": "Mount Pleasant",
+  "website": "http://twoblokesbrewing.com/",
+  "scrapedAt": "2026-01-18T17:04:25.227Z",
+  "trimmedAt": "2026-01-18T17:07:06.803Z",
+  "pages": [
+    {
+      "url": "http://twoblokesbrewing.com/",
+      "text": "",
+      "hash": "d352aa45fe17",
+      "downloadedAt": "2026-01-18T16:57:45.990Z",
+      "trimmedAt": "2026-01-18T17:07:06.803Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJBXnHQEJ6_ogRQiEad7Pm-Qg",
+  "venueName": "Cutty's",
+  "venueArea": "Mount Pleasant",
+  "website": "https://www.instagram.com/cuttyselliotboroughbar/",
+  "scrapedAt": "2026-01-18T17:04:24.151Z",
+  "trimmedAt": "2026-01-18T17:05:09.714Z",
+  "pages": [
+    {
+      "url": "https://www.instagram.com/cuttyselliotboroughbar/",
+      "text": "",
+      "hash": "9e1d134c3e54",
+      "downloadedAt": "2026-01-18T16:56:06.100Z",
+      "trimmedAt": "2026-01-18T17:05:09.714Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJucya1a15_ogR5B4WsLe7YDA",
+  "venueName": "Beech",
+  "venueArea": "West Ashley",
+  "website": "https://www.beech-restaurants.com/",
+  "scrapedAt": "2026-01-18T17:04:31.632Z",
+  "trimmedAt": "2026-01-18T17:12:51.371Z",
+  "pages": [
+    {
+      "url": "https://www.beech-restaurants.com/",
+      "text": "top of page Taking the guesswork out of eating healthy™ bottom of page",
+      "hash": "dcb112fc901e",
+      "downloadedAt": "2026-01-18T17:02:00.266Z",
+      "trimmedAt": "2026-01-18T17:12:51.371Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

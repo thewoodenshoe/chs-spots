@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJ8dUi5SR7_ogR31e80RActXI",
+  "venueName": "Zachary's Daiquiris | Downtown Charleston Bar",
+  "venueArea": "Downtown Charleston",
+  "website": "https://zachsdaiqs.com/",
+  "scrapedAt": "2026-01-18T17:04:23.834Z",
+  "trimmedAt": "2026-01-18T17:05:05.020Z",
+  "pages": [
+    {
+      "url": "https://zachsdaiqs.com/",
+      "text": "",
+      "hash": "91c4b401983c",
+      "downloadedAt": "2026-01-18T16:55:10.653Z",
+      "trimmedAt": "2026-01-18T17:05:05.020Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

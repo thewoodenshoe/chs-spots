@@ -1,0 +1,19 @@
+{
+  "venueId": "ChIJ2x9xRABl_ogRyH68-vjrKio",
+  "venueName": "Taquería los plebes",
+  "venueArea": "North Charleston",
+  "website": "https://www.facebook.com/people/Taquer%C3%ADa-Los-Plebes/pfbid02dFHpBWSHwqRRwA3Ua9ws8seSLY97HcMitP4ff1K2NK4avEdeMAaJNpqYfkd9EEmEl/",
+  "scrapedAt": "2026-01-18T17:04:23.361Z",
+  "trimmedAt": "2026-01-18T17:04:52.002Z",
+  "pages": [
+    {
+      "url": "https://www.facebook.com/people/Taquer%C3%ADa-Los-Plebes/pfbid02dFHpBWSHwqRRwA3Ua9ws8seSLY97HcMitP4ff1K2NK4avEdeMAaJNpqYfkd9EEmEl/",
+      "text": "",
+      "hash": "03009946e9ab",
+      "downloadedAt": "2026-01-18T17:01:37.645Z",
+      "trimmedAt": "2026-01-18T17:04:52.002Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "100.0%"
+}

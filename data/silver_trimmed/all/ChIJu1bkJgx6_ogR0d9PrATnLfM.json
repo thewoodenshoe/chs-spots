@@ -1,0 +1,27 @@
+{
+  "venueId": "ChIJu1bkJgx6_ogR0d9PrATnLfM",
+  "venueName": "The Gin Joint",
+  "venueArea": "Downtown Charleston",
+  "website": "http://www.theginjoint.com/",
+  "scrapedAt": "2026-01-18T17:04:31.571Z",
+  "trimmedAt": "2026-01-18T17:12:50.897Z",
+  "pages": [
+    {
+      "url": "http://www.theginjoint.com/private-events",
+      "text": "Private Events Let’s Celebrate! Looking to host a unique event? We can help. We offer buyouts of our intimate space for up to 45 guests. Each event is 100% customized to your liking. That’s right, no tiered packages or set menus. We’ll work with you to create the perfect food and drink menu for your group. we’ve got you covered. Holiday gatherings, group spirit tastings, birthday parties, wedding events - if you can dream it up, chances are we can get it done. Like what you’re hearing? for the details and let’s get planning. Email us We ask that all private events are booked at least two months in advance.",
+      "hash": "6b00fe4e6c4f",
+      "downloadedAt": "2026-01-18T16:54:55.170Z",
+      "trimmedAt": "2026-01-18T17:12:50.893Z",
+      "sizeReduction": "99.2%"
+    },
+    {
+      "url": "http://www.theginjoint.com/",
+      "text": "",
+      "hash": "9985173cc993",
+      "downloadedAt": "2026-01-18T16:54:55.033Z",
+      "trimmedAt": "2026-01-18T17:12:50.897Z",
+      "sizeReduction": "100.0%"
+    }
+  ],
+  "sizeReduction": "99.6%"
+}
