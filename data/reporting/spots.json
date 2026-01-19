@@ -4,15 +4,15 @@
     "lat": 32.8972421,
     "lng": -79.8210081,
     "title": "Rivertowne Public House",
-    "description": "12pm-3pm • Sundays\n$9 Mimosas\n$18 Carafe Mimosa\n\n---\n\n4pm-7pm • Mondays\n$6 House Margaritas\n\n---\n\n12pm-4pm • Tuesdays\n$12 Taco Tuesday\n\n---\n\n4pm-7pm • Tuesdays\nKids Night! Half Price under 12 Menu\n\n---\n\n12pm-9pm • Wednesdays\n$12 RTPH House Wings\n\n---\n\n4pm-7pm • Wednesdays\n$1 Off All Wine Glasses\nHalf Price Wine Bottles\n\n---\n\n12pm-4pm • Thursdays\n$12 RTPH Burger & Pub Fries\n\n---\n\n4pm-7pm • Thursdays\n$8 Signature Martinis\n\n---\n\n12pm-4pm • Fridays\n$12 Pizzas",
-    "happyHourTime": "12pm-3pm • Sundays, 4pm-7pm • Mondays, 12pm-4pm • Tuesdays, 4pm-7pm • Tuesdays, 12pm-9pm • Wednesdays, 4pm-7pm • Wednesdays, 12pm-4pm • Thursdays, 4pm-7pm • Thursdays, 12pm-4pm • Fridays",
+    "description": "12pm-3pm • Sunday\n$9 Mimosas\n$18 Carafe Mimosa\n\n---\n\n4pm-7pm • Monday\n$6 House Margaritas\n\n---\n\n12pm-4pm • Tuesday\n$12 Taco Tuesday\n\n---\n\n4pm-7pm • Tuesday\nKids Night! Half Price under 12 Menu\n\n---\n\n12pm-9pm • Wednesday\n$12 RTPH House Wings all day\n\n---\n\n4pm-7pm • Wednesday\n$1 Off All Wine Glasses\nHalf Price Wine Bottles\n\n---\n\n12pm-4pm • Thursday\n$12 RTPH Burger & Pub Fries\n\n---\n\n4pm-7pm • Thursday\n$8 Signature Martinis\n\n---\n\n12pm-4pm • Friday\n$12 Pizzas",
+    "happyHourTime": "12pm-3pm • Sunday, 4pm-7pm • Monday, 12pm-4pm • Tuesday, 4pm-7pm • Tuesday, 12pm-9pm • Wednesday, 4pm-7pm • Wednesday, 12pm-4pm • Thursday, 4pm-7pm • Thursday, 12pm-4pm • Friday",
     "happyHourList": [
       "$9 Mimosas",
       "$18 Carafe Mimosa",
       "$6 House Margaritas",
       "$12 Taco Tuesday",
       "Kids Night! Half Price under 12 Menu",
-      "$12 RTPH House Wings",
+      "$12 RTPH House Wings all day",
       "$1 Off All Wine Glasses",
       "Half Price Wine Bottles",
       "$12 RTPH Burger & Pub Fries",
@@ -20,7 +20,7 @@
       "$12 Pizzas"
     ],
     "sourceUrl": "http://rivertownepublichouse.com/mount-pleasant-rivertowne-public-house-happy-hours-specials",
-    "lastUpdateDate": "2026-01-18T17:14:57.290Z",
+    "lastUpdateDate": "2026-01-19T02:29:48.413Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ-VDspi9s_ogRMQMG6c5Gv78"
@@ -30,49 +30,48 @@
     "lat": 32.804287,
     "lng": -80.0144093,
     "title": "King Claw - Juicy Seafood & Bar",
-    "description": "12pm-3pm • Monday-Friday\nLunch specials starting at $9\nFried baskets, po’ boys, and select seafood boil options",
+    "description": "12pm-3pm • Monday-Friday\nLunch specials starting at $9: Fried baskets, po’ boys, and select seafood boil options",
     "happyHourTime": "12pm-3pm • Monday-Friday",
     "happyHourList": [
-      "Lunch specials starting at $9",
-      "Fried baskets, po’ boys, and select seafood boil options"
+      "Lunch specials starting at $9: Fried baskets, po’ boys, and select seafood boil options"
     ],
     "sourceUrl": "https://www.thekingclaw.com/",
-    "lastUpdateDate": "2026-01-18T17:16:04.026Z",
+    "lastUpdateDate": "2026-01-19T02:30:02.616Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ-xfjet59_ogRtDPmgbQqNXc"
   },
   {
     "id": 3,
-    "lat": 32.7885131,
-    "lng": -79.9378189,
-    "title": "Halls Chophouse",
-    "description": "12:00pm-3:00pm • Specific: Saturday February 7th\n5-course wine lunch with pairings for $175++ per person (includes mussels & shrimp, gnocchi with boar ragù, duck breast, elk loin, cherry clafoutis)",
-    "happyHourTime": "12:00pm-3:00pm • Specific: Saturday February 7th",
+    "lat": 32.72543719999999,
+    "lng": -79.9671959,
+    "title": "El Pollo Guapo",
+    "description": "11:00 AM - 11:59 PM • Sunday February 22nd\nNational Margarita Day celebration (implied margarita discounts or specials)",
+    "happyHourTime": "11:00 AM - 11:59 PM • Sunday February 22nd",
     "happyHourList": [
-      "5-course wine lunch with pairings for $175++ per person (includes mussels & shrimp, gnocchi with boar ragù, duck breast, elk loin, cherry clafoutis)"
+      "National Margarita Day celebration (implied margarita discounts or specials)"
     ],
-    "sourceUrl": "http://hallschophousecharleston.com/charleston-downtown-halls-chophouse-charleston-events",
-    "lastUpdateDate": "2026-01-18T17:17:43.246Z",
+    "sourceUrl": "http://elpolloguapo.com/charleston-el-pollo-guapo-events",
+    "lastUpdateDate": "2026-01-19T02:30:11.554Z",
     "type": "Happy Hour",
     "source": "automated",
-    "venueId": "ChIJ06i6Dmt6_ogRGLIqrt_VSgg"
+    "venueId": "ChIJ-yyUfcN5_ogRFR0pS0mx4PI"
   },
   {
     "id": 4,
     "lat": 32.8076424,
     "lng": -79.94484589999999,
     "title": "The Kickin' Chicken",
-    "description": "4pm-7pm • Monday-Friday\nHappy Hour specials (details not specified)\n\n---\n\n11am-11pm • Monday\nAppetizer deals (details not specified)\n\n---\n\n11am-11pm • Tuesday\n3 Tacos for $10 - dine in only\n\n---\n\n11am-11pm • Wednesday\n10 Piece Nugget + side $7 - Dine In Only",
-    "happyHourTime": "4pm-7pm • Monday-Friday, 11am-11pm • Monday, 11am-11pm • Tuesday, 11am-11pm • Wednesday",
+    "description": "4pm-7pm • Monday-Friday\nHappy Hour (details not specified)\n\n---\n\nAll day • Monday\nAppetizer DEALS (details not specified, dine-in only)\n\n---\n\nAll day • Tuesday\n3 Tacos for $10 (dine-in only)\n\n---\n\nAll day • Wednesday\n10 Piece Nugget + side $7 (dine-in only)",
+    "happyHourTime": "4pm-7pm • Monday-Friday, All day • Monday, All day • Tuesday, All day • Wednesday",
     "happyHourList": [
-      "Happy Hour specials (details not specified)",
-      "Appetizer deals (details not specified)",
-      "3 Tacos for $10 - dine in only",
-      "10 Piece Nugget + side $7 - Dine In Only"
+      "Happy Hour (details not specified)",
+      "Appetizer DEALS (details not specified, dine-in only)",
+      "3 Tacos for $10 (dine-in only)",
+      "10 Piece Nugget + side $7 (dine-in only)"
     ],
     "sourceUrl": "https://kickinchicken.com/",
-    "lastUpdateDate": "2026-01-18T17:19:16.557Z",
+    "lastUpdateDate": "2026-01-19T02:31:11.363Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ0VglL5t7_ogRL68Caf9qBFg"
@@ -88,7 +87,7 @@
       "Drink specials"
     ],
     "sourceUrl": "https://moescrosstowntavern.com/",
-    "lastUpdateDate": "2026-01-18T17:19:44.442Z",
+    "lastUpdateDate": "2026-01-19T02:31:22.000Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ0cFndVp6_ogRX5uDTThdD9I"
@@ -98,47 +97,43 @@
     "lat": 32.7825896,
     "lng": -79.9860971,
     "title": "Mellow Mushroom Charleston - West Ashley",
-    "description": "4:00-7:00PM • Monday-Friday\nBeer, Wine, and Cocktail Specials",
-    "happyHourTime": "4:00-7:00PM • Monday-Friday",
+    "description": "4:00pm-7:00pm • Monday-Friday\nBeer, Wine, and Cocktail Specials",
+    "happyHourTime": "4:00pm-7:00pm • Monday-Friday",
     "happyHourList": [
       "Beer, Wine, and Cocktail Specials"
     ],
-    "sourceUrl": "https://mellowmushroom.com/location/sc-charleston-19-magnolia-rd-29407/?utm_source=gmb&utm_medium=organic&utm_campaign=Charleston-SC&utm_content=122",
-    "lastUpdateDate": "2026-01-18T17:20:21.065Z",
+    "sourceUrl": "https://mellowmushroom.com/location/sc-charleston-19-magnolia-rd-29407/",
+    "lastUpdateDate": "2026-01-19T02:31:33.685Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ16f1dMJ7_ogR4EcwXU40RoU"
   },
   {
     "id": 7,
-    "lat": 32.8665174,
-    "lng": -80.0129872,
-    "title": "Holiday Inn Express & Suites Charleston Arpt-Conv Ctr Area by IHG",
-    "description": "6:00 AM – 10:00 AM • Daily\nComplimentary Express Start™ Breakfast buffet including eggs, bacon, pancakes, cinnamon rolls, cereal, yogurt, fruit, and coffee",
-    "happyHourTime": "6:00 AM – 10:00 AM • Daily",
+    "lat": 32.7873312,
+    "lng": -79.9563811,
+    "title": "Harbour Club at WestEdge",
+    "description": "Not specified • Not specified\nCigar Happy Hours",
+    "happyHourTime": "Not specified • Not specified",
     "happyHourList": [
-      "Complimentary Express Start™ Breakfast buffet including eggs, bacon, pancakes, cinnamon rolls, cereal, yogurt, fruit, and coffee"
+      "Cigar Happy Hours"
     ],
-    "sourceUrl": "https://www.ihg.com/holidayinnexpress/hotels/us/en/north-charleston/chscc/hoteldetail",
-    "lastUpdateDate": "2026-01-18T17:22:41.338Z",
+    "sourceUrl": "https://myharbourclub.com/meetings-events/member-events/",
+    "lastUpdateDate": "2026-01-19T02:32:32.208Z",
     "type": "Happy Hour",
     "source": "automated",
-    "venueId": "ChIJ239ewlZj_ogRfZn-LbHxhtg"
+    "venueId": "ChIJ24rlvQ56_ogRzo2H917ndGQ"
   },
   {
     "id": 8,
     "lat": 32.7978268,
     "lng": -80.024699,
     "title": "Villa Cantina",
-    "description": "4pm-8pm • Daily\n\n---\n\n11am-10pm • Tuesday\nTaco Tuesday specials\n\n---\n\n10:30am-10pm • Sunday\nMimosa specials\nBirria toast and other brunch favorites",
-    "happyHourTime": "4pm-8pm • Daily, 11am-10pm • Tuesday, 10:30am-10pm • Sunday",
-    "happyHourList": [
-      "Taco Tuesday specials",
-      "Mimosa specials",
-      "Birria toast and other brunch favorites"
-    ],
+    "description": "4pm-8pm • Daily",
+    "happyHourTime": "4pm-8pm • Daily",
+    "happyHourList": [],
     "sourceUrl": "http://villacantinawestashley.com/charleston-villa-cantina-cocktail-and-lounge-happy-hours-specials",
-    "lastUpdateDate": "2026-01-18T17:25:43.295Z",
+    "lastUpdateDate": "2026-01-19T02:32:43.689Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ26yp1Cp9_ogRozYNdBhwx_o"
@@ -148,15 +143,16 @@
     "lat": 32.8216592,
     "lng": -79.9913057,
     "title": "The Kickin' Chicken",
-    "description": "4pm-7pm • Monday-Friday\n\n---\n\nMondays\nAppetizer deals (details not specified)\n\n---\n\nTuesdays\n3 Tacos for $10 (dine in only)\n\n---\n\nWednesdays\n10 Piece Nugget + side for $7 (dine in only)",
-    "happyHourTime": "4pm-7pm • Monday-Friday",
+    "description": "4pm-7pm • Monday-Friday\nHappy hour specials (details not specified on site)\n\n---\n\nAll day • Monday\nAppetizer deals (dine-in only)\n\n---\n\nAll day • Tuesday\n3 Tacos for $10 (dine-in only)\n\n---\n\nAll day • Wednesday\n10 Piece Nugget + side $7 (dine-in only)",
+    "happyHourTime": "4pm-7pm • Monday-Friday, All day • Monday, All day • Tuesday, All day • Wednesday",
     "happyHourList": [
-      "Appetizer deals (details not specified)",
-      "3 Tacos for $10 (dine in only)",
-      "10 Piece Nugget + side for $7 (dine in only)"
+      "Happy hour specials (details not specified on site)",
+      "Appetizer deals (dine-in only)",
+      "3 Tacos for $10 (dine-in only)",
+      "10 Piece Nugget + side $7 (dine-in only)"
     ],
     "sourceUrl": "https://kickinchicken.com/",
-    "lastUpdateDate": "2026-01-18T17:27:02.632Z",
+    "lastUpdateDate": "2026-01-19T02:33:00.959Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ2Qc3OnJ7_ogRBaM7wXn1cUc"
@@ -166,13 +162,13 @@
     "lat": 32.7932819,
     "lng": -79.8650324,
     "title": "Taco Bell",
-    "description": "2pm-5pm • Daily\n$1 medium drinks",
-    "happyHourTime": "2pm-5pm • Daily",
+    "description": "Not specified • Daily\nHappier Hour (implied deals or discounts)",
+    "happyHourTime": "Not specified • Daily",
     "happyHourList": [
-      "$1 medium drinks"
+      "Happier Hour (implied deals or discounts)"
     ],
     "sourceUrl": "https://locations.tacobell.com/sc/mount-pleasant/821-coleman-blvd.html",
-    "lastUpdateDate": "2026-01-18T17:29:10.061Z",
+    "lastUpdateDate": "2026-01-19T02:33:22.022Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ2WYlDAVx_ogRnEklRgBflE4"
@@ -182,14 +178,14 @@
     "lat": 32.8304275,
     "lng": -79.82846769999999,
     "title": "Condado Tacos",
-    "description": "Not specified • Not specified\nHappy Hour Specials\n\n---\n\nNot specified • Daily\nNew Daily Deals",
-    "happyHourTime": "Not specified • Not specified, Not specified • Daily",
+    "description": "Unknown (typical late afternoon/early evening) • Daily\nHappy Hour Specials (details not specified)\n\n---\n\nUnknown • Daily\nNew Daily Deals (potentially time-limited)",
+    "happyHourTime": "Unknown (typical late afternoon/early evening) • Daily, Unknown • Daily",
     "happyHourList": [
-      "Happy Hour Specials",
-      "New Daily Deals"
+      "Happy Hour Specials (details not specified)",
+      "New Daily Deals (potentially time-limited)"
     ],
-    "sourceUrl": "https://locations.condadotacos.com/sc/1712-towne-centre-way?utm_source=GMB&utm_medium=organic",
-    "lastUpdateDate": "2026-01-18T17:30:01.604Z",
+    "sourceUrl": "https://locations.condadotacos.com/sc/1712-towne-centre-way",
+    "lastUpdateDate": "2026-01-19T02:33:31.134Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ2a8ZdDRz_ogRjUr1CzQaMYU"
@@ -199,258 +195,224 @@
     "lat": 32.7823137,
     "lng": -79.9318736,
     "title": "Matador Charleston",
-    "description": "11am-3pm • Monday-Friday\nMix & Match: Soup, choice of salad, and choice of entree for $16 (proteins: Chicken, Carnitas, Beyond Picadillo; add guacamole and cilantro-lime sour cream $3)\n\n---\n\n4pm-6pm • Daily\n$7 Romaine Salad\n$7 Crispy Brussels Sprouts\n$7 Black Bean Dip\n$7 Fried Tacos (2)\n$7 Chicken Tortilla Soup\n$7 Quesadilla (Cheese or with protein; +$2 for Steak or Shrimp)\n$8 Grande Nachos (add protein)\n$8 Matador Guacamole\n$8 Haba Prawns\n$8 Steak or Shrimp Tacos (2)\n$8 Baja Fish Tacos (2)\n$8 Queso Con Chorizo\nStreet Tacos: 3 for $8, 5 for $11 (choice of protein)\n\n---\n\n10pm-Close • Daily\n$7 Romaine Salad\n$7 Crispy Brussels Sprouts\n$7 Black Bean Dip\n$7 Fried Tacos (2)\n$7 Chicken Tortilla Soup\n$7 Quesadilla (Cheese or with protein; +$2 for Steak or Shrimp)\n$8 Grande Nachos (add protein)\n$8 Matador Guacamole\n$8 Haba Prawns\n$8 Steak or Shrimp Tacos (2)\n$8 Baja Fish Tacos (2)\n$8 Queso Con Chorizo\nStreet Tacos: 3 for $8, 5 for $11 (choice of protein)",
-    "happyHourTime": "11am-3pm • Monday-Friday, 4pm-6pm • Daily, 10pm-Close • Daily",
+    "description": "4pm-6pm and 10pm-close • Daily\n$7 Romaine Salad\n$7 Crispy Brussels Sprouts\n$7 Black Bean Dip\n$7 Fried Tacos (2)\n$7 Chicken Tortilla Soup\n$7 Quesadilla (cheese; +$2 for chicken, carnitas, chorizo, ground beef, or Beyond Picadillo; +$2 for steak or shrimp)\n$8 Grande Nachos (add $3.5 for chicken, Beyond Picadillo, house chorizo, carnitas, or ground beef; add $5 for marinated steak)\n$8 Matador Guacamole\n$8 Haba Prawns\n$8 Steak or Shrimp Tacos (2)\n$8 Baja Fish Tacos (2)\n$8 Queso Con Chorizo\nStreet Tacos: 3 for $8 or 5 for $11 (choice of chorizo, Beyond Picadillo, ground beef, shredded chicken, or carnitas)\n\n---\n\n11am-3pm • Monday-Friday\nMix & Match Lunch: Soup, choice of salad, and choice of entrée (taco, burrito, or quesadilla with proteins: chicken, carnitas, or Beyond Picadillo; add guacamole and cilantro-lime sour cream $3) for $16\n\n---\n\nAll day (implied evening/night) • Tuesday\nTop Shelf Tuesday: 1/2 off all tequilas $16 and up, plus margarita specials featuring a rotating tequila each month",
+    "happyHourTime": "4pm-6pm and 10pm-close • Daily, 11am-3pm • Monday-Friday, All day (implied evening/night) • Tuesday",
     "happyHourList": [
-      "Mix & Match: Soup, choice of salad, and choice of entree for $16 (proteins: Chicken, Carnitas, Beyond Picadillo; add guacamole and cilantro-lime sour cream $3)",
       "$7 Romaine Salad",
       "$7 Crispy Brussels Sprouts",
       "$7 Black Bean Dip",
       "$7 Fried Tacos (2)",
       "$7 Chicken Tortilla Soup",
-      "$7 Quesadilla (Cheese or with protein; +$2 for Steak or Shrimp)",
-      "$8 Grande Nachos (add protein)",
+      "$7 Quesadilla (cheese; +$2 for chicken, carnitas, chorizo, ground beef, or Beyond Picadillo; +$2 for steak or shrimp)",
+      "$8 Grande Nachos (add $3.5 for chicken, Beyond Picadillo, house chorizo, carnitas, or ground beef; add $5 for marinated steak)",
       "$8 Matador Guacamole",
       "$8 Haba Prawns",
       "$8 Steak or Shrimp Tacos (2)",
       "$8 Baja Fish Tacos (2)",
       "$8 Queso Con Chorizo",
-      "Street Tacos: 3 for $8, 5 for $11 (choice of protein)",
-      "$7 Romaine Salad",
-      "$7 Crispy Brussels Sprouts",
-      "$7 Black Bean Dip",
-      "$7 Fried Tacos (2)",
-      "$7 Chicken Tortilla Soup",
-      "$7 Quesadilla (Cheese or with protein; +$2 for Steak or Shrimp)",
-      "$8 Grande Nachos (add protein)",
-      "$8 Matador Guacamole",
-      "$8 Haba Prawns",
-      "$8 Steak or Shrimp Tacos (2)",
-      "$8 Baja Fish Tacos (2)",
-      "$8 Queso Con Chorizo",
-      "Street Tacos: 3 for $8, 5 for $11 (choice of protein)"
+      "Street Tacos: 3 for $8 or 5 for $11 (choice of chorizo, Beyond Picadillo, ground beef, shredded chicken, or carnitas)",
+      "Mix & Match Lunch: Soup, choice of salad, and choice of entrée (taco, burrito, or quesadilla with proteins: chicken, carnitas, or Beyond Picadillo; add guacamole and cilantro-lime sour cream $3) for $16",
+      "Top Shelf Tuesday: 1/2 off all tequilas $16 and up, plus margarita specials featuring a rotating tequila each month"
     ],
-    "sourceUrl": "https://www.matadorrestaurants.com/menus/charleston/main-menu",
-    "lastUpdateDate": "2026-01-18T17:31:20.130Z",
+    "sourceUrl": "https://www.matadorrestaurants.com/menus/charleston/happy-hour",
+    "lastUpdateDate": "2026-01-19T02:34:52.232Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ2z_fQId7_ogRoxp_7evokOU"
   },
   {
     "id": 13,
+    "lat": 32.77920079999999,
+    "lng": -79.9257978,
+    "title": "HarbourView Inn",
+    "description": "Evening • Daily\nComplimentary wine and cheese reception",
+    "happyHourTime": "Evening • Daily",
+    "happyHourList": [
+      "Complimentary wine and cheese reception"
+    ],
+    "sourceUrl": "https://www.harbourviewcharleston.com/",
+    "lastUpdateDate": "2026-01-19T02:35:01.340Z",
+    "type": "Happy Hour",
+    "source": "automated",
+    "venueId": "ChIJ30Pcpg56_ogR7MJZgeN_T-g"
+  },
+  {
+    "id": 14,
     "lat": 32.8584797,
     "lng": -79.91157559999999,
     "title": "Orlando's Brick Oven Pizza",
-    "description": "11am-2:30pm • Monday-Friday\nPizza slices offered (lunch special)",
+    "description": "11am-2:30pm • Monday-Friday\nSlices offered (lunch special)",
     "happyHourTime": "11am-2:30pm • Monday-Friday",
     "happyHourList": [
-      "Pizza slices offered (lunch special)"
+      "Slices offered (lunch special)"
     ],
-    "sourceUrl": "http://orlandospizza.com/mount-pleasant-menu and http://orlandospizza.com/daniel-island-menu",
-    "lastUpdateDate": "2026-01-18T16:24:43.162Z",
+    "sourceUrl": "http://orlandospizza.com/mount-pleasant-menu, http://orlandospizza.com/daniel-island-menu",
+    "lastUpdateDate": "2026-01-19T02:35:10.558Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ357Spvtv_ogR9_QeyMvy3Lk"
   },
   {
-    "id": 14,
+    "id": 15,
     "lat": 32.7911939,
     "lng": -79.940124,
     "title": "Vintage Lounge",
-    "description": "6pm-8pm • Monday\nFlight of three Sicilian wines - complimentary to Gold Card members, $15 for non-members\n\n---\n\nUnspecified cocktail hour • Daily\nCocktail Hour - implied cocktail specials or focus",
-    "happyHourTime": "6pm-8pm • Monday, Unspecified cocktail hour • Daily",
+    "description": "6pm-8pm • Event-specific (one-off)\nSicilian wine tasting: Flight of three wines, complimentary for Gold Card members, $15 for non-members\n\n---\n\n6pm-8pm • Event-specific (one-off, partnered)\nYoung Professionals Happy Hour Event: Shopping and cocktails (at partner location)\n\n---\n\nUnspecified (implied evening) • Unspecified\nCocktail Hour",
+    "happyHourTime": "6pm-8pm • Event-specific (one-off), 6pm-8pm • Event-specific (one-off, partnered), Unspecified (implied evening) • Unspecified",
     "happyHourList": [
-      "Flight of three Sicilian wines - complimentary to Gold Card members, $15 for non-members",
-      "Cocktail Hour - implied cocktail specials or focus"
+      "Sicilian wine tasting: Flight of three wines, complimentary for Gold Card members, $15 for non-members",
+      "Young Professionals Happy Hour Event: Shopping and cocktails (at partner location)",
+      "Cocktail Hour"
     ],
     "sourceUrl": "http://vintagechs.com/",
-    "lastUpdateDate": "2026-01-18T17:34:59.437Z",
+    "lastUpdateDate": "2026-01-19T02:35:47.626Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ3WUQImp6_ogR-qg2rgyiwuU"
   },
   {
-    "id": 15,
+    "id": 16,
+    "lat": 32.79236059999999,
+    "lng": -79.8810065,
+    "title": "Tavern & Table",
+    "description": "4pm-6pm • Monday-Friday\nSelect specials (at the bar only)",
+    "happyHourTime": "4pm-6pm • Monday-Friday",
+    "happyHourList": [
+      "Select specials (at the bar only)"
+    ],
+    "sourceUrl": "https://www.tavernandtable.com/bar",
+    "lastUpdateDate": "2026-01-19T02:36:44.190Z",
+    "type": "Happy Hour",
+    "source": "automated",
+    "venueId": "ChIJ4-xwo-Rw_ogRnWOr3S84fIQ"
+  },
+  {
+    "id": 17,
     "lat": 32.7235845,
     "lng": -80.07711019999999,
     "title": "Somm Wine Bar",
-    "description": "5:30pm-7:30pm • Wednesdays\n$10 smash burgers dine-in only\nNightly pour pairing suggested\n\n---\n\n11:00am-6:00pm • First Sunday of every month\nTwo bottles of wine (predominantly red)\nSamples of wines\nComplimentary charcuterie items\n10% off charcuterie, small plates and desserts\nAccess to purchase previous wines\n\n---\n\n11:00am-6:00pm • Second Sunday of every month\nTwo bottles of wine (predominantly red)\nSamples of wines including OG Club\nComplimentary premium charcuterie and small plates\n10% off charcuterie, small plates and desserts\n10% off at High Steaks Butcher Shop on pickup weekend\nAccess to purchase previous wines\n\n---\n\n3:00pm-6:00pm • Third Sunday of every month\nTwo bottles of wine (sparkling, rosé, white)\nSamples of wines\nComplimentary charcuterie items\n10% off charcuterie, small plates and desserts\nAccess to purchase previous wines\n\n---\n\n3:00pm-6:00pm • Fourth Sunday of every month\nTwo bottles of wine paired with book theme\nComplimentary charcuterie\n10% off charcuterie, small plates and desserts\nAccess to purchase previous wines\nBook discussion",
-    "happyHourTime": "5:30pm-7:30pm • Wednesdays, 11:00am-6:00pm • First Sunday of every month, 11:00am-6:00pm • Second Sunday of every month, 3:00pm-6:00pm • Third Sunday of every month, 3:00pm-6:00pm • Fourth Sunday of every month",
+    "description": "5:30pm-7:30pm • Wednesdays\n$10 smash burgers",
+    "happyHourTime": "5:30pm-7:30pm • Wednesdays",
     "happyHourList": [
-      "$10 smash burgers dine-in only",
-      "Nightly pour pairing suggested",
-      "Two bottles of wine (predominantly red)",
-      "Samples of wines",
-      "Complimentary charcuterie items",
-      "10% off charcuterie, small plates and desserts",
-      "Access to purchase previous wines",
-      "Two bottles of wine (predominantly red)",
-      "Samples of wines including OG Club",
-      "Complimentary premium charcuterie and small plates",
-      "10% off charcuterie, small plates and desserts",
-      "10% off at High Steaks Butcher Shop on pickup weekend",
-      "Access to purchase previous wines",
-      "Two bottles of wine (sparkling, rosé, white)",
-      "Samples of wines",
-      "Complimentary charcuterie items",
-      "10% off charcuterie, small plates and desserts",
-      "Access to purchase previous wines",
-      "Two bottles of wine paired with book theme",
-      "Complimentary charcuterie",
-      "10% off charcuterie, small plates and desserts",
-      "Access to purchase previous wines",
-      "Book discussion"
+      "$10 smash burgers"
     ],
     "sourceUrl": "http://johnsisland.sommchs.com/johns-island-somm-wine-bar-events",
-    "lastUpdateDate": "2026-01-18T17:36:25.142Z",
+    "lastUpdateDate": "2026-01-19T02:36:51.948Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ4SjsxUh__ogRboqTivjMDJQ"
   },
   {
-    "id": 16,
-    "lat": 32.8036062,
-    "lng": -80.0185657,
-    "title": "Señor Tequila",
-    "description": "11:00 AM - 09:30 PM • Specific: February 22nd (National Margarita Day)\nCelebrate National Margarita Day (implied margarita specials)\n\n---\n\n11:00 AM - 11:00 PM • Specific: February 14th (Valentine's Day)\nPerfect romantic evening (implied special experience)",
-    "happyHourTime": "11:00 AM - 09:30 PM • Specific: February 22nd (National Margarita Day), 11:00 AM - 11:00 PM • Specific: February 14th (Valentine's Day)",
-    "happyHourList": [
-      "Celebrate National Margarita Day (implied margarita specials)",
-      "Perfect romantic evening (implied special experience)"
-    ],
-    "sourceUrl": "http://srtequilacharleston.com/charleston-senor-tequila-events",
-    "lastUpdateDate": "2026-01-18T17:37:49.744Z",
-    "type": "Happy Hour",
-    "source": "automated",
-    "venueId": "ChIJ5-eDnHp8_ogR9p3_a3hxvTk"
-  },
-  {
-    "id": 17,
+    "id": 18,
     "lat": 32.7354809,
     "lng": -80.05454970000001,
     "title": "Cabana Burgers & Shakes",
-    "description": "4pm-7pm • Monday-Friday\n$1 off all Draft Beer\n$4 Shots\n$1 off Wine By the Glass\n$1 off Signature Cocktails\n\n---\n\n11am-4pm • Monday-Friday\nCabana 2 for $16\n\n---\n\n4pm-9pm • Monday\n$2 off your favorite Starter\n\n---\n\n4pm-9pm • Tuesday\n$2 off Fish, Chicken and Shrimp Tacos\n\n---\n\n4pm-9pm • Wednesday\n$2 off your favorite Wings, Tenders, and More\n\n---\n\n4pm-9pm • Thursday\n$2 off your favorite Salad\n\n---\n\n4pm-10pm • Friday\n$2 Off your favorite entree\n\n---\n\n11am-10pm • Saturday\n$22 Pitchers of Beer for Pacifico, Ultra, and Kona\n$20 Bucket of bottle beer for Coors Light, Bud Light and Miller Lite\n$20 Bucket of Angry Orchard\n$5 off all bottles of wine\nNFL Playoff and Super Bowl Specials\n$2 Off Desserts and Milkshakes\n\n---\n\n11am-9pm • Sunday\n$22 Pitchers of Beer for Pacifico, Ultra, and Kona\n$20 Bucket of bottle beer for Coors Light, Bud Light and Miller Lite\n$20 Bucket of Angry Orchard\n$5 off all bottles of wine\nNFL Playoff and Super Bowl Specials\n$2 off your favorite Angus Burger",
-    "happyHourTime": "4pm-7pm • Monday-Friday, 11am-4pm • Monday-Friday, 4pm-9pm • Monday, 4pm-9pm • Tuesday, 4pm-9pm • Wednesday, 4pm-9pm • Thursday, 4pm-10pm • Friday, 11am-10pm • Saturday, 11am-9pm • Sunday",
+    "description": "4:00 PM - 7:00 PM • Monday-Friday\n$1 off all Draft Beer\n$4 Shots\n$1 off Wine By the Glass\n$1 off Signature Cocktails\n\n---\n\n11:00 AM - 4:00 PM • Monday-Friday\nCabana 2 for $16\n\n---\n\n11:00 AM - 10:00 PM • Saturday-Sunday\n$22 Pitchers of Beer for Pacifico, Ultra, and Kona\n$20 Bucket of bottle beer for Coors Light, Bud Light and Miller Lite\n$20 Bucket of Angry Orchard\n$5 off all bottles of wine\n\n---\n\n4:00 PM - 9:00 PM • Monday-Friday\n$2 off your favorite Starter (Monday)\n$2 off Fish, Chicken and Shrimp Tacos (Tuesday)\n$2 off your favorite Wings, Tenders, and More (Wednesday)\n$2 off your favorite Salad (Thursday)\n$2 Off your favorite entree (Friday)\n\n---\n\n11:00 AM - 9:00 PM • Sunday\n$2 off your favorite Angus Burger\n\n---\n\n11:00 AM - 10:00 PM • Saturday\n$2 Off Desserts and Milkshakes",
+    "happyHourTime": "4:00 PM - 7:00 PM • Monday-Friday, 11:00 AM - 4:00 PM • Monday-Friday, 11:00 AM - 10:00 PM • Saturday-Sunday, 4:00 PM - 9:00 PM • Monday-Friday, 11:00 AM - 9:00 PM • Sunday, 11:00 AM - 10:00 PM • Saturday",
     "happyHourList": [
       "$1 off all Draft Beer",
       "$4 Shots",
       "$1 off Wine By the Glass",
       "$1 off Signature Cocktails",
       "Cabana 2 for $16",
-      "$2 off your favorite Starter",
-      "$2 off Fish, Chicken and Shrimp Tacos",
-      "$2 off your favorite Wings, Tenders, and More",
-      "$2 off your favorite Salad",
-      "$2 Off your favorite entree",
       "$22 Pitchers of Beer for Pacifico, Ultra, and Kona",
       "$20 Bucket of bottle beer for Coors Light, Bud Light and Miller Lite",
       "$20 Bucket of Angry Orchard",
       "$5 off all bottles of wine",
-      "NFL Playoff and Super Bowl Specials",
-      "$2 Off Desserts and Milkshakes",
-      "$22 Pitchers of Beer for Pacifico, Ultra, and Kona",
-      "$20 Bucket of bottle beer for Coors Light, Bud Light and Miller Lite",
-      "$20 Bucket of Angry Orchard",
-      "$5 off all bottles of wine",
-      "NFL Playoff and Super Bowl Specials",
-      "$2 off your favorite Angus Burger"
+      "$2 off your favorite Starter (Monday)",
+      "$2 off Fish, Chicken and Shrimp Tacos (Tuesday)",
+      "$2 off your favorite Wings, Tenders, and More (Wednesday)",
+      "$2 off your favorite Salad (Thursday)",
+      "$2 Off your favorite entree (Friday)",
+      "$2 off your favorite Angus Burger",
+      "$2 Off Desserts and Milkshakes"
     ],
     "sourceUrl": "http://cabanaburgers.com/johns-island-cabana-burgers-and-shakes-happy-hours-specials",
-    "lastUpdateDate": "2026-01-18T17:40:09.119Z",
+    "lastUpdateDate": "2026-01-19T02:38:13.566Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ5UAah3R__ogRK1ThK9WLmD0"
-  },
-  {
-    "id": 18,
-    "lat": 32.781288,
-    "lng": -79.9276941,
-    "title": "Church and Union Charleston",
-    "description": "5pm - close • Daily\n3-course prix-fixe menu for $50 per person (offered in addition to regular menu)\n\n---\n\n9am-3:30pm • Friday-Sunday\nMimosa $6\nFlavored Mimosa $7\nCadillac Mimosa $7\nMimosa Carafe $19-20\nMimosa Flight $18\nBloody Mary $14\nHouse-Infused Spicy Bloody $14\nEspresso Martini $17\n\n---\n\n3:30pm-5pm • Daily\nMidday menu items including Southern Salad $17\nMoroccan Meatballs $20\nChef Jamie’s Lamb Burger $23\nWagyu Bulgogi Lettuce Wraps $25\nPEI Mussels $24",
-    "happyHourTime": "5pm - close • Daily, 9am-3:30pm • Friday-Sunday, 3:30pm-5pm • Daily",
-    "happyHourList": [
-      "3-course prix-fixe menu for $50 per person (offered in addition to regular menu)",
-      "Mimosa $6",
-      "Flavored Mimosa $7",
-      "Cadillac Mimosa $7",
-      "Mimosa Carafe $19-20",
-      "Mimosa Flight $18",
-      "Bloody Mary $14",
-      "House-Infused Spicy Bloody $14",
-      "Espresso Martini $17",
-      "Midday menu items including Southern Salad $17",
-      "Moroccan Meatballs $20",
-      "Chef Jamie’s Lamb Burger $23",
-      "Wagyu Bulgogi Lettuce Wraps $25",
-      "PEI Mussels $24"
-    ],
-    "sourceUrl": "https://www.churchandunioncharleston.com/",
-    "lastUpdateDate": "2026-01-18T17:42:16.776Z",
-    "type": "Happy Hour",
-    "source": "automated",
-    "venueId": "ChIJ5Ui2sg16_ogR59NUfe72gkg"
   },
   {
     "id": 19,
     "lat": 32.7818603,
     "lng": -79.93458550000001,
     "title": "The Watch Rooftop Kitchen and Spirits",
-    "description": "4pm-7pm • Monday-Thursday\n$4 Cheeseburger Slider\n$7 Truffle Fries\n$5 Deviled Eggs\n$9 Fried Buffalo Brussels\n$7 Cocktails (Classic Margarita, Old Fashioned, Classic Daiquiri)\n$6 House Wines (Red, White, Rose, Sparkling)\n$5 Beers (Bud Light, Michelob Ultra, Miller High Life)",
+    "description": "4pm-7pm • Monday-Thursday\nCheeseburger Slider $4\nTruffle Fries $7\nDeviled Eggs $5\nFried Buffalo Brussels $9\nCocktails $7 (Classic Margarita, Old Fashioned, Classic Daiquiri)\nHouse Wines $6 (Red, White, Rose, Sparkling)\nBeers $5 (Bud Light, Michelob Ultra, Miller High Life)",
     "happyHourTime": "4pm-7pm • Monday-Thursday",
     "happyHourList": [
-      "$4 Cheeseburger Slider",
-      "$7 Truffle Fries",
-      "$5 Deviled Eggs",
-      "$9 Fried Buffalo Brussels",
-      "$7 Cocktails (Classic Margarita, Old Fashioned, Classic Daiquiri)",
-      "$6 House Wines (Red, White, Rose, Sparkling)",
-      "$5 Beers (Bud Light, Michelob Ultra, Miller High Life)"
+      "Cheeseburger Slider $4",
+      "Truffle Fries $7",
+      "Deviled Eggs $5",
+      "Fried Buffalo Brussels $9",
+      "Cocktails $7 (Classic Margarita, Old Fashioned, Classic Daiquiri)",
+      "House Wines $6 (Red, White, Rose, Sparkling)",
+      "Beers $5 (Bud Light, Michelob Ultra, Miller High Life)"
     ],
     "sourceUrl": "https://thewatchcharleston.com/happy-hour-charleston/",
-    "lastUpdateDate": "2026-01-18T17:42:29.500Z",
+    "lastUpdateDate": "2026-01-19T02:38:24.101Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ5XB2oxN6_ogR_fIJo_lHZPQ"
   },
   {
     "id": 20,
-    "lat": 32.88172659999999,
-    "lng": -79.97648559999999,
-    "title": "Basil Park Circle",
-    "description": "11am-3pm • Monday-Friday\nLower prices on menu items compared to dinner\ne.g., Pad Thai $10.95 (vs $19.50), Appetizers from $3.95 (vs higher)",
-    "happyHourTime": "11am-3pm • Monday-Friday",
+    "lat": 32.7921108,
+    "lng": -79.8690531,
+    "title": "Ty's Roadside Coastal Kitchen",
+    "description": "5pm - 6:30pm • Tuesday - Thursday\n$5 beers\nHalf off appetizers\n\n---\n\n3:30pm - 6:30pm • Friday\n$5 beers\nHalf off appetizers",
+    "happyHourTime": "5pm - 6:30pm • Tuesday - Thursday, 3:30pm - 6:30pm • Friday",
     "happyHourList": [
-      "Lower prices on menu items compared to dinner",
-      "e.g., Pad Thai $10.95 (vs $19.50), Appetizers from $3.95 (vs higher)"
+      "$5 beers",
+      "Half off appetizers",
+      "$5 beers",
+      "Half off appetizers"
     ],
-    "sourceUrl": "http://eatatbasil.com/north-charleston",
-    "lastUpdateDate": "2026-01-18T17:45:15.750Z",
+    "sourceUrl": "https://tysroadside.com/#menus",
+    "lastUpdateDate": "2026-01-19T02:38:53.936Z",
     "type": "Happy Hour",
     "source": "automated",
-    "venueId": "ChIJ6SoyknBl_ogRlasNn90qfdY"
+    "venueId": "ChIJ5Y6RtNdx_ogRDB8DzHZr55Q"
   },
   {
     "id": 21,
+    "lat": 32.8167033,
+    "lng": -79.9927204,
+    "title": "Locals Sushi & Sports Pub - West Ashley",
+    "description": "Not specified • Not specified\nHappy hour specials\nWeekly specials",
+    "happyHourTime": "Not specified • Not specified",
+    "happyHourList": [
+      "Happy hour specials",
+      "Weekly specials"
+    ],
+    "sourceUrl": "http://www.localssushi.com/",
+    "lastUpdateDate": "2026-01-19T02:54:54.441Z",
+    "type": "Happy Hour",
+    "source": "automated",
+    "venueId": "ChIJ6R2WXq97_ogRzqxo5MBMfEQ"
+  },
+  {
+    "id": 22,
     "lat": 32.8823878,
     "lng": -79.9754682,
     "title": "LoLA",
-    "description": "Evenings (likely 4pm onward based on opening hours) • Tuesday-Friday\nGreat discounts on food and drinks",
-    "happyHourTime": "Evenings (likely 4pm onward based on opening hours) • Tuesday-Friday",
+    "description": "Not specified (likely aligns with opening hours: 4pm onward on Tue-Wed, afternoon on Thu-Fri) • Tuesday-Friday\nGreat discounts on food and drinks",
+    "happyHourTime": "Not specified (likely aligns with opening hours: 4pm onward on Tue-Wed, afternoon on Thu-Fri) • Tuesday-Friday",
     "happyHourList": [
       "Great discounts on food and drinks"
     ],
     "sourceUrl": "http://www.lolaparkcircle.com/",
-    "lastUpdateDate": "2026-01-18T22:54:58.595Z",
+    "lastUpdateDate": "2026-01-19T02:55:11.955Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ6Uzcoehk_ogReGIvYQS4QpM"
   },
   {
-    "id": 22,
+    "id": 23,
     "lat": 32.7928047,
     "lng": -79.88187669999999,
     "title": "Water's Edge",
-    "description": "4pm-7pm • Monday-Friday\n$2.75 Domestic Beers\n$3.75 Well Liquors\n$5 Select Wines\n$10 Bar Bites\n\n---\n\n11am-4pm • Saturday\n$3 Mexican Beers\n$5 Margaritas\n\n---\n\n10am-2pm • Sunday\nBrunch Buffet ($21)\nBuild Your Own Bloody Mary Bar (pick spirit + 15 mixes, 20 pickled vegetables, 30 hot sauces, and more)",
+    "description": "4pm-7pm • Monday-Friday\n$2.75 Domestic Beers\n$3.75 Well Liquors\n$5 Select Wines\n$10 Bar Bites\n\n---\n\n11am-4pm • Saturday\n$3 Mexican Beers\n$5 Margaritas\n\n---\n\n10am-2pm • Sunday\nBrunch Buffet ($21)\nBuild Your Own Bloody Mary Bar (customizable with spirits, mixes, garnishes)",
     "happyHourTime": "4pm-7pm • Monday-Friday, 11am-4pm • Saturday, 10am-2pm • Sunday",
     "happyHourList": [
       "$2.75 Domestic Beers",
@@ -460,16 +422,16 @@
       "$3 Mexican Beers",
       "$5 Margaritas",
       "Brunch Buffet ($21)",
-      "Build Your Own Bloody Mary Bar (pick spirit + 15 mixes, 20 pickled vegetables, 30 hot sauces, and more)"
+      "Build Your Own Bloody Mary Bar (customizable with spirits, mixes, garnishes)"
     ],
     "sourceUrl": "http://waters-edge-restaurant.com/mount-pleasant-shem-creek-water-s-edge-happy-hours-specials",
-    "lastUpdateDate": "2026-01-18T22:55:17.310Z",
+    "lastUpdateDate": "2026-01-19T02:55:30.607Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ7-ktN_tw_ogRrhsYKp-XzI4"
   },
   {
-    "id": 23,
+    "id": 24,
     "lat": 32.788346,
     "lng": -80.01912,
     "title": "Hunley's Neighborhood Grill",
@@ -478,85 +440,68 @@
     "happyHourList": [
       "Drink specials"
     ],
-    "sourceUrl": "https://www.hunleyscharleston.com/",
-    "lastUpdateDate": "2026-01-18T22:55:45.933Z",
+    "sourceUrl": "https://www.hunleyscharleston.com/#specials",
+    "lastUpdateDate": "2026-01-19T02:55:57.668Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ7bl_jQ18_ogR4n7zDOmfjHQ"
   },
   {
-    "id": 24,
+    "id": 25,
     "lat": 32.7823071,
     "lng": -79.9278811,
     "title": "Big John's Tavern",
-    "description": "4:00 PM - 7:00 PM • Monday-Friday\nBeat the Clock: All OTH Drafts start at $4.00 at 4 PM and increase by $1 until 7 PM\n\n---\n\n4:00 PM - 2:00 AM • Monday-Wednesday\nTwo For One Martinis\n\n---\n\n11:00 AM - 2:00 AM • Thursday-Sunday\nTwo For One Martinis\n\n---\n\n11:00 AM - 2:00 AM • Saturday-Sunday\n$25 Select Domestic Buckets\n$5 Shots\n\n---\n\n4:00 PM - 2:00 AM • Monday\n$25 Select Domestic Buckets\n$5 Shots\n\n---\n\nAll Evening • Tuesday\n$12 Big Johns Double Bacon Cheeseburger or East Bay Burger with Fries",
-    "happyHourTime": "4:00 PM - 7:00 PM • Monday-Friday, 4:00 PM - 2:00 AM • Monday-Wednesday, 11:00 AM - 2:00 AM • Thursday-Sunday, 11:00 AM - 2:00 AM • Saturday-Sunday, 4:00 PM - 2:00 AM • Monday, All Evening • Tuesday",
+    "description": "4pm-7pm • Monday-Friday\nAll OTH Drafts start at $4.00 at 4pm and increase by $1 until 7pm\n\n---\n\n4pm-2am • Monday-Wednesday\nTwo For One Martinis\n\n---\n\n11am-2am • Thursday-Saturday\nTwo For One Martinis\n\n---\n\n11am-2am • Sunday\nTwo For One Martinis\n\n---\n\nVaries (11am-2am or 4pm-2am) • Saturday-Monday\n$25 Select Domestic Buckets\n$5 Shots\n\n---\n\n4pm-2am • Tuesday\n$12 Big Johns Double Bacon Cheeseburger or East Bay Burger with Fries",
+    "happyHourTime": "4pm-7pm • Monday-Friday, 4pm-2am • Monday-Wednesday, 11am-2am • Thursday-Saturday, 11am-2am • Sunday, Varies (11am-2am or 4pm-2am) • Saturday-Monday, 4pm-2am • Tuesday",
     "happyHourList": [
-      "Beat the Clock: All OTH Drafts start at $4.00 at 4 PM and increase by $1 until 7 PM",
+      "All OTH Drafts start at $4.00 at 4pm and increase by $1 until 7pm",
       "Two For One Martinis",
       "Two For One Martinis",
-      "$25 Select Domestic Buckets",
-      "$5 Shots",
+      "Two For One Martinis",
       "$25 Select Domestic Buckets",
       "$5 Shots",
       "$12 Big Johns Double Bacon Cheeseburger or East Bay Burger with Fries"
     ],
     "sourceUrl": "http://www.ilovebjs.com/charleston-market-street-area-big-john-s-happy-hours-specials",
-    "lastUpdateDate": "2026-01-18T22:56:13.130Z",
+    "lastUpdateDate": "2026-01-19T02:56:29.493Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ898DAQ16_ogRDxtyLVEPpOI"
   },
   {
-    "id": 25,
+    "id": 26,
     "lat": 32.7934868,
     "lng": -79.9386135,
     "title": "Bedford Falls CHS",
-    "description": "4:00pm-7:00pm • Monday-Friday\nHappy Hour (implied drink and food discounts)\n\n---\n\n9:30am-2:30pm • Saturday-Sunday\n$7 Bloody Marys and Mimosas",
-    "happyHourTime": "4:00pm-7:00pm • Monday-Friday, 9:30am-2:30pm • Saturday-Sunday",
+    "description": "4:00 PM - 7:00 PM • Monday-Friday\nHappy Hour\n\n---\n\n9:30 AM - 2:30 PM • Saturday-Sunday\n$7 Bloody Marys and Mimosas",
+    "happyHourTime": "4:00 PM - 7:00 PM • Monday-Friday, 9:30 AM - 2:30 PM • Saturday-Sunday",
     "happyHourList": [
-      "Happy Hour (implied drink and food discounts)",
+      "Happy Hour",
       "$7 Bloody Marys and Mimosas"
     ],
     "sourceUrl": "http://bedfordfallschs.com/charleston-bedford-falls-happy-hours-specials",
-    "lastUpdateDate": "2026-01-18T22:56:24.304Z",
+    "lastUpdateDate": "2026-01-19T02:56:39.623Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ8UoPPjB7_ogR-fb1RnVM_xU"
   },
   {
-    "id": 26,
+    "id": 27,
     "lat": 32.8816953,
     "lng": -79.9765226,
     "title": "Stems & Skins",
-    "description": "4pm-6pm • Monday-Friday\nAperitivo Hour (implied drinks and small plates specials)",
-    "happyHourTime": "4pm-6pm • Monday-Friday",
+    "description": "4pm-6pm • Monday-Friday\nAperitivo Hour (implied drinks and small plates specials)\n\n---\n\nStarts at 2pm • Every Sunday\nSunday Meatballs (food special)\n\n---\n\nStarts at 6pm • Every Thursday\nVinyl Night (bring a record event, implied bar specials)",
+    "happyHourTime": "4pm-6pm • Monday-Friday, Starts at 2pm • Every Sunday, Starts at 6pm • Every Thursday",
     "happyHourList": [
-      "Aperitivo Hour (implied drinks and small plates specials)"
+      "Aperitivo Hour (implied drinks and small plates specials)",
+      "Sunday Meatballs (food special)",
+      "Vinyl Night (bring a record event, implied bar specials)"
     ],
     "sourceUrl": "http://stemsandskins.com/",
-    "lastUpdateDate": "2026-01-18T22:56:28.501Z",
+    "lastUpdateDate": "2026-01-19T02:56:52.590Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ8Zjpkuhk_ogRF9O5ew_aWjM"
-  },
-  {
-    "id": 27,
-    "lat": 32.83124129999999,
-    "lng": -79.8298396,
-    "title": "P.F. Chang's",
-    "description": "Not specified • Daily\nHappy Hour specials (details not provided)\n\n---\n\n11:00 AM - Close (varies by day) • All Day Every Day\nHalf Priced Half Apps\n\n---\n\n3:00 PM - Close (varies by day) • Daily\nDinner Specials: Individual portions of popular entrees with starter and rice/noodles",
-    "happyHourTime": "Not specified • Daily, 11:00 AM - Close (varies by day) • All Day Every Day, 3:00 PM - Close (varies by day) • Daily",
-    "happyHourList": [
-      "Happy Hour specials (details not provided)",
-      "Half Priced Half Apps",
-      "Dinner Specials: Individual portions of popular entrees with starter and rice/noodles"
-    ],
-    "sourceUrl": "https://locations.pfchangs.com/sc/myrtlebeach/1190-farrow-pkwy.html",
-    "lastUpdateDate": "2026-01-18T22:56:51.908Z",
-    "type": "Happy Hour",
-    "source": "automated",
-    "venueId": "ChIJ8eR_Gh1y_ogRjGX7WwQA0Us"
   },
   {
     "id": 28,
@@ -575,7 +520,7 @@
       "$7 Lil' Smasher (Smashburger Patty, Fried Pickles, American Cheese, Ranch Dressing, Toasted Sesame Seed Bun)"
     ],
     "sourceUrl": "http://gritcounter.com/north-charleston-the-grit-counter-north-charleston-happy-hours-specials",
-    "lastUpdateDate": "2026-01-18T22:56:58.569Z",
+    "lastUpdateDate": "2026-01-19T02:57:18.012Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ92l-OmJj_ogR6yu73GBVWkU"
@@ -593,54 +538,93 @@
       "$1 off all wine"
     ],
     "sourceUrl": "http://www.macsplacecharleston.com/charleston-east-bay-mac-s-place-happy-hours-specials",
-    "lastUpdateDate": "2026-01-18T22:57:04.242Z",
+    "lastUpdateDate": "2026-01-19T02:57:22.603Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ96pSNAx6_ogRgsEtLGyCTXM"
   },
   {
     "id": 30,
+    "lat": 32.7881215,
+    "lng": -79.9367856,
+    "title": "Hutson Alley",
+    "description": "3pm-8pm • Thursdays\nFried Chicken Night\n\n---\n\nOperating hours • Daily (December 4th-22nd)\nComplimentary Hot Chocolate\nKids Eat Free (at Vincent Chicco’s and Victor’s Seafood & Steak)\nSeasonal Cocktails\nS’mores Kits",
+    "happyHourTime": "3pm-8pm • Thursdays, Operating hours • Daily (December 4th-22nd)",
+    "happyHourList": [
+      "Fried Chicken Night",
+      "Complimentary Hot Chocolate",
+      "Kids Eat Free (at Vincent Chicco’s and Victor’s Seafood & Steak)",
+      "Seasonal Cocktails",
+      "S’mores Kits"
+    ],
+    "sourceUrl": "http://www.holycityhospitality.com/virginias-on-king/#private-events",
+    "lastUpdateDate": "2026-01-19T02:57:53.236Z",
+    "type": "Happy Hour",
+    "source": "automated",
+    "venueId": "ChIJ9Wqm-bB7_ogRuK4W8j95Jjs"
+  },
+  {
+    "id": 31,
+    "lat": 32.8071098,
+    "lng": -79.8784211,
+    "title": "Sesame Burgers & Beer",
+    "description": "4pm-7pm • Monday-Friday\n$5 beers\n$1 off domestic beers (Bud Lt, Bud, Miller Lite, Coors Light, PBR, Michelob Ultra, Yuengling)\n$2 off well liquor and wine (Gin, Bourbon, Rum, Tequila, Vodka; Sauvignon Blanc, Pinot Grigio, Chardonnay, Pinot Noir, Cabernet Sauvignon)\nHalf off appetizers (Chili Cheese Fries, Fried Banana Peppers, Pickle Chips, Pulled Pork Sliders)",
+    "happyHourTime": "4pm-7pm • Monday-Friday",
+    "happyHourList": [
+      "$5 beers",
+      "$1 off domestic beers (Bud Lt, Bud, Miller Lite, Coors Light, PBR, Michelob Ultra, Yuengling)",
+      "$2 off well liquor and wine (Gin, Bourbon, Rum, Tequila, Vodka; Sauvignon Blanc, Pinot Grigio, Chardonnay, Pinot Noir, Cabernet Sauvignon)",
+      "Half off appetizers (Chili Cheese Fries, Fried Banana Peppers, Pickle Chips, Pulled Pork Sliders)"
+    ],
+    "sourceUrl": "https://www.sesameburgersandbeer.com/wp-content/uploads/2025/10/SESAME_HAPPY_HOUR_OCT_2025.pdf",
+    "lastUpdateDate": "2026-01-19T02:58:12.690Z",
+    "type": "Happy Hour",
+    "source": "automated",
+    "venueId": "ChIJ9Y_hi1Zw_ogRtO5Kg6Py3vU"
+  },
+  {
+    "id": 32,
     "lat": 32.8619906,
     "lng": -79.90698689999999,
     "title": "Heavy's Barburger",
-    "description": "4pm-6pm • Monday-Friday\n$5 Shorty Margaritas\nNeighborhood Draft Beer\nGlass of House Wine\nJack & Coke\nTito’s Vodka & Soda",
+    "description": "4pm-6pm • Monday-Friday\n$5 Shorty Margaritas\n$5 Neighborhood Draft Beer\n$5 Glass of House Wine\n$5 Jack & Coke\n$5 Tito’s Vodka & Soda",
     "happyHourTime": "4pm-6pm • Monday-Friday",
     "happyHourList": [
       "$5 Shorty Margaritas",
-      "Neighborhood Draft Beer",
-      "Glass of House Wine",
-      "Jack & Coke",
-      "Tito’s Vodka & Soda"
+      "$5 Neighborhood Draft Beer",
+      "$5 Glass of House Wine",
+      "$5 Jack & Coke",
+      "$5 Tito’s Vodka & Soda"
     ],
     "sourceUrl": "https://www.heavysbarburger.com/locations",
-    "lastUpdateDate": "2026-01-18T16:12:50.964Z",
+    "lastUpdateDate": "2026-01-19T02:58:26.657Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ9epcmlNv_ogRluDeH2eKj88"
   },
   {
-    "id": 31,
+    "id": 33,
     "lat": 32.78105540000001,
     "lng": -79.9300308,
     "title": "TBonz Gill & Grill",
-    "description": "4pm-6pm • Monday-Friday\n$1 off all pints\n$5 house wine (Chardonnay, White Zinfandel, Cabernet Sauvignon, Merlot)\n$5 house liquors\n$7 Lowcountry Fried Pickles\n$10 Macho Nachos\n$7 Mozzarella Sticks",
+    "description": "4pm-6pm • Monday-Friday\n$1 off all pints\n$5 house wine (Chardonnay / White Zinfandel, Cabernet Sauvignon / Merlot)\n$5 house liquors\n$7 Lowcountry Fried Pickles\n$10 Macho Nachos\n$7 Mozzarella Sticks",
     "happyHourTime": "4pm-6pm • Monday-Friday",
     "happyHourList": [
       "$1 off all pints",
-      "$5 house wine (Chardonnay, White Zinfandel, Cabernet Sauvignon, Merlot)",
+      "$5 house wine (Chardonnay / White Zinfandel, Cabernet Sauvignon / Merlot)",
       "$5 house liquors",
       "$7 Lowcountry Fried Pickles",
       "$10 Macho Nachos",
       "$7 Mozzarella Sticks"
     ],
-    "sourceUrl": "http://www.tbonzgillandgrill.com/charleston-menus/",
-    "lastUpdateDate": "2026-01-18T22:58:08.841Z",
+    "sourceUrl": "https://www.tbonzgillandgrill.com/charleston-menus/",
+    "lastUpdateDate": "2026-01-19T02:58:36.405Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJ9xQpdRJ6_ogRqHYKNQ_VhDY"
   },
   {
-    "id": 32,
+    "id": 34,
     "lat": 32.7796071,
     "lng": -79.932841,
     "title": "Kings Courtyard Inn",
@@ -651,200 +635,218 @@
       "Complimentary evening sherry"
     ],
     "sourceUrl": "https://www.kingscourtyardinn.com/",
-    "lastUpdateDate": "2026-01-18T22:58:25.575Z",
+    "lastUpdateDate": "2026-01-19T02:58:56.609Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJA02cgRF6_ogRnuEzBVCywJM"
   },
   {
-    "id": 33,
+    "id": 35,
     "lat": 32.7929632,
     "lng": -79.865819,
     "title": "The Red Drum",
-    "description": "4pm-5pm • Tue-Sat\nLimited menu",
-    "happyHourTime": "4pm-5pm • Tue-Sat",
+    "description": "4pm-5pm • Tue-Sat\nLimited menu available\n\n---\n\n2pm-5pm • Sunday\nLimited menu available",
+    "happyHourTime": "4pm-5pm • Tue-Sat, 2pm-5pm • Sunday",
     "happyHourList": [
-      "Limited menu"
+      "Limited menu available",
+      "Limited menu available"
     ],
-    "sourceUrl": "https://reddrumrestaurant.com/charleston-the-red-drum-gastro-happy-hours-specials",
-    "lastUpdateDate": "2026-01-18T22:58:36.225Z",
+    "sourceUrl": "https://reddrumrestaurant.com/",
+    "lastUpdateDate": "2026-01-19T02:59:09.510Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJA1VLHAVx_ogRAW1cAlWT3W0"
   },
   {
-    "id": 34,
+    "id": 36,
     "lat": 32.94420540000001,
     "lng": -80.04375879999999,
     "title": "Locker Room Sports Cafe",
-    "description": "Pre-game • Varies (pre-game events)\nHappy hours\nUnbeatable specials",
-    "happyHourTime": "Pre-game • Varies (pre-game events)",
+    "description": "Pre-game (implied late afternoon/early evening) • Event-dependent (pre-game)\nHappy hours with unbeatable specials",
+    "happyHourTime": "Pre-game (implied late afternoon/early evening) • Event-dependent (pre-game)",
     "happyHourList": [
-      "Happy hours",
-      "Unbeatable specials"
+      "Happy hours with unbeatable specials"
     ],
-    "sourceUrl": "https://shopnorthwoodsmall.com/store/locker_room_sports_cafe",
-    "lastUpdateDate": "2026-01-18T22:58:40.802Z",
+    "sourceUrl": "https://shopnorthwoodsmall.com/store/locker_room_sports_cafe?location=uH-640",
+    "lastUpdateDate": "2026-01-19T02:59:15.649Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJA1vVLY57_ogR8syPUAQNKJ4"
   },
   {
-    "id": 35,
+    "id": 37,
     "lat": 32.8563748,
     "lng": -79.9710125,
     "title": "Bar Weems",
-    "description": "10PM-12:30AM • Wednesday-Saturday\nLate Nite Menu",
-    "happyHourTime": "10PM-12:30AM • Wednesday-Saturday",
+    "description": "10pm-12:30am • Wednesday-Saturday\nLate Nite Menu",
+    "happyHourTime": "10pm-12:30am • Wednesday-Saturday",
     "happyHourList": [
       "Late Nite Menu"
     ],
     "sourceUrl": "https://barweems.com/",
-    "lastUpdateDate": "2026-01-18T22:59:00.432Z",
+    "lastUpdateDate": "2026-01-19T02:59:32.581Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJAQA2DEN7_ogR-WBRrZ-39pU"
   },
   {
-    "id": 36,
+    "id": 38,
     "lat": 32.7630824,
     "lng": -79.98576059999999,
     "title": "Crust Wood Fired Pizza",
-    "description": "Not specified • Not specified\nUnbeatable happy hour specials\n\n---\n\n3pm-5pm • Daily\nQuiet hours - skip the wait",
-    "happyHourTime": "Not specified • Not specified, 3pm-5pm • Daily",
+    "description": "Not specified (typical happy hour window inferred) • Not specified (implied daily)\nUnbeatable happy hour specials",
+    "happyHourTime": "Not specified (typical happy hour window inferred) • Not specified (implied daily)",
     "happyHourList": [
-      "Unbeatable happy hour specials",
-      "Quiet hours - skip the wait"
+      "Unbeatable happy hour specials"
     ],
     "sourceUrl": "https://www.crustwoodfiredpizza.com/",
-    "lastUpdateDate": "2026-01-18T22:59:20.305Z",
+    "lastUpdateDate": "2026-01-19T02:59:57.838Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJAd5_pmB5_ogRoyRxZQ0EqcA"
   },
   {
-    "id": 37,
+    "id": 39,
     "lat": 32.7955392,
     "lng": -79.9543472,
     "title": "Lillian’s Petite Market & Eatery",
-    "description": "4pm-6pm • Daily\nHappy Hour at the bar (craft cocktails, local beer, and natural wines)",
+    "description": "4pm-6pm • Daily\nHappy Hour at the bar (craft cocktails, local beer, natural wines)",
     "happyHourTime": "4pm-6pm • Daily",
     "happyHourList": [
-      "Happy Hour at the bar (craft cocktails, local beer, and natural wines)"
+      "Happy Hour at the bar (craft cocktails, local beer, natural wines)"
     ],
-    "sourceUrl": "http://www.lillianschs.com/location/lillians-petite-market-and-eatery/",
-    "lastUpdateDate": "2026-01-18T22:59:34.177Z",
+    "sourceUrl": "http://www.lillianschs.com/",
+    "lastUpdateDate": "2026-01-19T03:00:11.323Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJAzlh7I17_ogRfARqVvn4emA"
   },
   {
-    "id": 38,
+    "id": 40,
     "lat": 32.7148792,
     "lng": -79.9656145,
     "title": "California Tortilla",
-    "description": "after 5pm • Monday\nBuy a regular sized burrito and spin the Burrito Wheel - guaranteed to win something tasty",
-    "happyHourTime": "after 5pm • Monday",
+    "description": "after 5pm • Mondays\nBuy a regular sized burrito and spin the Burrito Wheel - guaranteed to win something tasty (implied food discount or free item)",
+    "happyHourTime": "after 5pm • Mondays",
     "happyHourList": [
-      "Buy a regular sized burrito and spin the Burrito Wheel - guaranteed to win something tasty"
+      "Buy a regular sized burrito and spin the Burrito Wheel - guaranteed to win something tasty (implied food discount or free item)"
     ],
     "sourceUrl": "https://californiatortilla.com/location/bowie/",
-    "lastUpdateDate": "2026-01-18T22:59:52.636Z",
+    "lastUpdateDate": "2026-01-19T03:00:25.944Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJB8GuC1d5_ogRi8he710i-fE"
   },
   {
-    "id": 39,
+    "id": 41,
     "lat": 32.7774551,
     "lng": -79.8104403,
     "title": "The Boathouse at Breach Inlet",
-    "description": "4pm-6pm • Monday-Friday\nHappy Hour at the bar (drinks and appetizers)",
+    "description": "4pm-6pm • Monday-Friday\nHappy Hour at the bar only (drinks and appetizers)",
     "happyHourTime": "4pm-6pm • Monday-Friday",
     "happyHourList": [
-      "Happy Hour at the bar (drinks and appetizers)"
+      "Happy Hour at the bar only (drinks and appetizers)"
     ],
     "sourceUrl": "http://www.boathouserestaurants.com/",
-    "lastUpdateDate": "2026-01-18T23:00:00.164Z",
+    "lastUpdateDate": "2026-01-19T03:00:32.734Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJB8KRscFz_ogRXKHf2CSoLrA"
   },
   {
-    "id": 40,
+    "id": 42,
     "lat": 32.8099183,
     "lng": -79.9473679,
     "title": "Edmund's Original (Formerly Edmund's Oast)",
-    "description": "3pm-6pm • Monday-Friday\nSnacks: Chicken Salad Sliders (2) $7, Fried Bologna Sandwich $7, Coney Dog $7, Small Fry $4\nDrink Specials: $4 any Edmund's Original beer, $6 House White/Red/Rosé wine, $8 Edmund’s Old Fashioned or House Gimlet cocktails\n\n---\n\n11am-3pm • Every Sunday\nRotating Brunch Buffet: Adults $32, Children under 12 $20",
+    "description": "3pm-6pm • Monday-Friday\n$4 any Edmund's Original beer\n$6 House White, Red, or Rosé wine\n$8 Cocktails (Edmund’s Old Fashioned or House Gimlet)\n$4 Small Fry\n$7 Chicken Salad Sliders (2), Fried Bologna Sandwich, or Coney Dog\n\n---\n\n11am-3pm • Every Sunday\nRotating Brunch Buffet: Adults $32, Children under 12 $20",
     "happyHourTime": "3pm-6pm • Monday-Friday, 11am-3pm • Every Sunday",
     "happyHourList": [
-      "Snacks: Chicken Salad Sliders (2) $7, Fried Bologna Sandwich $7, Coney Dog $7, Small Fry $4",
-      "Drink Specials: $4 any Edmund's Original beer, $6 House White/Red/Rosé wine, $8 Edmund’s Old Fashioned or House Gimlet cocktails",
+      "$4 any Edmund's Original beer",
+      "$6 House White, Red, or Rosé wine",
+      "$8 Cocktails (Edmund’s Old Fashioned or House Gimlet)",
+      "$4 Small Fry",
+      "$7 Chicken Salad Sliders (2), Fried Bologna Sandwich, or Coney Dog",
       "Rotating Brunch Buffet: Adults $32, Children under 12 $20"
     ],
     "sourceUrl": "https://www.edmundsoriginal.com/bower-menus/",
-    "lastUpdateDate": "2026-01-18T23:00:10.815Z",
+    "lastUpdateDate": "2026-01-19T03:00:41.465Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJB8YsDvZ6_ogR0t-pyYrZcvk"
   },
   {
-    "id": 41,
+    "id": 43,
     "lat": 32.7899652,
     "lng": -79.9389803,
     "title": "Uncork Charleston",
-    "description": "5pm-7pm • Sunday, Wednesday, Thursday, Friday, Saturday\n$10 Craft Cocktails\n$9-$10 Select Dishes\n$7.25 Local Draft Beers\n15% Off Wine\n\n---\n\n4pm-11pm • Tuesday\n$6 Vodka or Tequila Sodas\n$6 Lemon Drop Martinis\n\n---\n\n4pm-10pm • Wednesday\n$15 Pastas",
-    "happyHourTime": "5pm-7pm • Sunday, Wednesday, Thursday, Friday, Saturday, 4pm-11pm • Tuesday, 4pm-10pm • Wednesday",
+    "description": "4pm-11pm • Tuesday\n$6 Vodka or Tequila Sodas (F&B industry only)\n$6 Lemon Drop Martinis (F&B industry only)\n\n---\n\n4pm-10pm • Wednesday\n$15 Pastas\n\n---\n\n5pm-7pm • Wednesday\nCraft Cocktails $10\nSelect Dishes $9\nLocal Draft Beers $7.25\n15% Off Wine\n\n---\n\n5pm-7pm • Thursday\nCraft Cocktails $10\nSelect Dishes $10\nLocal Draft Beers $7.25\n15% Off Wine\n\n---\n\n5pm-7pm • Friday\nCraft Cocktails $10\nSelect Dishes $10\nLocal Draft Beers $7.25\n15% Off Wine\n\n---\n\n5pm-7pm • Saturday\nCraft Cocktails $10\nSelect Dishes $10\nLocal Draft Beers $7.25\n15% Off Wine\n\n---\n\n5pm-7pm • Sunday\nCraft Cocktails $10\nSelect Dishes $9\nLocal Draft Beers $7.25\n15% Off Wine",
+    "happyHourTime": "4pm-11pm • Tuesday, 4pm-10pm • Wednesday, 5pm-7pm • Wednesday, 5pm-7pm • Thursday, 5pm-7pm • Friday, 5pm-7pm • Saturday, 5pm-7pm • Sunday",
     "happyHourList": [
-      "$10 Craft Cocktails",
-      "$9-$10 Select Dishes",
-      "$7.25 Local Draft Beers",
+      "$6 Vodka or Tequila Sodas (F&B industry only)",
+      "$6 Lemon Drop Martinis (F&B industry only)",
+      "$15 Pastas",
+      "Craft Cocktails $10",
+      "Select Dishes $9",
+      "Local Draft Beers $7.25",
       "15% Off Wine",
-      "$6 Vodka or Tequila Sodas",
-      "$6 Lemon Drop Martinis",
-      "$15 Pastas"
+      "Craft Cocktails $10",
+      "Select Dishes $10",
+      "Local Draft Beers $7.25",
+      "15% Off Wine",
+      "Craft Cocktails $10",
+      "Select Dishes $10",
+      "Local Draft Beers $7.25",
+      "15% Off Wine",
+      "Craft Cocktails $10",
+      "Select Dishes $10",
+      "Local Draft Beers $7.25",
+      "15% Off Wine",
+      "Craft Cocktails $10",
+      "Select Dishes $9",
+      "Local Draft Beers $7.25",
+      "15% Off Wine"
     ],
-    "sourceUrl": "https://www.uncorkchs.com/charleston-uncork-charleston-happy-hours-specials",
-    "lastUpdateDate": "2026-01-18T23:00:39.823Z",
+    "sourceUrl": "https://www.uncorkchs.com/charleston-uncork-charleston-events",
+    "lastUpdateDate": "2026-01-19T03:01:11.816Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJBUxFNWp6_ogRbCCh69ktiXo"
   },
   {
-    "id": 42,
+    "id": 44,
     "lat": 32.7706007,
     "lng": -79.9308234,
     "title": "20 South Battery",
-    "description": "Afternoon • Daily\nArtisanal cheeses, charcuterie, and refreshments in the Grand Ballroom",
+    "description": "Afternoon • Daily\nArtisanal cheeses, charcuterie, and refreshments",
     "happyHourTime": "Afternoon • Daily",
     "happyHourList": [
-      "Artisanal cheeses, charcuterie, and refreshments in the Grand Ballroom"
+      "Artisanal cheeses, charcuterie, and refreshments"
     ],
     "sourceUrl": "https://20southbattery.com/",
-    "lastUpdateDate": "2026-01-18T23:01:10.092Z",
+    "lastUpdateDate": "2026-01-19T03:01:35.127Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJC32MMRt6_ogRg2MhiG9ub0E"
   },
   {
-    "id": 43,
+    "id": 45,
     "lat": 32.7826083,
     "lng": -79.93202819999999,
     "title": "Little Palm",
-    "description": "4pm-6pm • Monday-Thursday\nHappy Hour specials (details not specified in menu; likely drink and bar discounts based on explicit naming)\n\n---\n\n11am-5pm • Monday-Friday\nLunch Combo: Half Cuban Sando with choice of seasonal soup or salad and soft drink or iced tea for $24",
+    "description": "4pm-6pm • Monday-Thursday\nHappy Hour (specific drink/food discounts not detailed on site; implied bar specials during this window)\n\n---\n\n11am-5pm • Monday-Friday\nLunch Combo: Half Cuban Sandwich with choice of seasonal soup or salad & soft drink or iced tea for $24",
     "happyHourTime": "4pm-6pm • Monday-Thursday, 11am-5pm • Monday-Friday",
     "happyHourList": [
-      "Happy Hour specials (details not specified in menu; likely drink and bar discounts based on explicit naming)",
-      "Lunch Combo: Half Cuban Sando with choice of seasonal soup or salad and soft drink or iced tea for $24"
+      "Happy Hour (specific drink/food discounts not detailed on site; implied bar specials during this window)",
+      "Lunch Combo: Half Cuban Sandwich with choice of seasonal soup or salad & soft drink or iced tea for $24"
     ],
     "sourceUrl": "https://www.littlepalmchs.com/location/little-palm/",
-    "lastUpdateDate": "2026-01-18T23:01:23.007Z",
+    "lastUpdateDate": "2026-01-19T03:01:46.438Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJC4n-xyN7_ogRFpS2Bz2a7Wg"
   },
   {
-    "id": 44,
+    "id": 46,
     "lat": 32.729864,
     "lng": -79.9351787,
     "title": "Edison James Island",
@@ -853,69 +855,73 @@
     "happyHourList": [
       "All wine bottles half price"
     ],
-    "sourceUrl": "https://www.edisonjamesisland.com/",
-    "lastUpdateDate": "2026-01-18T23:01:31.889Z",
+    "sourceUrl": "https://www.edisonjamesisland.com/menu",
+    "lastUpdateDate": "2026-01-19T03:01:53.558Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJCRdV9sV5_ogR8IRccKbEeEk"
   },
   {
-    "id": 45,
+    "id": 47,
     "lat": 32.7920452,
     "lng": -79.8813182,
     "title": "Red's Ice House",
-    "description": "All Day • Daily\nCold beer\nFresh seafood",
+    "description": "All Day • Daily\nHappy Hour (promotional slogan implying ongoing availability of drinks and specials)",
     "happyHourTime": "All Day • Daily",
     "happyHourList": [
-      "Cold beer",
-      "Fresh seafood"
+      "Happy Hour (promotional slogan implying ongoing availability of drinks and specials)"
     ],
     "sourceUrl": "http://www.redsicehouse.com/#socialcalendar",
-    "lastUpdateDate": "2026-01-18T23:03:31.032Z",
+    "lastUpdateDate": "2026-01-19T03:03:59.549Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJCVx1o-Rw_ogRgEUCB1vm2S4"
   },
   {
-    "id": 46,
+    "id": 48,
     "lat": 32.779717,
     "lng": -79.92697439999999,
     "title": "New York City Pizza",
-    "description": "Not specified • Not specified\nSpecial Happy Hour Menu",
+    "description": "Not specified • Not specified\nHappy Hour Menu\n\n---\n\nNot specified • Not specified\nHappy Hour",
     "happyHourTime": "Not specified • Not specified",
     "happyHourList": [
-      "Special Happy Hour Menu"
+      "Happy Hour Menu",
+      "Happy Hour"
     ],
-    "sourceUrl": "https://www.newyorkcitypizza.com/location/festival-centre-north-end/, https://www.newyorkcitypizza.com/location/downtown/",
-    "lastUpdateDate": "2026-01-18T23:03:42.002Z",
+    "sourceUrl": "https://www.newyorkcitypizza.com/location/festival-centre-north-end/",
+    "lastUpdateDate": "2026-01-19T03:04:09.128Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJCWc4JAx6_ogR3_pC_CJK8G4"
   },
   {
-    "id": 47,
+    "id": 49,
     "lat": 32.7352752,
     "lng": -80.05484,
     "title": "Tolli’s Trattoria",
-    "description": "11am-3pm • Monday\nHandwich combos $12.50 (reduced from $15 full subs, includes choice of side)\nN.Y. Steak Bomb sub available only until 3pm",
-    "happyHourTime": "11am-3pm • Monday",
+    "description": "11am-3pm • Monday\nLunch menu specials including handwich combos at $12.50 with choice of side (soup, salad, fries, or chips)\nLunch Chubby Chub Subs at $15\nLunch pastas at $18-19\nLunch salads at $12-14\nReduced pricing on select mains like Chicken Piccata $22 (vs $26 dinner)\n\n---\n\nUntil 3pm • Daily\nN.Y. Steak Bomb Chubby Chub Sub available only until 3pm ($15)",
+    "happyHourTime": "11am-3pm • Monday, Until 3pm • Daily",
     "happyHourList": [
-      "Handwich combos $12.50 (reduced from $15 full subs, includes choice of side)",
-      "N.Y. Steak Bomb sub available only until 3pm"
+      "Lunch menu specials including handwich combos at $12.50 with choice of side (soup, salad, fries, or chips)",
+      "Lunch Chubby Chub Subs at $15",
+      "Lunch pastas at $18-19",
+      "Lunch salads at $12-14",
+      "Reduced pricing on select mains like Chicken Piccata $22 (vs $26 dinner)",
+      "N.Y. Steak Bomb Chubby Chub Sub available only until 3pm ($15)"
     ],
     "sourceUrl": "http://www.tollistrattoria.com/menus",
-    "lastUpdateDate": "2026-01-18T23:03:54.004Z",
+    "lastUpdateDate": "2026-01-19T03:04:23.593Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJCcbkaFd__ogRHn8eNHambBU"
   },
   {
-    "id": 48,
+    "id": 50,
     "lat": 32.8758647,
     "lng": -80.0216968,
     "title": "Sportsbook Cheesesteaks & Wings",
-    "description": "11:00 AM - 09:00 PM • Tuesday\nTwo Cheesesteak Tacos for $6\n$6 Margaritas\n\n---\n\n11:00 AM - 09:00 PM • Wednesday\nHalf-priced bone-in wings\n$6 Wicked Weed Pints",
-    "happyHourTime": "11:00 AM - 09:00 PM • Tuesday, 11:00 AM - 09:00 PM • Wednesday",
+    "description": "11:00 AM - 9:00 PM • Tuesday\nTwo Cheesesteak Tacos for $6\n$6 Margaritas\n\n---\n\n11:00 AM - 9:00 PM • Wednesday\nHalf-priced bone-in wings\n$6 Wicked Weed Pints",
+    "happyHourTime": "11:00 AM - 9:00 PM • Tuesday, 11:00 AM - 9:00 PM • Wednesday",
     "happyHourList": [
       "Two Cheesesteak Tacos for $6",
       "$6 Margaritas",
@@ -923,64 +929,49 @@
       "$6 Wicked Weed Pints"
     ],
     "sourceUrl": "https://www.sportsbookofcharleston.com/specials",
-    "lastUpdateDate": "2026-01-18T23:04:09.404Z",
+    "lastUpdateDate": "2026-01-19T03:04:37.087Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJCxfWo0Rj_ogR9VxZgJqte6w"
   },
   {
-    "id": 49,
+    "id": 51,
     "lat": 32.8223929,
     "lng": -79.99231520000001,
     "title": "Ms. Rose's Fine Food & Cocktails",
-    "description": "Not specified • Not specified\nHappy Hour menu available\n\n---\n\nNot specified • Weeknights\nWeeknight Specials",
-    "happyHourTime": "Not specified • Not specified, Not specified • Weeknights",
+    "description": "Not specified • Not specified\nHappy Hour Drink Menu\nHappy Hour Food Menu\n\n---\n\nNot specified • Weeknights (Monday-Thursday inferred)\nWeeknight Specials",
+    "happyHourTime": "Not specified • Not specified, Not specified • Weeknights (Monday-Thursday inferred)",
     "happyHourList": [
-      "Happy Hour menu available",
+      "Happy Hour Drink Menu",
+      "Happy Hour Food Menu",
       "Weeknight Specials"
     ],
     "sourceUrl": "http://msroses.com/charleston-west-ashley-ms-rose-s-fine-food-and-cocktails-drink-menu, http://msroses.com/charleston-west-ashley-ms-rose-s-fine-food-and-cocktails-food-menu",
-    "lastUpdateDate": "2026-01-18T23:04:35.807Z",
+    "lastUpdateDate": "2026-01-19T03:05:13.435Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJDXCe83F7_ogRpr0PwjtZ1Ug"
   },
   {
-    "id": 50,
-    "lat": 32.7779542,
-    "lng": -79.9324936,
-    "title": "82 Queen",
-    "description": "2:00pm-5:00pm • Daily\nMid-Day Menu",
-    "happyHourTime": "2:00pm-5:00pm • Daily",
-    "happyHourList": [
-      "Mid-Day Menu"
-    ],
-    "sourceUrl": "https://www.82queen.com/",
-    "lastUpdateDate": "2026-01-18T23:04:47.890Z",
-    "type": "Happy Hour",
-    "source": "automated",
-    "venueId": "ChIJDZ7DvBF6_ogRhOZ4IH9ehhE"
-  },
-  {
-    "id": 51,
+    "id": 52,
     "lat": 32.78492589999999,
     "lng": -79.9359022,
     "title": "The Bangkok Lounge",
-    "description": "5pm onward • Mondays\nHalf-Priced Punch Bowls\n\n---\n\n5pm onward • Tuesdays\n$3 Bourbon Rock\n\n---\n\n5pm onward • Daily\nDaily specials on signature Bangkok Punch and frozen drinks",
-    "happyHourTime": "5pm onward • Mondays, 5pm onward • Tuesdays, 5pm onward • Daily",
+    "description": "5pm onwards • Monday\nHalf-Priced Punch Bowls\n\n---\n\n5pm onwards • Tuesday\n$3 Bourbon\n\n---\n\n5pm onwards • Daily\nDaily specials and theme nights (details vary)",
+    "happyHourTime": "5pm onwards • Monday, 5pm onwards • Tuesday, 5pm onwards • Daily",
     "happyHourList": [
       "Half-Priced Punch Bowls",
-      "$3 Bourbon Rock",
-      "Daily specials on signature Bangkok Punch and frozen drinks"
+      "$3 Bourbon",
+      "Daily specials and theme nights (details vary)"
     ],
     "sourceUrl": "http://www.thebangkoklounge.com/",
-    "lastUpdateDate": "2026-01-18T23:04:57.309Z",
+    "lastUpdateDate": "2026-01-19T03:05:35.765Z",
     "type": "Happy Hour",
     "source": "automated",
     "venueId": "ChIJDZxm0bV7_ogRuANA_KB1QJg"
   },
   {
-    "id": 52,
+    "id": 53,
     "lat": 32.7157128,
     "lng": -79.967795,
     "title": "Fam's Brewing Co. featuring Famulari's Pizzeria",
@@ -999,7 +990,7 @@
     "venueId": "ChIJDbSCy_54_ogRsajnAWDjJ2E"
   },
   {
-    "id": 53,
+    "id": 54,
     "lat": 32.79201,
     "lng": -79.873423,
     "title": "The Perch",
@@ -1016,7 +1007,7 @@
     "venueId": "ChIJE3yJN_xx_ogRo7iwn6Swa5A"
   },
   {
-    "id": 54,
+    "id": 55,
     "lat": 32.8134556,
     "lng": -80.0418675,
     "title": "Baroni's New York Pizza",
@@ -1038,7 +1029,7 @@
     "venueId": "ChIJFbCKzFl8_ogRALktWBzcYYY"
   },
   {
-    "id": 55,
+    "id": 56,
     "lat": 32.81680089999999,
     "lng": -79.9534182,
     "title": "Edmund's Oast Brewing Co.",
@@ -1055,7 +1046,7 @@
     "venueId": "ChIJGU5FivB6_ogRzmmp7eKqMtQ"
   },
   {
-    "id": 56,
+    "id": 57,
     "lat": 32.7331172,
     "lng": -80.0572174,
     "title": "The Southern General",
@@ -1071,7 +1062,7 @@
     "venueId": "ChIJGfGOI1R-_ogRBP8lpEUYDts"
   },
   {
-    "id": 57,
+    "id": 58,
     "lat": 32.76246799999999,
     "lng": -79.836618,
     "title": "Wine Shop Sullivan's",
@@ -1087,7 +1078,7 @@
     "venueId": "ChIJGyXx27Zx_ogRgW6hPfBegBg"
   },
   {
-    "id": 58,
+    "id": 59,
     "lat": 32.78611009999999,
     "lng": -79.93501359999999,
     "title": "Big Gun Burger Shop & Bar",
@@ -1106,7 +1097,7 @@
     "venueId": "ChIJI04ut2x6_ogR1P661VH83uw"
   },
   {
-    "id": 59,
+    "id": 60,
     "lat": 32.7922967,
     "lng": -79.9434821,
     "title": "Bistronomy By Nico",
@@ -1132,7 +1123,7 @@
     "venueId": "ChIJI4NdfA57_ogR65yxuBGVbUo"
   },
   {
-    "id": 60,
+    "id": 61,
     "lat": 32.8036194,
     "lng": -79.88835139999999,
     "title": "Graze Restaurant",
@@ -1148,7 +1139,7 @@
     "venueId": "ChIJK0WDA_Zw_ogRKR3Yw2N09So"
   },
   {
-    "id": 61,
+    "id": 62,
     "lat": 32.8052379,
     "lng": -79.8924535,
     "title": "Grace & Grit",
@@ -1165,7 +1156,7 @@
     "venueId": "ChIJKUGCaF9w_ogRdu2Shl5g5zU"
   },
   {
-    "id": 62,
+    "id": 63,
     "lat": 32.84069760000001,
     "lng": -79.8574702,
     "title": "Dog and Duck",
@@ -1187,7 +1178,7 @@
     "venueId": "ChIJKxFmrt5x_ogRQ1vLWQfHSng"
   },
   {
-    "id": 63,
+    "id": 64,
     "lat": 32.8126718,
     "lng": -79.9538176,
     "title": "Container Bar",
@@ -1217,7 +1208,7 @@
     "venueId": "ChIJL_C10Sl7_ogRueNOegJaiEE"
   },
   {
-    "id": 64,
+    "id": 65,
     "lat": 32.7620964,
     "lng": -79.98461569999999,
     "title": "The James",
@@ -1234,7 +1225,7 @@
     "venueId": "ChIJLd-Pkm95_ogRoeaA6vbP4Z8"
   },
   {
-    "id": 65,
+    "id": 66,
     "lat": 32.81136739999999,
     "lng": -79.9493361,
     "title": "Heavy's Barburger",
@@ -1254,7 +1245,7 @@
     "venueId": "ChIJM-G_SU57_ogRcyuhXRHmmFM"
   },
   {
-    "id": 66,
+    "id": 67,
     "lat": 32.812153,
     "lng": -79.8794727,
     "title": "Community Table",
@@ -1268,7 +1259,7 @@
     "venueId": "ChIJM00GhHZx_ogRyp6oTu9Zji4"
   },
   {
-    "id": 67,
+    "id": 68,
     "lat": 32.8557926,
     "lng": -80.0420396,
     "title": "Jungle's Bar and Grill",
@@ -1287,7 +1278,7 @@
     "venueId": "ChIJM02XFd99_ogR4P7Q72LQPhs"
   },
   {
-    "id": 68,
+    "id": 69,
     "lat": 32.74040859999999,
     "lng": -79.9664844,
     "title": "Locals Sushi & Sports Pub - James Island",
@@ -1304,7 +1295,7 @@
     "venueId": "ChIJM0GmQp95_ogRH8H1Dh_chRk"
   },
   {
-    "id": 69,
+    "id": 70,
     "lat": 32.8107944,
     "lng": -79.86480379999999,
     "title": "Tru Blues House of Wings",
@@ -1320,7 +1311,7 @@
     "venueId": "ChIJM66Cl69x_ogRSZgOF3tnUDw"
   },
   {
-    "id": 70,
+    "id": 71,
     "lat": 32.8792875,
     "lng": -79.97993699999999,
     "title": "Katsubō",
@@ -1341,7 +1332,7 @@
     "venueId": "ChIJMTWHOFRl_ogRfc9Npjg4vOc"
   },
   {
-    "id": 71,
+    "id": 72,
     "lat": 32.8637094,
     "lng": -79.90362089999999,
     "title": "Dragon Palace Chinese Bistro",
@@ -1357,7 +1348,7 @@
     "venueId": "ChIJN44sI-9v_ogR3ShHqjCx5EU"
   },
   {
-    "id": 72,
+    "id": 73,
     "lat": 32.8348274,
     "lng": -80.04576109999999,
     "title": "Cedar Creek Tavern Charleston",
@@ -1373,7 +1364,7 @@
     "venueId": "ChIJNYl3sh99_ogRmNf1L-E3X2o"
   },
   {
-    "id": 73,
+    "id": 74,
     "lat": 32.7918624,
     "lng": -80.033638,
     "title": "Hachiya Japanese Steakhouse and Sushi Bar",
@@ -1396,7 +1387,7 @@
     "venueId": "ChIJNyK8oT98_ogRdrVjyLDLcgs"
   },
   {
-    "id": 74,
+    "id": 75,
     "lat": 32.7774484,
     "lng": -79.8103782,
     "title": "Crow Bar",
@@ -1412,7 +1403,7 @@
     "venueId": "ChIJO-WWs8Fz_ogREEUt4lO29h0"
   },
   {
-    "id": 75,
+    "id": 76,
     "lat": 32.9407184,
     "lng": -80.0459254,
     "title": "Holiday Inn Express & Suites Charleston - Northwoods by IHG",
@@ -1428,7 +1419,7 @@
     "venueId": "ChIJOSEYk9Fj_ogR6ePwYQ7294Y"
   },
   {
-    "id": 76,
+    "id": 77,
     "lat": 32.7900542,
     "lng": -79.9390403,
     "title": "Silver Dollar",
@@ -1451,7 +1442,7 @@
     "venueId": "ChIJOTyBNWp6_ogRNGciR2ht9vk"
   },
   {
-    "id": 77,
+    "id": 78,
     "lat": 32.8010943,
     "lng": -80.0192137,
     "title": "Metro Diner",
@@ -1468,7 +1459,7 @@
     "venueId": "ChIJOXZ-Gr19_ogR7YWN0aIWeCo"
   },
   {
-    "id": 78,
+    "id": 79,
     "lat": 32.7814812,
     "lng": -79.9299322,
     "title": "Frannie & The Fox",
@@ -1484,7 +1475,7 @@
     "venueId": "ChIJOetRgzp7_ogR_eJsx6ttGls"
   },
   {
-    "id": 79,
+    "id": 80,
     "lat": 32.7970536,
     "lng": -79.99849859999999,
     "title": "Café Roca",
@@ -1500,7 +1491,7 @@
     "venueId": "ChIJOziAeZB7_ogRfY3fbfdjnGs"
   },
   {
-    "id": 80,
+    "id": 81,
     "lat": 32.8027804,
     "lng": -79.9448572,
     "title": "The Archer",
@@ -1516,7 +1507,7 @@
     "venueId": "ChIJPaaxZsJ7_ogRSbOGoLwL9VY"
   },
   {
-    "id": 81,
+    "id": 82,
     "lat": 32.7803192,
     "lng": -79.93452409999999,
     "title": "AZUR",
@@ -1536,7 +1527,7 @@
     "venueId": "ChIJQ-fv8LR7_ogRHnzXBcNcTio"
   },
   {
-    "id": 82,
+    "id": 83,
     "lat": 32.77642240000001,
     "lng": -79.93361159999999,
     "title": "John Rutledge House Inn",
@@ -1553,7 +1544,7 @@
     "venueId": "ChIJQSLQ-xB6_ogRNf0_5P9nJt0"
   },
   {
-    "id": 83,
+    "id": 84,
     "lat": 32.8298574,
     "lng": -79.82862449999999,
     "title": "SAVI Cucina + Wine Bar",
@@ -1571,7 +1562,7 @@
     "venueId": "ChIJQXpftENz_ogRBk387--xDbM"
   },
   {
-    "id": 84,
+    "id": 85,
     "lat": 32.8620785,
     "lng": -79.9046341,
     "title": "Wasabi of Daniel Island",
@@ -1594,7 +1585,7 @@
     "venueId": "ChIJQw1cZe9v_ogRcvBdGFJHNv0"
   },
   {
-    "id": 85,
+    "id": 86,
     "lat": 32.7411971,
     "lng": -80.04151110000001,
     "title": "Low Tide Brewing",
@@ -1612,7 +1603,7 @@
     "venueId": "ChIJQx9AMu5-_ogRq4rTOgu4kFs"
   },
   {
-    "id": 86,
+    "id": 87,
     "lat": 32.776716,
     "lng": -79.92719699999999,
     "title": "Bar Vauté",
@@ -1637,7 +1628,7 @@
     "venueId": "ChIJQyDI3B57_ogRlldMTON17jE"
   },
   {
-    "id": 87,
+    "id": 88,
     "lat": 32.70974100000001,
     "lng": -79.966638,
     "title": "Cannon Distillery",
@@ -1656,7 +1647,7 @@
     "venueId": "ChIJR1f8ZMJ7_ogRC1GLxG9M6_8"
   },
   {
-    "id": 88,
+    "id": 89,
     "lat": 32.81160500000001,
     "lng": -80.0443548,
     "title": "Underground Chuck’s",
@@ -1673,7 +1664,7 @@
     "venueId": "ChIJRTJlTwBj_ogR4YQtsWlIws4"
   },
   {
-    "id": 89,
+    "id": 90,
     "lat": 32.876,
     "lng": -80.0130219,
     "title": "Lasso Gaucho Brazilian Steakhouse Charleston",
@@ -1689,7 +1680,7 @@
     "venueId": "ChIJRcsIOQxj_ogR4mn4VRkMgNA"
   },
   {
-    "id": 90,
+    "id": 91,
     "lat": 32.7768528,
     "lng": -79.92864879999999,
     "title": "Blind Tiger Pub",
@@ -1717,7 +1708,7 @@
     "venueId": "ChIJSSvtSw56_ogRxm6VtTcL5d0"
   },
   {
-    "id": 91,
+    "id": 92,
     "lat": 32.8098276,
     "lng": -79.9471066,
     "title": "Edmund's Oast Exchange",
@@ -1739,7 +1730,7 @@
     "venueId": "ChIJS_SKCfZ6_ogREuIWYi8Bnbo"
   },
   {
-    "id": 92,
+    "id": 93,
     "lat": 32.7933653,
     "lng": -79.8681137,
     "title": "MIX",
@@ -1762,7 +1753,7 @@
     "venueId": "ChIJS_mGHRdx_ogRJxsj3M9cAsU"
   },
   {
-    "id": 93,
+    "id": 94,
     "lat": 32.8113694,
     "lng": -79.86155509999999,
     "title": "Five Loaves Cafe",
@@ -1782,7 +1773,7 @@
     "venueId": "ChIJT0AAmVZw_ogR4jRTh9lQg7o"
   },
   {
-    "id": 94,
+    "id": 95,
     "lat": 32.8031182,
     "lng": -79.9413659,
     "title": "Taco Boy Charleston",
@@ -1808,7 +1799,7 @@
     "venueId": "ChIJT2PTq2B6_ogRIrWFtaGTRrU"
   },
   {
-    "id": 95,
+    "id": 96,
     "lat": 32.7810877,
     "lng": -79.932321,
     "title": "Thoroughbred Club",
@@ -1825,7 +1816,7 @@
     "venueId": "ChIJTYmoaxJ6_ogRq_Lj5CYD0h8"
   },
   {
-    "id": 96,
+    "id": 97,
     "lat": 32.8813739,
     "lng": -79.97745220000002,
     "title": "Jackrabbit Filly",
@@ -1841,7 +1832,7 @@
     "venueId": "ChIJTyZnXL5l_ogRhLTnbBO1suw"
   },
   {
-    "id": 97,
+    "id": 98,
     "lat": 32.7779266,
     "lng": -79.93233230000001,
     "title": "The Elliott House Inn",
@@ -1857,7 +1848,7 @@
     "venueId": "ChIJTzREvBF6_ogRgN_VGQg5-bI"
   },
   {
-    "id": 98,
+    "id": 99,
     "lat": 32.785785,
     "lng": -79.7902498,
     "title": "Sea Biscuit Cafe",
@@ -1873,7 +1864,7 @@
     "venueId": "ChIJU4CUsahz_ogRGhfXrNV18Po"
   },
   {
-    "id": 99,
+    "id": 100,
     "lat": 32.8539098,
     "lng": -79.97400669999999,
     "title": "PC Caribbean Delight",
@@ -1889,7 +1880,7 @@
     "venueId": "ChIJUSR9bC17_ogRGmCNmINXPn8"
   },
   {
-    "id": 100,
+    "id": 101,
     "lat": 32.8555203,
     "lng": -79.9032301,
     "title": "The Kingstide",
@@ -1920,7 +1911,7 @@
     "venueId": "ChIJUxbQoGBv_ogRkEFJ64sz8Ic"
   },
   {
-    "id": 101,
+    "id": 102,
     "lat": 32.7922522,
     "lng": -79.88305609999999,
     "title": "Vickery's Bar & Grill",
@@ -1956,7 +1947,7 @@
     "venueId": "ChIJV0-YKeVw_ogRnqsytc05J2s"
   },
   {
-    "id": 102,
+    "id": 103,
     "lat": 32.81648609999999,
     "lng": -79.9929167,
     "title": "TBonz Gill & Grill",
@@ -1977,7 +1968,7 @@
     "venueId": "ChIJV4bJ7HZ7_ogR8aRzNlixi8w"
   },
   {
-    "id": 103,
+    "id": 104,
     "lat": 32.872197,
     "lng": -80.01570629999999,
     "title": "Mellow Mushroom North Charleston",
@@ -1993,7 +1984,7 @@
     "venueId": "ChIJVTMbuFtj_ogRLeLETzpr1Uw"
   },
   {
-    "id": 104,
+    "id": 105,
     "lat": 32.7914809,
     "lng": -79.9403859,
     "title": "King Street Dispensary",
@@ -2017,7 +2008,7 @@
     "venueId": "ChIJVVVFHmp6_ogR1GBFgkcIuDY"
   },
   {
-    "id": 105,
+    "id": 106,
     "lat": 32.8588958,
     "lng": -79.9690452,
     "title": "Maya Del Sol Kitchen",
@@ -2034,7 +2025,7 @@
     "venueId": "ChIJVcnHJOZk_ogRCLNqZTy3EoU"
   },
   {
-    "id": 106,
+    "id": 107,
     "lat": 32.7769905,
     "lng": -79.9282666,
     "title": "The Establishment",
@@ -2054,7 +2045,7 @@
     "venueId": "ChIJX32DlbN7_ogRWBPDMIxSkts"
   },
   {
-    "id": 107,
+    "id": 108,
     "lat": 32.76246799999999,
     "lng": -79.836618,
     "title": "High Thyme Cuisine",
@@ -2070,7 +2061,7 @@
     "venueId": "ChIJX3apPVFx_ogRmPduJUREatQ"
   },
   {
-    "id": 108,
+    "id": 109,
     "lat": 32.723982,
     "lng": -79.967964,
     "title": "Garage 75",
@@ -2094,7 +2085,7 @@
     "venueId": "ChIJX7oMCgF5_ogRB20UnuyiVfM"
   },
   {
-    "id": 109,
+    "id": 110,
     "lat": 32.7901354,
     "lng": -79.9390796,
     "title": "Charleston Beer Works",
@@ -2111,7 +2102,7 @@
     "venueId": "ChIJX8avtWt6_ogRNJ5zuZUv5GU"
   },
   {
-    "id": 110,
+    "id": 111,
     "lat": 32.872673,
     "lng": -79.97842399999999,
     "title": "Holy City Brewing",
@@ -2130,7 +2121,7 @@
     "venueId": "ChIJXZV_WlF7_ogRy1myXw3d-ME"
   },
   {
-    "id": 111,
+    "id": 112,
     "lat": 32.77976209999999,
     "lng": -79.9328039,
     "title": "Fulton Lane Inn",
@@ -2146,7 +2137,7 @@
     "venueId": "ChIJY7OygBF6_ogRk88l0KDgR-A"
   },
   {
-    "id": 112,
+    "id": 113,
     "lat": 32.7896534,
     "lng": -79.9375659,
     "title": "Share House",
@@ -2164,7 +2155,7 @@
     "venueId": "ChIJYTrmDWh7_ogRu2xztQY2jCI"
   },
   {
-    "id": 113,
+    "id": 114,
     "lat": 32.8590054,
     "lng": -79.90998499999999,
     "title": "Mac's Daniel Island",
@@ -2180,7 +2171,7 @@
     "venueId": "ChIJYXaIdFhv_ogRODFmqQXoURA"
   },
   {
-    "id": 114,
+    "id": 115,
     "lat": 32.7939186,
     "lng": -80.0554737,
     "title": "Southern Roots Smokehouse",
@@ -2197,7 +2188,7 @@
     "venueId": "ChIJYbID7Mp9_ogRYDP8szWZM5w"
   },
   {
-    "id": 115,
+    "id": 116,
     "lat": 32.7786744,
     "lng": -79.9265571,
     "title": "The Rooftop at the Vendue",
@@ -2220,7 +2211,7 @@
     "venueId": "ChIJYfnNmQ56_ogRvl4-qFjG3go"
   },
   {
-    "id": 116,
+    "id": 117,
     "lat": 32.780193,
     "lng": -79.9273161,
     "title": "Amen Street Fish & Raw Bar",
@@ -2237,7 +2228,7 @@
     "venueId": "ChIJZ21LMAx6_ogRO1cje2Ji56c"
   },
   {
-    "id": 117,
+    "id": 118,
     "lat": 32.8847749,
     "lng": -80.03591569999999,
     "title": "Charleston Beer Works",
@@ -2255,7 +2246,7 @@
     "venueId": "ChIJZVeaxBVj_ogRBEcnMfRk6kg"
   },
   {
-    "id": 118,
+    "id": 119,
     "lat": 32.7800901,
     "lng": -79.9320102,
     "title": "Meeting Street Inn",
@@ -2272,7 +2263,7 @@
     "venueId": "ChIJZXESGRJ6_ogR0Fg6G_1C9p4"
   },
   {
-    "id": 119,
+    "id": 120,
     "lat": 32.79158,
     "lng": -79.939881,
     "title": "Indaco",
@@ -2289,7 +2280,7 @@
     "venueId": "ChIJZYukiWl6_ogRlbFtzB2FF7w"
   },
   {
-    "id": 120,
+    "id": 121,
     "lat": 32.7988362,
     "lng": -80.03115989999999,
     "title": "Sarku Japan",
@@ -2305,7 +2296,7 @@
     "venueId": "ChIJZd3SAWp8_ogRwQFNTc0v-Jo"
   },
   {
-    "id": 121,
+    "id": 122,
     "lat": 32.9204465,
     "lng": -79.8689692,
     "title": "Accent on Wine Point Hope",
@@ -2326,7 +2317,7 @@
     "venueId": "ChIJZd9SLWpv_ogRr--tGtORT64"
   },
   {
-    "id": 122,
+    "id": 123,
     "lat": 32.79009459999999,
     "lng": -79.93728229999999,
     "title": "The Brick",
@@ -2345,7 +2336,7 @@
     "venueId": "ChIJZzeCNgx6_ogR7paG1YgifmU"
   },
   {
-    "id": 123,
+    "id": 124,
     "lat": 32.737363,
     "lng": -79.9665349,
     "title": "Taco Bell",
@@ -2361,7 +2352,7 @@
     "venueId": "ChIJ_Qvygwl5_ogR_K7WHweW138"
   },
   {
-    "id": 124,
+    "id": 125,
     "lat": 32.8389816,
     "lng": -79.8175459,
     "title": "Bricco Bracco",
@@ -2377,7 +2368,7 @@
     "venueId": "ChIJ_____69t_ogRBuLcUgdmrDI"
   },
   {
-    "id": 125,
+    "id": 126,
     "lat": 32.78026210000001,
     "lng": -79.9285706,
     "title": "Veranda Lounge",
@@ -2393,7 +2384,7 @@
     "venueId": "ChIJaZ77_iZ7_ogRkIbToV7u2Hs"
   },
   {
-    "id": 126,
+    "id": 127,
     "lat": 32.8546509,
     "lng": -79.9741834,
     "title": "King BBQ",
@@ -2410,7 +2401,7 @@
     "venueId": "ChIJb3gX0jp7_ogRMoi6CFRyV8A"
   },
   {
-    "id": 127,
+    "id": 128,
     "lat": 32.7798671,
     "lng": -79.93990099999999,
     "title": "Circa 1886 Restaurant",
@@ -2427,7 +2418,7 @@
     "venueId": "ChIJbeP2cxZ6_ogRX1-9ELT111g"
   },
   {
-    "id": 128,
+    "id": 129,
     "lat": 32.7798744,
     "lng": -79.9398818,
     "title": "Wentworth Mansion, an SLH Hotel",
@@ -2444,7 +2435,7 @@
     "venueId": "ChIJbeP2cxZ6_ogRaJDdNYKek8Q"
   },
   {
-    "id": 129,
+    "id": 130,
     "lat": 32.7804295,
     "lng": -79.92922879999999,
     "title": "French Quarter Inn",
@@ -2461,7 +2452,7 @@
     "venueId": "ChIJcXjb7g16_ogRMYDU-y5g9IA"
   },
   {
-    "id": 130,
+    "id": 131,
     "lat": 32.7359358,
     "lng": -80.0540549,
     "title": "Blu Smoke Pit",
@@ -2481,7 +2472,7 @@
     "venueId": "ChIJcZrqIFF__ogRCcB3lvbq6M8"
   },
   {
-    "id": 131,
+    "id": 132,
     "lat": 32.7963078,
     "lng": -79.88674499999999,
     "title": "The Kickin' Chicken",
@@ -2500,7 +2491,7 @@
     "venueId": "ChIJcxj9jPBw_ogRPazmv4DJfY0"
   },
   {
-    "id": 132,
+    "id": 133,
     "lat": 32.821458,
     "lng": -79.8172597,
     "title": "Opal Restaurant & Bar",
@@ -2523,7 +2514,7 @@
     "venueId": "ChIJczr16Bdy_ogRsQvLejgWXus"
   },
   {
-    "id": 133,
+    "id": 134,
     "lat": 32.7343444,
     "lng": -80.0568618,
     "title": "Minero Mexican Grill & Cantina",
@@ -2539,7 +2530,7 @@
     "venueId": "ChIJd404-JJ__ogR1x0sq1Ky79U"
   },
   {
-    "id": 134,
+    "id": 135,
     "lat": 32.8300722,
     "lng": -79.8240312,
     "title": "Nick's German Kitchen",
@@ -2556,7 +2547,7 @@
     "venueId": "ChIJd5dH_05z_ogR9uALXAA7wp0"
   },
   {
-    "id": 135,
+    "id": 136,
     "lat": 32.7854361,
     "lng": -79.7899016,
     "title": "The Dinghy",
@@ -2573,7 +2564,7 @@
     "venueId": "ChIJdRpCqqhz_ogRhHfU-jYxqP0"
   },
   {
-    "id": 136,
+    "id": 137,
     "lat": 32.79265910000001,
     "lng": -79.8529888,
     "title": "Stack’s Evening Eats",
@@ -2589,7 +2580,7 @@
     "venueId": "ChIJdSV-PQ1x_ogRqMnhJ7V8Hu0"
   },
   {
-    "id": 137,
+    "id": 138,
     "lat": 32.7777455,
     "lng": -79.9314752,
     "title": "Iron Rose",
@@ -2612,7 +2603,7 @@
     "venueId": "ChIJdTgodTt7_ogRlcOHCKFg_3c"
   },
   {
-    "id": 138,
+    "id": 139,
     "lat": 32.7765724,
     "lng": -79.9316521,
     "title": "Sorelle",
@@ -2628,7 +2619,7 @@
     "venueId": "ChIJdbUtM4p7_ogRnIf8Fbneg3Y"
   },
   {
-    "id": 139,
+    "id": 140,
     "lat": 32.7890017,
     "lng": -79.93863739999999,
     "title": "O-Ku",
@@ -2642,7 +2633,7 @@
     "venueId": "ChIJdeGgrGt6_ogR0sJ-N72qXAs"
   },
   {
-    "id": 140,
+    "id": 141,
     "lat": 32.915732,
     "lng": -79.88425,
     "title": "Dog and Duck",
@@ -2667,7 +2658,7 @@
     "venueId": "ChIJdxTyBEBv_ogRa_0j_lL7UD8"
   },
   {
-    "id": 141,
+    "id": 142,
     "lat": 32.8393676,
     "lng": -79.85447490000001,
     "title": "The Wine Bar",
@@ -2684,7 +2675,7 @@
     "venueId": "ChIJe4JJXd5x_ogRTEppc599qog"
   },
   {
-    "id": 142,
+    "id": 143,
     "lat": 32.9346194,
     "lng": -79.9979165,
     "title": "Famulari's Pizzeria: Hanahan",
@@ -2705,7 +2696,7 @@
     "venueId": "ChIJe6xhhyll_ogR3IjKRiJ785U"
   },
   {
-    "id": 143,
+    "id": 144,
     "lat": 32.7292704,
     "lng": -80.0645222,
     "title": "The Natural",
@@ -2726,7 +2717,7 @@
     "venueId": "ChIJeSdpeGd__ogRElCKwoPUCIA"
   },
   {
-    "id": 144,
+    "id": 145,
     "lat": 32.739114,
     "lng": -79.967246,
     "title": "Flat and Drum Wings",
@@ -2743,7 +2734,7 @@
     "venueId": "ChIJeUV1DJd5_ogR8Jq-VTJakBc"
   },
   {
-    "id": 145,
+    "id": 146,
     "lat": 32.7422602,
     "lng": -80.0388256,
     "title": "Maria's Mexican Grill",
@@ -2762,7 +2753,7 @@
     "venueId": "ChIJee9MjO5-_ogRtnJwO5rQZ2M"
   },
   {
-    "id": 146,
+    "id": 147,
     "lat": 32.7838671,
     "lng": -79.99811059999999,
     "title": "The Glass Onion",
@@ -2780,7 +2771,7 @@
     "venueId": "ChIJeeSj5_F7_ogRy2NyybUDUao"
   },
   {
-    "id": 147,
+    "id": 148,
     "lat": 32.8223728,
     "lng": -79.9512773,
     "title": "The Whale A Craft Beer Collective",
@@ -2800,7 +2791,7 @@
     "venueId": "ChIJff0iLLZ7_ogR8SPkJ4GHcBg"
   },
   {
-    "id": 148,
+    "id": 149,
     "lat": 32.8663724,
     "lng": -80.01624369999999,
     "title": "Bonefish Grill",
@@ -2817,7 +2808,7 @@
     "venueId": "ChIJg0TeylZj_ogRxzDwVq2XKeQ"
   },
   {
-    "id": 149,
+    "id": 150,
     "lat": 32.93175000000001,
     "lng": -80.048912,
     "title": "Staybridge Suites Charleston-Ashley Phosphate by IHG",
@@ -2833,7 +2824,7 @@
     "venueId": "ChIJg169_stj_ogRK99CVUPUsew"
   },
   {
-    "id": 150,
+    "id": 151,
     "lat": 32.7953011,
     "lng": -79.9428369,
     "title": "King Street Hideout",
@@ -2859,7 +2850,7 @@
     "venueId": "ChIJgVVLGgB7_ogRCmi2tEaVlx8"
   },
   {
-    "id": 151,
+    "id": 152,
     "lat": 32.79241919999999,
     "lng": -80.02981190000001,
     "title": "Zen Asian Fusion",
@@ -2899,7 +2890,7 @@
     "venueId": "ChIJgYv6RxV8_ogRteZAIcHT2q8"
   },
   {
-    "id": 152,
+    "id": 153,
     "lat": 32.869225,
     "lng": -80.016504,
     "title": "Topgolf Charleston",
@@ -2918,7 +2909,7 @@
     "venueId": "ChIJgzTeIedj_ogRKSClP0RCWUQ"
   },
   {
-    "id": 153,
+    "id": 154,
     "lat": 32.8166357,
     "lng": -79.9531511,
     "title": "Rancho Lewis",
@@ -2938,7 +2929,7 @@
     "venueId": "ChIJhRZB6_B6_ogRzcrTCfdU3aA"
   },
   {
-    "id": 154,
+    "id": 155,
     "lat": 32.7425058,
     "lng": -79.9372075,
     "title": "The Harlow",
@@ -2954,7 +2945,7 @@
     "venueId": "ChIJhXhO4UR5_ogRMvd7NEEgzSY"
   },
   {
-    "id": 155,
+    "id": 156,
     "lat": 32.79124,
     "lng": -79.94024499999999,
     "title": "Prohibition",
@@ -2970,7 +2961,7 @@
     "venueId": "ChIJhzUgGWp6_ogRGKwEztiXyYg"
   },
   {
-    "id": 156,
+    "id": 157,
     "lat": 32.7972181,
     "lng": -79.93443649999999,
     "title": "Bar Mash",
@@ -2998,7 +2989,7 @@
     "venueId": "ChIJi1KiF7l7_ogR9UW1BH77OrE"
   },
   {
-    "id": 157,
+    "id": 158,
     "lat": 32.7823121,
     "lng": -79.92984609999999,
     "title": "Andrew Pinckney Inn",
@@ -3015,7 +3006,7 @@
     "venueId": "ChIJiTCAeA16_ogR3cvrQ_dfAQM"
   },
   {
-    "id": 158,
+    "id": 159,
     "lat": 32.7978959,
     "lng": -79.88870059999999,
     "title": "Charlotte's Wine Bar & Tapas",
@@ -3032,7 +3023,7 @@
     "venueId": "ChIJiVLYExRx_ogRqlVCJ9fKQRE"
   },
   {
-    "id": 159,
+    "id": 160,
     "lat": 32.8294857,
     "lng": -79.8232385,
     "title": "Guadalajara Bar & Grill",
@@ -3051,7 +3042,7 @@
     "venueId": "ChIJj1OjnRty_ogRmfwuB5GsvuM"
   },
   {
-    "id": 160,
+    "id": 161,
     "lat": 32.7893754,
     "lng": -79.8508805,
     "title": "Mainland Container Co. Kitchen & Bar",
@@ -3067,7 +3058,7 @@
     "venueId": "ChIJjavPXG1x_ogRYUM4qK0SDRE"
   },
   {
-    "id": 161,
+    "id": 162,
     "lat": 32.8141855,
     "lng": -79.86601759999999,
     "title": "Locals Sushi & Sports Pub - Mt Pleasant",
@@ -3089,7 +3080,7 @@
     "venueId": "ChIJkclcLbBx_ogRjBHN0nJaZ4k"
   },
   {
-    "id": 162,
+    "id": 163,
     "lat": 32.8306661,
     "lng": -79.83081849999999,
     "title": "Burtons Grill & Bar",
@@ -3107,7 +3098,7 @@
     "venueId": "ChIJkzD02Atx_ogRrCDCP0fRsfU"
   },
   {
-    "id": 163,
+    "id": 164,
     "lat": 32.8807774,
     "lng": -79.9800052,
     "title": "Sesame Burgers & Beer",
@@ -3125,7 +3116,7 @@
     "venueId": "ChIJl1_vmulk_ogROpCvs6ao7n0"
   },
   {
-    "id": 164,
+    "id": 165,
     "lat": 32.8030459,
     "lng": -79.9532158,
     "title": "Park & Grove",
@@ -3151,7 +3142,7 @@
     "venueId": "ChIJl6_JCTJ7_ogRIauRHOYdIQo"
   },
   {
-    "id": 165,
+    "id": 166,
     "lat": 32.7626736,
     "lng": -79.8362614,
     "title": "The Longboard",
@@ -3189,7 +3180,7 @@
     "venueId": "ChIJl9kcHnlx_ogRp4_EfP8icGs"
   },
   {
-    "id": 166,
+    "id": 167,
     "lat": 32.83000570000001,
     "lng": -79.83112750000001,
     "title": "Grimaldi's Pizzeria",
@@ -3214,7 +3205,7 @@
     "venueId": "ChIJl_KQyvdx_ogR7drlqON6cFM"
   },
   {
-    "id": 167,
+    "id": 168,
     "lat": 32.7426106,
     "lng": -79.9375196,
     "title": "Grumpy Goat Seafood Cantina",
@@ -3231,7 +3222,7 @@
     "venueId": "ChIJlz71QOp5_ogRw_ckDu5k1j0"
   },
   {
-    "id": 168,
+    "id": 169,
     "lat": 32.7981495,
     "lng": -79.85883140000001,
     "title": "LoLA Mt Pleasant",
@@ -3247,7 +3238,7 @@
     "venueId": "ChIJm3K-rVZx_ogRJ-fBGjxq2uo"
   },
   {
-    "id": 169,
+    "id": 170,
     "lat": 32.7921151,
     "lng": -79.88295699999999,
     "title": "Muddy's Dockside Bar",
@@ -3279,7 +3270,7 @@
     "venueId": "ChIJm3SYKeVw_ogR7tMWu1raUnk"
   },
   {
-    "id": 170,
+    "id": 171,
     "lat": 32.8758804,
     "lng": -80.0208952,
     "title": "Mario’s Peruvian Chicken Tanger outlets",
@@ -3295,7 +3286,7 @@
     "venueId": "ChIJm4nEVZ1j_ogRyIAKkz0l-TU"
   },
   {
-    "id": 171,
+    "id": 172,
     "lat": 32.7781838,
     "lng": -79.9272106,
     "title": "Pearlz Oyster Bar",
@@ -3318,7 +3309,7 @@
     "venueId": "ChIJme9CjA56_ogRvZLv87-ntPQ"
   },
   {
-    "id": 172,
+    "id": 173,
     "lat": 32.7818741,
     "lng": -79.9858895,
     "title": "Gene's Haufbrau",
@@ -3336,7 +3327,7 @@
     "venueId": "ChIJmedhesJ7_ogRX7pUf0W2PMU"
   },
   {
-    "id": 173,
+    "id": 174,
     "lat": 32.9171395,
     "lng": -80.0283671,
     "title": "843 Korean BBQ & Sushi House",
@@ -3352,7 +3343,7 @@
     "venueId": "ChIJmx7Jnpdj_ogRhMM49bt9Pqc"
   },
   {
-    "id": 174,
+    "id": 175,
     "lat": 32.7898379,
     "lng": -79.7864486,
     "title": "The Refuge",
@@ -3371,7 +3362,7 @@
     "venueId": "ChIJn5C08qlz_ogRsEyfIRdjQBg"
   },
   {
-    "id": 175,
+    "id": 176,
     "lat": 32.93266090000001,
     "lng": -79.9996067,
     "title": "LG's By The Creek",
@@ -3387,7 +3378,7 @@
     "venueId": "ChIJn5HuTQ5k_ogRhl6T6GYoTF4"
   },
   {
-    "id": 176,
+    "id": 177,
     "lat": 32.836612,
     "lng": -79.821867,
     "title": "SOL Mt. Pleasant",
@@ -3404,7 +3395,7 @@
     "venueId": "ChIJn905NwRy_ogRzgH_fECec0c"
   },
   {
-    "id": 177,
+    "id": 178,
     "lat": 32.79222,
     "lng": -79.9404072,
     "title": "The Ordinary",
@@ -3425,7 +3416,7 @@
     "venueId": "ChIJo6qF8ml6_ogR5F95YKKS2yY"
   },
   {
-    "id": 178,
+    "id": 179,
     "lat": 32.7766196,
     "lng": -79.9278501,
     "title": "Oak Steakhouse",
@@ -3451,7 +3442,7 @@
     "venueId": "ChIJo8feqg96_ogRN252YIZn2_8"
   },
   {
-    "id": 179,
+    "id": 180,
     "lat": 32.7901818,
     "lng": -79.9450887,
     "title": "Southbound",
@@ -3465,7 +3456,7 @@
     "venueId": "ChIJoSd4pKB7_ogRLm3SMIZISNg"
   },
   {
-    "id": 180,
+    "id": 181,
     "lat": 32.7877778,
     "lng": -79.9066556,
     "title": "Charleston Harbor Fish House - Southern Fare from the Land and Sea",
@@ -3481,7 +3472,7 @@
     "venueId": "ChIJoZ9CqpZw_ogRY_lj-v2WlcM"
   },
   {
-    "id": 181,
+    "id": 182,
     "lat": 32.7306862,
     "lng": -79.96920229999999,
     "title": "Lowdown Oven and Bar",
@@ -3502,7 +3493,7 @@
     "venueId": "ChIJp7lEdgZ5_ogROxlzxcSd1SY"
   },
   {
-    "id": 182,
+    "id": 183,
     "lat": 32.78455069999999,
     "lng": -79.93415999999999,
     "title": "The Barksdale House Inn",
@@ -3518,7 +3509,7 @@
     "venueId": "ChIJpWPHPBN6_ogRMbprUqPDwng"
   },
   {
-    "id": 183,
+    "id": 184,
     "lat": 32.9409482,
     "lng": -80.0425739,
     "title": "Hooters",
@@ -3535,7 +3526,7 @@
     "venueId": "ChIJpX0PeNBj_ogRyj5omY0Z8yQ"
   },
   {
-    "id": 184,
+    "id": 185,
     "lat": 32.7913661,
     "lng": -79.9399487,
     "title": "Benny Ravello's",
@@ -3552,7 +3543,7 @@
     "venueId": "ChIJq18sIWp6_ogR4inJ459fKBc"
   },
   {
-    "id": 185,
+    "id": 186,
     "lat": 32.7927239,
     "lng": -80.03762549999999,
     "title": "Ireland's Own / Jagerhaus Pub",
@@ -3568,7 +3559,7 @@
     "venueId": "ChIJq3aHRV59_ogRnblEmdJjvmw"
   },
   {
-    "id": 186,
+    "id": 187,
     "lat": 32.776716,
     "lng": -79.92719699999999,
     "title": "Brasserie La Banque",
@@ -3594,7 +3585,7 @@
     "venueId": "ChIJq6rO_Q56_ogRsy7V8Yy2bWI"
   },
   {
-    "id": 187,
+    "id": 188,
     "lat": 32.9444967,
     "lng": -80.0413981,
     "title": "Carrabba's Italian Grill",
@@ -3612,7 +3603,7 @@
     "venueId": "ChIJqZ8wxtBj_ogRYKa2SJXvA9U"
   },
   {
-    "id": 188,
+    "id": 189,
     "lat": 32.7916493,
     "lng": -79.9373489,
     "title": "Chopsticks House",
@@ -3628,7 +3619,7 @@
     "venueId": "ChIJr-wOGhN6_ogRYtTcW7eZkek"
   },
   {
-    "id": 189,
+    "id": 190,
     "lat": 32.785884,
     "lng": -79.935519,
     "title": "Ritual Rooftop Restaurant & Lounge",
@@ -3651,7 +3642,7 @@
     "venueId": "ChIJr4BTw5Z7_ogRynn84Z_BHUs"
   },
   {
-    "id": 190,
+    "id": 191,
     "lat": 32.8097961,
     "lng": -79.87720879999999,
     "title": "TIERRA AL MAR",
@@ -3668,7 +3659,7 @@
     "venueId": "ChIJr7CC55tx_ogRXxsONGyBZ0g"
   },
   {
-    "id": 191,
+    "id": 192,
     "lat": 32.8817027,
     "lng": -79.97489329999999,
     "title": "The Mill",
@@ -3685,7 +3676,7 @@
     "venueId": "ChIJr7V7JuZk_ogRY2YvPVRCz5M"
   },
   {
-    "id": 192,
+    "id": 193,
     "lat": 32.8762592,
     "lng": -80.021271,
     "title": "Grand Buffet",
@@ -3701,7 +3692,7 @@
     "venueId": "ChIJrcHVo0Rj_ogRprBTu8Vgab8"
   },
   {
-    "id": 193,
+    "id": 194,
     "lat": 32.8812857,
     "lng": -79.9752166,
     "title": "Southern Roots Smokehouse",
@@ -3721,7 +3712,7 @@
     "venueId": "ChIJt1EL-ehk_ogR4Kok7I5u7Fs"
   },
   {
-    "id": 194,
+    "id": 195,
     "lat": 32.781901,
     "lng": -79.929904,
     "title": "Hank's Seafood Restaurant",
@@ -3750,7 +3741,7 @@
     "venueId": "ChIJt5BmhQ16_ogRbwSj1J64dmA"
   },
   {
-    "id": 195,
+    "id": 196,
     "lat": 32.7975425,
     "lng": -79.88874179999999,
     "title": "Agaves Cantina",
@@ -3768,7 +3759,7 @@
     "venueId": "ChIJt63ZIwBx_ogRCtxGqwmYGcI"
   },
   {
-    "id": 196,
+    "id": 197,
     "lat": 32.7423141,
     "lng": -80.038786,
     "title": "ZEPPELIN PIZZA CO. Johns Island",
@@ -3794,7 +3785,7 @@
     "venueId": "ChIJu7vkhD9__ogRmlOuDYAGS8M"
   },
   {
-    "id": 197,
+    "id": 198,
     "lat": 32.7823512,
     "lng": -79.98586209999999,
     "title": "Pearlz Oyster Bar",
@@ -3815,7 +3806,7 @@
     "venueId": "ChIJuZcyccJ7_ogRQdCs2pyHILs"
   },
   {
-    "id": 198,
+    "id": 199,
     "lat": 32.7933355,
     "lng": -79.9384209,
     "title": "Hot Mustard",
@@ -3832,7 +3823,7 @@
     "venueId": "ChIJv8dBD2l6_ogRTW-Ghhyy3sc"
   },
   {
-    "id": 199,
+    "id": 200,
     "lat": 32.796679,
     "lng": -79.9970058,
     "title": "Tin Roof",
@@ -3848,7 +3839,7 @@
     "venueId": "ChIJvwGA-pF7_ogRE5a5-wZAK7c"
   },
   {
-    "id": 200,
+    "id": 201,
     "lat": 32.7901698,
     "lng": -80.0299957,
     "title": "Taco Bell",
@@ -3864,7 +3855,7 @@
     "venueId": "ChIJw5sFmRV8_ogRm4IqY2OoKb0"
   },
   {
-    "id": 201,
+    "id": 202,
     "lat": 32.8124748,
     "lng": -79.8795445,
     "title": "O'Brion's Pub & Grille",
@@ -3886,7 +3877,7 @@
     "venueId": "ChIJwT76JVJw_ogRoPdXd2USi9Y"
   },
   {
-    "id": 202,
+    "id": 203,
     "lat": 32.780521,
     "lng": -79.9284481,
     "title": "The Bar at The Spectator",
@@ -3902,7 +3893,7 @@
     "venueId": "ChIJwXiSIp97_ogR81S_Th4qiVs"
   },
   {
-    "id": 203,
+    "id": 204,
     "lat": 32.783008,
     "lng": -79.93206870000002,
     "title": "Élevé Rooftop Restaurant & Lounge",
@@ -3918,7 +3909,7 @@
     "venueId": "ChIJxQJq8RJ6_ogRtMsanKP8irM"
   },
   {
-    "id": 204,
+    "id": 205,
     "lat": 32.7831237,
     "lng": -79.93217179999999,
     "title": "Grand Bohemian Wine Bar",
@@ -3932,7 +3923,7 @@
     "venueId": "ChIJxQJq8RJ6_ogRx2T83liST0E"
   },
   {
-    "id": 205,
+    "id": 206,
     "lat": 32.78956259999999,
     "lng": -79.93858519999999,
     "title": "Republic Garden & Lounge",
@@ -3953,7 +3944,7 @@
     "venueId": "ChIJxVL1smt6_ogRZ0f3hqvk8Ww"
   },
   {
-    "id": 206,
+    "id": 207,
     "lat": 32.89464409999999,
     "lng": -79.8183542,
     "title": "Blues Coastal Bar & Grill",
@@ -3972,7 +3963,7 @@
     "venueId": "ChIJx_2XHy5s_ogRc739Biahw_4"
   },
   {
-    "id": 207,
+    "id": 208,
     "lat": 32.793794,
     "lng": -79.939151,
     "title": "Wine & Company",
@@ -3988,7 +3979,7 @@
     "venueId": "ChIJxw47qWl6_ogRlocIO1Jk6aM"
   },
   {
-    "id": 208,
+    "id": 209,
     "lat": 32.7811766,
     "lng": -79.9288304,
     "title": "Henry's On The Market",
@@ -4007,7 +3998,7 @@
     "venueId": "ChIJxyKLuw16_ogRPnMyVsir2eo"
   },
   {
-    "id": 209,
+    "id": 210,
     "lat": 32.7871011,
     "lng": -79.87680089999999,
     "title": "Post House",
@@ -4023,7 +4014,7 @@
     "venueId": "ChIJy5sQLuJw_ogRnxFgqpnQ1SY"
   },
   {
-    "id": 210,
+    "id": 211,
     "lat": 32.88121,
     "lng": -79.975903,
     "title": "DIG In The Park",
@@ -4042,7 +4033,7 @@
     "venueId": "ChIJyUgfhuhk_ogR-v2Ca01_6Us"
   },
   {
-    "id": 211,
+    "id": 212,
     "lat": 32.7511445,
     "lng": -79.9526843,
     "title": "Ellis Creek Fish Camp",
@@ -4065,7 +4056,7 @@
     "venueId": "ChIJyaqfZpB5_ogRBo_Y9ae41lk"
   },
   {
-    "id": 212,
+    "id": 213,
     "lat": 32.82945939999999,
     "lng": -79.82374999999999,
     "title": "King Street Grille",
@@ -4083,7 +4074,7 @@
     "venueId": "ChIJz9tebJJx_ogR91jjOg3jXqE"
   },
   {
-    "id": 213,
+    "id": 214,
     "lat": 32.8614384,
     "lng": -79.9082524,
     "title": "Ristorante LIDI",
@@ -4097,7 +4088,7 @@
     "venueId": "ChIJz_jMVeVv_ogR5dVUOkNnOSc"
   },
   {
-    "id": 214,
+    "id": 215,
     "lat": 32.8623763,
     "lng": -79.9041836,
     "title": "Ali Baba Deli & Catering",

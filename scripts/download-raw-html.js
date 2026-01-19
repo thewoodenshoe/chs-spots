@@ -249,21 +249,27 @@ function rawFileExists(venueId, url) {
 }
 
 /**
- * Save raw HTML to file (saves to both all/ and incremental/)
+ * Save raw HTML to file
+ * @param {string} venueId - Venue ID
+ * @param {string} url - URL of the page
+ * @param {string} html - HTML content
+ * @param {boolean} saveToIncremental - Whether to also save to incremental/ folder (default: false)
  */
-function saveRawHtml(venueId, url, html) {
+function saveRawHtml(venueId, url, html, saveToIncremental = false) {
   // Save to raw/all/ (main storage)
   const filePath = getRawFilePath(venueId, url);
   fs.writeFileSync(filePath, html, 'utf8');
   
-  // Also copy to raw/incremental/ for incremental processing
-  const incrementalDir = path.join(RAW_INCREMENTAL_DIR, venueId);
-  if (!fs.existsSync(incrementalDir)) {
-    fs.mkdirSync(incrementalDir, { recursive: true });
+  // Only save to incremental/ if explicitly requested (for same-day new venues)
+  if (saveToIncremental) {
+    const incrementalDir = path.join(RAW_INCREMENTAL_DIR, venueId);
+    if (!fs.existsSync(incrementalDir)) {
+      fs.mkdirSync(incrementalDir, { recursive: true });
+    }
+    const hash = urlToHash(url);
+    const incrementalPath = path.join(incrementalDir, `${hash}.html`);
+    fs.writeFileSync(incrementalPath, html, 'utf8');
   }
-  const hash = urlToHash(url);
-  const incrementalPath = path.join(incrementalDir, `${hash}.html`);
-  fs.writeFileSync(incrementalPath, html, 'utf8');
   
   return filePath;
 }
@@ -383,8 +389,8 @@ async function processVenue(venue) {
       const result = await fetchUrl(website);
       homepageHtml = result.html;
       const hash = urlToHash(website);
-      saveRawHtml(venueId, website, homepageHtml);
-      saveMetadata(venueId, website, hash);
+      saveRawHtml(venueId, website, homepageHtml, saveToIncremental);
+      saveMetadata(venueId, website, hash, saveToIncremental);
       homepageDownloaded = true;
       log(`  ✅ Saved homepage: ${getRawFilePath(venueId, website)}`);
     }
@@ -406,8 +412,8 @@ async function processVenue(venue) {
           log(`  🔄 Downloading subpage: ${subpageUrl}`);
           const result = await fetchUrl(subpageUrl);
           const hash = urlToHash(subpageUrl);
-          saveRawHtml(venueId, subpageUrl, result.html);
-          saveMetadata(venueId, subpageUrl, hash);
+          saveRawHtml(venueId, subpageUrl, result.html, saveToIncremental);
+          saveMetadata(venueId, subpageUrl, hash, saveToIncremental);
           downloadedSubpages++;
           log(`  ✅ Saved subpage: ${getRawFilePath(venueId, subpageUrl)}`);
           
@@ -547,11 +553,11 @@ async function main() {
     
     log(`   Found ${newVenues.length} new venue(s) to download\n`);
     
-    // Process only new venues
+    // Process only new venues - save to incremental/ for same-day new venues
     const results = [];
     for (let i = 0; i < newVenues.length; i += PARALLEL_WORKERS) {
       const batch = newVenues.slice(i, i + PARALLEL_WORKERS);
-      const batchPromises = batch.map(venue => processVenue(venue));
+      const batchPromises = batch.map(venue => processVenue(venue, true)); // true = save to incremental
       const batchResults = await Promise.all(batchPromises);
       results.push(...batchResults);
       
@@ -604,12 +610,13 @@ async function main() {
   log(`🌐 Processing ${venuesToProcess.length} venue(s) with websites\n`);
   
   // Process venues with parallel workers
+  // On new day: Don't save to incremental/ - delta comparison will populate it
   const results = [];
   const workers = [];
   
   for (let i = 0; i < venuesToProcess.length; i += PARALLEL_WORKERS) {
     const batch = venuesToProcess.slice(i, i + PARALLEL_WORKERS);
-    const batchPromises = batch.map(venue => processVenue(venue));
+    const batchPromises = batch.map(venue => processVenue(venue, false)); // false = don't save to incremental (delta will handle it)
     const batchResults = await Promise.all(batchPromises);
     results.push(...batchResults);
     
@@ -637,12 +644,14 @@ async function main() {
   log(`   Previous day's data: ${path.resolve(RAW_PREVIOUS_DIR)}`);
 }
 
-try {
-  main();
-  // Explicitly exit to ensure process terminates (important when called from pipeline)
-  process.exit(0);
-} catch (error) {
-  log(`❌ Fatal error: ${error.message || error}`);
-  console.error(error);
-  process.exit(1);
-}
+(async () => {
+  try {
+    await main();
+    // Explicitly exit to ensure process terminates (important when called from pipeline)
+    process.exit(0);
+  } catch (error) {
+    log(`❌ Fatal error: ${error.message || error}`);
+    console.error(error);
+    process.exit(1);
+  }
+})();
