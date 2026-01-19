@@ -479,7 +479,7 @@ The gold files contain:
 - `sourceHash`: MD5 hash of source content (for change detection)
 - `processedAt`: ISO timestamp
 
-**Note:** The script supports both automated bulk and incremental extraction using Grok API. For manual bulk extraction via Grok UI, you can still use `npm run extract:bulk:prepare` and `npm run extract:bulk:process` if preferred.
+**Note:** The script uses automated Grok API extraction. For one-time manual bulk extraction via Grok UI, you can use `npm run extract:bulk:prepare` and `npm run extract:bulk:process` if preferred.
 
 ---
 
@@ -799,12 +799,15 @@ chs-spots/
 │   ├── create-areas.js       # Create areas.json
 │   ├── seed-venues.js        # Seed venues (with parallel processing)
 │   ├── seed-incremental.js   # Incremental venue updates
-│   ├── download-raw-html.js  # Download raw HTML (pipeline Step 3)
-│   ├── merge-raw-files.js    # Merge raw files (pipeline Step 4)
-│   ├── extract-happy-hours.js # Extracts structured happy hour data using LLM API (pipeline Step 5)
-│   ├── extract-happy-hours.js # Extract structured data (pipeline Step 5)
-│   ├── prepare-bulk-llm-extraction.js # Bulk LLM preparation
-│   ├── process-bulk-llm-results.js    # Process bulk LLM results
+│   ├── download-raw-html.js  # Download raw HTML (pipeline Step 1)
+│   ├── merge-raw-files.js    # Merge raw files (pipeline Step 2)
+│   ├── trim-silver-html.js   # Trim HTML to extract visible text (pipeline Step 3)
+│   ├── delta-raw-files.js    # Delta comparison for raw HTML (pipeline Step 1.5)
+│   ├── delta-trimmed-files.js # Delta comparison for trimmed content (pipeline Step 3.5)
+│   ├── extract-happy-hours.js # Extract structured data using Grok LLM API (pipeline Step 4)
+│   ├── prepare-bulk-llm-extraction.js # Bulk LLM preparation (one-time manual)
+│   ├── process-bulk-llm-results.js    # Process bulk LLM results (one-time manual)
+│   ├── create-spots.js       # Create spots.json from gold data (pipeline Step 5)
 │   ├── compare-raw-files.js  # Compare raw files for diffs
 │   └── __tests__/            # Script unit tests
 ├── src/
