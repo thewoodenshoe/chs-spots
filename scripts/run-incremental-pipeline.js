@@ -16,8 +16,43 @@
 
 const { spawn } = require('child_process');
 const path = require('path');
+const fs = require('fs');
 
 const AREA_FILTER = process.argv[2] || null;
+
+/**
+ * Clear raw/incremental/ folder at the start of each pipeline run
+ * This ensures clean state - delta will repopulate it on new days,
+ * download will populate it on same day (new venues only)
+ */
+function clearRawIncremental() {
+  const RAW_INCREMENTAL_DIR = path.join(__dirname, '../data/raw/incremental');
+  
+  if (!fs.existsSync(RAW_INCREMENTAL_DIR)) {
+    return;
+  }
+  
+  try {
+    const dirs = fs.readdirSync(RAW_INCREMENTAL_DIR);
+    let cleared = 0;
+    
+    for (const dir of dirs) {
+      const dirPath = path.join(RAW_INCREMENTAL_DIR, dir);
+      const stats = fs.statSync(dirPath);
+      
+      if (stats.isDirectory()) {
+        fs.rmSync(dirPath, { recursive: true, force: true });
+        cleared++;
+      }
+    }
+    
+    if (cleared > 0) {
+      console.log(`🧹 Cleared ${cleared} venue(s) from raw/incremental/ (ensuring clean state)\n`);
+    }
+  } catch (error) {
+    console.warn(`⚠️  Warning: Could not clear raw/incremental/: ${error.message}`);
+  }
+}
 
 function runScript(scriptPath, args = []) {
   return new Promise((resolve, reject) => {
@@ -55,6 +90,10 @@ async function main() {
   if (AREA_FILTER) {
     console.log(`📍 Area filter: ${AREA_FILTER}\n`);
   }
+  
+  // Clear raw/incremental/ at the start to ensure clean state
+  // Delta will repopulate it on new days, download will populate it on same day (new venues only)
+  clearRawIncremental();
   
   try {
     // Step 1: Download raw HTML
