@@ -1,7 +1,5 @@
 // Jest configuration for Next.js with TypeScript and Node.js scripts
 module.exports = {
-  // Disable test sequencer to avoid dependency issues
-  testSequencer: undefined,
   // Use projects to run different test environments
   projects: [
     // React/TypeScript tests with jsdom

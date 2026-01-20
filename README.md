@@ -951,6 +951,8 @@ npm run build
 npm start
 ```
 
+**Note:** Continuous Deployment (CD) is not yet configured. The CI workflow includes a commented CD template for future implementation.
+
 ---
 
 ## Contributing

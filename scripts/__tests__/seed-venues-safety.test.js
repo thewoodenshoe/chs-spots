@@ -52,12 +52,13 @@ describe('seed-venues.js Safety Checks', () => {
   });
 
   test('should exit with error if both flags are missing', (done) => {
+    // Remove GOOGLE_PLACES_ENABLED if it exists from env
+    const env = { ...process.env };
+    delete env.GOOGLE_PLACES_ENABLED;
+    
     const child = spawn('node', [scriptPath], {
-      env: { ...process.env }
+      env
     });
-
-    // Remove GOOGLE_PLACES_ENABLED if it exists
-    delete child.env.GOOGLE_PLACES_ENABLED;
 
     let output = '';
     child.stdout.on('data', (data) => {
