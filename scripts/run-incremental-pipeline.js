@@ -11,6 +11,9 @@
  * 
  * This minimizes LLM API costs by only processing actual changes.
  * 
+ * NOTE: Venues are treated as STATIC. This pipeline does NOT call Google Maps API.
+ *       To add/update venues, manually run: node scripts/seed-venues.js --confirm
+ * 
  * Usage: node scripts/run-incremental-pipeline.js [area-filter]
  */
 

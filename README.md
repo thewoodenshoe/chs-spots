@@ -49,11 +49,20 @@ Run these scripts **once** to set up the initial data:
    ```
    Creates `data/config/areas.json` with area definitions.
 
-2. **Seed venues from Google Places:**
+2. **Seed venues from Google Places (MANUAL ONLY):**
    ```bash
-   node scripts/seed-venues.js
+   node scripts/seed-venues.js --confirm
    ```
-   This discovers all venues and creates `data/venues.json`.
+   ⚠️  **WARNING:** This script uses Google Maps API and can incur significant costs.
+   
+   Venues are now treated as **STATIC** - this script should only be run manually when:
+   - You need to add new venues
+   - You need to update existing venue data
+   - You explicitly want to refresh venue information
+   
+   The `--confirm` flag is **REQUIRED** to prevent accidental execution.
+   
+   This discovers all venues and creates `data/reporting/venues.json`.
 
 3. **Run the happy hour pipeline:**
    ```bash
@@ -99,6 +108,9 @@ This script automatically:
 5. Runs delta comparison on trimmed content (filters out dynamic noise)
 6. Extracts happy hours with LLM (only for actual content changes)
 7. Updates spots from gold data
+
+**Note:** Venues are treated as **STATIC**. This pipeline does NOT call Google Maps API.
+To add/update venues, manually run: `node scripts/seed-venues.js --confirm`
 
 ### Manual Step-by-Step (Advanced)
 
@@ -483,13 +495,23 @@ The gold files contain:
 
 ---
 
-### Step 7: Incremental Venue Updates (Optional, Run Periodically)
+### Step 7: Incremental Venue Updates (MANUAL ONLY - Optional)
 
-**Script:** `scripts/seed-incremental.js`
+**Script:** `scripts/seed-incremental.js --confirm`
 
-Designed to run nightly or on-demand for ongoing maintenance. Finds new venues and enriches missing data.
+⚠️  **WARNING:** This script uses Google Maps API and can incur significant costs.
 
-**Features:**
+Venues are now treated as **STATIC** - this script should only be run manually when you need to find new venues incrementally.
+
+The `--confirm` flag is **REQUIRED** to prevent accidental execution.
+
+⚠️  **WARNING:** This script uses Google Maps API and can incur significant costs.
+
+Venues are now treated as **STATIC** - this script should only be run manually when you need to find new venues incrementally.
+
+The `--confirm` flag is **REQUIRED** to prevent accidental execution.
+
+**Original Features (now manual only):**
 - Appends new venues from Google Places API (finds venues not already in `venues.json`)
 - Uses efficient Strategy 3: Only searches `bar`, `restaurant`, `brewery` types
 - Uses 50% reduced radius for faster execution
@@ -501,13 +523,13 @@ Designed to run nightly or on-demand for ongoing maintenance. Finds new venues a
 - `areas.json` and `venues.json` must exist (created in Steps 1-2)
 - `NEXT_PUBLIC_GOOGLE_MAPS_KEY` or `GOOGLE_PLACES_KEY` environment variable
 
-**Run:**
+**Run (MANUAL ONLY):**
 ```bash
-npm run seed:incremental
+node scripts/seed-incremental.js --confirm
 ```
 
 **Output:**
-- `data/venues.json` - Updated with new venues and enriched website information
+- `data/reporting/venues.json` - Updated with new venues and enriched website information
 
 ---
 

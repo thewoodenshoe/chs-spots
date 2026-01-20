@@ -1,3 +1,20 @@
+/**
+ * seed-venues.js - Manual Venue Seeding Script
+ * 
+ * ⚠️  WARNING: This script uses Google Maps API and can incur significant costs.
+ * 
+ * Venues are now treated as STATIC - this script should only be run manually when:
+ * - You need to add new venues
+ * - You need to update existing venue data
+ * - You explicitly want to refresh venue information
+ * 
+ * This script is NOT part of the automated pipeline.
+ * 
+ * Usage: node scripts/seed-venues.js --confirm
+ * 
+ * The --confirm flag is REQUIRED to prevent accidental execution.
+ */
+
 const fs = require('fs');
 const path = require('path');
 
@@ -34,6 +51,23 @@ const log = (message) => logToFileAndConsole(message, logPath);
 // Verbose logging - file only (for detailed diagnostics)
 const logVerbose = (message) => logToFileOnly(message, logPath);
 
+// SAFETY CHECK: Require explicit --confirm flag to prevent accidental execution
+// Google Maps API costs can be high - this script should only run manually
+// Check this FIRST before loading API keys
+const REQUIRED_FLAG = '--confirm';
+const hasConfirmFlag = process.argv.includes(REQUIRED_FLAG);
+
+if (!hasConfirmFlag) {
+  console.log('❌ ERROR: This script uses Google Maps API and can incur significant costs.');
+  console.log('   Venues are now treated as static - this script should only run manually when needed.');
+  console.log('');
+  console.log('   To run this script, you must explicitly confirm:');
+  console.log(`   node scripts/seed-venues.js ${REQUIRED_FLAG}`);
+  console.log('');
+  console.log('   ⚠️  This script will make Google Maps API calls and may incur costs.');
+  process.exit(1);
+}
+
 // Try to load dotenv if available (check both .env and .env.local)
 try {
   require('dotenv').config({ path: '.env.local' });
@@ -51,6 +85,10 @@ if (!GOOGLE_MAPS_API_KEY) {
   log('❌ Error: NEXT_PUBLIC_GOOGLE_MAPS_KEY or GOOGLE_PLACES_KEY must be set in .env');
   process.exit(1);
 }
+
+log('⚠️  WARNING: Running seed-venues.js with Google Maps API');
+log('   This will make API calls and may incur costs.');
+log('   Venues are now treated as static - only run this when explicitly needed.\n');
 
 // Paths - Read from and write to reporting/venues.json (incremental, preserves existing data)
 const dataDir = path.join(__dirname, '..', 'data');

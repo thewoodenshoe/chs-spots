@@ -1,13 +1,23 @@
 /**
  * Incremental venue seeding (Strategy 3: Optimized Full Search)
  * 
- * This script runs nightly to:
+ * ⚠️  WARNING: This script uses Google Maps API and can incur significant costs.
+ * 
+ * Venues are now treated as STATIC - this script should only be run manually when:
+ * - You need to find new venues incrementally
+ * - You explicitly want to refresh venue information
+ * 
+ * This script is NOT part of the automated pipeline.
+ * 
+ * Usage: node scripts/seed-incremental.js --confirm
+ * 
+ * The --confirm flag is REQUIRED to prevent accidental execution.
+ * 
+ * Original behavior (now disabled):
  * - Find new venues using optimized search (50% radius, 3 venue types)
  * - Use accurate area assignment logic from seed-venues.js
  * - Skip venues that already exist with websites
  * - Early exit if too many consecutive duplicates
- * 
- * Run with: node scripts/seed-incremental.js
  */
 
 const fs = require('fs');
@@ -56,6 +66,23 @@ function logVerbose(message) {
   fs.appendFileSync(logPath, `${timestamp} ${messageWithoutEmojis}\n`, 'utf8');
 }
 
+// SAFETY CHECK: Require explicit --confirm flag to prevent accidental execution
+// Google Maps API costs can be high - this script should only run manually
+// Check this FIRST before loading API keys
+const REQUIRED_FLAG = '--confirm';
+const hasConfirmFlag = process.argv.includes(REQUIRED_FLAG);
+
+if (!hasConfirmFlag) {
+  console.log('❌ ERROR: This script uses Google Maps API and can incur significant costs.');
+  console.log('   Venues are now treated as static - this script should only run manually when needed.');
+  console.log('');
+  console.log('   To run this script, you must explicitly confirm:');
+  console.log(`   node scripts/seed-incremental.js ${REQUIRED_FLAG}`);
+  console.log('');
+  console.log('   ⚠️  This script will make Google Maps API calls and may incur costs.');
+  process.exit(1);
+}
+
 // Try to load dotenv if available
 try {
   require('dotenv').config();
@@ -74,6 +101,10 @@ if (!GOOGLE_MAPS_API_KEY) {
   log('❌ Error: NEXT_PUBLIC_GOOGLE_MAPS_KEY or GOOGLE_PLACES_KEY must be set in .env');
   process.exit(1);
 }
+
+log('⚠️  WARNING: Running seed-incremental.js with Google Maps API');
+log('   This will make API calls and may incur costs.');
+log('   Venues are now treated as static - only run this when explicitly needed.\n');
 
 // Paths
 const dataDir = path.join(__dirname, '..', 'data');
