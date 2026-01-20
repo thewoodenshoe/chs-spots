@@ -78,6 +78,7 @@ jest.mock('fs', () => ({
     readdirSync: jest.fn(),
     readFileSync: jest.fn(),
     writeFileSync: jest.fn(),
+    appendFileSync: jest.fn(),
     existsSync: jest.fn(),
     mkdirSync: jest.fn(),
 }));
@@ -622,6 +623,175 @@ describe('extractHappyHours', () => {
                 expect.stringContaining('ABORTING: Too many incremental files')
             );
             consoleErrorSpy.mockRestore();
+        });
+    });
+
+    describe('LLM candidates history log', () => {
+        const MOCK_HISTORY_PATH = path.join(__dirname, '../logs/llm-candidates-history.txt');
+        const MOCK_VENUES_JSON_PATH = path.join(__dirname, '../data/reporting/venues.json');
+
+        beforeEach(() => {
+            process.env.GROK_API_KEY = 'mock-api-key';
+            fs.existsSync.mockReturnValue(true);
+            fs.mkdirSync.mockReturnValue(undefined);
+            // Mock today's date for consistent testing
+            jest.useFakeTimers();
+            jest.setSystemTime(new Date('2026-01-20T12:00:00Z'));
+        });
+
+        afterEach(() => {
+            jest.useRealTimers();
+        });
+
+        test('should append LLM candidates to history file in incremental mode', async () => {
+            const mockFiles = ['ChIJabc123.json', 'ChIJxyz789.json'];
+            fs.readdirSync.mockReturnValue(mockFiles);
+
+            // Mock venues.json
+            const mockVenues = [
+                { id: 'ChIJabc123', name: 'Some Cool Bar', area: 'Downtown Charleston' },
+                { id: 'ChIJxyz789', name: 'Another Hip Spot', area: 'Mount Pleasant' }
+            ];
+
+            fs.readFileSync.mockImplementation((filePath) => {
+                if (filePath && filePath.includes('config.json')) {
+                    return JSON.stringify({ pipeline: { maxIncrementalFiles: 15 } });
+                }
+                if (filePath && filePath.includes('venues.json')) {
+                    return JSON.stringify(mockVenues);
+                }
+                if (filePath && filePath.includes('llm-instructions.txt')) {
+                    return 'Mock LLM instructions';
+                }
+                return '';
+            });
+
+            // Mock successful API response
+            mockFetch.mockResolvedValue({
+                ok: true,
+                json: async () => ({
+                    choices: [{
+                        message: {
+                            content: JSON.stringify({ found: false })
+                        }
+                    }]
+                })
+            });
+
+            await extractHappyHours(true);
+
+            // Verify appendFileSync was called with correct format
+            expect(fs.appendFileSync).toHaveBeenCalled();
+            const appendCall = fs.appendFileSync.mock.calls.find(call => 
+                call[0] === MOCK_HISTORY_PATH || call[0].includes('llm-candidates-history.txt')
+            );
+            expect(appendCall).toBeDefined();
+
+            const logContent = appendCall[1];
+            expect(logContent).toContain('date 2026-01-20:');
+            expect(logContent).toContain('venueId: ChIJabc123');
+            expect(logContent).toContain('venueName: Some Cool Bar');
+            expect(logContent).toContain('venueArea: Downtown Charleston');
+            expect(logContent).toContain('venueId: ChIJxyz789');
+            expect(logContent).toContain('venueName: Another Hip Spot');
+            expect(logContent).toContain('venueArea: Mount Pleasant');
+            // Should end with blank line
+            expect(logContent.endsWith('\n\n')).toBe(true);
+        });
+
+        test('should not append to history file if incremental folder is empty', async () => {
+            fs.readdirSync.mockReturnValue([]);
+
+            await extractHappyHours(true);
+
+            // Should not call appendFileSync when no files
+            const appendCalls = fs.appendFileSync.mock.calls.filter(call => 
+                call[0] === MOCK_HISTORY_PATH || (call[0] && call[0].includes('llm-candidates-history.txt'))
+            );
+            expect(appendCalls.length).toBe(0);
+        });
+
+        test('should handle missing venue data gracefully', async () => {
+            const mockFiles = ['ChIJabc123.json', 'ChIJunknown.json'];
+            fs.readdirSync.mockReturnValue(mockFiles);
+
+            // Mock venues.json with only one venue
+            const mockVenues = [
+                { id: 'ChIJabc123', name: 'Some Cool Bar', area: 'Downtown Charleston' }
+                // ChIJunknown is missing
+            ];
+
+            fs.readFileSync.mockImplementation((filePath) => {
+                if (filePath && filePath.includes('config.json')) {
+                    return JSON.stringify({ pipeline: { maxIncrementalFiles: 15 } });
+                }
+                if (filePath && filePath.includes('venues.json')) {
+                    return JSON.stringify(mockVenues);
+                }
+                if (filePath && filePath.includes('llm-instructions.txt')) {
+                    return 'Mock LLM instructions';
+                }
+                return '';
+            });
+
+            // Mock successful API response
+            mockFetch.mockResolvedValue({
+                ok: true,
+                json: async () => ({
+                    choices: [{
+                        message: {
+                            content: JSON.stringify({ found: false })
+                        }
+                    }]
+                })
+            });
+
+            await extractHappyHours(true);
+
+            // Verify appendFileSync was called
+            const appendCall = fs.appendFileSync.mock.calls.find(call => 
+                call[0] === MOCK_HISTORY_PATH || call[0].includes('llm-candidates-history.txt')
+            );
+            expect(appendCall).toBeDefined();
+
+            const logContent = appendCall[1];
+            expect(logContent).toContain('venueId: ChIJabc123');
+            expect(logContent).toContain('venueName: Some Cool Bar');
+            expect(logContent).toContain('venueId: ChIJunknown');
+            expect(logContent).toContain('venueName: Unknown');
+            expect(logContent).toContain('venueArea: Unknown');
+        });
+
+        test('should not log in bulk mode (non-incremental)', async () => {
+            const mockFiles = ['ChIJabc123.json'];
+            fs.readdirSync.mockReturnValue(mockFiles);
+
+            fs.readFileSync.mockImplementation((filePath) => {
+                if (filePath && filePath.includes('llm-instructions.txt')) {
+                    return 'Mock LLM instructions';
+                }
+                return '';
+            });
+
+            // Mock successful API response
+            mockFetch.mockResolvedValue({
+                ok: true,
+                json: async () => ({
+                    choices: [{
+                        message: {
+                            content: JSON.stringify({ found: false })
+                        }
+                    }]
+                })
+            });
+
+            await extractHappyHours(false); // Bulk mode
+
+            // Should not call appendFileSync in bulk mode
+            const appendCalls = fs.appendFileSync.mock.calls.filter(call => 
+                call[0] === MOCK_HISTORY_PATH || (call[0] && call[0].includes('llm-candidates-history.txt'))
+            );
+            expect(appendCalls.length).toBe(0);
         });
     });
 });

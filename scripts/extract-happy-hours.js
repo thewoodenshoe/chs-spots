@@ -13,6 +13,8 @@ const BULK_COMPLETE_FLAG = path.join(GOLD_DIR, '.bulk-complete');
 const INCREMENTAL_HISTORY_DIR = path.join(GOLD_DIR, 'incremental-history');
 const LLM_INSTRUCTIONS_PATH = path.join(__dirname, '../data/config/llm-instructions.txt');
 const CONFIG_PATH = path.join(__dirname, '../data/config/config.json');
+const VENUES_JSON_PATH = path.join(__dirname, '../data/reporting/venues.json');
+const LLM_CANDIDATES_HISTORY_PATH = path.join(__dirname, '../logs/llm-candidates-history.txt');
 
 // Ensure gold and incremental history directories exist
 if (!fs.existsSync(GOLD_DIR)) fs.mkdirSync(GOLD_DIR, { recursive: true });
@@ -87,6 +89,64 @@ async function extractHappyHours(isIncremental = false) {
         if (maxIncrementalFiles !== -1 && venueFiles.length > maxIncrementalFiles) {
             console.error('\x1b[31m%s\x1b[0m', `ABORTING: Too many incremental files (${venueFiles.length} > ${maxIncrementalFiles}). Manual review required to avoid unexpected LLM costs.`);
             process.exit(1);
+        }
+    }
+
+    // Log LLM candidates to history file (incremental mode only, after fail-safe check)
+    if (isIncremental && venueFiles.length > 0) {
+        try {
+            // Ensure logs directory exists
+            const logsDir = path.dirname(LLM_CANDIDATES_HISTORY_PATH);
+            if (!fs.existsSync(logsDir)) {
+                fs.mkdirSync(logsDir, { recursive: true });
+            }
+
+            // Get today's date in YYYY-MM-DD format
+            const today = new Date().toISOString().split('T')[0];
+
+            // Load venues.json to get venue names and areas
+            let venues = [];
+            if (fs.existsSync(VENUES_JSON_PATH)) {
+                try {
+                    const venuesContent = fs.readFileSync(VENUES_JSON_PATH, 'utf8');
+                    venues = JSON.parse(venuesContent);
+                    if (!Array.isArray(venues)) {
+                        venues = [];
+                    }
+                } catch (error) {
+                    console.warn(`Warning: Could not read venues.json: ${error.message}`);
+                }
+            }
+
+            // Build venue lookup map by id
+            const venueMap = new Map();
+            venues.forEach(venue => {
+                if (venue.id) {
+                    venueMap.set(venue.id, {
+                        name: venue.name || 'Unknown',
+                        area: venue.area || 'Unknown'
+                    });
+                }
+            });
+
+            // Build log entry for today
+            let logEntry = `date ${today}:\n`;
+            for (const file of venueFiles) {
+                const venueId = path.basename(file, '.json');
+                const venueInfo = venueMap.get(venueId) || { name: 'Unknown', area: 'Unknown' };
+                logEntry += `venueId: ${venueId}\n`;
+                logEntry += `venueName: ${venueInfo.name}\n`;
+                logEntry += `venueArea: ${venueInfo.area}\n`;
+                logEntry += '\n';
+            }
+            // Add blank line after last venue
+            logEntry += '\n';
+
+            // Append to history file
+            fs.appendFileSync(LLM_CANDIDATES_HISTORY_PATH, logEntry, 'utf8');
+        } catch (error) {
+            console.warn(`Warning: Could not write to LLM candidates history: ${error.message}`);
+            // Don't abort - logging is non-critical
         }
     }
 
