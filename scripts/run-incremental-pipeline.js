@@ -88,7 +88,8 @@ function runScript(scriptPath, args = []) {
 async function main() {
   console.log('\n🚀 Starting Incremental Pipeline');
   console.log('   Mode: Incremental (only process changes)');
-  console.log('   Goal: Minimize LLM API costs\n');
+  console.log('   Goal: Minimize LLM API costs');
+  console.log('   📍 Using static venues.json - no Google API calls\n');
   
   if (AREA_FILTER) {
     console.log(`📍 Area filter: ${AREA_FILTER}\n`);

@@ -66,23 +66,37 @@ function logVerbose(message) {
   fs.appendFileSync(logPath, `${timestamp} ${messageWithoutEmojis}\n`, 'utf8');
 }
 
-// SAFETY CHECK: Require explicit --confirm flag to prevent accidental execution
+// SAFETY CHECK: Require BOTH --confirm flag AND GOOGLE_PLACES_ENABLED=true
 // Google Maps API costs can be high - this script should only run manually
-// Check this FIRST before loading API keys
+// Check this FIRST before loading API keys or dotenv
 const REQUIRED_FLAG = '--confirm';
+const REQUIRED_ENV_VAR = 'GOOGLE_PLACES_ENABLED';
 const hasConfirmFlag = process.argv.includes(REQUIRED_FLAG);
+const isGooglePlacesEnabled = process.env[REQUIRED_ENV_VAR] === 'true';
 
-if (!hasConfirmFlag) {
+if (!hasConfirmFlag || !isGooglePlacesEnabled) {
   console.log('❌ ERROR: This script uses Google Maps API and can incur significant costs.');
   console.log('   Venues are now treated as static - this script should only run manually when needed.');
   console.log('');
-  console.log('   To run this script, you must explicitly confirm:');
-  console.log(`   node scripts/seed-incremental.js ${REQUIRED_FLAG}`);
+  console.log('   To run this script, you must:');
+  console.log('   1. Add --confirm flag');
+  console.log('   2. Set GOOGLE_PLACES_ENABLED=true environment variable');
+  console.log('');
+  console.log('   Example:');
+  console.log(`   GOOGLE_PLACES_ENABLED=true node scripts/seed-incremental.js ${REQUIRED_FLAG}`);
+  console.log('');
+  if (!hasConfirmFlag) {
+    console.log('   ❌ Missing: --confirm flag');
+  }
+  if (!isGooglePlacesEnabled) {
+    console.log(`   ❌ Missing: ${REQUIRED_ENV_VAR}=true environment variable`);
+  }
   console.log('');
   console.log('   ⚠️  This script will make Google Maps API calls and may incur costs.');
   process.exit(1);
 }
 
+// Only load dotenv AFTER safety checks pass
 // Try to load dotenv if available
 try {
   require('dotenv').config();
@@ -93,6 +107,14 @@ try {
   }
 } catch (e) {
   // dotenv not installed - environment variables must be set manually
+}
+
+// Re-check GOOGLE_PLACES_ENABLED after loading dotenv (in case it was in .env file)
+const isGooglePlacesEnabledAfterDotenv = process.env[REQUIRED_ENV_VAR] === 'true';
+if (!isGooglePlacesEnabledAfterDotenv) {
+  log(`❌ Error: ${REQUIRED_ENV_VAR} must be set to 'true' (after loading .env files)`);
+  log(`   Current value: ${process.env[REQUIRED_ENV_VAR] || 'not set'}`);
+  process.exit(1);
 }
 
 // Google Maps API Key

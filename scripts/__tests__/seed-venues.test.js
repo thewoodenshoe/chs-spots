@@ -1,6 +1,100 @@
 const fs = require('fs');
 const path = require('path');
 
+describe('seed-venues.js Safety Checks', () => {
+  const originalArgv = process.argv;
+  const originalEnv = { ...process.env };
+  const scriptPath = path.join(__dirname, '..', 'seed-venues.js');
+
+  afterEach(() => {
+    process.argv = originalArgv;
+    process.env = { ...originalEnv };
+  });
+
+  test('should exit with error if --confirm flag is missing', () => {
+    process.argv = ['node', 'seed-venues.js'];
+    delete process.env.GOOGLE_PLACES_ENABLED;
+
+    // Mock process.exit to capture exit
+    const exitSpy = jest.spyOn(process, 'exit').mockImplementation((code) => {
+      throw new Error(`Exit with code ${code}`);
+    });
+
+    // Mock console.log to capture output
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+    try {
+      require(scriptPath);
+    } catch (error) {
+      expect(error.message).toContain('Exit with code 1');
+    }
+
+    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('ERROR: This script uses Google Maps API')
+    );
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Missing: --confirm flag')
+    );
+
+    exitSpy.mockRestore();
+    consoleSpy.mockRestore();
+  });
+
+  test('should exit with error if GOOGLE_PLACES_ENABLED is not true', () => {
+    process.argv = ['node', 'seed-venues.js', '--confirm'];
+    process.env.GOOGLE_PLACES_ENABLED = 'false';
+
+    const exitSpy = jest.spyOn(process, 'exit').mockImplementation((code) => {
+      throw new Error(`Exit with code ${code}`);
+    });
+
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+    try {
+      require(scriptPath);
+    } catch (error) {
+      expect(error.message).toContain('Exit with code 1');
+    }
+
+    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Missing: GOOGLE_PLACES_ENABLED=true')
+    );
+
+    exitSpy.mockRestore();
+    consoleSpy.mockRestore();
+  });
+
+  test('should exit with error if both flags are missing', () => {
+    process.argv = ['node', 'seed-venues.js'];
+    delete process.env.GOOGLE_PLACES_ENABLED;
+
+    const exitSpy = jest.spyOn(process, 'exit').mockImplementation((code) => {
+      throw new Error(`Exit with code ${code}`);
+    });
+
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+    try {
+      require(scriptPath);
+    } catch (error) {
+      expect(error.message).toContain('Exit with code 1');
+    }
+
+    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Missing: --confirm flag')
+    );
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Missing: GOOGLE_PLACES_ENABLED=true')
+    );
+
+    exitSpy.mockRestore();
+    consoleSpy.mockRestore();
+  });
+});
+
 describe('Venue Seeding Script Validation', () => {
   // Check both locations: primary (data/venues.json) and reporting (data/reporting/venues.json)
   const venuesPath = path.join(__dirname, '..', '..', 'data', 'venues.json');

@@ -50,9 +50,7 @@ Run these scripts **once** to set up the initial data:
    Creates `data/config/areas.json` with area definitions.
 
 2. **Seed venues from Google Places (MANUAL ONLY):**
-   ```bash
-   node scripts/seed-venues.js --confirm
-   ```
+   
    ⚠️  **WARNING:** This script uses Google Maps API and can incur significant costs.
    
    Venues are now treated as **STATIC** - this script should only be run manually when:
@@ -60,9 +58,20 @@ Run these scripts **once** to set up the initial data:
    - You need to update existing venue data
    - You explicitly want to refresh venue information
    
-   The `--confirm` flag is **REQUIRED** to prevent accidental execution.
+   **Requirements:**
+   - `--confirm` flag is **REQUIRED**
+   - `GOOGLE_PLACES_ENABLED=true` environment variable is **REQUIRED**
+   - `NEXT_PUBLIC_GOOGLE_MAPS_KEY` or `GOOGLE_PLACES_KEY` must be set in `.env.local`
+   
+   **Run:**
+   ```bash
+   GOOGLE_PLACES_ENABLED=true node scripts/seed-venues.js --confirm
+   ```
    
    This discovers all venues and creates `data/reporting/venues.json`.
+   
+   **Cost Warning:** Google Maps API charges per request. A full venue seed can make thousands of API calls.
+   Monitor your usage in the Google Cloud Console.
 
 3. **Run the happy hour pipeline:**
    ```bash
@@ -503,13 +512,15 @@ The gold files contain:
 
 Venues are now treated as **STATIC** - this script should only be run manually when you need to find new venues incrementally.
 
-The `--confirm` flag is **REQUIRED** to prevent accidental execution.
+**Requirements:**
+- `--confirm` flag is **REQUIRED**
+- `GOOGLE_PLACES_ENABLED=true` environment variable is **REQUIRED**
+- `NEXT_PUBLIC_GOOGLE_MAPS_KEY` or `GOOGLE_PLACES_KEY` must be set in `.env.local`
 
-⚠️  **WARNING:** This script uses Google Maps API and can incur significant costs.
-
-Venues are now treated as **STATIC** - this script should only be run manually when you need to find new venues incrementally.
-
-The `--confirm` flag is **REQUIRED** to prevent accidental execution.
+**Run:**
+```bash
+GOOGLE_PLACES_ENABLED=true node scripts/seed-incremental.js --confirm
+```
 
 **Original Features (now manual only):**
 - Appends new venues from Google Places API (finds venues not already in `venues.json`)
@@ -519,14 +530,9 @@ The `--confirm` flag is **REQUIRED** to prevent accidental execution.
 - Uses robust area assignment logic from `seed-venues.js`
 - Safe to run multiple times (only adds new venues, doesn't overwrite)
 
-**Requirements:**
+**Additional Requirements:**
 - `areas.json` and `venues.json` must exist (created in Steps 1-2)
-- `NEXT_PUBLIC_GOOGLE_MAPS_KEY` or `GOOGLE_PLACES_KEY` environment variable
-
-**Run (MANUAL ONLY):**
-```bash
-node scripts/seed-incremental.js --confirm
-```
+- `NEXT_PUBLIC_GOOGLE_MAPS_KEY` or `GOOGLE_PLACES_KEY` must be set in `.env.local`
 
 **Output:**
 - `data/reporting/venues.json` - Updated with new venues and enriched website information
@@ -854,6 +860,62 @@ chs-spots/
 └── e2e/                      # Playwright E2E tests
     └── app.spec.ts
 ```
+
+---
+
+## Manual Venue Refresh
+
+### Overview
+
+Venues are treated as **STATIC** by default. The pipeline does NOT call Google Maps API automatically.
+
+To add or update venues, you must manually run the venue seeding scripts with explicit confirmation.
+
+### Prerequisites
+
+1. **Set up environment variables** in `.env.local`:
+   ```bash
+   NEXT_PUBLIC_GOOGLE_MAPS_KEY=your_google_maps_api_key_here
+   # Optional: For website finding fallback
+   GOOGLE_SEARCH_API_KEY=your_search_api_key_here
+   GOOGLE_SEARCH_ENGINE_ID=your_search_engine_id_here
+   ```
+
+2. **Enable Google Places API** in your Google Cloud Console:
+   - Enable "Places API"
+   - Enable "Places API (New)" if available
+   - Set up billing (API calls are charged per request)
+
+### Full Venue Refresh
+
+To refresh all venues from scratch:
+
+```bash
+GOOGLE_PLACES_ENABLED=true node scripts/seed-venues.js --confirm
+```
+
+**Cost Warning:** This can make thousands of API calls. Monitor usage in Google Cloud Console.
+
+### Incremental Venue Update
+
+To find only new venues (more cost-effective):
+
+```bash
+GOOGLE_PLACES_ENABLED=true node scripts/seed-incremental.js --confirm
+```
+
+**Safety Features:**
+- Requires `--confirm` flag (prevents accidental execution)
+- Requires `GOOGLE_PLACES_ENABLED=true` (double confirmation)
+- Scripts exit with clear error messages if flags are missing
+- No API calls are made until both requirements are met
+
+### Cost Management
+
+- **Monitor usage:** Check Google Cloud Console regularly
+- **Set budget alerts:** Configure billing alerts in Google Cloud
+- **Use incremental updates:** Prefer `seed-incremental.js` over full refresh
+- **Limit area scope:** Scripts support area filtering to reduce API calls
 
 ---
 
