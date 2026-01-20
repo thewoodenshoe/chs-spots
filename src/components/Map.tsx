@@ -11,6 +11,10 @@ interface Spot {
   description?: string;
   activity?: string;
   area?: string;
+  happyHourTime?: string;
+  happyHourList?: string[];
+  sourceUrl?: string;
+  lastUpdateDate?: string;
 }
 
 interface MapProps {
@@ -128,7 +132,7 @@ export default function Map({ spots, selectedArea, selectedActivity }: MapProps)
               )}
               
               {/* Structured happy hour display with labels */}
-              {selectedSpot.happyHourTime && (
+              {selectedSpot?.happyHourTime && (
                 <div className="mb-2">
                   <span className="font-semibold text-gray-700 text-sm">Time: </span>
                   <span className="text-gray-800 text-sm">{selectedSpot.happyHourTime}</span>
