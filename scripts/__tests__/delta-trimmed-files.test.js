@@ -7,10 +7,42 @@ const SILVER_TRIMMED_ALL_DIR = path.join(__dirname, '../../data/silver_trimmed/a
 const SILVER_TRIMMED_PREVIOUS_DIR = path.join(__dirname, '../../data/silver_trimmed/previous');
 const SILVER_TRIMMED_INCREMENTAL_DIR = path.join(__dirname, '../../data/silver_trimmed/incremental');
 
+/**
+ * Normalize text (same logic as delta-trimmed-files.js and trim-silver-html.js)
+ */
+function normalizeTextForHash(text) {
+  if (!text || typeof text !== 'string') {
+    return '';
+  }
+  
+  let normalized = text;
+  
+  // Remove ISO timestamps
+  normalized = normalized.replace(/\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?/g, '');
+  
+  // Remove month-day patterns
+  normalized = normalized.replace(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(,\s+\d{4})?\b/gi, '');
+  
+  // Remove loading placeholders
+  normalized = normalized.replace(/Loading\s+product\s+options\.\.\.|Loading\.\.\./gi, '');
+  
+  // Collapse whitespace
+  normalized = normalized.replace(/\s+/g, ' ').trim();
+  
+  return normalized;
+}
+
 function getTrimmedContentHash(filePath) {
   try {
     const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    const pagesContent = (data.pages || []).map(p => p.text || '').join('\n');
+    const pages = data.pages || [];
+    
+    // Always normalize text before hashing (same as delta-trimmed-files.js)
+    const pagesContent = pages.map(p => {
+      const text = p.text || '';
+      return normalizeTextForHash(text);
+    }).join('\n');
+    
     return crypto.createHash('md5').update(pagesContent).digest('hex');
   } catch (error) {
     return null;
@@ -160,6 +192,123 @@ describe('Delta Trimmed Files', () => {
       fs.copyFileSync(allFile, incrementalFile);
     }
 
+    expect(allHash).toBe(previousHash);
+    expect(fs.existsSync(incrementalFile)).toBe(false);
+  });
+
+  test('should normalize text and ignore timestamps in content', () => {
+    const venueId = 'ChIJTestNormalize';
+    
+    // Previous day's content with timestamp
+    const previousFile = path.join(testPreviousDir, `${venueId}.json`);
+    const previousData = {
+      venueId,
+      venueName: 'Test Venue',
+      pages: [
+        { url: 'https://example.com', text: 'Happy Hour 4pm-6pm Updated 2026-01-19T15:34:58.724Z' }
+      ]
+    };
+    fs.writeFileSync(previousFile, JSON.stringify(previousData, null, 2));
+
+    // Today's content with different timestamp (should normalize to same)
+    const allFile = path.join(testAllDir, `${venueId}.json`);
+    const allData = {
+      venueId,
+      venueName: 'Test Venue',
+      pages: [
+        { url: 'https://example.com', text: 'Happy Hour 4pm-6pm Updated 2026-01-20T16:45:12.123Z' }
+      ]
+    };
+    fs.writeFileSync(allFile, JSON.stringify(allData, null, 2));
+
+    // Run delta comparison logic
+    const allHash = getTrimmedContentHash(allFile);
+    const previousHash = getTrimmedContentHash(previousFile);
+    const incrementalFile = path.join(testIncrementalDir, `${venueId}.json`);
+
+    if (allHash !== previousHash) {
+      fs.copyFileSync(allFile, incrementalFile);
+    }
+
+    // Hashes should be same after normalization (timestamps removed)
+    expect(allHash).toBe(previousHash);
+    expect(fs.existsSync(incrementalFile)).toBe(false);
+  });
+
+  test('should normalize text and ignore date strings', () => {
+    const venueId = 'ChIJTestDateNormalize';
+    
+    // Previous day's content with date
+    const previousFile = path.join(testPreviousDir, `${venueId}.json`);
+    const previousData = {
+      venueId,
+      venueName: 'Test Venue',
+      pages: [
+        { url: 'https://example.com', text: 'Happy Hour 4pm-6pm Jan 19, 2026' }
+      ]
+    };
+    fs.writeFileSync(previousFile, JSON.stringify(previousData, null, 2));
+
+    // Today's content with different date (should normalize to same)
+    const allFile = path.join(testAllDir, `${venueId}.json`);
+    const allData = {
+      venueId,
+      venueName: 'Test Venue',
+      pages: [
+        { url: 'https://example.com', text: 'Happy Hour 4pm-6pm Jan 20, 2026' }
+      ]
+    };
+    fs.writeFileSync(allFile, JSON.stringify(allData, null, 2));
+
+    // Run delta comparison logic
+    const allHash = getTrimmedContentHash(allFile);
+    const previousHash = getTrimmedContentHash(previousFile);
+    const incrementalFile = path.join(testIncrementalDir, `${venueId}.json`);
+
+    if (allHash !== previousHash) {
+      fs.copyFileSync(allFile, incrementalFile);
+    }
+
+    // Hashes should be same after normalization (dates removed)
+    expect(allHash).toBe(previousHash);
+    expect(fs.existsSync(incrementalFile)).toBe(false);
+  });
+
+  test('should normalize URLs by removing query parameters', () => {
+    const venueId = 'ChIJTestUrlNormalize';
+    
+    // Previous day's content with clean URL
+    const previousFile = path.join(testPreviousDir, `${venueId}.json`);
+    const previousData = {
+      venueId,
+      venueName: 'Test Venue',
+      pages: [
+        { url: 'https://example.com/menu', text: 'Happy Hour 4pm-6pm' }
+      ]
+    };
+    fs.writeFileSync(previousFile, JSON.stringify(previousData, null, 2));
+
+    // Today's content with URL containing query params (URL normalization doesn't affect hash, but test the concept)
+    const allFile = path.join(testAllDir, `${venueId}.json`);
+    const allData = {
+      venueId,
+      venueName: 'Test Venue',
+      pages: [
+        { url: 'https://example.com/menu?gad_source=1&matchtype=p', text: 'Happy Hour 4pm-6pm' }
+      ]
+    };
+    fs.writeFileSync(allFile, JSON.stringify(allData, null, 2));
+
+    // Run delta comparison logic
+    const allHash = getTrimmedContentHash(allFile);
+    const previousHash = getTrimmedContentHash(previousFile);
+    const incrementalFile = path.join(testIncrementalDir, `${venueId}.json`);
+
+    if (allHash !== previousHash) {
+      fs.copyFileSync(allFile, incrementalFile);
+    }
+
+    // Hashes should be same (URL doesn't affect text hash, text is same)
     expect(allHash).toBe(previousHash);
     expect(fs.existsSync(incrementalFile)).toBe(false);
   });

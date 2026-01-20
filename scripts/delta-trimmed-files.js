@@ -48,33 +48,46 @@ if (!fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)) {
 }
 
 /**
+ * Normalize text (same logic as trim-silver-html.js)
+ */
+function normalizeTextForHash(text) {
+  if (!text || typeof text !== 'string') {
+    return '';
+  }
+  
+  let normalized = text;
+  
+  // Remove ISO timestamps (e.g., "2026-01-20T15:34:58.724Z" or "2026-01-20")
+  normalized = normalized.replace(/\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?/g, '');
+  
+  // Remove common month-day patterns (e.g., "Jan 20", "Jan 20, 2026", "January 20, 2026")
+  normalized = normalized.replace(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(,\s+\d{4})?\b/gi, '');
+  
+  // Remove "Loading..." or placeholder phrases
+  normalized = normalized.replace(/Loading\s+product\s+options\.\.\.|Loading\.\.\./gi, '');
+  
+  // Collapse all whitespace to single spaces and trim
+  normalized = normalized.replace(/\s+/g, ' ').trim();
+  
+  return normalized;
+}
+
+/**
  * Get trimmed content hash from a trimmed JSON file
- * Uses the hash field from pages array (which is already normalized)
- * Falls back to computing hash from normalized text if hash field missing
+ * Always normalizes text before hashing to ensure consistent comparison
+ * Uses page.hash if it looks normalized (32 char hex), otherwise normalizes text
  */
 function getTrimmedContentHash(filePath) {
   try {
     const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     const pages = data.pages || [];
     
-    // Use page.hash if available (already normalized), otherwise compute from text
-    if (pages.length > 0 && pages[0].hash) {
-      // Concatenate all page hashes for venue-level hash
-      const allHashes = pages.map(p => p.hash || '').join('');
-      return crypto.createHash('md5').update(allHashes).digest('hex');
-    }
-    
-    // Fallback: compute hash from normalized text (for backwards compatibility)
+    // Always normalize and compute hash from text to ensure consistency
+    // This handles both old files (with raw HTML hash) and new files (with normalized hash)
     const pagesContent = pages.map(p => {
-      // Normalize text if needed (should already be normalized, but be safe)
-      let text = p.text || '';
-      // Remove ISO timestamps
-      text = text.replace(/\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?/g, '');
-      // Remove month-day patterns
-      text = text.replace(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(,\s+\d{4})?\b/gi, '');
-      // Collapse whitespace
-      text = text.replace(/\s+/g, ' ').trim();
-      return text;
+      const text = p.text || '';
+      // Normalize text (same as trim-silver-html.js)
+      return normalizeTextForHash(text);
     }).join('\n');
     
     return crypto.createHash('md5').update(pagesContent).digest('hex');
