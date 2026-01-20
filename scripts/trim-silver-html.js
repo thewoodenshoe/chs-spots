@@ -341,9 +341,39 @@ function main() {
     }
   }
   
-  // If new day, move yesterday's incremental to all/
+  // If new day, archive current all/ to previous/ BEFORE processing new files
+  // This ensures previous/ contains yesterday's data for delta comparison
+  const SILVER_TRIMMED_PREVIOUS_DIR = path.join(SILVER_TRIMMED_DIR, 'previous');
   if (lastTrim && lastTrim !== today) {
-    log(`📅 New day detected - moving yesterday's incremental to all/\n`);
+    log(`📅 New day detected - archiving yesterday's all/ to previous/\n`);
+    
+    // Archive current all/ to previous/ (yesterday's data)
+    if (fs.existsSync(SILVER_TRIMMED_ALL_DIR)) {
+      const allFiles = fs.readdirSync(SILVER_TRIMMED_ALL_DIR).filter(f => f.endsWith('.json'));
+      if (allFiles.length > 0) {
+        // Remove existing previous/ directory
+        if (fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)) {
+          fs.rmSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true, force: true });
+        }
+        fs.mkdirSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true });
+        
+        // Copy all files from all/ to previous/
+        let archived = 0;
+        for (const file of allFiles) {
+          try {
+            const sourcePath = path.join(SILVER_TRIMMED_ALL_DIR, file);
+            const destPath = path.join(SILVER_TRIMMED_PREVIOUS_DIR, file);
+            fs.copyFileSync(sourcePath, destPath);
+            archived++;
+          } catch (error) {
+            log(`  ⚠️  Failed to archive ${file}: ${error.message}`);
+          }
+        }
+        log(`  ✅ Archived ${archived} file(s) to silver_trimmed/previous/`);
+      }
+    }
+    
+    // Then move yesterday's incremental to all/
     moveIncrementalToAll();
   }
   

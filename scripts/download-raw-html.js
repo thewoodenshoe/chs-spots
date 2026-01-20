@@ -120,19 +120,21 @@ function loadMetadata(venueId) {
 /**
  * Save URL metadata
  */
-function saveMetadata(venueId, url, hash) {
+function saveMetadata(venueId, url, hash, saveToIncremental = false) {
   const metadata = loadMetadata(venueId);
   metadata[hash] = url;
   const metadataPath = getMetadataPath(venueId);
   fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2), 'utf8');
   
-  // Also save to incremental folder
-  const incrementalDir = path.join(RAW_INCREMENTAL_DIR, venueId);
-  if (!fs.existsSync(incrementalDir)) {
-    fs.mkdirSync(incrementalDir, { recursive: true });
+  // Also save to incremental folder if requested
+  if (saveToIncremental) {
+    const incrementalDir = path.join(RAW_INCREMENTAL_DIR, venueId);
+    if (!fs.existsSync(incrementalDir)) {
+      fs.mkdirSync(incrementalDir, { recursive: true });
+    }
+    const incrementalMetadataPath = path.join(incrementalDir, 'metadata.json');
+    fs.writeFileSync(incrementalMetadataPath, JSON.stringify(metadata, null, 2), 'utf8');
   }
-  const incrementalMetadataPath = path.join(incrementalDir, 'metadata.json');
-  fs.writeFileSync(incrementalMetadataPath, JSON.stringify(metadata, null, 2), 'utf8');
 }
 
 /**
@@ -363,8 +365,10 @@ function findSubpageLinks(html, baseUrl) {
 
 /**
  * Process a single venue
+ * @param {Object} venue - Venue object
+ * @param {boolean} saveToIncremental - Whether to also save to incremental/ folder (default: false)
  */
-async function processVenue(venue) {
+async function processVenue(venue, saveToIncremental = false) {
   const venueId = venue.id || venue.place_id;
   const website = venue.website;
   

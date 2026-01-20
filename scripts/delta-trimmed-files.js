@@ -146,8 +146,34 @@ function main() {
   const today = getTodayDateString();
   const lastTrim = getLastTrimDate();
   
-  if (lastTrim && lastTrim !== today) {
-    // New day - archive previous day's data
+  // Check if previous/ directory exists and has files
+  const previousFiles = fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR) 
+    ? fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'))
+    : [];
+  const allFiles = fs.existsSync(SILVER_TRIMMED_ALL_DIR)
+    ? fs.readdirSync(SILVER_TRIMMED_ALL_DIR).filter(f => f.endsWith('.json'))
+    : [];
+  
+  // If previous/ is empty but all/ has files, we need to archive all/ to previous/ first
+  // This handles the case where trim ran and populated all/ but previous/ wasn't archived yet
+  if (previousFiles.length === 0 && allFiles.length > 0) {
+    if (lastTrim && lastTrim !== today) {
+      // New day - archive current all/ to previous/ (this is yesterday's data)
+      log(`📅 New day detected (${today}, previous: ${lastTrim})`);
+      log(`📦 Archiving current all/ to previous/ (yesterday's data)...`);
+      archivePreviousDay();
+    } else if (!lastTrim) {
+      log(`📅 First run - no previous data to compare\n`);
+    } else {
+      // Same day but previous/ is empty - this shouldn't happen normally
+      // But if it does, archive all/ to previous/ to establish baseline
+      log(`⚠️  Same day but previous/ is empty - archiving all/ to previous/ to establish baseline`);
+      archivePreviousDay();
+    }
+  } else if (lastTrim && lastTrim !== today) {
+    // New day and previous/ already has data - archive it (refresh)
+    log(`📅 New day detected (${today}, previous: ${lastTrim})`);
+    log(`📦 Archiving previous day's trimmed data...`);
     archivePreviousDay();
   } else if (!lastTrim) {
     log(`📅 First run - no previous data to compare\n`);
@@ -167,17 +193,19 @@ function main() {
     }
   }
   
-  // Get all venue files from silver_trimmed/all/
-  const allFiles = fs.readdirSync(SILVER_TRIMMED_ALL_DIR).filter(f => f.endsWith('.json'));
+  // Refresh allFiles list after potential archive (in case archive modified all/)
+  const allFilesList = fs.existsSync(SILVER_TRIMMED_ALL_DIR)
+    ? fs.readdirSync(SILVER_TRIMMED_ALL_DIR).filter(f => f.endsWith('.json'))
+    : [];
   
-  log(`📁 Found ${allFiles.length} venue file(s) in silver_trimmed/all/\n`);
+  log(`📁 Found ${allFilesList.length} venue file(s) in silver_trimmed/all/\n`);
   
   let newVenues = 0;
   let changedVenues = 0;
   let unchangedVenues = 0;
   
   // Process each file
-  for (const file of allFiles) {
+  for (const file of allFilesList) {
     const venueId = path.basename(file, '.json');
     const allFilePath = path.join(SILVER_TRIMMED_ALL_DIR, file);
     const previousFilePath = path.join(SILVER_TRIMMED_PREVIOUS_DIR, file);

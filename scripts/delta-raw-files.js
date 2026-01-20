@@ -145,12 +145,23 @@ function main() {
   const today = getTodayDateString();
   const lastDownload = getLastDownloadDate();
   
-  if (lastDownload && lastDownload === today) {
+  // Check if previous/ directory exists and has data to compare
+  const hasPreviousData = fs.existsSync(RAW_PREVIOUS_DIR) && 
+    fs.readdirSync(RAW_PREVIOUS_DIR).length > 0;
+  
+  if (lastDownload && lastDownload === today && !hasPreviousData) {
     log(`⏭️  Same day as last download (${today})`);
     log(`   New venues were already saved to incremental during download.`);
-    log(`   Delta comparison not needed on same day.`);
+    log(`   Delta comparison not needed on same day (no previous data to compare).`);
     log(`\n✨ Skipped delta (same day - incremental already populated)`);
     return;
+  }
+  
+  // If same day but previous data exists, this means we're comparing against yesterday's data
+  // This can happen if the download updated the date but we still want to compare
+  if (lastDownload && lastDownload === today && hasPreviousData) {
+    log(`📅 Same day as last download (${today}), but previous data exists`);
+    log(`   Running delta comparison against previous day's data...\n`);
   }
   
   log(`📅 New day detected (${today} vs ${lastDownload || 'Never'})`);
