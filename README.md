@@ -800,10 +800,36 @@ npm run test:e2e:ui
 ```
 
 **Test Coverage:**
-- **Seed Venues**: 4 test files, ~70+ test cases, runs on git push
-- **Raw Layer**: 4 test files, ~73+ test cases, runs on git push
-- **Silver Layer**: 3 test files, ~50+ test cases, runs on git push (silver_matched layer removed)
-- **Total**: 11+ test files, 190+ test cases, all run on git push via GitHub Actions
+- **Unit Tests**: 27+ test suites, 386+ test cases covering:
+  - Pipeline scripts (download, merge, trim, delta comparison)
+  - LLM extraction and processing
+  - Data validation and structure checks
+  - Safety checks for Google Places API scripts
+  - React components and contexts
+  - API routes
+- **Integration Tests**: Pipeline integration test validates full pipeline flow with normalization (<20 delta threshold)
+- **E2E Tests**: Playwright tests for map interactions, modals, and CRUD operations
+- **All tests run automatically on push/PR via GitHub Actions CI workflow**
+
+## Continuous Integration
+
+The project uses GitHub Actions for CI/CD:
+
+### CI Workflow (`.github/workflows/ci.yml`)
+
+Runs on:
+- Push to `main` or `feature/**` branches
+- Pull requests to `main` or `feature/**` branches
+
+**CI Steps:**
+1. **Build & Test**: Runs Jest unit tests across Node.js 18.x and 20.x
+2. **Pipeline Validation**: Validates data structures and pipeline logic
+3. **Pipeline Integration Test**: Tests full pipeline flow with normalization (<20 delta threshold)
+4. **Security Audit**: Runs `npm audit` to check for known vulnerabilities
+5. **Linting**: Runs ESLint for code quality checks
+6. **E2E Tests**: Runs Playwright end-to-end tests
+
+**Note:** CD (Continuous Deployment) is not yet implemented. A commented template exists in `ci.yml` for future deployment setup.
 
 ---
 
