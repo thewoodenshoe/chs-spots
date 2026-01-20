@@ -268,11 +268,28 @@ describe('extractHappyHours', () => {
         // 2. Gold file exists with matching hash
         // 3. Bulk complete flag exists
         fs.readdirSync.mockReturnValueOnce([`${venueId}.json`]);
-        fs.readFileSync
-            .mockReturnValueOnce(JSON.stringify(mockSilverContent)) // Read silver file
-            .mockReturnValueOnce(JSON.stringify(mockGoldContent));   // Read existing gold file
+        let readCallIndex = 0;
+        fs.readFileSync.mockImplementation((filePath) => {
+            if (filePath && filePath.includes('config.json')) {
+                return JSON.stringify({ pipeline: { maxIncrementalFiles: 15 } });
+            }
+            if (filePath && filePath.includes('llm-instructions.txt')) {
+                return 'Mock LLM instructions';
+            }
+            if (filePath && filePath.includes(`${venueId}.json`)) {
+                readCallIndex++;
+                // First call is silver file, second is gold file
+                if (readCallIndex === 1) {
+                    return JSON.stringify(mockSilverContent);
+                } else {
+                    return JSON.stringify(mockGoldContent);
+                }
+            }
+            return '';
+        });
         fs.existsSync.mockImplementation((p) => {
             if (p === MOCK_BULK_COMPLETE_FLAG || p.includes('gold/venue5.json')) return true;
+            if (p && p.includes('config.json')) return true;
             return jest.requireActual('fs').existsSync(p);
         });
 
@@ -315,12 +332,40 @@ describe('extractHappyHours', () => {
         // 2. Gold file exists (with old hash)
         // 3. Bulk complete flag exists
         fs.readdirSync.mockReturnValueOnce([`${venueId}.json`]);
-        fs.readFileSync
-            .mockReturnValueOnce(JSON.stringify(newSilverContent)) // Read current silver file
-            .mockReturnValueOnce(JSON.stringify(mockGoldContent));   // Read existing gold file
+        let readCallCount = 0;
+        fs.readFileSync.mockImplementation((filePath) => {
+            if (filePath && filePath.includes('config.json')) {
+                return JSON.stringify({ pipeline: { maxIncrementalFiles: 15 } });
+            }
+            if (filePath && filePath.includes('llm-instructions.txt')) {
+                return 'Mock LLM instructions';
+            }
+            if (filePath && filePath.includes(`${venueId}.json`)) {
+                readCallCount++;
+                if (readCallCount === 1) {
+                    return JSON.stringify(newSilverContent); // Read current silver file
+                } else {
+                    return JSON.stringify(mockGoldContent); // Read existing gold file
+                }
+            }
+            return '';
+        });
         fs.existsSync.mockImplementation((p) => {
             if (p === MOCK_BULK_COMPLETE_FLAG || p.includes('gold/venue6.json')) return true;
+            if (p && p.includes('config.json')) return true;
             return jest.requireActual('fs').existsSync(p);
+        });
+        
+        // Mock successful API response for changed content
+        mockFetch.mockResolvedValue({
+            ok: true,
+            json: async () => ({
+                choices: [{
+                    message: {
+                        content: JSON.stringify({ found: true, times: '5pm-7pm', days: 'daily', specials: ['discounted drinks'] })
+                    }
+                }]
+            })
         });
 
         await extractHappyHours(true); // Run in incremental mode
@@ -382,5 +427,201 @@ describe('extractHappyHours', () => {
         expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Error reading silver_trimmed directory: Permission denied'));
         expect(process.exit).toHaveBeenCalledWith(1);
         consoleErrorSpy.mockRestore();
+    });
+
+    describe('Cost fail-safe: maxIncrementalFiles', () => {
+        beforeEach(() => {
+            process.env.GROK_API_KEY = 'mock-api-key';
+            fs.existsSync.mockReturnValue(true); // Directories exist
+            fs.mkdirSync.mockReturnValue(undefined);
+        });
+
+        test('should abort if incremental files count exceeds maxIncrementalFiles (16 > 15)', async () => {
+            // Mock 16 files in incremental directory
+            const mockFiles = Array.from({ length: 16 }, (_, i) => `venue${i}.json`);
+            fs.readdirSync.mockReturnValue(mockFiles);
+            
+            // Mock config with maxIncrementalFiles = 15
+            fs.readFileSync.mockImplementation((filePath) => {
+                if (filePath && filePath.includes('config.json')) {
+                    return JSON.stringify({ pipeline: { maxIncrementalFiles: 15 } });
+                }
+                if (filePath && filePath.includes('llm-instructions.txt')) {
+                    return 'Mock LLM instructions';
+                }
+                return '';
+            });
+
+            const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+            process.exit = jest.fn();
+
+            await extractHappyHours(true);
+
+            // Check that error was called with the abort message (ANSI codes are separate args)
+            const errorCalls = consoleErrorSpy.mock.calls;
+            const abortCall = errorCalls.find(call => 
+                call.some(arg => typeof arg === 'string' && arg.includes('ABORTING: Too many incremental files (16 > 15)'))
+            );
+            expect(abortCall).toBeDefined();
+            expect(process.exit).toHaveBeenCalledWith(1);
+            consoleErrorSpy.mockRestore();
+        });
+
+        test('should continue if incremental files count is within limit (14 <= 15)', async () => {
+            // Mock 14 files in incremental directory
+            const mockFiles = Array.from({ length: 14 }, (_, i) => `venue${i}.json`);
+            fs.readdirSync.mockReturnValue(mockFiles);
+            
+            // Mock config with maxIncrementalFiles = 15
+            fs.readFileSync.mockImplementation((filePath) => {
+                if (filePath && filePath.includes('config.json')) {
+                    return JSON.stringify({ pipeline: { maxIncrementalFiles: 15 } });
+                }
+                if (filePath && filePath.includes('llm-instructions.txt')) {
+                    return 'Mock LLM instructions';
+                }
+                return '';
+            });
+
+            // Mock successful API response
+            mockFetch.mockResolvedValue({
+                ok: true,
+                json: async () => ({
+                    choices: [{
+                        message: {
+                            content: JSON.stringify({ found: false })
+                        }
+                    }]
+                })
+            });
+
+            const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+            process.exit = jest.fn();
+
+            await extractHappyHours(true);
+
+            // Should NOT call process.exit(1) for cost fail-safe
+            expect(consoleErrorSpy).not.toHaveBeenCalledWith(
+                expect.stringContaining('ABORTING: Too many incremental files')
+            );
+            consoleErrorSpy.mockRestore();
+        });
+
+        test('should default to 15 if config is missing', async () => {
+            // Mock 16 files (exceeds default 15)
+            const mockFiles = Array.from({ length: 16 }, (_, i) => `venue${i}.json`);
+            fs.readdirSync.mockReturnValue(mockFiles);
+            
+            // Mock config file doesn't exist
+            fs.existsSync.mockImplementation((filePath) => {
+                if (filePath && filePath.includes('config.json')) {
+                    return false; // Config file doesn't exist
+                }
+                return true; // Other files/directories exist
+            });
+            
+            fs.readFileSync.mockImplementation((filePath) => {
+                if (filePath && filePath.includes('llm-instructions.txt')) {
+                    return 'Mock LLM instructions';
+                }
+                return '';
+            });
+
+            const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+            const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+            process.exit = jest.fn();
+
+            await extractHappyHours(true);
+
+            // Should use default 15 and abort
+            const errorCalls = consoleErrorSpy.mock.calls;
+            const abortCall = errorCalls.find(call => 
+                call.some(arg => typeof arg === 'string' && arg.includes('ABORTING: Too many incremental files (16 > 15)'))
+            );
+            expect(abortCall).toBeDefined();
+            expect(process.exit).toHaveBeenCalledWith(1);
+            consoleErrorSpy.mockRestore();
+            consoleWarnSpy.mockRestore();
+        });
+
+        test('should allow unlimited files when maxIncrementalFiles is -1', async () => {
+            // Mock 100 files (would normally exceed limit)
+            const mockFiles = Array.from({ length: 100 }, (_, i) => `venue${i}.json`);
+            fs.readdirSync.mockReturnValue(mockFiles);
+            
+            // Mock config with maxIncrementalFiles = -1 (unlimited)
+            fs.readFileSync.mockImplementation((filePath) => {
+                if (filePath && filePath.includes('config.json')) {
+                    return JSON.stringify({ pipeline: { maxIncrementalFiles: -1 } });
+                }
+                if (filePath && filePath.includes('llm-instructions.txt')) {
+                    return 'Mock LLM instructions';
+                }
+                return '';
+            });
+
+            // Mock successful API response
+            mockFetch.mockResolvedValue({
+                ok: true,
+                json: async () => ({
+                    choices: [{
+                        message: {
+                            content: JSON.stringify({ found: false })
+                        }
+                    }]
+                })
+            });
+
+            const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+            process.exit = jest.fn();
+
+            await extractHappyHours(true);
+
+            // Should NOT abort even with 100 files when maxIncrementalFiles = -1
+            expect(consoleErrorSpy).not.toHaveBeenCalledWith(
+                expect.stringContaining('ABORTING: Too many incremental files')
+            );
+            consoleErrorSpy.mockRestore();
+        });
+
+        test('should not apply fail-safe in bulk mode (non-incremental)', async () => {
+            // Mock many files in bulk mode
+            const mockFiles = Array.from({ length: 100 }, (_, i) => `venue${i}.json`);
+            fs.readdirSync.mockReturnValue(mockFiles);
+            
+            // Mock config with maxIncrementalFiles = 15
+            fs.readFileSync.mockImplementation((filePath) => {
+                if (filePath && filePath.includes('config.json')) {
+                    return JSON.stringify({ pipeline: { maxIncrementalFiles: 15 } });
+                }
+                if (filePath && filePath.includes('llm-instructions.txt')) {
+                    return 'Mock LLM instructions';
+                }
+                return '';
+            });
+
+            // Mock successful API response
+            mockFetch.mockResolvedValue({
+                ok: true,
+                json: async () => ({
+                    choices: [{
+                        message: {
+                            content: JSON.stringify({ found: false })
+                        }
+                    }]
+                })
+            });
+
+            const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+            process.exit = jest.fn();
+
+            await extractHappyHours(false); // Bulk mode
+
+            // Should NOT abort in bulk mode (fail-safe only applies to incremental)
+            expect(consoleErrorSpy).not.toHaveBeenCalledWith(
+                expect.stringContaining('ABORTING: Too many incremental files')
+            );
+            consoleErrorSpy.mockRestore();
+        });
     });
 });

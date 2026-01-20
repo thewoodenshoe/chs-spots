@@ -12,6 +12,7 @@ const GOLD_DIR = path.join(__dirname, '../data/gold');
 const BULK_COMPLETE_FLAG = path.join(GOLD_DIR, '.bulk-complete');
 const INCREMENTAL_HISTORY_DIR = path.join(GOLD_DIR, 'incremental-history');
 const LLM_INSTRUCTIONS_PATH = path.join(__dirname, '../data/config/llm-instructions.txt');
+const CONFIG_PATH = path.join(__dirname, '../data/config/config.json');
 
 // Ensure gold and incremental history directories exist
 if (!fs.existsSync(GOLD_DIR)) fs.mkdirSync(GOLD_DIR, { recursive: true });
@@ -65,6 +66,28 @@ async function extractHappyHours(isIncremental = false) {
     
     if (isIncremental) {
         console.log(`📁 Found ${venueFiles.length} venue file(s) in incremental folder.`);
+    }
+
+    // COST FAIL-SAFE: Check maxIncrementalFiles limit before processing
+    if (isIncremental) {
+        let maxIncrementalFiles = 15; // Default value
+        try {
+            if (fs.existsSync(CONFIG_PATH)) {
+                const configContent = fs.readFileSync(CONFIG_PATH, 'utf8');
+                const config = JSON.parse(configContent);
+                if (config.pipeline && typeof config.pipeline.maxIncrementalFiles === 'number') {
+                    maxIncrementalFiles = config.pipeline.maxIncrementalFiles;
+                }
+            }
+        } catch (error) {
+            console.warn(`Warning: Could not read config from ${CONFIG_PATH}, using default maxIncrementalFiles=15`);
+        }
+
+        // Hard abort if too many files (unless -1 means unlimited)
+        if (maxIncrementalFiles !== -1 && venueFiles.length > maxIncrementalFiles) {
+            console.error('\x1b[31m%s\x1b[0m', `ABORTING: Too many incremental files (${venueFiles.length} > ${maxIncrementalFiles}). Manual review required to avoid unexpected LLM costs.`);
+            process.exit(1);
+        }
     }
 
     if (isIncremental && !fs.existsSync(BULK_COMPLETE_FLAG)) {
