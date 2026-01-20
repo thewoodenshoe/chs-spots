@@ -199,10 +199,28 @@ function main() {
     } else if (!lastTrim) {
       log(`📅 First run - no previous data to compare\n`);
     } else {
-      // Same day but previous/ is empty - this shouldn't happen normally
-      // But if it does, archive all/ to previous/ to establish baseline
-      log(`⚠️  Same day but previous/ is empty - archiving all/ to previous/ to establish baseline`);
-      archivePreviousDay();
+      // Same day but previous/ is empty - force copy from all/ to previous/ for comparison
+      log(`Populating empty previous/ from all/ for same-day delta`);
+      
+      // Ensure previous/ directory exists
+      if (!fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)) {
+        fs.mkdirSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true });
+      }
+      
+      // Force copy all files from all/ to previous/
+      let copied = 0;
+      for (const file of allFiles) {
+        try {
+          const sourcePath = path.join(SILVER_TRIMMED_ALL_DIR, file);
+          const destPath = path.join(SILVER_TRIMMED_PREVIOUS_DIR, file);
+          fs.copyFileSync(sourcePath, destPath);
+          copied++;
+        } catch (error) {
+          log(`  ⚠️  Failed to copy ${file}: ${error.message}`);
+        }
+      }
+      
+      log(`  ✅ Copied ${copied} file(s) from all/ to previous/ for same-day comparison\n`);
     }
   } else if (lastTrim && lastTrim !== today) {
     // New day and previous/ already has data - archive it (refresh)

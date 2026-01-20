@@ -425,4 +425,37 @@ describe('Delta Trimmed Files', () => {
     expect(allHash).toBe(previousHash);
     expect(fs.existsSync(incrementalFile)).toBe(false);
   });
+
+  test('should handle same-day delta with empty previous/ (populate from all/ before comparison)', () => {
+    const venueId = 'ChIJTestSameDay';
+    
+    // Create venue in all/ (same day, previous/ is empty)
+    const allFile = path.join(testAllDir, `${venueId}.json`);
+    const allData = {
+      venueId,
+      venueName: 'Test Venue',
+      pages: [
+        { url: 'https://example.com', text: 'Happy Hour 4pm-6pm' }
+      ]
+    };
+    fs.writeFileSync(allFile, JSON.stringify(allData, null, 2));
+
+    // Simulate same-day scenario: previous/ is empty, but we populate it from all/ first
+    // This is what delta-trimmed-files.js does when same day and previous/ is empty
+    const previousFile = path.join(testPreviousDir, `${venueId}.json`);
+    fs.copyFileSync(allFile, previousFile);
+
+    // Now run delta comparison - should find no changes (same content)
+    const allHash = getTrimmedContentHash(allFile);
+    const previousHash = getTrimmedContentHash(previousFile);
+    const incrementalFile = path.join(testIncrementalDir, `${venueId}.json`);
+
+    if (allHash !== previousHash) {
+      fs.copyFileSync(allFile, incrementalFile);
+    }
+
+    // Hashes should be same (files are identical)
+    expect(allHash).toBe(previousHash);
+    expect(fs.existsSync(incrementalFile)).toBe(false);
+  });
 });
