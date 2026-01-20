@@ -3,22 +3,16 @@
 import { useMemo, useCallback } from 'react';
 import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
 import { useState } from 'react';
+import { Spot } from '@/contexts/SpotsContext';
 
-interface Spot {
-  title: string;
-  lat: number;
-  lng: number;
-  description?: string;
-  activity?: string;
-  area?: string;
-  happyHourTime?: string;
-  happyHourList?: string[];
-  sourceUrl?: string;
-  lastUpdateDate?: string;
+// Extended Spot type for Map component (includes legacy fields for backwards compatibility)
+interface MapSpot extends Spot {
+  activity?: string; // Legacy field, maps to type in new format
+  area?: string; // Computed from coordinates or from venue data
 }
 
 interface MapProps {
-  spots: Spot[];
+  spots: MapSpot[];
   selectedArea?: string;
   selectedActivity?: string;
 }
@@ -34,7 +28,7 @@ const defaultCenter = {
 };
 
 export default function Map({ spots, selectedArea, selectedActivity }: MapProps) {
-  const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
+  const [selectedSpot, setSelectedSpot] = useState<MapSpot | null>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
 
   // Filter spots based on selected area and activity
@@ -132,10 +126,10 @@ export default function Map({ spots, selectedArea, selectedActivity }: MapProps)
               )}
               
               {/* Structured happy hour display with labels */}
-              {selectedSpot?.happyHourTime && (
+              {selectedSpot && (
                 <div className="mb-2">
                   <span className="font-semibold text-gray-700 text-sm">Time: </span>
-                  <span className="text-gray-800 text-sm">{selectedSpot.happyHourTime}</span>
+                  <span className="text-gray-800 text-sm">{selectedSpot?.happyHourTime || 'Not specified'}</span>
                 </div>
               )}
               
