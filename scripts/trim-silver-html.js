@@ -76,6 +76,43 @@ if (!fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
 }
 
 /**
+ * Normalize URL by removing query parameters
+ */
+function normalizeUrl(url) {
+  if (!url || typeof url !== 'string') {
+    return url || '';
+  }
+  // Keep only base path (remove query string and hash)
+  return url.split('?')[0].split('#')[0];
+}
+
+/**
+ * Normalize text by removing dynamic noise that causes false-positive deltas
+ */
+function normalizeText(text) {
+  if (!text || typeof text !== 'string') {
+    return '';
+  }
+  
+  let normalized = text;
+  const originalLength = normalized.length;
+  
+  // Remove ISO timestamps (e.g., "2026-01-20T15:34:58.724Z" or "2026-01-20")
+  normalized = normalized.replace(/\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?/g, '');
+  
+  // Remove common month-day patterns (e.g., "Jan 20", "Jan 20, 2026", "January 20, 2026")
+  normalized = normalized.replace(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(,\s+\d{4})?\b/gi, '');
+  
+  // Remove "Loading..." or placeholder phrases
+  normalized = normalized.replace(/Loading\s+product\s+options\.\.\.|Loading\.\.\./gi, '');
+  
+  // Collapse all whitespace to single spaces and trim
+  normalized = normalized.replace(/\s+/g, ' ').trim();
+  
+  return normalized;
+}
+
+/**
  * Trim HTML and extract visible text
  */
 function trimHtml(html) {
@@ -233,15 +270,39 @@ function processVenueFile(venueId, areaFilter = null) {
     const trimmedSize = trimmedText.length;
     totalTrimmedSize += trimmedSize;
     
+    // Normalize text and URL for hash computation
+    const cleanUrl = normalizeUrl(page.url);
+    const cleanText = normalizeText(trimmedText);
+    const normalizedLength = cleanText.length;
+    
+    // Compute hash based on normalized content (not raw HTML)
+    // This ensures identical content with different timestamps/params has same hash
+    const contentHash = crypto.createHash('md5')
+      .update(cleanText)
+      .digest('hex');
+    
+    // Log normalization if significant change
+    if (trimmedText.length !== normalizedLength) {
+      log(`  📝 Normalized text length: ${trimmedText.length} → ${normalizedLength} chars (${venueId} - ${cleanUrl})`);
+    }
+    if (page.url !== cleanUrl) {
+      log(`  🔗 URL cleaned: ${page.url} → ${cleanUrl} (${venueId})`);
+    }
+    
+    // Check if hash changed from original (if original hash exists)
+    if (page.hash && page.hash !== contentHash) {
+      log(`  ⚠️  Hash changed due to normalization on ${venueId} - ${cleanUrl}`);
+    }
+    
     // Calculate size reduction
     const reduction = originalSize > 0 
       ? ((originalSize - trimmedSize) / originalSize * 100).toFixed(1) + '%'
       : '0%';
     
     trimmedPages.push({
-      url: page.url,
-      text: trimmedText,
-      hash: page.hash,
+      url: page.url, // Keep original URL for reference
+      text: trimmedText, // Keep original trimmed text for LLM processing
+      hash: contentHash, // Use normalized hash for change detection
       downloadedAt: page.downloadedAt,
       trimmedAt: new Date().toISOString(),
       sizeReduction: reduction
@@ -473,4 +534,4 @@ if (require.main === module) {
 }
 
 // Export for testing
-module.exports = { trimHtml, processVenueFile };
+module.exports = { trimHtml, processVenueFile, normalizeText, normalizeUrl };

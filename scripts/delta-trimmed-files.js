@@ -49,13 +49,34 @@ if (!fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)) {
 
 /**
  * Get trimmed content hash from a trimmed JSON file
- * Uses the text content from pages array
+ * Uses the hash field from pages array (which is already normalized)
+ * Falls back to computing hash from normalized text if hash field missing
  */
 function getTrimmedContentHash(filePath) {
   try {
     const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    // Extract all text content from pages
-    const pagesContent = (data.pages || []).map(p => p.text || '').join('\n');
+    const pages = data.pages || [];
+    
+    // Use page.hash if available (already normalized), otherwise compute from text
+    if (pages.length > 0 && pages[0].hash) {
+      // Concatenate all page hashes for venue-level hash
+      const allHashes = pages.map(p => p.hash || '').join('');
+      return crypto.createHash('md5').update(allHashes).digest('hex');
+    }
+    
+    // Fallback: compute hash from normalized text (for backwards compatibility)
+    const pagesContent = pages.map(p => {
+      // Normalize text if needed (should already be normalized, but be safe)
+      let text = p.text || '';
+      // Remove ISO timestamps
+      text = text.replace(/\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?/g, '');
+      // Remove month-day patterns
+      text = text.replace(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(,\s+\d{4})?\b/gi, '');
+      // Collapse whitespace
+      text = text.replace(/\s+/g, ' ').trim();
+      return text;
+    }).join('\n');
+    
     return crypto.createHash('md5').update(pagesContent).digest('hex');
   } catch (error) {
     log(`  ⚠️  Error reading file ${filePath}: ${error.message}`);

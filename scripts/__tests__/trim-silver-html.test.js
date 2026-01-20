@@ -6,7 +6,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { trimHtml, processVenueFile } = require('../trim-silver-html');
+const { trimHtml, processVenueFile, normalizeText, normalizeUrl } = require('../trim-silver-html');
 
 // Test directories
 const TEST_DIR = path.join(__dirname, '../../.test-trim-silver');
@@ -227,6 +227,168 @@ describe('trim-silver-html.js', () => {
       expect(trimmedSize).toBeLessThan(originalSize);
       expect(trimmedSize / originalSize).toBeLessThan(0.5); // Should be < 50% of original
       expect(trimmedText).toContain('Actual content');
+    });
+  });
+
+  describe('normalizeUrl function', () => {
+    test('should remove query parameters from URL', () => {
+      const url = 'https://example.com/menu?gad_source=1&matchtype=p&utm_source=google';
+      const result = normalizeUrl(url);
+      expect(result).toBe('https://example.com/menu');
+    });
+
+    test('should remove hash fragments from URL', () => {
+      const url = 'https://example.com/menu#section1';
+      const result = normalizeUrl(url);
+      expect(result).toBe('https://example.com/menu');
+    });
+
+    test('should remove both query and hash', () => {
+      const url = 'https://example.com/menu?param=value#section';
+      const result = normalizeUrl(url);
+      expect(result).toBe('https://example.com/menu');
+    });
+
+    test('should handle URL without query or hash', () => {
+      const url = 'https://example.com/menu';
+      const result = normalizeUrl(url);
+      expect(result).toBe('https://example.com/menu');
+    });
+
+    test('should handle empty or null URL', () => {
+      expect(normalizeUrl('')).toBe('');
+      expect(normalizeUrl(null)).toBe('');
+      expect(normalizeUrl(undefined)).toBe('');
+    });
+  });
+
+  describe('normalizeText function', () => {
+    test('should remove ISO timestamps', () => {
+      const text = 'Happy Hour 2026-01-20T15:34:58.724Z Monday-Friday';
+      const result = normalizeText(text);
+      expect(result).not.toContain('2026-01-20T15:34:58.724Z');
+      expect(result).toContain('Happy Hour');
+      expect(result).toContain('Monday-Friday');
+    });
+
+    test('should remove date-only timestamps', () => {
+      const text = 'Updated 2026-01-20 Happy Hour specials';
+      const result = normalizeText(text);
+      expect(result).not.toContain('2026-01-20');
+      expect(result).toContain('Updated');
+      expect(result).toContain('Happy Hour specials');
+    });
+
+    test('should remove month-day patterns', () => {
+      const text = 'Happy Hour Jan 20, 2026 Monday-Friday 4pm-7pm';
+      const result = normalizeText(text);
+      expect(result).not.toContain('Jan 20, 2026');
+      expect(result).toContain('Happy Hour');
+      expect(result).toContain('Monday-Friday 4pm-7pm');
+    });
+
+    test('should remove month-day without year', () => {
+      const text = 'Special on Jan 20 Monday-Friday';
+      const result = normalizeText(text);
+      expect(result).not.toContain('Jan 20');
+      expect(result).toContain('Special on');
+      expect(result).toContain('Monday-Friday');
+    });
+
+    test('should remove full month names', () => {
+      const text = 'Happy Hour January 20, 2026 Specials';
+      const result = normalizeText(text);
+      expect(result).not.toContain('January 20, 2026');
+      expect(result).toContain('Happy Hour');
+      expect(result).toContain('Specials');
+    });
+
+    test('should remove loading placeholders', () => {
+      const text = 'Loading product options... Happy Hour 4pm-7pm';
+      const result = normalizeText(text);
+      expect(result).not.toContain('Loading product options...');
+      expect(result).not.toContain('Loading...');
+      expect(result).toContain('Happy Hour 4pm-7pm');
+    });
+
+    test('should collapse whitespace', () => {
+      const text = 'Happy   Hour   4pm-7pm\n\n\nMonday-Friday';
+      const result = normalizeText(text);
+      expect(result).not.toMatch(/\s{2,}/); // No multiple spaces
+      expect(result).toContain('Happy Hour 4pm-7pm');
+      expect(result).toContain('Monday-Friday');
+    });
+
+    test('should handle text with multiple normalization needs', () => {
+      const text = 'Updated 2026-01-20T15:34:58.724Z Happy Hour Jan 20, 2026 Loading... 4pm-7pm   Monday-Friday';
+      const result = normalizeText(text);
+      expect(result).not.toContain('2026-01-20T15:34:58.724Z');
+      expect(result).not.toContain('Jan 20, 2026');
+      expect(result).not.toContain('Loading...');
+      expect(result).toContain('Updated');
+      expect(result).toContain('Happy Hour');
+      expect(result).toContain('4pm-7pm');
+      expect(result).toContain('Monday-Friday');
+    });
+
+    test('should preserve real date-based specials (not scrape dates)', () => {
+      // Real specials like "Monday-Friday" or "4pm-7pm" should be preserved
+      const text = 'Happy Hour Monday-Friday 4pm-7pm $5 beers';
+      const result = normalizeText(text);
+      expect(result).toContain('Monday-Friday');
+      expect(result).toContain('4pm-7pm');
+      expect(result).toContain('$5 beers');
+    });
+
+    test('should handle empty or null text', () => {
+      expect(normalizeText('')).toBe('');
+      expect(normalizeText(null)).toBe('');
+      expect(normalizeText(undefined)).toBe('');
+    });
+  });
+
+  describe('Hash stability with normalization', () => {
+    test('should produce same hash for identical content with different timestamps', () => {
+      const crypto = require('crypto');
+      
+      const text1 = 'Happy Hour 2026-01-20T15:34:58.724Z Monday-Friday 4pm-7pm';
+      const text2 = 'Happy Hour 2026-01-21T16:45:12.123Z Monday-Friday 4pm-7pm';
+      
+      const normalized1 = normalizeText(text1);
+      const normalized2 = normalizeText(text2);
+      
+      const hash1 = crypto.createHash('md5').update(normalized1).digest('hex');
+      const hash2 = crypto.createHash('md5').update(normalized2).digest('hex');
+      
+      expect(hash1).toBe(hash2);
+    });
+
+    test('should produce same hash for identical content with different query params', () => {
+      const crypto = require('crypto');
+      
+      const url1 = 'https://example.com/menu?gad_source=1&matchtype=p';
+      const url2 = 'https://example.com/menu?utm_source=google';
+      
+      const cleanUrl1 = normalizeUrl(url1);
+      const cleanUrl2 = normalizeUrl(url2);
+      
+      expect(cleanUrl1).toBe(cleanUrl2);
+      expect(cleanUrl1).toBe('https://example.com/menu');
+    });
+
+    test('should produce different hash for different content', () => {
+      const crypto = require('crypto');
+      
+      const text1 = 'Happy Hour Monday-Friday 4pm-7pm';
+      const text2 = 'Happy Hour Monday-Friday 5pm-8pm'; // Different time
+      
+      const normalized1 = normalizeText(text1);
+      const normalized2 = normalizeText(text2);
+      
+      const hash1 = crypto.createHash('md5').update(normalized1).digest('hex');
+      const hash2 = crypto.createHash('md5').update(normalized2).digest('hex');
+      
+      expect(hash1).not.toBe(hash2);
     });
   });
 
