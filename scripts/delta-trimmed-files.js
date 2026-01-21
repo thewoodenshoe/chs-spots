@@ -66,7 +66,15 @@ function normalizeTextForHash(text) {
   // Remove "Loading..." or placeholder phrases
   normalized = normalized.replace(/Loading\s+product\s+options\.\.\.|Loading\.\.\./gi, '');
   
-  // Collapse all whitespace to single spaces and trim
+  // Remove Google Analytics / GTM IDs (e.g., "gtm-abc123", "UA-123456-7")
+  normalized = normalized.replace(/gtm-[a-z0-9]+/gi, '');
+  normalized = normalized.replace(/UA-\d+-\d+/g, '');
+  
+  // Remove common dynamic footers (e.g., "Copyright © 2026", "All rights reserved")
+  normalized = normalized.replace(/Copyright\s+©\s+\d{4}/gi, '');
+  normalized = normalized.replace(/All\s+rights\s+reserved/gi, '');
+  
+  // Collapse all whitespace (spaces, tabs, newlines) to single spaces and trim
   normalized = normalized.replace(/\s+/g, ' ').trim();
   
   return normalized;
@@ -75,15 +83,19 @@ function normalizeTextForHash(text) {
 /**
  * Get trimmed content hash from a trimmed JSON file
  * Always normalizes text before hashing to ensure consistent comparison
- * Uses page.hash if it looks normalized (32 char hex), otherwise normalizes text
+ * Uses venueHash if available (from new trim-silver-html.js), otherwise computes from pages
  */
 function getTrimmedContentHash(filePath) {
   try {
     const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    const pages = data.pages || [];
     
-    // Always normalize and compute hash from text to ensure consistency
-    // This handles both old files (with raw HTML hash) and new files (with normalized hash)
+    // If venueHash is present (from new trim-silver-html.js), use it directly
+    if (data.venueHash) {
+      return data.venueHash;
+    }
+    
+    // Fallback: compute hash from normalized page texts (for backwards compatibility)
+    const pages = data.pages || [];
     const pagesContent = pages.map(p => {
       const text = p.text || '';
       // Normalize text (same as trim-silver-html.js)
@@ -181,33 +193,50 @@ function main() {
   const lastTrim = getLastTrimDate();
   
   // Check if previous/ directory exists and has files
-  const previousFiles = fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR) 
+  let previousFiles = fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR) 
     ? fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'))
     : [];
-  const allFiles = fs.existsSync(SILVER_TRIMMED_ALL_DIR)
+  let allFiles = fs.existsSync(SILVER_TRIMMED_ALL_DIR)
     ? fs.readdirSync(SILVER_TRIMMED_ALL_DIR).filter(f => f.endsWith('.json'))
     : [];
   
-  // If previous/ is empty but all/ has files, we need to archive all/ to previous/ first
+  // Debug logging: show file counts and sample filenames
+  log(`📊 File counts: previous/ contains ${previousFiles.length} file(s), all/ contains ${allFiles.length} file(s)`);
+  if (previousFiles.length > 0) {
+    const firstFivePrevious = previousFiles.slice(0, 5);
+    log(`   First 5 files in previous/: ${firstFivePrevious.join(', ')}`);
+  }
+  if (allFiles.length > 0) {
+    const firstFiveAll = allFiles.slice(0, 5);
+    log(`   First 5 files in all/: ${firstFiveAll.join(', ')}`);
+  }
+  log('');
+  
+  // If previous/ is empty but all/ has files, we need to populate previous/ first
   // This handles the case where trim ran and populated all/ but previous/ wasn't archived yet
   if (previousFiles.length === 0 && allFiles.length > 0) {
     if (lastTrim && lastTrim !== today) {
       // New day - archive current all/ to previous/ (this is yesterday's data)
       log(`📅 New day detected (${today}, previous: ${lastTrim})`);
       log(`📦 Archiving current all/ to previous/ (yesterday's data)...`);
-      archivePreviousDay();
+      const archived = archivePreviousDay();
+      if (archived) {
+        // Re-read previousFiles after archive
+        previousFiles = fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'));
+        log(`   ✅ After archive: previous/ now contains ${previousFiles.length} file(s)\n`);
+      }
     } else if (!lastTrim) {
       log(`📅 First run - no previous data to compare\n`);
     } else {
       // Same day but previous/ is empty - force copy from all/ to previous/ for comparison
-      log(`Populating empty previous/ from all/ for same-day delta`);
+      log(`⚠️  Same day but previous/ is empty - Populating empty previous/ from all/ for same-day delta`);
       
       // Ensure previous/ directory exists
       if (!fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)) {
         fs.mkdirSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true });
       }
       
-      // Force copy all files from all/ to previous/
+      // Force copy all files from all/ to previous/ with exact filenames
       let copied = 0;
       for (const file of allFiles) {
         try {
@@ -220,13 +249,20 @@ function main() {
         }
       }
       
-      log(`  ✅ Copied ${copied} file(s) from all/ to previous/ for same-day comparison\n`);
+      log(`  ✅ Copied ${copied} file(s) from all/ to previous/ for same-day comparison`);
+      
+      // Re-read previousFiles after copy
+      previousFiles = fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'));
+      log(`   ✅ After copy: previous/ now contains ${previousFiles.length} file(s)\n`);
     }
-  } else if (lastTrim && lastTrim !== today) {
+  } else if (lastTrim && lastTrim !== today && previousFiles.length > 0) {
     // New day and previous/ already has data - archive it (refresh)
     log(`📅 New day detected (${today}, previous: ${lastTrim})`);
     log(`📦 Archiving previous day's trimmed data...`);
     archivePreviousDay();
+    // Re-read previousFiles after archive
+    previousFiles = fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'));
+    log(`   ✅ After archive: previous/ now contains ${previousFiles.length} file(s)\n`);
   } else if (!lastTrim) {
     log(`📅 First run - no previous data to compare\n`);
   } else {
@@ -250,7 +286,13 @@ function main() {
     ? fs.readdirSync(SILVER_TRIMMED_ALL_DIR).filter(f => f.endsWith('.json'))
     : [];
   
-  log(`📁 Found ${allFilesList.length} venue file(s) in silver_trimmed/all/\n`);
+  // Refresh previousFiles list as well
+  const previousFilesList = fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)
+    ? fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'))
+    : [];
+  
+  log(`📁 Found ${allFilesList.length} venue file(s) in silver_trimmed/all/`);
+  log(`📁 Found ${previousFilesList.length} venue file(s) in silver_trimmed/previous/\n`);
   
   let newVenues = 0;
   let changedVenues = 0;
@@ -268,6 +310,14 @@ function main() {
       // New venue - copy to incremental
       fs.copyFileSync(allFilePath, incrementalFilePath);
       log(`  ✨ New venue: ${venueId}`);
+      newVenues++;
+      continue;
+    }
+    
+    // Verify file exists in previousFilesList (sanity check)
+    if (!previousFilesList.includes(file)) {
+      log(`  ⚠️  WARNING: File ${file} exists in previous/ but not in previousFilesList - treating as new`);
+      fs.copyFileSync(allFilePath, incrementalFilePath);
       newVenues++;
       continue;
     }

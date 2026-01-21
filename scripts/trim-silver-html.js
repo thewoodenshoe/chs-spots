@@ -76,14 +76,25 @@ if (!fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
 }
 
 /**
- * Normalize URL by removing query parameters
+ * Normalize URL by removing query parameters and tracking tokens
  */
 function normalizeUrl(url) {
   if (!url || typeof url !== 'string') {
     return url || '';
   }
-  // Keep only base path (remove query string and hash)
-  return url.split('?')[0].split('#')[0];
+  try {
+    const urlObj = new URL(url);
+    // Remove common tracking parameters (fbclid, gclid, utm_*, sid, etc.)
+    const trackingParams = ['fbclid', 'gclid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'sid', '_ga', '_gid', 'ref', 'source'];
+    trackingParams.forEach(param => {
+      urlObj.searchParams.delete(param);
+    });
+    // Keep only base path (remove query string and hash)
+    return urlObj.origin + urlObj.pathname;
+  } catch (e) {
+    // Fallback for malformed URLs: remove query string and hash
+    return url.split('?')[0].split('#')[0];
+  }
 }
 
 /**
@@ -106,7 +117,16 @@ function normalizeText(text) {
   // Remove "Loading..." or placeholder phrases
   normalized = normalized.replace(/Loading\s+product\s+options\.\.\.|Loading\.\.\./gi, '');
   
-  // Collapse all whitespace to single spaces and trim
+  // Remove Google Analytics / GTM IDs (e.g., "gtm-abc123", "UA-123456-7")
+  normalized = normalized.replace(/gtm-[a-z0-9]+/gi, '');
+  normalized = normalized.replace(/UA-\d+-\d+/g, '');
+  
+  // Remove common dynamic footers (e.g., "Copyright © 2026", "All rights reserved")
+  normalized = normalized.replace(/Copyright\s+©\s+\d{4}/gi, '');
+  normalized = normalized.replace(/All\s+rights\s+reserved/gi, '');
+  
+  // Collapse all whitespace (spaces, tabs, newlines) to single spaces and trim
+  // More aggressive: replace any sequence of whitespace with single space
   normalized = normalized.replace(/\s+/g, ' ').trim();
   
   return normalized;
@@ -275,10 +295,10 @@ function processVenueFile(venueId, areaFilter = null) {
     const cleanText = normalizeText(trimmedText);
     const normalizedLength = cleanText.length;
     
-    // Compute hash based on normalized content (not raw HTML)
+    // Compute hash based on normalized URL + text (not raw HTML)
     // This ensures identical content with different timestamps/params has same hash
     const contentHash = crypto.createHash('md5')
-      .update(cleanText)
+      .update(cleanUrl + cleanText)
       .digest('hex');
     
     // Log normalization if significant change
@@ -309,6 +329,15 @@ function processVenueFile(venueId, areaFilter = null) {
     });
   }
   
+  // Compute the final venue hash only on the concatenated normalized page texts
+  // (ignore metadata fields like scrapedAt, trimmedAt, downloadedAt)
+  const venueContentForHash = trimmedPages.map(p => {
+    // Use normalized text for hash (same as page.hash computation)
+    const cleanText = normalizeText(p.text);
+    return cleanText;
+  }).join('\n');
+  const venueHash = crypto.createHash('md5').update(venueContentForHash).digest('hex');
+  
   // Create trimmed data structure
   const trimmedData = {
     venueId: silverData.venueId,
@@ -317,7 +346,8 @@ function processVenueFile(venueId, areaFilter = null) {
     website: silverData.website || null,
     scrapedAt: silverData.scrapedAt,
     trimmedAt: new Date().toISOString(),
-    pages: trimmedPages
+    pages: trimmedPages,
+    venueHash: venueHash // Store venue-level hash for delta comparison
   };
   
   // Calculate overall size reduction
@@ -418,20 +448,37 @@ function main() {
         }
         fs.mkdirSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true });
         
-        // Copy all files from all/ to previous/
+        // Copy all files from all/ to previous/ with exact filenames preserved
         let archived = 0;
+        const firstFiveFiles = [];
         for (const file of allFiles) {
           try {
             const sourcePath = path.join(SILVER_TRIMMED_ALL_DIR, file);
             const destPath = path.join(SILVER_TRIMMED_PREVIOUS_DIR, file);
             fs.copyFileSync(sourcePath, destPath);
             archived++;
+            if (archived <= 5) {
+              firstFiveFiles.push(file);
+            }
           } catch (error) {
             log(`  ⚠️  Failed to archive ${file}: ${error.message}`);
           }
         }
         log(`  ✅ Archived ${archived} file(s) to silver_trimmed/previous/`);
+        log(`  📋 First 5 archived files: ${firstFiveFiles.join(', ')}`);
+        
+        // Verify previous/ now contains the expected number of files
+        const previousFilesAfterArchive = fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'));
+        log(`  ✅ previous/ now contains ${previousFilesAfterArchive.length} file(s)`);
+        
+        if (previousFilesAfterArchive.length !== archived) {
+          log(`  ⚠️  WARNING: Archive count mismatch! Expected ${archived}, found ${previousFilesAfterArchive.length}`);
+        }
+      } else {
+        log(`  ⚠️  No files in all/ to archive`);
       }
+    } else {
+      log(`  ⚠️  all/ directory does not exist`);
     }
     
     // Then move yesterday's incremental to all/

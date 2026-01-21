@@ -260,6 +260,37 @@ describe('trim-silver-html.js', () => {
       expect(normalizeUrl(null)).toBe('');
       expect(normalizeUrl(undefined)).toBe('');
     });
+
+    test('should remove fbclid tracking parameter', () => {
+      const url = 'https://example.com/menu?fbclid=IwAR123456';
+      const result = normalizeUrl(url);
+      expect(result).toBe('https://example.com/menu');
+    });
+
+    test('should remove gclid tracking parameter', () => {
+      const url = 'https://example.com/menu?gclid=abc123';
+      const result = normalizeUrl(url);
+      expect(result).toBe('https://example.com/menu');
+    });
+
+    test('should remove utm_* tracking parameters', () => {
+      const url = 'https://example.com/menu?utm_source=google&utm_medium=cpc&utm_campaign=test';
+      const result = normalizeUrl(url);
+      expect(result).toBe('https://example.com/menu');
+    });
+
+    test('should remove multiple tracking parameters', () => {
+      const url = 'https://example.com/menu?fbclid=IwAR123&gclid=abc456&utm_source=google&sid=xyz789';
+      const result = normalizeUrl(url);
+      expect(result).toBe('https://example.com/menu');
+    });
+
+    test('should handle malformed URLs gracefully', () => {
+      const url = 'invalid-url?fbclid=123&param=value';
+      const result = normalizeUrl(url);
+      // Should fallback to simple split
+      expect(result).toBe('invalid-url');
+    });
   });
 
   describe('normalizeText function', () => {
@@ -344,6 +375,40 @@ describe('trim-silver-html.js', () => {
       expect(normalizeText('')).toBe('');
       expect(normalizeText(null)).toBe('');
       expect(normalizeText(undefined)).toBe('');
+    });
+
+    test('should remove Google Analytics / GTM IDs', () => {
+      const text = 'Happy Hour 4pm-7pm gtm-abc123 Monday-Friday';
+      const result = normalizeText(text);
+      expect(result).not.toContain('gtm-abc123');
+      expect(result).toContain('Happy Hour 4pm-7pm');
+      expect(result).toContain('Monday-Friday');
+    });
+
+    test('should remove UA tracking codes', () => {
+      const text = 'Happy Hour 4pm-7pm UA-123456-7 Monday-Friday';
+      const result = normalizeText(text);
+      expect(result).not.toContain('UA-123456-7');
+      expect(result).toContain('Happy Hour 4pm-7pm');
+      expect(result).toContain('Monday-Friday');
+    });
+
+    test('should remove copyright footers', () => {
+      const text = 'Happy Hour 4pm-7pm Copyright © 2026 All rights reserved';
+      const result = normalizeText(text);
+      expect(result).not.toContain('Copyright © 2026');
+      expect(result).not.toContain('All rights reserved');
+      expect(result).toContain('Happy Hour 4pm-7pm');
+    });
+
+    test('should remove copyright with different years', () => {
+      const text1 = 'Happy Hour 4pm-7pm Copyright © 2025';
+      const text2 = 'Happy Hour 4pm-7pm Copyright © 2026';
+      const result1 = normalizeText(text1);
+      const result2 = normalizeText(text2);
+      // After normalization, both should be the same (copyright removed)
+      expect(result1).toBe(result2);
+      expect(result1).toContain('Happy Hour 4pm-7pm');
     });
   });
 

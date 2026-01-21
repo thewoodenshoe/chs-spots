@@ -26,6 +26,14 @@ function normalizeTextForHash(text) {
   // Remove loading placeholders
   normalized = normalized.replace(/Loading\s+product\s+options\.\.\.|Loading\.\.\./gi, '');
   
+  // Remove Google Analytics / GTM IDs
+  normalized = normalized.replace(/gtm-[a-z0-9]+/gi, '');
+  normalized = normalized.replace(/UA-\d+-\d+/g, '');
+  
+  // Remove common dynamic footers
+  normalized = normalized.replace(/Copyright\s+©\s+\d{4}/gi, '');
+  normalized = normalized.replace(/All\s+rights\s+reserved/gi, '');
+  
   // Collapse whitespace
   normalized = normalized.replace(/\s+/g, ' ').trim();
   
@@ -457,5 +465,143 @@ describe('Delta Trimmed Files', () => {
     // Hashes should be same (files are identical)
     expect(allHash).toBe(previousHash);
     expect(fs.existsSync(incrementalFile)).toBe(false);
+  });
+
+  test('should normalize text and ignore GTM IDs', () => {
+    const venueId = 'ChIJTestGTM';
+    
+    // Previous day's content with GTM ID
+    const previousFile = path.join(testPreviousDir, `${venueId}.json`);
+    const previousData = {
+      venueId,
+      venueName: 'Test Venue',
+      pages: [
+        { url: 'https://example.com', text: 'Happy Hour 4pm-6pm gtm-abc123' }
+      ]
+    };
+    fs.writeFileSync(previousFile, JSON.stringify(previousData, null, 2));
+
+    // Today's content with different GTM ID (should normalize to same)
+    const allFile = path.join(testAllDir, `${venueId}.json`);
+    const allData = {
+      venueId,
+      venueName: 'Test Venue',
+      pages: [
+        { url: 'https://example.com', text: 'Happy Hour 4pm-6pm gtm-xyz789' }
+      ]
+    };
+    fs.writeFileSync(allFile, JSON.stringify(allData, null, 2));
+
+    // Run delta comparison logic
+    const allHash = getTrimmedContentHash(allFile);
+    const previousHash = getTrimmedContentHash(previousFile);
+    const incrementalFile = path.join(testIncrementalDir, `${venueId}.json`);
+
+    if (allHash !== previousHash) {
+      fs.copyFileSync(allFile, incrementalFile);
+    }
+
+    // Hashes should be same after normalization (GTM IDs removed)
+    expect(allHash).toBe(previousHash);
+    expect(fs.existsSync(incrementalFile)).toBe(false);
+  });
+
+  test('should normalize text and ignore copyright footers', () => {
+    const venueId = 'ChIJTestCopyright';
+    
+    // Previous day's content with copyright
+    const previousFile = path.join(testPreviousDir, `${venueId}.json`);
+    const previousData = {
+      venueId,
+      venueName: 'Test Venue',
+      pages: [
+        { url: 'https://example.com', text: 'Happy Hour 4pm-6pm Copyright © 2025 All rights reserved' }
+      ]
+    };
+    fs.writeFileSync(previousFile, JSON.stringify(previousData, null, 2));
+
+    // Today's content with different year (should normalize to same)
+    const allFile = path.join(testAllDir, `${venueId}.json`);
+    const allData = {
+      venueId,
+      venueName: 'Test Venue',
+      pages: [
+        { url: 'https://example.com', text: 'Happy Hour 4pm-6pm Copyright © 2026 All rights reserved' }
+      ]
+    };
+    fs.writeFileSync(allFile, JSON.stringify(allData, null, 2));
+
+    // Run delta comparison logic
+    const allHash = getTrimmedContentHash(allFile);
+    const previousHash = getTrimmedContentHash(previousFile);
+    const incrementalFile = path.join(testIncrementalDir, `${venueId}.json`);
+
+    if (allHash !== previousHash) {
+      fs.copyFileSync(allFile, incrementalFile);
+    }
+
+    // Hashes should be same after normalization (copyright removed)
+    expect(allHash).toBe(previousHash);
+    expect(fs.existsSync(incrementalFile)).toBe(false);
+  });
+
+  test('should handle new-day archive: previous/ empty → archive copies all files → delta finds 0 new/changed', () => {
+    // Simulate new day scenario: all/ has files, previous/ is empty
+    const venueId1 = 'ChIJTestNewDay1';
+    const venueId2 = 'ChIJTestNewDay2';
+    
+    // Create files in all/
+    const allFile1 = path.join(testAllDir, `${venueId1}.json`);
+    const allFile2 = path.join(testAllDir, `${venueId2}.json`);
+    const allData1 = {
+      venueId: venueId1,
+      venueName: 'Test Venue 1',
+      pages: [{ url: 'https://example.com/1', text: 'Happy Hour 4pm-6pm' }]
+    };
+    const allData2 = {
+      venueId: venueId2,
+      venueName: 'Test Venue 2',
+      pages: [{ url: 'https://example.com/2', text: 'Happy Hour 5pm-7pm' }]
+    };
+    fs.writeFileSync(allFile1, JSON.stringify(allData1, null, 2));
+    fs.writeFileSync(allFile2, JSON.stringify(allData2, null, 2));
+
+    // Simulate archive: copy all files from all/ to previous/ (exact filenames preserved)
+    const previousFile1 = path.join(testPreviousDir, `${venueId1}.json`);
+    const previousFile2 = path.join(testPreviousDir, `${venueId2}.json`);
+    fs.copyFileSync(allFile1, previousFile1);
+    fs.copyFileSync(allFile2, previousFile2);
+
+    // Verify files exist in previous/ with exact same filenames
+    expect(fs.existsSync(previousFile1)).toBe(true);
+    expect(fs.existsSync(previousFile2)).toBe(true);
+    
+    const previousFiles = fs.readdirSync(testPreviousDir).filter(f => f.endsWith('.json'));
+    expect(previousFiles.length).toBe(2);
+    expect(previousFiles).toContain(`${venueId1}.json`);
+    expect(previousFiles).toContain(`${venueId2}.json`);
+
+    // Now run delta comparison - should find 0 new, 0 changed (files are identical)
+    let newVenues = 0;
+    let changedVenues = 0;
+    
+    for (const file of fs.readdirSync(testAllDir).filter(f => f.endsWith('.json'))) {
+      const venueId = path.basename(file, '.json');
+      const allFilePath = path.join(testAllDir, file);
+      const previousFilePath = path.join(testPreviousDir, file);
+      
+      if (!fs.existsSync(previousFilePath)) {
+        newVenues++;
+      } else {
+        const allHash = getTrimmedContentHash(allFilePath);
+        const previousHash = getTrimmedContentHash(previousFilePath);
+        if (allHash !== previousHash) {
+          changedVenues++;
+        }
+      }
+    }
+
+    expect(newVenues).toBe(0);
+    expect(changedVenues).toBe(0);
   });
 });
