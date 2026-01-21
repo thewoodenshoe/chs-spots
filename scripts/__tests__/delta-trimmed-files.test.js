@@ -3,7 +3,7 @@ const path = require('path');
 const crypto = require('crypto');
 
 // Mock the delta-trimmed-files.js script
-const SILVER_TRIMMED_ALL_DIR = path.join(__dirname, '../../data/silver_trimmed/all');
+const SILVER_TRIMMED_TODAY_DIR = path.join(__dirname, '../../data/silver_trimmed/today');
 const SILVER_TRIMMED_PREVIOUS_DIR = path.join(__dirname, '../../data/silver_trimmed/previous');
 const SILVER_TRIMMED_INCREMENTAL_DIR = path.join(__dirname, '../../data/silver_trimmed/incremental');
 
@@ -75,18 +75,18 @@ function cleanTestDir(dirPath) {
 
 describe('Delta Trimmed Files', () => {
   const testBaseDir = path.join(__dirname, '../..', 'data', 'silver_trimmed');
-  const testAllDir = path.join(testBaseDir, 'all');
+  const testTodayDir = path.join(testBaseDir, 'today');
   const testPreviousDir = path.join(testBaseDir, 'previous');
   const testIncrementalDir = path.join(testBaseDir, 'incremental');
 
   beforeEach(() => {
     // Clean test directories
-    cleanTestDir(testAllDir);
+    cleanTestDir(testTodayDir);
     cleanTestDir(testPreviousDir);
     cleanTestDir(testIncrementalDir);
     
     // Ensure directories exist
-    [testAllDir, testPreviousDir, testIncrementalDir].forEach(dir => {
+    [testTodayDir, testPreviousDir, testIncrementalDir].forEach(dir => {
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
@@ -95,15 +95,15 @@ describe('Delta Trimmed Files', () => {
 
   afterEach(() => {
     // Clean up test directories
-    cleanTestDir(testAllDir);
+    cleanTestDir(testTodayDir);
     cleanTestDir(testPreviousDir);
     cleanTestDir(testIncrementalDir);
   });
 
   test('should detect new venue (not in previous)', () => {
-    // Create a new venue in all/ but not in previous/
+    // Create a new venue in today/ but not in previous/
     const venueId = 'ChIJTest123';
-    const allFile = path.join(testAllDir, `${venueId}.json`);
+    const todayFile = path.join(testTodayDir, `${venueId}.json`);
     const trimmedData = {
       venueId,
       venueName: 'Test Venue',
@@ -111,12 +111,12 @@ describe('Delta Trimmed Files', () => {
         { url: 'https://example.com', text: 'Happy Hour 4pm-6pm' }
       ]
     };
-    fs.writeFileSync(allFile, JSON.stringify(trimmedData, null, 2));
+    fs.writeFileSync(todayFile, JSON.stringify(trimmedData, null, 2));
 
     // Run delta comparison logic
     const incrementalFile = path.join(testIncrementalDir, `${venueId}.json`);
     if (!fs.existsSync(path.join(testPreviousDir, `${venueId}.json`))) {
-      fs.copyFileSync(allFile, incrementalFile);
+      fs.copyFileSync(todayFile, incrementalFile);
     }
 
     expect(fs.existsSync(incrementalFile)).toBe(true);
@@ -137,26 +137,26 @@ describe('Delta Trimmed Files', () => {
     fs.writeFileSync(previousFile, JSON.stringify(previousData, null, 2));
 
     // Today's content (changed)
-    const allFile = path.join(testAllDir, `${venueId}.json`);
-    const allData = {
+    const todayFile = path.join(testTodayDir, `${venueId}.json`);
+    const todayData = {
       venueId,
       venueName: 'Test Venue',
       pages: [
         { url: 'https://example.com', text: 'Happy Hour 5pm-7pm' } // Changed time
       ]
     };
-    fs.writeFileSync(allFile, JSON.stringify(allData, null, 2));
+    fs.writeFileSync(todayFile, JSON.stringify(todayData, null, 2));
 
     // Run delta comparison logic
-    const allHash = getTrimmedContentHash(allFile);
+    const todayHash = getTrimmedContentHash(todayFile);
     const previousHash = getTrimmedContentHash(previousFile);
     const incrementalFile = path.join(testIncrementalDir, `${venueId}.json`);
 
-    if (allHash !== previousHash) {
-      fs.copyFileSync(allFile, incrementalFile);
+    if (todayHash !== previousHash) {
+      fs.copyFileSync(todayFile, incrementalFile);
     }
 
-    expect(allHash).not.toBe(previousHash);
+    expect(todayHash).not.toBe(previousHash);
     expect(fs.existsSync(incrementalFile)).toBe(true);
   });
 
@@ -175,8 +175,8 @@ describe('Delta Trimmed Files', () => {
     fs.writeFileSync(previousFile, JSON.stringify(previousData, null, 2));
 
     // Today's content (same trimmed text, but different metadata)
-    const allFile = path.join(testAllDir, `${venueId}.json`);
-    const allData = {
+    const todayFile = path.join(testTodayDir, `${venueId}.json`);
+    const todayData = {
       venueId,
       venueName: 'Test Venue',
       scrapedAt: '2026-01-20T10:00:00Z', // Different timestamp
@@ -189,18 +189,18 @@ describe('Delta Trimmed Files', () => {
         }
       ]
     };
-    fs.writeFileSync(allFile, JSON.stringify(allData, null, 2));
+    fs.writeFileSync(todayFile, JSON.stringify(todayData, null, 2));
 
     // Run delta comparison logic
-    const allHash = getTrimmedContentHash(allFile);
+    const todayHash = getTrimmedContentHash(todayFile);
     const previousHash = getTrimmedContentHash(previousFile);
     const incrementalFile = path.join(testIncrementalDir, `${venueId}.json`);
 
-    if (allHash !== previousHash) {
-      fs.copyFileSync(allFile, incrementalFile);
+    if (todayHash !== previousHash) {
+      fs.copyFileSync(todayFile, incrementalFile);
     }
 
-    expect(allHash).toBe(previousHash);
+    expect(todayHash).toBe(previousHash);
     expect(fs.existsSync(incrementalFile)).toBe(false);
   });
 
@@ -219,27 +219,27 @@ describe('Delta Trimmed Files', () => {
     fs.writeFileSync(previousFile, JSON.stringify(previousData, null, 2));
 
     // Today's content with different timestamp (should normalize to same)
-    const allFile = path.join(testAllDir, `${venueId}.json`);
-    const allData = {
+    const todayFile = path.join(testTodayDir, `${venueId}.json`);
+    const todayData = {
       venueId,
       venueName: 'Test Venue',
       pages: [
         { url: 'https://example.com', text: 'Happy Hour 4pm-6pm Updated 2026-01-20T16:45:12.123Z' }
       ]
     };
-    fs.writeFileSync(allFile, JSON.stringify(allData, null, 2));
+    fs.writeFileSync(todayFile, JSON.stringify(todayData, null, 2));
 
     // Run delta comparison logic
-    const allHash = getTrimmedContentHash(allFile);
+    const todayHash = getTrimmedContentHash(todayFile);
     const previousHash = getTrimmedContentHash(previousFile);
     const incrementalFile = path.join(testIncrementalDir, `${venueId}.json`);
 
-    if (allHash !== previousHash) {
-      fs.copyFileSync(allFile, incrementalFile);
+    if (todayHash !== previousHash) {
+      fs.copyFileSync(todayFile, incrementalFile);
     }
 
     // Hashes should be same after normalization (timestamps removed)
-    expect(allHash).toBe(previousHash);
+    expect(todayHash).toBe(previousHash);
     expect(fs.existsSync(incrementalFile)).toBe(false);
   });
 
@@ -258,27 +258,27 @@ describe('Delta Trimmed Files', () => {
     fs.writeFileSync(previousFile, JSON.stringify(previousData, null, 2));
 
     // Today's content with different date (should normalize to same)
-    const allFile = path.join(testAllDir, `${venueId}.json`);
-    const allData = {
+    const todayFile = path.join(testTodayDir, `${venueId}.json`);
+    const todayData = {
       venueId,
       venueName: 'Test Venue',
       pages: [
         { url: 'https://example.com', text: 'Happy Hour 4pm-6pm Jan 20, 2026' }
       ]
     };
-    fs.writeFileSync(allFile, JSON.stringify(allData, null, 2));
+    fs.writeFileSync(todayFile, JSON.stringify(todayData, null, 2));
 
     // Run delta comparison logic
-    const allHash = getTrimmedContentHash(allFile);
+    const todayHash = getTrimmedContentHash(todayFile);
     const previousHash = getTrimmedContentHash(previousFile);
     const incrementalFile = path.join(testIncrementalDir, `${venueId}.json`);
 
-    if (allHash !== previousHash) {
-      fs.copyFileSync(allFile, incrementalFile);
+    if (todayHash !== previousHash) {
+      fs.copyFileSync(todayFile, incrementalFile);
     }
 
     // Hashes should be same after normalization (dates removed)
-    expect(allHash).toBe(previousHash);
+    expect(todayHash).toBe(previousHash);
     expect(fs.existsSync(incrementalFile)).toBe(false);
   });
 
@@ -297,27 +297,27 @@ describe('Delta Trimmed Files', () => {
     fs.writeFileSync(previousFile, JSON.stringify(previousData, null, 2));
 
     // Today's content with URL containing query params (URL normalization doesn't affect hash, but test the concept)
-    const allFile = path.join(testAllDir, `${venueId}.json`);
-    const allData = {
+    const todayFile = path.join(testTodayDir, `${venueId}.json`);
+    const todayData = {
       venueId,
       venueName: 'Test Venue',
       pages: [
         { url: 'https://example.com/menu?gad_source=1&matchtype=p', text: 'Happy Hour 4pm-6pm' }
       ]
     };
-    fs.writeFileSync(allFile, JSON.stringify(allData, null, 2));
+    fs.writeFileSync(todayFile, JSON.stringify(todayData, null, 2));
 
     // Run delta comparison logic
-    const allHash = getTrimmedContentHash(allFile);
+    const todayHash = getTrimmedContentHash(todayFile);
     const previousHash = getTrimmedContentHash(previousFile);
     const incrementalFile = path.join(testIncrementalDir, `${venueId}.json`);
 
-    if (allHash !== previousHash) {
-      fs.copyFileSync(allFile, incrementalFile);
+    if (todayHash !== previousHash) {
+      fs.copyFileSync(todayFile, incrementalFile);
     }
 
     // Hashes should be same (URL doesn't affect text hash, text is same)
-    expect(allHash).toBe(previousHash);
+    expect(todayHash).toBe(previousHash);
     expect(fs.existsSync(incrementalFile)).toBe(false);
   });
 
@@ -337,8 +337,8 @@ describe('Delta Trimmed Files', () => {
     fs.writeFileSync(previousFile, JSON.stringify(previousData, null, 2));
 
     // Today's content (one page changed)
-    const allFile = path.join(testAllDir, `${venueId}.json`);
-    const allData = {
+    const todayFile = path.join(testTodayDir, `${venueId}.json`);
+    const todayData = {
       venueId,
       venueName: 'Test Venue',
       pages: [
@@ -346,18 +346,18 @@ describe('Delta Trimmed Files', () => {
         { url: 'https://example.com/page2', text: 'Menu items' } // Unchanged
       ]
     };
-    fs.writeFileSync(allFile, JSON.stringify(allData, null, 2));
+    fs.writeFileSync(todayFile, JSON.stringify(todayData, null, 2));
 
     // Run delta comparison logic
-    const allHash = getTrimmedContentHash(allFile);
+    const todayHash = getTrimmedContentHash(todayFile);
     const previousHash = getTrimmedContentHash(previousFile);
     const incrementalFile = path.join(testIncrementalDir, `${venueId}.json`);
 
-    if (allHash !== previousHash) {
-      fs.copyFileSync(allFile, incrementalFile);
+    if (todayHash !== previousHash) {
+      fs.copyFileSync(todayFile, incrementalFile);
     }
 
-    expect(allHash).not.toBe(previousHash);
+    expect(todayHash).not.toBe(previousHash);
     expect(fs.existsSync(incrementalFile)).toBe(true);
   });
 
@@ -374,24 +374,24 @@ describe('Delta Trimmed Files', () => {
     fs.writeFileSync(previousFile, JSON.stringify(previousData, null, 2));
 
     // Today's content (still empty)
-    const allFile = path.join(testAllDir, `${venueId}.json`);
-    const allData = {
+    const todayFile = path.join(testTodayDir, `${venueId}.json`);
+    const todayData = {
       venueId,
       venueName: 'Test Venue',
       pages: []
     };
-    fs.writeFileSync(allFile, JSON.stringify(allData, null, 2));
+    fs.writeFileSync(todayFile, JSON.stringify(todayData, null, 2));
 
     // Run delta comparison logic
-    const allHash = getTrimmedContentHash(allFile);
+    const todayHash = getTrimmedContentHash(todayFile);
     const previousHash = getTrimmedContentHash(previousFile);
     const incrementalFile = path.join(testIncrementalDir, `${venueId}.json`);
 
-    if (allHash !== previousHash) {
-      fs.copyFileSync(allFile, incrementalFile);
+    if (todayHash !== previousHash) {
+      fs.copyFileSync(todayFile, incrementalFile);
     }
 
-    expect(allHash).toBe(previousHash);
+    expect(todayHash).toBe(previousHash);
     expect(fs.existsSync(incrementalFile)).toBe(false);
   });
 
@@ -410,60 +410,60 @@ describe('Delta Trimmed Files', () => {
     fs.writeFileSync(previousFile, JSON.stringify(previousData, null, 2));
 
     // Today's content (same, no text field)
-    const allFile = path.join(testAllDir, `${venueId}.json`);
-    const allData = {
+    const todayFile = path.join(testTodayDir, `${venueId}.json`);
+    const todayData = {
       venueId,
       venueName: 'Test Venue',
       pages: [
         { url: 'https://example.com', html: '<div>Content</div>' } // No text field
       ]
     };
-    fs.writeFileSync(allFile, JSON.stringify(allData, null, 2));
+    fs.writeFileSync(todayFile, JSON.stringify(todayData, null, 2));
 
     // Run delta comparison logic
-    const allHash = getTrimmedContentHash(allFile);
+    const todayHash = getTrimmedContentHash(todayFile);
     const previousHash = getTrimmedContentHash(previousFile);
     const incrementalFile = path.join(testIncrementalDir, `${venueId}.json`);
 
-    if (allHash !== previousHash) {
-      fs.copyFileSync(allFile, incrementalFile);
+    if (todayHash !== previousHash) {
+      fs.copyFileSync(todayFile, incrementalFile);
     }
 
     // Both should have empty text, so hash should be same
-    expect(allHash).toBe(previousHash);
+    expect(todayHash).toBe(previousHash);
     expect(fs.existsSync(incrementalFile)).toBe(false);
   });
 
   test('should handle same-day delta with empty previous/ (populate from all/ before comparison)', () => {
     const venueId = 'ChIJTestSameDay';
     
-    // Create venue in all/ (same day, previous/ is empty)
-    const allFile = path.join(testAllDir, `${venueId}.json`);
-    const allData = {
+    // Create venue in today/ (same day, previous/ is empty)
+    const todayFile = path.join(testTodayDir, `${venueId}.json`);
+    const todayData = {
       venueId,
       venueName: 'Test Venue',
       pages: [
         { url: 'https://example.com', text: 'Happy Hour 4pm-6pm' }
       ]
     };
-    fs.writeFileSync(allFile, JSON.stringify(allData, null, 2));
+    fs.writeFileSync(todayFile, JSON.stringify(todayData, null, 2));
 
-    // Simulate same-day scenario: previous/ is empty, but we populate it from all/ first
+    // Simulate same-day scenario: previous/ is empty, but we populate it from today/ first
     // This is what delta-trimmed-files.js does when same day and previous/ is empty
     const previousFile = path.join(testPreviousDir, `${venueId}.json`);
-    fs.copyFileSync(allFile, previousFile);
+    fs.copyFileSync(todayFile, previousFile);
 
     // Now run delta comparison - should find no changes (same content)
-    const allHash = getTrimmedContentHash(allFile);
+    const todayHash = getTrimmedContentHash(todayFile);
     const previousHash = getTrimmedContentHash(previousFile);
     const incrementalFile = path.join(testIncrementalDir, `${venueId}.json`);
 
-    if (allHash !== previousHash) {
-      fs.copyFileSync(allFile, incrementalFile);
+    if (todayHash !== previousHash) {
+      fs.copyFileSync(todayFile, incrementalFile);
     }
 
     // Hashes should be same (files are identical)
-    expect(allHash).toBe(previousHash);
+    expect(todayHash).toBe(previousHash);
     expect(fs.existsSync(incrementalFile)).toBe(false);
   });
 
@@ -482,27 +482,27 @@ describe('Delta Trimmed Files', () => {
     fs.writeFileSync(previousFile, JSON.stringify(previousData, null, 2));
 
     // Today's content with different GTM ID (should normalize to same)
-    const allFile = path.join(testAllDir, `${venueId}.json`);
-    const allData = {
+    const todayFile = path.join(testTodayDir, `${venueId}.json`);
+    const todayData = {
       venueId,
       venueName: 'Test Venue',
       pages: [
         { url: 'https://example.com', text: 'Happy Hour 4pm-6pm gtm-xyz789' }
       ]
     };
-    fs.writeFileSync(allFile, JSON.stringify(allData, null, 2));
+    fs.writeFileSync(todayFile, JSON.stringify(todayData, null, 2));
 
     // Run delta comparison logic
-    const allHash = getTrimmedContentHash(allFile);
+    const todayHash = getTrimmedContentHash(todayFile);
     const previousHash = getTrimmedContentHash(previousFile);
     const incrementalFile = path.join(testIncrementalDir, `${venueId}.json`);
 
-    if (allHash !== previousHash) {
-      fs.copyFileSync(allFile, incrementalFile);
+    if (todayHash !== previousHash) {
+      fs.copyFileSync(todayFile, incrementalFile);
     }
 
     // Hashes should be same after normalization (GTM IDs removed)
-    expect(allHash).toBe(previousHash);
+    expect(todayHash).toBe(previousHash);
     expect(fs.existsSync(incrementalFile)).toBe(false);
   });
 
@@ -521,56 +521,56 @@ describe('Delta Trimmed Files', () => {
     fs.writeFileSync(previousFile, JSON.stringify(previousData, null, 2));
 
     // Today's content with different year (should normalize to same)
-    const allFile = path.join(testAllDir, `${venueId}.json`);
-    const allData = {
+    const todayFile = path.join(testTodayDir, `${venueId}.json`);
+    const todayData = {
       venueId,
       venueName: 'Test Venue',
       pages: [
         { url: 'https://example.com', text: 'Happy Hour 4pm-6pm Copyright © 2026 All rights reserved' }
       ]
     };
-    fs.writeFileSync(allFile, JSON.stringify(allData, null, 2));
+    fs.writeFileSync(todayFile, JSON.stringify(todayData, null, 2));
 
     // Run delta comparison logic
-    const allHash = getTrimmedContentHash(allFile);
+    const todayHash = getTrimmedContentHash(todayFile);
     const previousHash = getTrimmedContentHash(previousFile);
     const incrementalFile = path.join(testIncrementalDir, `${venueId}.json`);
 
-    if (allHash !== previousHash) {
-      fs.copyFileSync(allFile, incrementalFile);
+    if (todayHash !== previousHash) {
+      fs.copyFileSync(todayFile, incrementalFile);
     }
 
     // Hashes should be same after normalization (copyright removed)
-    expect(allHash).toBe(previousHash);
+    expect(todayHash).toBe(previousHash);
     expect(fs.existsSync(incrementalFile)).toBe(false);
   });
 
   test('should handle new-day archive: previous/ empty → archive copies all files → delta finds 0 new/changed', () => {
-    // Simulate new day scenario: all/ has files, previous/ is empty
+    // Simulate new day scenario: today/ has files, previous/ is empty
     const venueId1 = 'ChIJTestNewDay1';
     const venueId2 = 'ChIJTestNewDay2';
     
-    // Create files in all/
-    const allFile1 = path.join(testAllDir, `${venueId1}.json`);
-    const allFile2 = path.join(testAllDir, `${venueId2}.json`);
-    const allData1 = {
+    // Create files in today/
+    const todayFile1 = path.join(testTodayDir, `${venueId1}.json`);
+    const todayFile2 = path.join(testTodayDir, `${venueId2}.json`);
+    const todayData1 = {
       venueId: venueId1,
       venueName: 'Test Venue 1',
       pages: [{ url: 'https://example.com/1', text: 'Happy Hour 4pm-6pm' }]
     };
-    const allData2 = {
+    const todayData2 = {
       venueId: venueId2,
       venueName: 'Test Venue 2',
       pages: [{ url: 'https://example.com/2', text: 'Happy Hour 5pm-7pm' }]
     };
-    fs.writeFileSync(allFile1, JSON.stringify(allData1, null, 2));
-    fs.writeFileSync(allFile2, JSON.stringify(allData2, null, 2));
+    fs.writeFileSync(todayFile1, JSON.stringify(todayData1, null, 2));
+    fs.writeFileSync(todayFile2, JSON.stringify(todayData2, null, 2));
 
-    // Simulate archive: copy all files from all/ to previous/ (exact filenames preserved)
+    // Simulate archive: copy all files from today/ to previous/ (exact filenames preserved)
     const previousFile1 = path.join(testPreviousDir, `${venueId1}.json`);
     const previousFile2 = path.join(testPreviousDir, `${venueId2}.json`);
-    fs.copyFileSync(allFile1, previousFile1);
-    fs.copyFileSync(allFile2, previousFile2);
+    fs.copyFileSync(todayFile1, previousFile1);
+    fs.copyFileSync(todayFile2, previousFile2);
 
     // Verify files exist in previous/ with exact same filenames
     expect(fs.existsSync(previousFile1)).toBe(true);
@@ -585,17 +585,17 @@ describe('Delta Trimmed Files', () => {
     let newVenues = 0;
     let changedVenues = 0;
     
-    for (const file of fs.readdirSync(testAllDir).filter(f => f.endsWith('.json'))) {
+    for (const file of fs.readdirSync(testTodayDir).filter(f => f.endsWith('.json'))) {
       const venueId = path.basename(file, '.json');
-      const allFilePath = path.join(testAllDir, file);
+      const todayFilePath = path.join(testTodayDir, file);
       const previousFilePath = path.join(testPreviousDir, file);
       
       if (!fs.existsSync(previousFilePath)) {
         newVenues++;
       } else {
-        const allHash = getTrimmedContentHash(allFilePath);
+        const todayHash = getTrimmedContentHash(todayFilePath);
         const previousHash = getTrimmedContentHash(previousFilePath);
-        if (allHash !== previousHash) {
+        if (todayHash !== previousHash) {
           changedVenues++;
         }
       }

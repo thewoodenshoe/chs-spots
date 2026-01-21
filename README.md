@@ -78,7 +78,7 @@ Run these scripts **once** to set up the initial data:
    node scripts/download-raw-html.js
    node scripts/merge-raw-files.js
    ```
-   Note: The `silver_matched` filtering layer has been removed. All data now flows through `silver_merged/all/`.
+   Note: The `silver_matched` filtering layer has been removed. All data now flows through `silver_merged/today/`.
    The download script uses keywords from `data/config/submenu-keywords.json` to discover submenu pages.
 
 4. **Extract happy hours (Grok API - bulk):**
@@ -138,7 +138,7 @@ If you need to run steps individually:
    ```bash
    node scripts/delta-raw-files.js
    ```
-   Compares `raw/all/` vs `raw/previous/` and populates `raw/incremental/` with only changed files.
+   Compares `raw/today/` vs `raw/previous/` and populates `raw/incremental/` with only changed files.
 
 3. **Merge raw files:**
    ```bash
@@ -156,7 +156,7 @@ If you need to run steps individually:
    ```bash
    node scripts/delta-trimmed-files.js
    ```
-   Compares `silver_trimmed/all/` vs `silver_trimmed/previous/` using content hashes and populates `silver_trimmed/incremental/` with only actual content changes.
+   Compares `silver_trimmed/today/` vs `silver_trimmed/previous/` using content hashes and populates `silver_trimmed/incremental/` with only actual content changes.
 
 6. **Extract happy hours (Grok API - incremental):**
    ```bash
@@ -305,7 +305,7 @@ Downloads raw HTML from venue websites and subpages. This is the first step in t
 - Downloads homepage + relevant subpages (keywords defined in `data/config/submenu-keywords.json`: menu, happy-hour, happyhour, hh, specials, events, bar, drinks, deals, promos, promotions, offers, happenings, whats-on, calendar, cocktails, wine, beer, location)
 - **Daily Caching**: Per-venue daily cache (skips re-download if already downloaded today)
 - **Previous Day Archive**: Archives previous day's downloads to `raw/previous/` for diff comparison
-- **Directory Structure**: All downloads go to `raw/all/<venue-id>/`, previous day in `raw/previous/<venue-id>/`
+- **Directory Structure**: All downloads go to `raw/today/<venue-id>/`, previous day in `raw/previous/<venue-id>/`
 - Handles multi-location sites (finds location-specific pages using 'location' keyword)
 
 **Requirements:**
@@ -322,9 +322,9 @@ node scripts/download-raw-html.js
 - ~1-2 minutes on subsequent runs the same day (uses cache)
 
 **Output:**
-- `data/raw/all/<venue-id>/` - Raw HTML files per venue (one directory per venue)
-- `data/raw/all/<venue-id>/*.html` - Individual HTML files (hashed filenames)
-- `data/raw/all/<venue-id>/metadata.json` - URL to hash mapping
+- `data/raw/today/<venue-id>/` - Raw HTML files per venue (one directory per venue)
+- `data/raw/today/<venue-id>/*.html` - Individual HTML files (hashed filenames)
+- `data/raw/today/<venue-id>/metadata.json` - URL to hash mapping
 - `data/raw/previous/<venue-id>/` - Previous day's downloads (for diff comparison)
 - `data/raw/incremental/` - Incremental files (for new/changed venues)
 
@@ -340,10 +340,10 @@ Merges all raw HTML files per venue into single JSON files. This is the second s
 - Combines all HTML files per venue into a single merged JSON file
 - Preserves metadata (URLs, download timestamps, hashes)
 - One file per venue
-- **Directory Structure**: All merged files go to `silver_merged/all/<venue-id>.json`, previous day in `silver_merged/previous/<venue-id>.json`
+- **Directory Structure**: All merged files go to `silver_merged/today/<venue-id>.json`, previous day in `silver_merged/previous/<venue-id>.json`
 
 **Requirements:**
-- `data/raw/all/` directory with raw HTML files (created in Step 3)
+- `data/raw/today/` directory with raw HTML files (created in Step 3)
 
 **Run:**
 ```bash
@@ -354,11 +354,11 @@ node scripts/merge-raw-files.js
 - ~1-2 minutes for 741 venues
 
 **Output:**
-- `data/silver_merged/all/<venue-id>.json` - Merged JSON file per venue (all pages combined with metadata)
+- `data/silver_merged/today/<venue-id>.json` - Merged JSON file per venue (all pages combined with metadata)
 - `data/silver_merged/previous/<venue-id>.json` - Previous day's merged files (for diff comparison)
 - `data/silver_merged/incremental/` - Incremental files (for new/changed venues)
 
-**Note:** The `silver_matched` filtering layer has been removed. All venues (with or without happy hour text) are now in `silver_merged/all/`. The HTML is cleaned in the next step before LLM extraction.
+**Note:** The `silver_matched` filtering layer has been removed. All venues (with or without happy hour text) are now in `silver_merged/today/`. The HTML is cleaned in the next step before LLM extraction.
 
 ---
 
@@ -376,7 +376,7 @@ Removes irrelevant HTML tags and extracts only visible text content. This step s
 - Calculates size reduction metrics
 
 **Requirements:**
-- `data/silver_merged/all/` directory with merged files (created in Step 4)
+- `data/silver_merged/today/` directory with merged files (created in Step 4)
 
 **Run:**
 ```bash
@@ -393,7 +393,7 @@ node scripts/trim-silver-html.js "Daniel Island"
 - ~80-90% size reduction per file
 
 **Output:**
-- `data/silver_trimmed/all/<venue-id>.json` - Trimmed JSON file per venue (with `text` field instead of `html`)
+- `data/silver_trimmed/today/<venue-id>.json` - Trimmed JSON file per venue (with `text` field instead of `html`)
 - `data/silver_trimmed/previous/<venue-id>.json` - Previous day's trimmed files
 - `data/silver_trimmed/incremental/` - Incremental files (for new/changed venues)
 
@@ -421,7 +421,7 @@ node scripts/trim-silver-html.js "Daniel Island"
 
 **Script:** `scripts/extract-happy-hours.js`
 
-This script uses **Grok API (xAI)** to extract structured happy hour data from trimmed venue content. It processes all venues from `silver_trimmed/all/` (cleaned text) and uses AI to identify and extract happy hour information.
+This script uses **Grok API (xAI)** to extract structured happy hour data from trimmed venue content. It processes all venues from `silver_trimmed/today/` (cleaned text) and uses AI to identify and extract happy hour information.
 
 **Features:**
 - **Automated LLM Extraction**: Uses Grok API for intelligent happy hour detection
@@ -431,7 +431,7 @@ This script uses **Grok API (xAI)** to extract structured happy hour data from t
 - **Hash-based Change Detection**: Skips unchanged venues in incremental mode
 - **Rate Limiting**: Built-in delays to respect API limits (1 second between calls)
 
-**Note:** The LLM extraction processes all venues from `silver_trimmed/all/` (cleaned text, not raw HTML) and determines which ones have happy hour information based on the prompt. It differentiates happy hours from regular business hours.
+**Note:** The LLM extraction processes all venues from `silver_trimmed/today/` (cleaned text, not raw HTML) and determines which ones have happy hour information based on the prompt. It differentiates happy hours from regular business hours.
 
 #### Bulk Extraction (One-Time Initial Run)
 
@@ -447,7 +447,7 @@ npm run extract:incremental  # (without --incremental flag, runs bulk)
 ```
 
 This command:
-- Processes **all** venues from `silver_trimmed/all/` (cleaned text)
+- Processes **all** venues from `silver_trimmed/today/` (cleaned text)
 - Calls Grok API for each venue to extract happy hour information
 - Saves results to `data/gold/<venue-id>.json`
 - Creates `.bulk-complete` flag when done (required for incremental mode)
@@ -469,13 +469,13 @@ node scripts/extract-happy-hours.js --incremental
 ```
 
 This command:
-- Identifies new or updated venues by comparing content hashes from `silver_trimmed/all/`
+- Identifies new or updated venues by comparing content hashes from `silver_trimmed/today/`
 - **Only processes changed venues** (significantly faster)
 - Calls Grok API for changed venues only
 - Requires `.bulk-complete` flag to exist (bulk extraction must be done first)
 
 **Requirements:**
-- `data/silver_trimmed/all/` directory with trimmed files (created in Step 4)
+- `data/silver_trimmed/today/` directory with trimmed files (created in Step 4)
 - `GROK_API_KEY` environment variable (required)
 - `.bulk-complete` flag must exist (for incremental mode)
 
@@ -544,13 +544,13 @@ GOOGLE_PLACES_ENABLED=true node scripts/seed-incremental.js --confirm
 ```
 1. create-areas.js        → data/config/areas.json
 2. seed-venues.js         → data/venues.json
-3. download-raw-html.js   → data/raw/all/<venue-id>/
-4. merge-raw-files.js     → data/silver_merged/all/<venue-id>.json
-5. trim-silver-html.js    → data/silver_trimmed/all/<venue-id>.json (cleaned text)
+3. download-raw-html.js   → data/raw/today/<venue-id>/
+4. merge-raw-files.js     → data/silver_merged/today/<venue-id>.json
+5. trim-silver-html.js    → data/silver_trimmed/today/<venue-id>.json (cleaned text)
 6. extract-happy-hours.js → data/gold/<venue-id>.json (uses LLM)
 ```
 
-**Note:** The `silver_matched` filtering layer (Step 5) has been removed. All data flows through `silver_merged/all/`.
+**Note:** The `silver_matched` filtering layer (Step 5) has been removed. All data flows through `silver_merged/today/`.
 
 ---
 
@@ -558,71 +558,107 @@ GOOGLE_PLACES_ENABLED=true node scripts/seed-incremental.js --confirm
 
 The incremental pipeline is designed to minimize LLM API costs by only processing actual changes. Here's how it works across multiple days:
 
+### State Reset Workflow
+
+The pipeline uses an explicit state reset mechanism to ensure reliable delta comparisons:
+
+**New Day Workflow:**
+1. Empty `previous/` directory
+2. Move all files from `incremental/` to `previous/` (if any)
+3. Copy all files from `today/` to `previous/` (preserve exact filenames)
+4. Empty `today/` directory
+5. Run scrape/merge/trim → repopulate `today/`
+6. Diff `today/` vs `previous/` → `incremental/` gets real changes (~10 expected)
+
+**Same-Day Rerun Workflow:**
+1. Leave `previous/` untouched (yesterday's baseline)
+2. Move all files from `incremental/` to `previous/`
+3. Empty `today/` directory
+4. Repopulate `today/` (fresh run)
+5. Diff `today/` vs `previous/` → `incremental/` gets 0 or very few
+
+This ensures:
+- **New day runs:** ~10 candidates (only actual content changes)
+- **Same-day reruns:** ~0 candidates (no changes expected)
+
 ### Day 1: First Run Ever
 
 **Initial State:**
-- All folders are empty (`raw/all/`, `raw/previous/`, `raw/incremental/`)
+- All folders are empty (`raw/today/`, `raw/previous/`, `raw/incremental/`)
 
 **What Happens:**
 1. `download-raw-html.js` detects no previous download date
-2. Downloads all venues from `venues.json` → saves to `raw/all/`
-3. Proceeds to silver layer (merge, trim)
-4. LLM extraction processes all venues → saves to `gold/`
+2. State reset: Empty `previous/` and `incremental/`, `today/` is already empty
+3. Downloads all venues from `venues.json` → saves to `raw/today/`
+4. Proceeds to silver layer (merge, trim)
+5. LLM extraction processes all venues → saves to `gold/`
 
 **Result:**
-- `raw/all/` contains all downloaded HTML files
+- `raw/today/` contains all downloaded HTML files
 - `gold/` contains extracted happy hour data for all venues
 
 **If you run again on Day 1:**
-- `download-raw-html.js` detects same day → checks for new venues only
-- If no new venues found → skips download entirely
-- Pipeline stops early (no changes to process)
+- `download-raw-html.js` detects same day → state reset moves `incremental/` to `previous/`, empties `today/`
+- Downloads all venues again → saves to `raw/today/`
+- Delta comparison finds no changes (same content) → `incremental/` remains empty
+- Pipeline processes 0 files (no LLM calls)
 
 ### Day 2: New Day, Full Download
 
 **Initial State:**
-- `raw/all/` contains Day 1's data
+- `raw/today/` contains Day 1's data
 - `raw/previous/` is empty
 - `raw/incremental/` is empty
 
 **What Happens:**
 1. `download-raw-html.js` detects new day (Day 2 vs Day 1)
-2. **Archives Day 1:** Moves `raw/all/` → `raw/previous/` (clears `raw/previous/` first if needed)
-3. **Downloads all venues again** → saves to `raw/all/`
-4. `delta-raw-files.js` compares `raw/all/` (Day 2) vs `raw/previous/` (Day 1)
+2. **State Reset:**
+   - Empty `previous/`
+   - Move `incremental/` to `previous/` (none in this case)
+   - Copy `today/` to `previous/` (Day 1's data preserved)
+   - Empty `today/`
+3. **Downloads all venues again** → saves to `raw/today/`
+4. `delta-raw-files.js` compares `raw/today/` (Day 2) vs `raw/previous/` (Day 1)
    - Finds changed/new files → copies to `raw/incremental/`
    - Unchanged files are NOT copied to incremental
-5. `merge-raw-files.js` processes only `raw/incremental/` → saves to `silver_merged/all/` and `silver_merged/incremental/`
-6. `trim-silver-html.js` processes only `silver_merged/incremental/` → saves to `silver_trimmed/all/`
-7. `delta-trimmed-files.js` compares `silver_trimmed/all/` vs `silver_trimmed/previous/` using **trimmed content hashes**
+5. `merge-raw-files.js` processes only `raw/incremental/` → saves to `silver_merged/today/` and `silver_merged/incremental/`
+6. `trim-silver-html.js` processes only `silver_merged/incremental/` → saves to `silver_trimmed/today/`
+   - State reset: Copies `silver_trimmed/today/` to `silver_trimmed/previous/`, empties `silver_trimmed/today/`
+7. `delta-trimmed-files.js` compares `silver_trimmed/today/` vs `silver_trimmed/previous/` using **trimmed content hashes**
    - Finds actual content changes (ignores dynamic HTML noise) → copies to `silver_trimmed/incremental/`
+   - Expected: ~10 venues with actual changes
 8. `extract-happy-hours.js --incremental` processes only `silver_trimmed/incremental/` → updates `gold/`
 9. `create-spots.js` updates `reporting/spots.json` from `gold/`
 
 **Result:**
-- `raw/all/` contains Day 2's full download
+- `raw/today/` contains Day 2's full download
 - `raw/previous/` contains Day 1's archived data
 - `raw/incremental/` contains only changed/new files from Day 2
-- `silver_trimmed/incremental/` contains only venues with actual content changes
+- `silver_trimmed/incremental/` contains only venues with actual content changes (~10 expected)
 - `gold/` updated only for changed venues (minimizes LLM API costs)
 
-**If you run again on Day 2:**
-- `download-raw-html.js` detects same day → checks for new venues only
-- If no new venues found → skips download
-- Pipeline stops early (no changes to process)
+**If you run again on Day 2 (same-day rerun):**
+- `download-raw-html.js` detects same day → state reset moves `incremental/` to `previous/`, empties `today/`
+- Downloads all venues again → saves to `raw/today/`
+- Delta comparison finds no changes (same content) → `incremental/` remains empty
+- Pipeline processes 0 files (no LLM calls)
 
 ### Day 3: New Day, Full Download Again
 
 **Initial State:**
-- `raw/all/` contains Day 2's data
+- `raw/today/` contains Day 2's data
 - `raw/previous/` contains Day 1's data
 - `raw/incremental/` is empty (cleared at start of pipeline)
 
 **What Happens:**
 1. `download-raw-html.js` detects new day (Day 3 vs Day 2)
-2. **Archives Day 2:** Moves `raw/all/` → `raw/previous/` (Day 1's data is overwritten)
-3. **Downloads all venues again** → saves to `raw/all/`
-4. `delta-raw-files.js` compares `raw/all/` (Day 3) vs `raw/previous/` (Day 2)
+2. **State Reset:**
+   - Empty `previous/`
+   - Move `incremental/` to `previous/` (none in this case)
+   - Copy `today/` to `previous/` (Day 2's data preserved)
+   - Empty `today/`
+3. **Downloads all venues again** → saves to `raw/today/`
+4. `delta-raw-files.js` compares `raw/today/` (Day 3) vs `raw/previous/` (Day 2)
    - Finds changed/new files → copies to `raw/incremental/`
 5. Pipeline continues as in Day 2...
 
@@ -746,7 +782,7 @@ data/
 │   └── areas.json          # Copy of areas.json for frontend
 ├── backup/                 # Timestamped backups
 ├── raw/                    # Raw HTML files (Step 3)
-│   ├── all/                # All downloaded HTML files
+│   ├── today/              # Today's downloaded HTML files
 │   │   └── <venue-id>/
 │   │       ├── <hash>.html # Individual HTML files
 │   │       └── metadata.json # URL to hash mapping
@@ -754,13 +790,13 @@ data/
 │   │   └── <venue-id>/
 │   └── incremental/        # Incremental files (new/changed)
 ├── silver_merged/          # Merged JSON per venue (Step 4)
-│   ├── all/                # All merged files
+│   ├── today/              # Today's merged files
 │   │   └── <venue-id>.json # All pages combined (with HTML)
 │   ├── previous/           # Previous day's merged files
 │   │   └── <venue-id>.json
 │   └── incremental/        # Incremental files (new/changed)
 ├── silver_trimmed/         # Trimmed JSON per venue (Step 5)
-│   ├── all/                # All trimmed files
+│   ├── today/              # Today's trimmed files
 │   │   └── <venue-id>.json # Cleaned text (no HTML tags)
 │   ├── previous/           # Previous day's trimmed files
 │   │   └── <venue-id>.json
@@ -773,7 +809,7 @@ data/
     └── incremental-history/ # Archived incremental files
 ```
 
-**Note:** The `silver_matched/` directory has been removed. All venues (with or without happy hour text) are in `silver_merged/all/`.
+**Note:** The `silver_matched/` directory has been removed. All venues (with or without happy hour text) are in `silver_merged/today/`.
 
 ---
 
@@ -845,9 +881,9 @@ chs-spots/
 │   ├── venues.json           # All venues from Google Places
 │   ├── spots.json            # Curated spots with activities
 │   ├── backup/               # Timestamped backups
-│   ├── raw/                  # Raw HTML files (all/, previous/, incremental/)
-│   ├── silver_merged/        # Merged JSON per venue (all/, previous/, incremental/)
-├── silver_trimmed/       # Trimmed JSON per venue (all/, previous/, incremental/)
+│   ├── raw/                  # Raw HTML files (today/, previous/, incremental/)
+│   ├── silver_merged/        # Merged JSON per venue (today/, previous/, incremental/)
+├── silver_trimmed/       # Trimmed JSON per venue (today/, previous/, incremental/)
 └── gold/                 # LLM extracted structured data
 ├── scripts/                   # Node.js scripts
 │   ├── create-areas.js       # Create areas.json

@@ -8,8 +8,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const RAW_ALL_DIR = path.join(__dirname, '../../data/raw/all');
-const SILVER_MERGED_ALL_DIR = path.join(__dirname, '../../data/silver_merged/all');
+const RAW_TODAY_DIR = path.join(__dirname, '../../data/raw/today');
+const SILVER_MERGED_TODAY_DIR = path.join(__dirname, '../../data/silver_merged/today');
 
 const results = {
   passed: 0,
@@ -42,7 +42,7 @@ console.log('🔍 Data Structure Validation\n');
 console.log('Step 1: Validating Raw Directory Structure\n');
 
 // Check if data directories exist - if not, skip validation (normal for CI/initial setup)
-if (!fs.existsSync(RAW_ALL_DIR)) {
+if (!fs.existsSync(RAW_TODAY_DIR)) {
   console.log('⚠️  Raw directory does not exist - skipping validation');
   console.log('   This is normal for CI or first-time setup.');
   console.log('   Run download-raw-html.js to generate data.\n');
@@ -55,14 +55,14 @@ if (!fs.existsSync(RAW_ALL_DIR)) {
   process.exit(0);
 }
 
-if (fs.existsSync(RAW_ALL_DIR)) {
-  const venueDirs = fs.readdirSync(RAW_ALL_DIR).filter(item => {
-    const itemPath = path.join(RAW_ALL_DIR, item);
+if (fs.existsSync(RAW_TODAY_DIR)) {
+  const venueDirs = fs.readdirSync(RAW_TODAY_DIR).filter(item => {
+    const itemPath = path.join(RAW_TODAY_DIR, item);
     return fs.statSync(itemPath).isDirectory();
   });
   
   test(`Raw/all directory exists`, () => {
-    if (!fs.existsSync(RAW_ALL_DIR)) throw new Error('Raw/all directory not found');
+    if (!fs.existsSync(RAW_TODAY_DIR)) throw new Error('Raw/all directory not found');
   });
   
   test(`Found ${venueDirs.length} venue directories in raw/all`, () => {
@@ -71,7 +71,7 @@ if (fs.existsSync(RAW_ALL_DIR)) {
   
   // Validate a few venue directories
   venueDirs.slice(0, 5).forEach(venueId => {
-    const venueDir = path.join(RAW_ALL_DIR, venueId);
+    const venueDir = path.join(RAW_TODAY_DIR, venueId);
     const files = fs.readdirSync(venueDir);
     const htmlFiles = files.filter(f => f.endsWith('.html'));
     const metadataFile = files.includes('metadata.json');
@@ -117,13 +117,13 @@ if (fs.existsSync(RAW_ALL_DIR)) {
 // Validate Silver Merged Directory Structure
 console.log('\nStep 2: Validating Silver Merged Directory Structure\n');
 
-if (!fs.existsSync(SILVER_MERGED_ALL_DIR)) {
+if (!fs.existsSync(SILVER_MERGED_TODAY_DIR)) {
   warn('Silver merged directory does not exist', 'Run merge-raw-files.js first');
-} else if (fs.existsSync(SILVER_MERGED_ALL_DIR)) {
-  const mergedFiles = fs.readdirSync(SILVER_MERGED_ALL_DIR).filter(f => f.endsWith('.json'));
+} else if (fs.existsSync(SILVER_MERGED_TODAY_DIR)) {
+  const mergedFiles = fs.readdirSync(SILVER_MERGED_TODAY_DIR).filter(f => f.endsWith('.json'));
   
   test(`Silver merged/all directory exists`, () => {
-    if (!fs.existsSync(SILVER_MERGED_ALL_DIR)) throw new Error('Silver merged/all directory not found');
+    if (!fs.existsSync(SILVER_MERGED_TODAY_DIR)) throw new Error('Silver merged/all directory not found');
   });
   
   test(`Found ${mergedFiles.length} merged files`, () => {
@@ -132,7 +132,7 @@ if (!fs.existsSync(SILVER_MERGED_ALL_DIR)) {
   
   // Validate merged file structures
   mergedFiles.slice(0, 10).forEach(file => {
-    const filePath = path.join(SILVER_MERGED_ALL_DIR, file);
+    const filePath = path.join(SILVER_MERGED_TODAY_DIR, file);
     
     test(`Merged file ${file} is valid JSON`, () => {
       try {
@@ -180,7 +180,7 @@ if (!fs.existsSync(SILVER_MERGED_ALL_DIR)) {
   warn('Silver merged directory does not exist', 'Run merge-raw-files.js first');
 }
 
-// Note: silver_matched layer has been removed - all data flows through silver_merged/all/
+// Note: silver_matched layer has been removed - all data flows through silver_merged/today/
 
 // Summary
 console.log('\n📊 Validation Summary:\n');

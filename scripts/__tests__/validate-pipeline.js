@@ -5,17 +5,17 @@
  * without requiring Jest. Can be run directly: node scripts/__tests__/validate-pipeline.js
  * 
  * Tests actual functionality with real file operations.
- * Note: silver_matched layer has been removed - all data flows through silver_merged/all/
+ * Note: silver_matched layer has been removed - all data flows through silver_merged/today/
  */
 
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-// Test directories - New structure: raw/all/, silver_merged/all/
+// Test directories - New structure: raw/today/, silver_merged/today/
 const TEST_DIR = path.join(__dirname, '../../.test-data');
-const TEST_RAW_ALL_DIR = path.join(TEST_DIR, 'raw/all');
-const TEST_SILVER_MERGED_ALL_DIR = path.join(TEST_DIR, 'silver_merged/all');
+const TEST_RAW_TODAY_DIR = path.join(TEST_DIR, 'raw/today');
+const TEST_SILVER_MERGED_TODAY_DIR = path.join(TEST_DIR, 'silver_merged/today');
 
 // Test results
 const results = {
@@ -42,8 +42,8 @@ function cleanTestDir() {
     fs.rmSync(TEST_DIR, { recursive: true, force: true });
   }
   fs.mkdirSync(TEST_DIR, { recursive: true });
-  fs.mkdirSync(TEST_RAW_ALL_DIR, { recursive: true });
-  fs.mkdirSync(TEST_SILVER_MERGED_ALL_DIR, { recursive: true });
+  fs.mkdirSync(TEST_RAW_TODAY_DIR, { recursive: true });
+  fs.mkdirSync(TEST_SILVER_MERGED_TODAY_DIR, { recursive: true });
 }
 
 function urlToHash(url) {
@@ -80,7 +80,7 @@ test('URL hash generation creates different hashes for different URLs', () => {
 test('Raw file path generation creates correct structure', () => {
   const venueId = 'ChIJTest123';
   const url = 'https://example.com';
-  const venueDir = path.join(TEST_RAW_ALL_DIR, venueId);
+  const venueDir = path.join(TEST_RAW_TODAY_DIR, venueId);
   fs.mkdirSync(venueDir, { recursive: true });
   
   const hash = urlToHash(url);
@@ -94,7 +94,7 @@ test('Raw file path generation creates correct structure', () => {
 
 test('Metadata save and load works correctly', () => {
   const venueId = 'ChIJTest123';
-  const venueDir = path.join(TEST_RAW_ALL_DIR, venueId);
+  const venueDir = path.join(TEST_RAW_TODAY_DIR, venueId);
   fs.mkdirSync(venueDir, { recursive: true });
   
   const url = 'https://example.com';
@@ -110,7 +110,7 @@ test('Metadata save and load works correctly', () => {
 
 test('HTML content is preserved exactly', () => {
   const venueId = 'ChIJTest123';
-  const venueDir = path.join(TEST_RAW_ALL_DIR, venueId);
+  const venueDir = path.join(TEST_RAW_TODAY_DIR, venueId);
   fs.mkdirSync(venueDir, { recursive: true });
   
   const originalHtml = '<html><body>Test & "content" &copy; 2026</body></html>';
@@ -127,7 +127,7 @@ console.log('\nStep 2: Silver Merged (merge-raw-files.js)\n');
 // Step 2 Tests: Silver Merged
 test('Multiple HTML files are discovered correctly', () => {
   const venueId = 'ChIJTest123';
-  const venueDir = path.join(TEST_RAW_ALL_DIR, venueId);
+  const venueDir = path.join(TEST_RAW_TODAY_DIR, venueId);
   fs.mkdirSync(venueDir, { recursive: true });
   
   const urls = ['https://example.com', 'https://example.com/page1'];
@@ -164,7 +164,7 @@ test('Merged file structure is correct', () => {
     }]
   };
   
-  const mergedPath = path.join(TEST_SILVER_MERGED_ALL_DIR, `${venueId}.json`);
+  const mergedPath = path.join(TEST_SILVER_MERGED_TODAY_DIR, `${venueId}.json`);
   fs.writeFileSync(mergedPath, JSON.stringify(mergedData, null, 2), 'utf8');
   
   const parsed = JSON.parse(fs.readFileSync(mergedPath, 'utf8'));
@@ -186,7 +186,7 @@ test('Merged file handles missing optional fields', () => {
     pages: []
   };
   
-  const mergedPath = path.join(TEST_SILVER_MERGED_ALL_DIR, `${venueId}.json`);
+  const mergedPath = path.join(TEST_SILVER_MERGED_TODAY_DIR, `${venueId}.json`);
   fs.writeFileSync(mergedPath, JSON.stringify(mergedData, null, 2), 'utf8');
   
   const parsed = JSON.parse(fs.readFileSync(mergedPath, 'utf8'));
@@ -215,7 +215,7 @@ test('Diff Flow: Day 1 - Venue with no happy hour in silver_merged/all/', () => 
   
   if (containsHappyHour(day1Html)) throw new Error('Day 1 should not contain happy hour');
   
-  const venueDir = path.join(TEST_RAW_ALL_DIR, VENUE_ID_DIFF);
+  const venueDir = path.join(TEST_RAW_TODAY_DIR, VENUE_ID_DIFF);
   fs.mkdirSync(venueDir, { recursive: true });
   
   const hash = urlToHash(VENUE_WEBSITE_DIFF);
@@ -229,7 +229,7 @@ test('Diff Flow: Day 1 - Venue with no happy hour in silver_merged/all/', () => 
     pages: [{ html: day1Html }]
   };
   
-  const mergedPath = path.join(TEST_SILVER_MERGED_ALL_DIR, `${VENUE_ID_DIFF}.json`);
+  const mergedPath = path.join(TEST_SILVER_MERGED_TODAY_DIR, `${VENUE_ID_DIFF}.json`);
   fs.writeFileSync(mergedPath, JSON.stringify(mergedData, null, 2), 'utf8');
   
   if (!fs.existsSync(mergedPath)) throw new Error('Should exist in silver_merged/all/ on Day 1');
@@ -247,7 +247,7 @@ test('Diff Flow: Day 2 - Website updated, hash diff detected, updated in silver_
   
   // Day 2: New content with happy hour
   const day2Html = '<html><body>Welcome to Paul Stewart\'s Tavern. Happy Hour Monday-Friday 4pm-7pm. $2 off all drinks!</body></html>';
-  const currentVenueDir = path.join(TEST_RAW_ALL_DIR, VENUE_ID_DIFF);
+  const currentVenueDir = path.join(TEST_RAW_TODAY_DIR, VENUE_ID_DIFF);
   fs.mkdirSync(currentVenueDir, { recursive: true });
   
   const currentFilePath = path.join(currentVenueDir, `${hash}.html`);
@@ -268,7 +268,7 @@ test('Diff Flow: Day 2 - Website updated, hash diff detected, updated in silver_
     pages: [{ html: day2Html }]
   };
   
-  const mergedPath = path.join(TEST_SILVER_MERGED_ALL_DIR, `${VENUE_ID_DIFF}.json`);
+  const mergedPath = path.join(TEST_SILVER_MERGED_TODAY_DIR, `${VENUE_ID_DIFF}.json`);
   fs.writeFileSync(mergedPath, JSON.stringify(mergedData, null, 2), 'utf8');
   
   // Verify happy hour is in merged data

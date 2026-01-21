@@ -11,7 +11,7 @@ const crypto = require('crypto');
 
 const TEST_DIR = path.join(__dirname, '../../.test-data');
 const TEST_GOLD_DIR = path.join(TEST_DIR, 'gold');
-const TEST_SILVER_MERGED_ALL_DIR = path.join(TEST_DIR, 'silver_merged/all');
+const TEST_SILVER_MERGED_TODAY_DIR = path.join(TEST_DIR, 'silver_merged/today');
 
 function cleanTestDir() {
   if (fs.existsSync(TEST_DIR)) {
@@ -19,10 +19,10 @@ function cleanTestDir() {
   }
   fs.mkdirSync(TEST_DIR, { recursive: true });
   fs.mkdirSync(TEST_GOLD_DIR, { recursive: true });
-  fs.mkdirSync(TEST_SILVER_MERGED_ALL_DIR, { recursive: true });
+  fs.mkdirSync(TEST_SILVER_MERGED_TODAY_DIR, { recursive: true });
 }
 
-function computeSourceHash(venueId, baseDir = TEST_SILVER_MERGED_ALL_DIR) {
+function computeSourceHash(venueId, baseDir = TEST_SILVER_MERGED_TODAY_DIR) {
   const silverPath = path.join(baseDir, `${venueId}.json`);
   if (!fs.existsSync(silverPath)) {
     return null;
@@ -38,7 +38,7 @@ function computeSourceHash(venueId, baseDir = TEST_SILVER_MERGED_ALL_DIR) {
   }
 }
 
-function processBulkResults(bulkResultsArray, goldDir = TEST_GOLD_DIR, silverMergedDir = TEST_SILVER_MERGED_ALL_DIR) {
+function processBulkResults(bulkResultsArray, goldDir = TEST_GOLD_DIR, silverMergedDir = TEST_SILVER_MERGED_TODAY_DIR) {
   const results = [];
   const bulkCompletePath = path.join(goldDir, '.bulk-complete');
   
@@ -134,7 +134,7 @@ function main() {
     // Create silver_merged files
     const silver1 = { venueId: venueId1, venueName: 'Test Venue 1', pages: [] };
     fs.writeFileSync(
-      path.join(TEST_SILVER_MERGED_ALL_DIR, `${venueId1}.json`),
+      path.join(TEST_SILVER_MERGED_TODAY_DIR, `${venueId1}.json`),
       JSON.stringify(silver1, null, 2),
       'utf8'
     );
@@ -240,7 +240,7 @@ function main() {
     
     const silverData = { venueId, venueName: 'Correct Venue Name', pages: [] };
     fs.writeFileSync(
-      path.join(TEST_SILVER_MERGED_ALL_DIR, `${venueId}.json`),
+      path.join(TEST_SILVER_MERGED_TODAY_DIR, `${venueId}.json`),
       JSON.stringify(silverData, null, 2),
       'utf8'
     );

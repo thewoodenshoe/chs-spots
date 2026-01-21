@@ -9,7 +9,7 @@ const fs = require('fs');
 const path = require('path');
 
 const TEST_DIR = path.join(__dirname, '../../.test-data-llm-incremental');
-const TEST_SILVER_MERGED_ALL_DIR = path.join(TEST_DIR, 'silver_merged/all');
+const TEST_SILVER_MERGED_TODAY_DIR = path.join(TEST_DIR, 'silver_merged/today');
 const TEST_GOLD_DIR = path.join(TEST_DIR, 'gold');
 
 function cleanTestDir() {
@@ -40,7 +40,7 @@ function cleanTestDir() {
     }
   }
   fs.mkdirSync(TEST_DIR, { recursive: true });
-  fs.mkdirSync(TEST_SILVER_MERGED_ALL_DIR, { recursive: true });
+  fs.mkdirSync(TEST_SILVER_MERGED_TODAY_DIR, { recursive: true });
   fs.mkdirSync(TEST_GOLD_DIR, { recursive: true });
 }
 
@@ -77,7 +77,7 @@ describe('LLM Extraction - Incremental Detection', () => {
     const venueId = 'ChIJTest123';
     
     // Create silver_merged file
-    const silverPath = path.join(TEST_SILVER_MERGED_ALL_DIR, `${venueId}.json`);
+    const silverPath = path.join(TEST_SILVER_MERGED_TODAY_DIR, `${venueId}.json`);
     const silverData = { venueId, venueName: 'Test Venue' };
     fs.writeFileSync(silverPath, JSON.stringify(silverData, null, 2), 'utf8');
     
@@ -95,8 +95,8 @@ describe('LLM Extraction - Incremental Detection', () => {
     if (!fs.existsSync(TEST_GOLD_DIR)) {
       fs.mkdirSync(TEST_GOLD_DIR, { recursive: true });
     }
-    if (!fs.existsSync(TEST_SILVER_MERGED_ALL_DIR)) {
-      fs.mkdirSync(TEST_SILVER_MERGED_ALL_DIR, { recursive: true });
+    if (!fs.existsSync(TEST_SILVER_MERGED_TODAY_DIR)) {
+      fs.mkdirSync(TEST_SILVER_MERGED_TODAY_DIR, { recursive: true });
     }
     
     // Create gold file first (older)
@@ -119,7 +119,7 @@ describe('LLM Extraction - Incremental Detection', () => {
     const oldTime = fs.statSync(goldPath).mtime;
     
     // Update silver_merged file (newer)
-    const silverPath = path.join(TEST_SILVER_MERGED_ALL_DIR, `${venueId}.json`);
+    const silverPath = path.join(TEST_SILVER_MERGED_TODAY_DIR, `${venueId}.json`);
     const silverData = { venueId, venueName: 'Test Venue Updated' };
     fs.writeFileSync(silverPath, JSON.stringify(silverData, null, 2), 'utf8');
     
@@ -146,7 +146,7 @@ describe('LLM Extraction - Incremental Detection', () => {
     fs.writeFileSync(goldPath, JSON.stringify(goldData, null, 2), 'utf8');
     
     // Create silver_merged file (same or older)
-    const silverPath = path.join(TEST_SILVER_MERGED_ALL_DIR, `${venueId}.json`);
+    const silverPath = path.join(TEST_SILVER_MERGED_TODAY_DIR, `${venueId}.json`);
     const silverData = { venueId, venueName: 'Test Venue' };
     fs.writeFileSync(silverPath, JSON.stringify(silverData, null, 2), 'utf8');
     
@@ -178,11 +178,11 @@ describe('LLM Extraction - Incremental Detection', () => {
     
     // Ensure directories exist
     fs.mkdirSync(TEST_GOLD_DIR, { recursive: true });
-    fs.mkdirSync(TEST_SILVER_MERGED_ALL_DIR, { recursive: true });
+    fs.mkdirSync(TEST_SILVER_MERGED_TODAY_DIR, { recursive: true });
     
     // === BULK PHASE ===
     // Venue in silver_merged/all (Day 1 - no happy hour)
-    const silverPath = path.join(TEST_SILVER_MERGED_ALL_DIR, `${venueId}.json`);
+    const silverPath = path.join(TEST_SILVER_MERGED_TODAY_DIR, `${venueId}.json`);
     const silverDataDay1 = {
       venueId,
       venueName: "Paul Stewart's Tavern",
