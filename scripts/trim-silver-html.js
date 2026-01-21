@@ -1,14 +1,14 @@
 /**
  * Trim Silver HTML - Step 3 of Happy Hour Pipeline
  * 
- * Processes silver_merged/all/ files and removes irrelevant HTML tags,
+ * Processes silver_merged/today/ files and removes irrelevant HTML tags,
  * extracting only visible text that users would see when browsing a website.
  * 
  * Removes: <script>, <style>, <head>, <header>, <footer>, <nav>, <noscript>, <iframe>
  * and hidden elements to reduce LLM input size and improve accuracy.
  * 
- * Input: data/silver_merged/all/<venue-id>.json
- * Output: data/silver_trimmed/all/<venue-id>.json
+ * Input: data/silver_merged/today/<venue-id>.json
+ * Output: data/silver_trimmed/today/<venue-id>.json
  * 
  * Structure:
  * {
@@ -55,11 +55,11 @@ function log(message) {
 }
 
 // Paths
-const SILVER_MERGED_DIR = path.join(__dirname, '../data/silver_merged/all');
+const SILVER_MERGED_TODAY_DIR = path.join(__dirname, '../data/silver_merged/today');
 const SILVER_MERGED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_merged/incremental');
 const SILVER_TRIMMED_DIR = path.join(__dirname, '../data/silver_trimmed');
-const SILVER_TRIMMED_ALL_DIR = path.join(SILVER_TRIMMED_DIR, 'all');
-// Note: Silver doesn't need previous/ folder - only raw needs it for delta comparison
+const SILVER_TRIMMED_TODAY_DIR = path.join(SILVER_TRIMMED_DIR, 'today');
+const SILVER_TRIMMED_PREVIOUS_DIR = path.join(SILVER_TRIMMED_DIR, 'previous');
 const SILVER_TRIMMED_INCREMENTAL_DIR = path.join(SILVER_TRIMMED_DIR, 'incremental');
 const VENUES_PATH = path.join(__dirname, '../data/venues.json');
 
@@ -67,10 +67,12 @@ const VENUES_PATH = path.join(__dirname, '../data/venues.json');
 if (!fs.existsSync(SILVER_TRIMMED_DIR)) {
   fs.mkdirSync(SILVER_TRIMMED_DIR, { recursive: true });
 }
-if (!fs.existsSync(SILVER_TRIMMED_ALL_DIR)) {
-  fs.mkdirSync(SILVER_TRIMMED_ALL_DIR, { recursive: true });
+if (!fs.existsSync(SILVER_TRIMMED_TODAY_DIR)) {
+  fs.mkdirSync(SILVER_TRIMMED_TODAY_DIR, { recursive: true });
 }
-// Silver only needs all/ and incremental/ - no previous/ needed
+if (!fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)) {
+  fs.mkdirSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true });
+}
 if (!fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
   fs.mkdirSync(SILVER_TRIMMED_INCREMENTAL_DIR, { recursive: true });
 }
@@ -249,7 +251,7 @@ function needsUpdate(silverFilePath, trimmedFilePath) {
 function processVenueFile(venueId, areaFilter = null) {
   // INCREMENTAL MODE: Read from silver_merged/incremental/
   const silverFilePath = path.join(SILVER_MERGED_INCREMENTAL_DIR, `${venueId}.json`);
-  const trimmedFilePath = path.join(SILVER_TRIMMED_ALL_DIR, `${venueId}.json`);
+  const trimmedFilePath = path.join(SILVER_TRIMMED_TODAY_DIR, `${venueId}.json`);
   
   if (!fs.existsSync(silverFilePath)) {
     log(`  ⚠️  Silver file not found: ${venueId}`);
@@ -356,7 +358,7 @@ function processVenueFile(venueId, areaFilter = null) {
     : '0%';
   trimmedData.sizeReduction = overallReduction;
   
-  // Save trimmed file to silver_trimmed/all/ (main storage)
+  // Save trimmed file to silver_trimmed/today/ (main storage)
   try {
     fs.writeFileSync(trimmedFilePath, JSON.stringify(trimmedData, null, 2), 'utf8');
     
@@ -395,7 +397,7 @@ function moveIncrementalToAll() {
   for (const file of incrementalFiles) {
     try {
       const sourcePath = path.join(SILVER_TRIMMED_INCREMENTAL_DIR, file);
-      const destPath = path.join(SILVER_TRIMMED_ALL_DIR, file);
+      const destPath = path.join(SILVER_TRIMMED_TODAY_DIR, file);
       
       // Move incremental file to all/ (overwrites if exists)
       fs.copyFileSync(sourcePath, destPath);
@@ -420,72 +422,12 @@ function main() {
   
   log(`\n📄 Starting HTML trimming${areaFilter ? ` (filter: ${areaFilter})` : ''}...`);
   
-  // On new day: Move yesterday's incremental to all/ before processing
-  const today = new Date().toISOString().split('T')[0];
-  const LAST_TRIM_PATH = path.join(__dirname, '../data/silver_trimmed/.last-trim');
-  let lastTrim = null;
-  if (fs.existsSync(LAST_TRIM_PATH)) {
-    try {
-      lastTrim = fs.readFileSync(LAST_TRIM_PATH, 'utf8').trim();
-    } catch (e) {
-      // Ignore
-    }
-  }
-  
-  // If new day, archive current all/ to previous/ BEFORE processing new files
-  // This ensures previous/ contains yesterday's data for delta comparison
-  const SILVER_TRIMMED_PREVIOUS_DIR = path.join(SILVER_TRIMMED_DIR, 'previous');
-  if (lastTrim && lastTrim !== today) {
-    log(`📅 New day detected - archiving yesterday's all/ to previous/\n`);
-    
-    // Archive current all/ to previous/ (yesterday's data)
-    if (fs.existsSync(SILVER_TRIMMED_ALL_DIR)) {
-      const allFiles = fs.readdirSync(SILVER_TRIMMED_ALL_DIR).filter(f => f.endsWith('.json'));
-      if (allFiles.length > 0) {
-        // Remove existing previous/ directory
-        if (fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)) {
-          fs.rmSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true, force: true });
-        }
-        fs.mkdirSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true });
-        
-        // Copy all files from all/ to previous/ with exact filenames preserved
-        let archived = 0;
-        const firstFiveFiles = [];
-        for (const file of allFiles) {
-          try {
-            const sourcePath = path.join(SILVER_TRIMMED_ALL_DIR, file);
-            const destPath = path.join(SILVER_TRIMMED_PREVIOUS_DIR, file);
-            fs.copyFileSync(sourcePath, destPath);
-            archived++;
-            if (archived <= 5) {
-              firstFiveFiles.push(file);
-            }
-          } catch (error) {
-            log(`  ⚠️  Failed to archive ${file}: ${error.message}`);
-          }
-        }
-        log(`  ✅ Archived ${archived} file(s) to silver_trimmed/previous/`);
-        log(`  📋 First 5 archived files: ${firstFiveFiles.join(', ')}`);
-        
-        // Verify previous/ now contains the expected number of files
-        const previousFilesAfterArchive = fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'));
-        log(`  ✅ previous/ now contains ${previousFilesAfterArchive.length} file(s)`);
-        
-        if (previousFilesAfterArchive.length !== archived) {
-          log(`  ⚠️  WARNING: Archive count mismatch! Expected ${archived}, found ${previousFilesAfterArchive.length}`);
-        }
-      } else {
-        log(`  ⚠️  No files in all/ to archive`);
-      }
-    } else {
-      log(`  ⚠️  all/ directory does not exist`);
-    }
-    
-    // Then move yesterday's incremental to all/
-    moveIncrementalToAll();
-  }
+  // Reset state before processing (new day or same-day rerun)
+  resetStateForRun();
   
   // Save today's date
+  const today = new Date().toISOString().split('T')[0];
+  const LAST_TRIM_PATH = path.join(__dirname, '../data/silver_trimmed/.last-trim');
   fs.writeFileSync(LAST_TRIM_PATH, today, 'utf8');
   
   // INCREMENTAL MODE: Only process venues in silver_merged/incremental/
@@ -570,7 +512,7 @@ function main() {
   log(`   📉 Overall size reduction: ${overallReduction}`);
   log(`   📦 Original size: ${(totalOriginalSize / 1024 / 1024).toFixed(2)} MB`);
   log(`   📦 Trimmed size: ${(totalTrimmedSize / 1024 / 1024).toFixed(2)} MB`);
-  log(`\n✨ Done! Trimmed files saved to ${SILVER_TRIMMED_ALL_DIR}`);
+  log(`\n✨ Done! Trimmed files saved to ${SILVER_TRIMMED_TODAY_DIR}`);
 }
 
 // Run if called directly

@@ -3,8 +3,8 @@
 /**
  * Delta Raw Files - Find Changes Between Days
  * 
- * Compares raw/all/ (today) vs raw/previous/ (yesterday) to find:
- * - New venues (exist in all/ but not in previous/)
+ * Compares raw/today/ (today) vs raw/previous/ (yesterday) to find:
+ * - New venues (exist in today/ but not in previous/)
  * - Changed files (different content/hash)
  * 
  * Only changed/new files are copied to raw/incremental/ for processing.
@@ -33,7 +33,7 @@ function log(message) {
 }
 
 // Paths
-const RAW_ALL_DIR = path.join(__dirname, '../data/raw/all');
+const RAW_TODAY_DIR = path.join(__dirname, '../data/raw/today');
 const RAW_PREVIOUS_DIR = path.join(__dirname, '../data/raw/previous');
 const RAW_INCREMENTAL_DIR = path.join(__dirname, '../data/raw/incremental');
 
@@ -133,9 +133,9 @@ function getTodayDateString() {
 function main() {
   log('🔍 Starting Delta Comparison\n');
   
-  // Check if raw/all/ exists
-  if (!fs.existsSync(RAW_ALL_DIR)) {
-    log(`❌ Raw directory not found: ${RAW_ALL_DIR}`);
+  // Check if raw/today/ exists
+  if (!fs.existsSync(RAW_TODAY_DIR)) {
+    log(`❌ Raw directory not found: ${RAW_TODAY_DIR}`);
     log(`   Run download-raw-html.js first.`);
     process.exit(1);
   }
@@ -179,13 +179,13 @@ function main() {
     log(`🧹 Cleared incremental folder\n`);
   }
   
-  // Get all venue directories from raw/all/
-  const allVenueDirs = fs.readdirSync(RAW_ALL_DIR).filter(item => {
-    const itemPath = path.join(RAW_ALL_DIR, item);
+  // Get all venue directories from raw/today/
+  const todayVenueDirs = fs.readdirSync(RAW_TODAY_DIR).filter(item => {
+    const itemPath = path.join(RAW_TODAY_DIR, item);
     return fs.statSync(itemPath).isDirectory();
   });
   
-  log(`📁 Found ${allVenueDirs.length} venue(s) in raw/all/\n`);
+  log(`📁 Found ${todayVenueDirs.length} venue(s) in raw/today/\n`);
   
   let newVenues = 0;
   let changedVenues = 0;
@@ -193,21 +193,21 @@ function main() {
   let totalChangedFiles = 0;
   
   // Process each venue
-  for (const venueId of allVenueDirs) {
-    const allVenueDir = path.join(RAW_ALL_DIR, venueId);
+  for (const venueId of todayVenueDirs) {
+    const todayVenueDir = path.join(RAW_TODAY_DIR, venueId);
     const previousVenueDir = path.join(RAW_PREVIOUS_DIR, venueId);
     
-    const allFiles = getVenueHtmlFiles(allVenueDir);
+    const todayFiles = getVenueHtmlFiles(todayVenueDir);
     
     // Check if venue is new (doesn't exist in previous/)
     if (!fs.existsSync(previousVenueDir)) {
       // New venue - copy all files
-      log(`  ✨ New venue: ${venueId} (${allFiles.length} file(s))`);
-      for (const fileInfo of allFiles) {
+      log(`  ✨ New venue: ${venueId} (${todayFiles.length} file(s))`);
+      for (const fileInfo of todayFiles) {
         copyToIncremental(venueId, fileInfo.file, fileInfo.path);
         totalChangedFiles++;
       }
-      copyMetadataIfExists(venueId, allVenueDir);
+      copyMetadataIfExists(venueId, todayVenueDir);
       newVenues++;
       continue;
     }
@@ -219,7 +219,7 @@ function main() {
     let venueHasChanges = false;
     let venueChangedFiles = 0;
     
-    for (const fileInfo of allFiles) {
+    for (const fileInfo of todayFiles) {
       const previousPath = previousFileMap.get(fileInfo.file);
       
       // New file or changed file
@@ -233,7 +233,7 @@ function main() {
     
     if (venueHasChanges) {
       log(`  🔄 Changed venue: ${venueId} (${venueChangedFiles} file(s) changed)`);
-      copyMetadataIfExists(venueId, allVenueDir);
+      copyMetadataIfExists(venueId, todayVenueDir);
       changedVenues++;
     } else {
       unchangedVenues++;

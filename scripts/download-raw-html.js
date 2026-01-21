@@ -2,7 +2,7 @@
  * Download Raw HTML - Step 1 of Happy Hour Pipeline
  * 
  * Downloads raw, untouched HTML from venue websites and subpages.
- * Saves to data/raw/all/<venue-id>/<url-hash>.html
+ * Saves to data/raw/today/<venue-id>/<url-hash>.html
  * 
  * This is the source of truth - simple curl/wget equivalent.
  * No processing, no extraction, just raw HTML.
@@ -30,12 +30,12 @@ function log(message) {
   fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
 }
 
-// Paths - New structure: raw/all/ and raw/previous/
+// Paths - New structure: raw/today/ and raw/previous/
 // Try reporting/venues.json first (primary), fallback to data/venues.json (backwards compatibility)
 const REPORTING_VENUES_PATH = path.join(__dirname, '../data/reporting/venues.json');
 const VENUES_PATH = path.join(__dirname, '../data/venues.json');
 const RAW_DIR = path.join(__dirname, '../data/raw');
-const RAW_ALL_DIR = path.join(__dirname, '../data/raw/all');
+const RAW_TODAY_DIR = path.join(__dirname, '../data/raw/today');
 const RAW_PREVIOUS_DIR = path.join(__dirname, '../data/raw/previous');
 const RAW_INCREMENTAL_DIR = path.join(__dirname, '../data/raw/incremental');
 const LAST_DOWNLOAD_PATH = path.join(__dirname, '../data/raw/.last-download');
@@ -44,8 +44,8 @@ const LAST_DOWNLOAD_PATH = path.join(__dirname, '../data/raw/.last-download');
 if (!fs.existsSync(RAW_DIR)) {
   fs.mkdirSync(RAW_DIR, { recursive: true });
 }
-if (!fs.existsSync(RAW_ALL_DIR)) {
-  fs.mkdirSync(RAW_ALL_DIR, { recursive: true });
+if (!fs.existsSync(RAW_TODAY_DIR)) {
+  fs.mkdirSync(RAW_TODAY_DIR, { recursive: true });
 }
 if (!fs.existsSync(RAW_PREVIOUS_DIR)) {
   fs.mkdirSync(RAW_PREVIOUS_DIR, { recursive: true });
@@ -80,10 +80,10 @@ function urlToHash(url) {
 }
 
 /**
- * Get raw HTML file path (now in raw/all/<venue-id>/)
+ * Get raw HTML file path (now in raw/today/<venue-id>/)
  */
 function getRawFilePath(venueId, url) {
-  const venueDir = path.join(RAW_ALL_DIR, venueId);
+  const venueDir = path.join(RAW_TODAY_DIR, venueId);
   if (!fs.existsSync(venueDir)) {
     fs.mkdirSync(venueDir, { recursive: true });
   }
@@ -92,10 +92,10 @@ function getRawFilePath(venueId, url) {
 }
 
 /**
- * Get metadata file path (now in raw/all/<venue-id>/)
+ * Get metadata file path (now in raw/today/<venue-id>/)
  */
 function getMetadataPath(venueId) {
-  const venueDir = path.join(RAW_ALL_DIR, venueId);
+  const venueDir = path.join(RAW_TODAY_DIR, venueId);
   if (!fs.existsSync(venueDir)) {
     fs.mkdirSync(venueDir, { recursive: true });
   }
@@ -189,52 +189,169 @@ function isFileFromToday(filePath) {
 }
 
 /**
- * Archive current raw/all directory to raw/previous
+ * Reset state for new day or same-day rerun
+ * New day: Empty previous/, move incremental/ to previous/, move today/ to previous/, empty today/
+ * Same day: Leave previous/ untouched, move incremental/ to previous/, empty today/
  */
-function archivePreviousDay() {
+function resetStateForRun() {
   const today = getTodayDateString();
   const lastDownload = getLastDownloadDate();
+  const isNewDay = !lastDownload || lastDownload !== today;
   
-  // If no previous download or same day, no need to archive
-  if (!lastDownload || lastDownload === today) {
-    log(`📅 Same day (${today}) - no archiving needed`);
-    return false;
-  }
-  
-  log(`📅 New day detected (${today}, previous: ${lastDownload})`);
-  log(`📦 Archiving previous day's data...`);
-  
-  // Move all venue directories from raw/all/ to raw/previous/
-  if (!fs.existsSync(RAW_ALL_DIR)) {
-    return false;
-  }
-  
-  const venueDirs = fs.readdirSync(RAW_ALL_DIR).filter(item => {
-    const itemPath = path.join(RAW_ALL_DIR, item);
-    return fs.statSync(itemPath).isDirectory();
-  });
-  
-  let archived = 0;
-  for (const venueDir of venueDirs) {
-    try {
-      const sourcePath = path.join(RAW_ALL_DIR, venueDir);
-      const destPath = path.join(RAW_PREVIOUS_DIR, venueDir);
-      
-      // Remove existing archive for this venue if it exists
-      if (fs.existsSync(destPath)) {
-        fs.rmSync(destPath, { recursive: true, force: true });
+  if (isNewDay) {
+    log(`📅 New day detected: emptying previous/ and incremental/, copying today/ to previous/`);
+    
+    // Empty previous/
+    if (fs.existsSync(RAW_PREVIOUS_DIR)) {
+      const previousDirs = fs.readdirSync(RAW_PREVIOUS_DIR);
+      for (const dir of previousDirs) {
+        const dirPath = path.join(RAW_PREVIOUS_DIR, dir);
+        if (fs.statSync(dirPath).isDirectory()) {
+          fs.rmSync(dirPath, { recursive: true, force: true });
+        }
       }
+    }
+    
+    // Move all files from incremental/ to previous/ (if any)
+    if (fs.existsSync(RAW_INCREMENTAL_DIR)) {
+      const incrementalDirs = fs.readdirSync(RAW_INCREMENTAL_DIR).filter(item => {
+        const itemPath = path.join(RAW_INCREMENTAL_DIR, item);
+        return fs.statSync(itemPath).isDirectory();
+      });
       
-      // Move to previous
-      fs.renameSync(sourcePath, destPath);
-      archived++;
-    } catch (error) {
-      log(`  ⚠️  Failed to archive ${venueDir}: ${error.message}`);
+      for (const dir of incrementalDirs) {
+        try {
+          const sourcePath = path.join(RAW_INCREMENTAL_DIR, dir);
+          const destPath = path.join(RAW_PREVIOUS_DIR, dir);
+          if (fs.existsSync(destPath)) {
+            fs.rmSync(destPath, { recursive: true, force: true });
+          }
+          fs.renameSync(sourcePath, destPath);
+        } catch (error) {
+          log(`  ⚠️  Failed to move ${dir} from incremental/ to previous/: ${error.message}`);
+        }
+      }
+    }
+    
+    // Move all files from today/ to previous/ (preserve exact filenames)
+    let copiedFromToday = 0;
+    if (fs.existsSync(RAW_TODAY_DIR)) {
+      const todayDirs = fs.readdirSync(RAW_TODAY_DIR).filter(item => {
+        const itemPath = path.join(RAW_TODAY_DIR, item);
+        return fs.statSync(itemPath).isDirectory();
+      });
+      
+      for (const dir of todayDirs) {
+        try {
+          const sourcePath = path.join(RAW_TODAY_DIR, dir);
+          const destPath = path.join(RAW_PREVIOUS_DIR, dir);
+          if (fs.existsSync(destPath)) {
+            fs.rmSync(destPath, { recursive: true, force: true });
+          }
+          // Copy recursively to preserve all files
+          copyDirectoryRecursive(sourcePath, destPath);
+          copiedFromToday++;
+        } catch (error) {
+          log(`  ⚠️  Failed to copy ${dir} from today/ to previous/: ${error.message}`);
+        }
+      }
+    }
+    
+    // Empty today/
+    if (fs.existsSync(RAW_TODAY_DIR)) {
+      const todayDirs = fs.readdirSync(RAW_TODAY_DIR);
+      for (const dir of todayDirs) {
+        const dirPath = path.join(RAW_TODAY_DIR, dir);
+        if (fs.statSync(dirPath).isDirectory()) {
+          fs.rmSync(dirPath, { recursive: true, force: true });
+        }
+      }
+    }
+    
+    // Empty incremental/
+    if (fs.existsSync(RAW_INCREMENTAL_DIR)) {
+      const incrementalDirs = fs.readdirSync(RAW_INCREMENTAL_DIR);
+      for (const dir of incrementalDirs) {
+        const dirPath = path.join(RAW_INCREMENTAL_DIR, dir);
+        if (fs.statSync(dirPath).isDirectory()) {
+          fs.rmSync(dirPath, { recursive: true, force: true });
+        }
+      }
+    }
+    
+    log(`  ✅ Copied ${copiedFromToday} venue(s) from today/ to previous/`);
+    log(`  ✅ Emptied today/ and incremental/`);
+  } else {
+    log(`📅 Same-day rerun: emptying incremental/ and today/, repopulating today/, diff against previous/`);
+    
+    // Leave previous/ untouched (yesterday's baseline)
+    
+    // Move all files from incremental/ to previous/ (if any)
+    if (fs.existsSync(RAW_INCREMENTAL_DIR)) {
+      const incrementalDirs = fs.readdirSync(RAW_INCREMENTAL_DIR).filter(item => {
+        const itemPath = path.join(RAW_INCREMENTAL_DIR, item);
+        return fs.statSync(itemPath).isDirectory();
+      });
+      
+      for (const dir of incrementalDirs) {
+        try {
+          const sourcePath = path.join(RAW_INCREMENTAL_DIR, dir);
+          const destPath = path.join(RAW_PREVIOUS_DIR, dir);
+          if (fs.existsSync(destPath)) {
+            fs.rmSync(destPath, { recursive: true, force: true });
+          }
+          fs.renameSync(sourcePath, destPath);
+        } catch (error) {
+          log(`  ⚠️  Failed to move ${dir} from incremental/ to previous/: ${error.message}`);
+        }
+      }
+    }
+    
+    // Empty today/
+    if (fs.existsSync(RAW_TODAY_DIR)) {
+      const todayDirs = fs.readdirSync(RAW_TODAY_DIR);
+      for (const dir of todayDirs) {
+        const dirPath = path.join(RAW_TODAY_DIR, dir);
+        if (fs.statSync(dirPath).isDirectory()) {
+          fs.rmSync(dirPath, { recursive: true, force: true });
+        }
+      }
+    }
+    
+    // Empty incremental/
+    if (fs.existsSync(RAW_INCREMENTAL_DIR)) {
+      const incrementalDirs = fs.readdirSync(RAW_INCREMENTAL_DIR);
+      for (const dir of incrementalDirs) {
+        const dirPath = path.join(RAW_INCREMENTAL_DIR, dir);
+        if (fs.statSync(dirPath).isDirectory()) {
+          fs.rmSync(dirPath, { recursive: true, force: true });
+        }
+      }
+    }
+    
+    log(`  ✅ Emptied today/ and incremental/`);
+  }
+}
+
+/**
+ * Copy directory recursively
+ */
+function copyDirectoryRecursive(source, dest) {
+  if (!fs.existsSync(dest)) {
+    fs.mkdirSync(dest, { recursive: true });
+  }
+  
+  const entries = fs.readdirSync(source, { withFileTypes: true });
+  for (const entry of entries) {
+    const sourcePath = path.join(source, entry.name);
+    const destPath = path.join(dest, entry.name);
+    
+    if (entry.isDirectory()) {
+      copyDirectoryRecursive(sourcePath, destPath);
+    } else {
+      fs.copyFileSync(sourcePath, destPath);
     }
   }
-  
-  log(`  ✅ Archived ${archived} venue(s) to raw/previous/`);
-  return true;
 }
 
 /**
@@ -258,7 +375,7 @@ function rawFileExists(venueId, url) {
  * @param {boolean} saveToIncremental - Whether to also save to incremental/ folder (default: false)
  */
 function saveRawHtml(venueId, url, html, saveToIncremental = false) {
-  // Save to raw/all/ (main storage)
+  // Save to raw/today/ (main storage)
   const filePath = getRawFilePath(venueId, url);
   fs.writeFileSync(filePath, html, 'utf8');
   
@@ -485,6 +602,9 @@ async function main() {
   const venues = JSON.parse(fs.readFileSync(venuesPath, 'utf8'));
   log(`📖 Loaded ${venues.length} venue(s) from venues.json\n`);
   
+  // Reset state before processing (new day or same-day rerun)
+  resetStateForRun();
+  
   // CRITICAL: If same day, only check for NEW venues (venues without raw files)
   // Also check for REMOVED venues (venues with raw files but not in venues.json)
   // If no new venues found, abort to minimize API calls
@@ -498,11 +618,11 @@ async function main() {
       if (venueId) venuesInJson.add(venueId);
     });
     
-    // Check for new venues (venues not in raw/all/)
+    // Check for new venues (venues not in raw/today/)
     const existingVenueDirs = new Set();
-    if (fs.existsSync(RAW_ALL_DIR)) {
-      const dirs = fs.readdirSync(RAW_ALL_DIR).filter(item => {
-        const itemPath = path.join(RAW_ALL_DIR, item);
+    if (fs.existsSync(RAW_TODAY_DIR)) {
+      const dirs = fs.readdirSync(RAW_TODAY_DIR).filter(item => {
+        const itemPath = path.join(RAW_TODAY_DIR, item);
         return fs.statSync(itemPath).isDirectory();
       });
       dirs.forEach(dir => existingVenueDirs.add(dir));
@@ -585,17 +705,13 @@ async function main() {
     log(`   📥 Files downloaded today: ${totalDownloaded}`);
     log(`   💾 Files skipped (already downloaded today): ${totalSkipped}`);
     log(`   📅 Download date: ${today}`);
-    log(`\n✨ Done! Raw HTML saved to: ${path.resolve(RAW_ALL_DIR)}`);
+    log(`\n✨ Done! Raw HTML saved to: ${path.resolve(RAW_TODAY_DIR)}`);
     log(`   Previous day's data: ${path.resolve(RAW_PREVIOUS_DIR)}`);
     return;
   }
   
   // NEW DAY: Download all venues (full batch)
-  // Archive previous day if it's a new day
-  const archived = archivePreviousDay();
-  if (archived) {
-    log(`\n📦 Previous day's data archived to raw/previous/\n`);
-  }
+  // State reset already handled by resetStateForRun()
   
   // Filter by area if specified
   let venuesToProcess = venues;
@@ -644,7 +760,7 @@ async function main() {
   log(`   📥 Files downloaded today: ${totalDownloaded}`);
   log(`   💾 Files skipped (already downloaded today): ${totalSkipped}`);
   log(`   📅 Download date: ${today}`);
-  log(`\n✨ Done! Raw HTML saved to: ${path.resolve(RAW_ALL_DIR)}`);
+  log(`\n✨ Done! Raw HTML saved to: ${path.resolve(RAW_TODAY_DIR)}`);
   log(`   Previous day's data: ${path.resolve(RAW_PREVIOUS_DIR)}`);
 }
 

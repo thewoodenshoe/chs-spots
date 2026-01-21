@@ -24,6 +24,25 @@ const fs = require('fs');
 const AREA_FILTER = process.argv[2] || null;
 
 /**
+ * Get current time in EST timezone formatted as HH:MM:SS
+ */
+function getESTTime() {
+  const now = new Date();
+  // EST is UTC-5, EDT is UTC-4 (daylight saving)
+  // Use toLocaleString with timeZone option for accurate EST/EDT
+  const estTime = now.toLocaleString('en-US', {
+    timeZone: 'America/New_York',
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+  // Format: HH:MM:SS (ensure 2-digit format)
+  const parts = estTime.split(':');
+  return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}:${parts[2].padStart(2, '0')}`;
+}
+
+/**
  * Clear raw/incremental/ folder at the start of each pipeline run
  * This ensures clean state - delta will repopulate it on new days,
  * download will populate it on same day (new venues only)
@@ -61,8 +80,10 @@ function runScript(scriptPath, args = []) {
   return new Promise((resolve, reject) => {
     const fullPath = path.join(__dirname, scriptPath);
     const nodeArgs = [fullPath, ...args].filter(Boolean);
+    const startTime = getESTTime();
     
     console.log(`\n${'='.repeat(60)}`);
+    console.log(`Starting ${scriptPath} at ${startTime} EST`);
     console.log(`Running: node ${scriptPath}${args.length > 0 ? ' ' + args.join(' ') : ''}`);
     console.log('='.repeat(60));
     
@@ -72,21 +93,28 @@ function runScript(scriptPath, args = []) {
     });
     
     child.on('close', (code) => {
+      const endTime = getESTTime();
       if (code === 0) {
+        console.log(`\n✅ Finished ${scriptPath} at ${endTime} EST`);
         resolve(code);
       } else {
+        console.log(`\n❌ Failed ${scriptPath} at ${endTime} EST (exit code: ${code})`);
         reject(new Error(`Script exited with code ${code}`));
       }
     });
     
     child.on('error', (error) => {
+      const endTime = getESTTime();
+      console.log(`\n❌ Error in ${scriptPath} at ${endTime} EST: ${error.message}`);
       reject(error);
     });
   });
 }
 
 async function main() {
+  const pipelineStartTime = getESTTime();
   console.log('\n🚀 Starting Incremental Pipeline');
+  console.log(`   Starting entire script at ${pipelineStartTime} EST`);
   console.log('   Mode: Incremental (only process changes)');
   console.log('   Goal: Minimize LLM API costs');
   console.log('   📍 Using static venues.json - no Google API calls\n');
@@ -117,7 +145,7 @@ async function main() {
     }
     
     // Step 1.5: Delta comparison (only on new day - finds what changed)
-    // Compares raw/all/ vs raw/previous/ and copies only changed files to raw/incremental/
+    // Compares raw/today/ vs raw/previous/ and copies only changed files to raw/incremental/
     console.log('\n🔍 Step 1.5: Delta Comparison (find changes)');
     try {
       await runScript('delta-raw-files.js');
@@ -138,7 +166,7 @@ async function main() {
     await runScript('trim-silver-html.js', AREA_FILTER ? [AREA_FILTER] : []);
 
     // Step 3.5: Delta comparison on trimmed content (finds actual content changes)
-    // Compares silver_trimmed/all/ vs silver_trimmed/previous/ and copies only changed files to silver_trimmed/incremental/
+    // Compares silver_trimmed/today/ vs silver_trimmed/previous/ and copies only changed files to silver_trimmed/incremental/
     // This compares trimmed content (no ads/tracking), so much more accurate than raw HTML comparison
     console.log('\n🔍 Step 3.5: Delta Comparison (Trimmed Content - find actual content changes)');
     try {
@@ -159,8 +187,10 @@ async function main() {
     console.log('\n📍 Step 5: Create Spots from Gold Data');
     await runScript('create-spots.js');
     
+    const pipelineEndTime = getESTTime();
     console.log('\n' + '='.repeat(60));
     console.log('✅ Incremental Pipeline Complete!');
+    console.log(`   Finished entire script at ${pipelineEndTime} EST`);
     console.log('='.repeat(60));
     console.log('\n📊 Summary:');
     console.log('   • Raw HTML: Same day = new venues only, New day = all venues');
@@ -173,7 +203,9 @@ async function main() {
     console.log('\n💡 Result: Small batch per day - only actual content changes are processed!\n');
     
   } catch (error) {
+    const pipelineEndTime = getESTTime();
     console.error('\n❌ Pipeline failed:', error.message);
+    console.error(`   Pipeline ended at ${pipelineEndTime} EST`);
     process.exit(1);
   }
 }

@@ -3,8 +3,8 @@
 /**
  * Delta Trimmed Files - Find Changes in Trimmed Content
  * 
- * Compares silver_trimmed/all/ (today) vs silver_trimmed/previous/ (yesterday) to find:
- * - New venues (exist in all/ but not in previous/)
+ * Compares silver_trimmed/today/ (today) vs silver_trimmed/previous/ (yesterday) to find:
+ * - New venues (exist in today/ but not in previous/)
  * - Changed files (different trimmed content hash)
  * 
  * Only changed/new files are copied to silver_trimmed/incremental/ for LLM processing.
@@ -34,7 +34,7 @@ function log(message) {
 }
 
 // Paths
-const SILVER_TRIMMED_ALL_DIR = path.join(__dirname, '../data/silver_trimmed/all');
+const SILVER_TRIMMED_TODAY_DIR = path.join(__dirname, '../data/silver_trimmed/today');
 const SILVER_TRIMMED_PREVIOUS_DIR = path.join(__dirname, '../data/silver_trimmed/previous');
 const SILVER_TRIMMED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_trimmed/incremental');
 const LAST_TRIM_PATH = path.join(__dirname, '../data/silver_trimmed/.last-trim');
@@ -153,16 +153,16 @@ function archivePreviousDay() {
   fs.mkdirSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true });
   
   // Copy all files from all/ to previous/
-  if (!fs.existsSync(SILVER_TRIMMED_ALL_DIR)) {
+  if (!fs.existsSync(SILVER_TRIMMED_TODAY_DIR)) {
     return false;
   }
   
-  const files = fs.readdirSync(SILVER_TRIMMED_ALL_DIR).filter(f => f.endsWith('.json'));
+  const files = fs.readdirSync(SILVER_TRIMMED_TODAY_DIR).filter(f => f.endsWith('.json'));
   let archived = 0;
   
   for (const file of files) {
     try {
-      const sourcePath = path.join(SILVER_TRIMMED_ALL_DIR, file);
+      const sourcePath = path.join(SILVER_TRIMMED_TODAY_DIR, file);
       const destPath = path.join(SILVER_TRIMMED_PREVIOUS_DIR, file);
       fs.copyFileSync(sourcePath, destPath);
       archived++;
@@ -182,8 +182,8 @@ function main() {
   log('🔍 Starting Delta Comparison (Trimmed Content)\n');
   
   // Check if silver_trimmed/all/ exists
-  if (!fs.existsSync(SILVER_TRIMMED_ALL_DIR)) {
-    log(`❌ Trimmed directory not found: ${SILVER_TRIMMED_ALL_DIR}`);
+  if (!fs.existsSync(SILVER_TRIMMED_TODAY_DIR)) {
+    log(`❌ Trimmed directory not found: ${SILVER_TRIMMED_TODAY_DIR}`);
     log(`   Run trim-silver-html.js first.`);
     process.exit(1);
   }
@@ -196,8 +196,8 @@ function main() {
   let previousFiles = fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR) 
     ? fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'))
     : [];
-  let allFiles = fs.existsSync(SILVER_TRIMMED_ALL_DIR)
-    ? fs.readdirSync(SILVER_TRIMMED_ALL_DIR).filter(f => f.endsWith('.json'))
+  let allFiles = fs.existsSync(SILVER_TRIMMED_TODAY_DIR)
+    ? fs.readdirSync(SILVER_TRIMMED_TODAY_DIR).filter(f => f.endsWith('.json'))
     : [];
   
   // Debug logging: show file counts and sample filenames
@@ -240,7 +240,7 @@ function main() {
       let copied = 0;
       for (const file of allFiles) {
         try {
-          const sourcePath = path.join(SILVER_TRIMMED_ALL_DIR, file);
+          const sourcePath = path.join(SILVER_TRIMMED_TODAY_DIR, file);
           const destPath = path.join(SILVER_TRIMMED_PREVIOUS_DIR, file);
           fs.copyFileSync(sourcePath, destPath);
           copied++;
@@ -281,9 +281,9 @@ function main() {
     }
   }
   
-  // Refresh allFiles list after potential archive (in case archive modified all/)
-  const allFilesList = fs.existsSync(SILVER_TRIMMED_ALL_DIR)
-    ? fs.readdirSync(SILVER_TRIMMED_ALL_DIR).filter(f => f.endsWith('.json'))
+  // Refresh todayFiles list after potential archive (in case archive modified today/)
+  const todayFilesList = fs.existsSync(SILVER_TRIMMED_TODAY_DIR)
+    ? fs.readdirSync(SILVER_TRIMMED_TODAY_DIR).filter(f => f.endsWith('.json'))
     : [];
   
   // Refresh previousFiles list as well
@@ -291,7 +291,7 @@ function main() {
     ? fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'))
     : [];
   
-  log(`📁 Found ${allFilesList.length} venue file(s) in silver_trimmed/all/`);
+  log(`📁 Found ${todayFilesList.length} venue file(s) in silver_trimmed/today/`);
   log(`📁 Found ${previousFilesList.length} venue file(s) in silver_trimmed/previous/\n`);
   
   let newVenues = 0;
@@ -299,16 +299,16 @@ function main() {
   let unchangedVenues = 0;
   
   // Process each file
-  for (const file of allFilesList) {
+  for (const file of todayFilesList) {
     const venueId = path.basename(file, '.json');
-    const allFilePath = path.join(SILVER_TRIMMED_ALL_DIR, file);
+    const todayFilePath = path.join(SILVER_TRIMMED_TODAY_DIR, file);
     const previousFilePath = path.join(SILVER_TRIMMED_PREVIOUS_DIR, file);
     const incrementalFilePath = path.join(SILVER_TRIMMED_INCREMENTAL_DIR, file);
     
     // Check if venue is new (doesn't exist in previous/)
     if (!fs.existsSync(previousFilePath)) {
       // New venue - copy to incremental
-      fs.copyFileSync(allFilePath, incrementalFilePath);
+      fs.copyFileSync(todayFilePath, incrementalFilePath);
       log(`  ✨ New venue: ${venueId}`);
       newVenues++;
       continue;
@@ -317,26 +317,26 @@ function main() {
     // Verify file exists in previousFilesList (sanity check)
     if (!previousFilesList.includes(file)) {
       log(`  ⚠️  WARNING: File ${file} exists in previous/ but not in previousFilesList - treating as new`);
-      fs.copyFileSync(allFilePath, incrementalFilePath);
+      fs.copyFileSync(todayFilePath, incrementalFilePath);
       newVenues++;
       continue;
     }
     
     // Venue exists in both - check for changes in trimmed content
-    const allHash = getTrimmedContentHash(allFilePath);
+    const todayHash = getTrimmedContentHash(todayFilePath);
     const previousHash = getTrimmedContentHash(previousFilePath);
     
-    if (!allHash || !previousHash) {
+    if (!todayHash || !previousHash) {
       // Error reading hashes - treat as changed to be safe
-      fs.copyFileSync(allFilePath, incrementalFilePath);
+      fs.copyFileSync(todayFilePath, incrementalFilePath);
       log(`  ⚠️  Changed venue (hash error): ${venueId}`);
       changedVenues++;
       continue;
     }
     
-    if (allHash !== previousHash) {
+    if (todayHash !== previousHash) {
       // Trimmed content changed - copy to incremental
-      fs.copyFileSync(allFilePath, incrementalFilePath);
+      fs.copyFileSync(todayFilePath, incrementalFilePath);
       log(`  🔄 Changed venue: ${venueId}`);
       changedVenues++;
     } else {

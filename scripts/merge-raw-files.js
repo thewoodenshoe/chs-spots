@@ -2,7 +2,7 @@
  * Merge Raw Files - Step 2 of Happy Hour Pipeline
  * 
  * Merges all raw HTML files per venue into a single JSON file.
- * Saves to data/silver_merged/all/<venue-id>.json
+ * Saves to data/silver_merged/today/<venue-id>.json
  * 
  * Structure:
  * {
@@ -43,11 +43,11 @@ function log(message) {
   fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
 }
 
-// Paths - New structure: raw/all/ and silver_merged/all/
-const RAW_ALL_DIR = path.join(__dirname, '../data/raw/all');
+// Paths - New structure: raw/today/ and silver_merged/today/
+const RAW_TODAY_DIR = path.join(__dirname, '../data/raw/today');
 const RAW_PREVIOUS_DIR = path.join(__dirname, '../data/raw/previous');
 const SILVER_MERGED_DIR = path.join(__dirname, '../data/silver_merged');
-const SILVER_MERGED_ALL_DIR = path.join(__dirname, '../data/silver_merged/all');
+const SILVER_MERGED_TODAY_DIR = path.join(__dirname, '../data/silver_merged/today');
 // Note: Silver doesn't need previous/ folder - only raw needs it for delta comparison
 const SILVER_MERGED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_merged/incremental');
 // Try reporting/venues.json first (primary), fallback to data/venues.json (backwards compatibility)
@@ -58,10 +58,10 @@ const VENUES_PATH = path.join(__dirname, '../data/venues.json');
 if (!fs.existsSync(SILVER_MERGED_DIR)) {
   fs.mkdirSync(SILVER_MERGED_DIR, { recursive: true });
 }
-if (!fs.existsSync(SILVER_MERGED_ALL_DIR)) {
-  fs.mkdirSync(SILVER_MERGED_ALL_DIR, { recursive: true });
+if (!fs.existsSync(SILVER_MERGED_TODAY_DIR)) {
+  fs.mkdirSync(SILVER_MERGED_TODAY_DIR, { recursive: true });
 }
-// Silver only needs all/ and incremental/ - no previous/ needed
+// Silver only needs today/ and incremental/ - no previous/ needed
 if (!fs.existsSync(SILVER_MERGED_INCREMENTAL_DIR)) {
   fs.mkdirSync(SILVER_MERGED_INCREMENTAL_DIR, { recursive: true });
 }
@@ -128,7 +128,7 @@ function loadMetadata(venueId) {
  * Check if merged file needs update (incremental check)
  */
 function needsUpdate(venueId, rawFiles) {
-  const mergedPath = path.join(SILVER_MERGED_ALL_DIR, `${venueId}.json`);
+  const mergedPath = path.join(SILVER_MERGED_TODAY_DIR, `${venueId}.json`);
   
   // If merged file doesn't exist, needs update
   if (!fs.existsSync(mergedPath)) {
@@ -213,7 +213,7 @@ function processVenue(venueId, venues) {
   };
   
   // Save merged file to silver_merged/all/ (main storage)
-  const mergedPath = path.join(SILVER_MERGED_ALL_DIR, `${venueId}.json`);
+  const mergedPath = path.join(SILVER_MERGED_TODAY_DIR, `${venueId}.json`);
   fs.writeFileSync(mergedPath, JSON.stringify(mergedData, null, 2), 'utf8');
   
   // Also save to silver_merged/incremental/ for next step
@@ -250,7 +250,7 @@ function moveIncrementalToAll() {
   for (const file of incrementalFiles) {
     try {
       const sourcePath = path.join(SILVER_MERGED_INCREMENTAL_DIR, file);
-      const destPath = path.join(SILVER_MERGED_ALL_DIR, file);
+      const destPath = path.join(SILVER_MERGED_TODAY_DIR, file);
       
       // Move incremental file to all/ (overwrites if exists)
       fs.copyFileSync(sourcePath, destPath);
@@ -420,7 +420,7 @@ function main() {
   log(`   ✅ Merged: ${successful}`);
   log(`   ⏭️  Skipped (no changes): ${skipped}`);
   log(`   📄 Total pages: ${totalPages}`);
-  log(`\n✨ Done! Merged files saved to: ${path.resolve(SILVER_MERGED_ALL_DIR)}`);
+  log(`\n✨ Done! Merged files saved to: ${path.resolve(SILVER_MERGED_TODAY_DIR)}`);
   log(`   Incremental files: ${path.resolve(SILVER_MERGED_INCREMENTAL_DIR)}`);
 }
 

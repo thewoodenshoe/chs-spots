@@ -6,7 +6,7 @@ const fetchModule = require('node-fetch');
 const fetch = typeof fetchModule === 'function' ? fetchModule : fetchModule.default;
 const crypto = require('crypto');
 
-const SILVER_TRIMMED_DIR = path.join(__dirname, '../data/silver_trimmed/all');
+const SILVER_TRIMMED_DIR = path.join(__dirname, '../data/silver_trimmed/today');
 const SILVER_TRIMMED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_trimmed/incremental');
 const GOLD_DIR = path.join(__dirname, '../data/gold');
 const BULK_COMPLETE_FLAG = path.join(GOLD_DIR, '.bulk-complete');
@@ -60,7 +60,7 @@ async function extractHappyHours(isIncremental = false) {
             console.log(`   Incremental folder is empty - nothing to extract.`);
             console.log(`\n✨ Skipped extraction (incremental mode - no changes)`);
         } else {
-            console.log('No venue files found in silver_trimmed/all/ directory.');
+            console.log('No venue files found in silver_trimmed/today/ directory.');
             console.log('Please run \'node scripts/trim-silver-html.js\' first.');
         }
         return;
