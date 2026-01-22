@@ -550,18 +550,30 @@ describe('Delta Trimmed Files', () => {
     const venueId1 = 'ChIJTestNewDay1';
     const venueId2 = 'ChIJTestNewDay2';
     
-    // Create files in today/
+    // Create files in today/ with venueHash (simulating real trimmed files)
     const todayFile1 = path.join(testTodayDir, `${venueId1}.json`);
     const todayFile2 = path.join(testTodayDir, `${venueId2}.json`);
+    
+    // Compute venueHash the same way trim-silver-html.js does
+    const pages1 = [{ url: 'https://example.com/1', text: 'Happy Hour 4pm-6pm' }];
+    const pages2 = [{ url: 'https://example.com/2', text: 'Happy Hour 5pm-7pm' }];
+    
+    const venueContent1 = pages1.map(p => normalizeTextForHash(p.text || '')).join('\n');
+    const venueHash1 = crypto.createHash('md5').update(venueContent1).digest('hex');
+    const venueContent2 = pages2.map(p => normalizeTextForHash(p.text || '')).join('\n');
+    const venueHash2 = crypto.createHash('md5').update(venueContent2).digest('hex');
+    
     const todayData1 = {
       venueId: venueId1,
       venueName: 'Test Venue 1',
-      pages: [{ url: 'https://example.com/1', text: 'Happy Hour 4pm-6pm' }]
+      venueHash: venueHash1,
+      pages: pages1
     };
     const todayData2 = {
       venueId: venueId2,
       venueName: 'Test Venue 2',
-      pages: [{ url: 'https://example.com/2', text: 'Happy Hour 5pm-7pm' }]
+      venueHash: venueHash2,
+      pages: pages2
     };
     fs.writeFileSync(todayFile1, JSON.stringify(todayData1, null, 2));
     fs.writeFileSync(todayFile2, JSON.stringify(todayData2, null, 2));
@@ -582,6 +594,7 @@ describe('Delta Trimmed Files', () => {
     expect(previousFiles).toContain(`${venueId2}.json`);
 
     // Now run delta comparison - should find 0 new, 0 changed (files are identical)
+    // Even if venueHash exists, getTrimmedContentHash should recompute for consistency
     let newVenues = 0;
     let changedVenues = 0;
     
@@ -603,5 +616,44 @@ describe('Delta Trimmed Files', () => {
 
     expect(newVenues).toBe(0);
     expect(changedVenues).toBe(0);
+  });
+  
+  test('should handle files with old venueHash (recompute for consistency)', () => {
+    // Simulate scenario where previous/ has files with old venueHash
+    // and today/ has same content but new venueHash computation
+    const venueId = 'ChIJTestOldHash';
+    
+    const pageText = 'Happy Hour 4pm-6pm';
+    const normalizedText = normalizeTextForHash(pageText);
+    const correctHash = crypto.createHash('md5').update(normalizedText).digest('hex');
+    
+    // Previous file with old/incorrect venueHash
+    const previousFile = path.join(testPreviousDir, `${venueId}.json`);
+    const previousData = {
+      venueId,
+      venueName: 'Test Venue',
+      venueHash: 'old-wrong-hash-1234567890', // Old hash
+      pages: [{ url: 'https://example.com', text: pageText }]
+    };
+    fs.writeFileSync(previousFile, JSON.stringify(previousData, null, 2));
+    
+    // Today file with correct venueHash
+    const todayFile = path.join(testTodayDir, `${venueId}.json`);
+    const todayData = {
+      venueId,
+      venueName: 'Test Venue',
+      venueHash: correctHash, // New correct hash
+      pages: [{ url: 'https://example.com', text: pageText }]
+    };
+    fs.writeFileSync(todayFile, JSON.stringify(todayData, null, 2));
+    
+    // getTrimmedContentHash should recompute from normalized text, ignoring venueHash
+    // Both should produce same hash (correctHash) because content is identical
+    const todayHash = getTrimmedContentHash(todayFile);
+    const previousHash = getTrimmedContentHash(previousFile);
+    
+    expect(todayHash).toBe(correctHash);
+    expect(previousHash).toBe(correctHash);
+    expect(todayHash).toBe(previousHash); // Should match even though venueHash differs
   });
 });

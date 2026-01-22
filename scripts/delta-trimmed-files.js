@@ -84,25 +84,34 @@ function normalizeTextForHash(text) {
  * Get trimmed content hash from a trimmed JSON file
  * Always normalizes text before hashing to ensure consistent comparison
  * Uses venueHash if available (from new trim-silver-html.js), otherwise computes from pages
+ * 
+ * IMPORTANT: Always recomputes hash from normalized text to ensure consistency,
+ * even if venueHash exists. This handles cases where files were created with
+ * older normalization logic.
  */
 function getTrimmedContentHash(filePath) {
   try {
     const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     
-    // If venueHash is present (from new trim-silver-html.js), use it directly
-    if (data.venueHash) {
-      return data.venueHash;
-    }
-    
-    // Fallback: compute hash from normalized page texts (for backwards compatibility)
+    // Always compute hash from normalized page texts for consistency
+    // This ensures files created with older normalization logic are compared correctly
     const pages = data.pages || [];
     const pagesContent = pages.map(p => {
       const text = p.text || '';
-      // Normalize text (same as trim-silver-html.js)
+      // Normalize text (same as trim-silver-html.js normalizeText function)
       return normalizeTextForHash(text);
     }).join('\n');
     
-    return crypto.createHash('md5').update(pagesContent).digest('hex');
+    const computedHash = crypto.createHash('md5').update(pagesContent).digest('hex');
+    
+    // If venueHash exists and differs from computed hash, log a warning
+    // This helps identify normalization inconsistencies
+    if (data.venueHash && data.venueHash !== computedHash) {
+      const venueId = data.venueId || path.basename(filePath, '.json');
+      log(`  ⚠️  Hash mismatch for ${venueId}: venueHash=${data.venueHash.substring(0, 8)}... vs computed=${computedHash.substring(0, 8)}... (using computed)`);
+    }
+    
+    return computedHash;
   } catch (error) {
     log(`  ⚠️  Error reading file ${filePath}: ${error.message}`);
     return null;
