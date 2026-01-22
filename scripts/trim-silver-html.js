@@ -380,38 +380,141 @@ function processVenueFile(venueId, areaFilter = null) {
 }
 
 /**
- * On new day: Move yesterday's incremental to all/ before processing new incremental
+ * Copy directory recursively
  */
-function moveIncrementalToAll() {
-  if (!fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
-    return false;
+function copyDirectoryRecursive(source, dest) {
+  if (!fs.existsSync(dest)) {
+    fs.mkdirSync(dest, { recursive: true });
   }
   
-  const incrementalFiles = fs.readdirSync(SILVER_TRIMMED_INCREMENTAL_DIR).filter(f => f.endsWith('.json'));
-  
-  if (incrementalFiles.length === 0) {
-    return false;
-  }
-  
-  let moved = 0;
-  for (const file of incrementalFiles) {
-    try {
-      const sourcePath = path.join(SILVER_TRIMMED_INCREMENTAL_DIR, file);
-      const destPath = path.join(SILVER_TRIMMED_TODAY_DIR, file);
-      
-      // Move incremental file to all/ (overwrites if exists)
+  const entries = fs.readdirSync(source, { withFileTypes: true });
+  for (const entry of entries) {
+    const sourcePath = path.join(source, entry.name);
+    const destPath = path.join(dest, entry.name);
+    
+    if (entry.isDirectory()) {
+      copyDirectoryRecursive(sourcePath, destPath);
+    } else {
       fs.copyFileSync(sourcePath, destPath);
-      moved++;
-    } catch (error) {
-      log(`  ⚠️  Failed to move ${file} to all/: ${error.message}`);
+    }
+  }
+}
+
+/**
+ * Reset state for new day or same-day rerun
+ * New day: Empty previous/, move incremental/ to previous/, move today/ to previous/, empty today/
+ * Same day: Leave previous/ untouched, move incremental/ to previous/, empty today/
+ */
+function resetStateForRun() {
+  const today = new Date().toISOString().split('T')[0];
+  const LAST_TRIM_PATH = path.join(__dirname, '../data/silver_trimmed/.last-trim');
+  let lastTrim = null;
+  if (fs.existsSync(LAST_TRIM_PATH)) {
+    try {
+      lastTrim = fs.readFileSync(LAST_TRIM_PATH, 'utf8').trim();
+    } catch (e) {
+      // Ignore
     }
   }
   
-  if (moved > 0) {
-    log(`  ✅ Moved ${moved} file(s) from incremental/ to all/`);
-  }
+  const isNewDay = !lastTrim || lastTrim !== today;
   
-  return moved > 0;
+  if (isNewDay) {
+    log(`📅 New day detected: emptying previous/ and incremental/, copying today/ to previous/`);
+    
+    // Empty previous/
+    if (fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)) {
+      const previousFiles = fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'));
+      for (const file of previousFiles) {
+        fs.unlinkSync(path.join(SILVER_TRIMMED_PREVIOUS_DIR, file));
+      }
+    }
+    
+    // Move all files from incremental/ to previous/ (if any)
+    if (fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
+      const incrementalFiles = fs.readdirSync(SILVER_TRIMMED_INCREMENTAL_DIR).filter(f => f.endsWith('.json'));
+      for (const file of incrementalFiles) {
+        try {
+          const sourcePath = path.join(SILVER_TRIMMED_INCREMENTAL_DIR, file);
+          const destPath = path.join(SILVER_TRIMMED_PREVIOUS_DIR, file);
+          fs.copyFileSync(sourcePath, destPath);
+        } catch (error) {
+          log(`  ⚠️  Failed to move ${file} from incremental/ to previous/: ${error.message}`);
+        }
+      }
+    }
+    
+    // Move all files from today/ to previous/ (preserve exact filenames)
+    let copiedFromToday = 0;
+    if (fs.existsSync(SILVER_TRIMMED_TODAY_DIR)) {
+      const todayFiles = fs.readdirSync(SILVER_TRIMMED_TODAY_DIR).filter(f => f.endsWith('.json'));
+      for (const file of todayFiles) {
+        try {
+          const sourcePath = path.join(SILVER_TRIMMED_TODAY_DIR, file);
+          const destPath = path.join(SILVER_TRIMMED_PREVIOUS_DIR, file);
+          fs.copyFileSync(sourcePath, destPath);
+          copiedFromToday++;
+        } catch (error) {
+          log(`  ⚠️  Failed to copy ${file} from today/ to previous/: ${error.message}`);
+        }
+      }
+    }
+    
+    // Empty today/
+    if (fs.existsSync(SILVER_TRIMMED_TODAY_DIR)) {
+      const todayFiles = fs.readdirSync(SILVER_TRIMMED_TODAY_DIR).filter(f => f.endsWith('.json'));
+      for (const file of todayFiles) {
+        fs.unlinkSync(path.join(SILVER_TRIMMED_TODAY_DIR, file));
+      }
+    }
+    
+    // Empty incremental/
+    if (fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
+      const incrementalFiles = fs.readdirSync(SILVER_TRIMMED_INCREMENTAL_DIR).filter(f => f.endsWith('.json'));
+      for (const file of incrementalFiles) {
+        fs.unlinkSync(path.join(SILVER_TRIMMED_INCREMENTAL_DIR, file));
+      }
+    }
+    
+    log(`  ✅ Copied ${copiedFromToday} file(s) from today/ to previous/`);
+    log(`  ✅ Emptied today/ and incremental/`);
+  } else {
+    log(`📅 Same-day rerun: emptying incremental/ and today/, repopulating today/, diff against previous/`);
+    
+    // Leave previous/ untouched (yesterday's baseline)
+    
+    // Move all files from incremental/ to previous/ (if any)
+    if (fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
+      const incrementalFiles = fs.readdirSync(SILVER_TRIMMED_INCREMENTAL_DIR).filter(f => f.endsWith('.json'));
+      for (const file of incrementalFiles) {
+        try {
+          const sourcePath = path.join(SILVER_TRIMMED_INCREMENTAL_DIR, file);
+          const destPath = path.join(SILVER_TRIMMED_PREVIOUS_DIR, file);
+          fs.copyFileSync(sourcePath, destPath);
+        } catch (error) {
+          log(`  ⚠️  Failed to move ${file} from incremental/ to previous/: ${error.message}`);
+        }
+      }
+    }
+    
+    // Empty today/
+    if (fs.existsSync(SILVER_TRIMMED_TODAY_DIR)) {
+      const todayFiles = fs.readdirSync(SILVER_TRIMMED_TODAY_DIR).filter(f => f.endsWith('.json'));
+      for (const file of todayFiles) {
+        fs.unlinkSync(path.join(SILVER_TRIMMED_TODAY_DIR, file));
+      }
+    }
+    
+    // Empty incremental/
+    if (fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
+      const incrementalFiles = fs.readdirSync(SILVER_TRIMMED_INCREMENTAL_DIR).filter(f => f.endsWith('.json'));
+      for (const file of incrementalFiles) {
+        fs.unlinkSync(path.join(SILVER_TRIMMED_INCREMENTAL_DIR, file));
+      }
+    }
+    
+    log(`  ✅ Emptied today/ and incremental/`);
+  }
 }
 
 /**
