@@ -14,6 +14,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { URL } = require('url');
+const { loadConfig, updateConfigField, getRunDate } = require('./utils/config');
 
 // Logging setup
 const logDir = path.join(__dirname, '..', 'logs');
@@ -146,25 +147,22 @@ function getTodayDateString() {
 }
 
 /**
- * Get last download date from metadata
+ * Convert YYYYMMDD to YYYY-MM-DD
  */
-function getLastDownloadDate() {
-  if (!fs.existsSync(LAST_DOWNLOAD_PATH)) {
-    return null;
-  }
-  try {
-    return fs.readFileSync(LAST_DOWNLOAD_PATH, 'utf8').trim();
-  } catch (e) {
-    return null;
-  }
+function formatDateYYYYMMDD(dateStr) {
+  if (!dateStr || dateStr.length !== 8) return null;
+  return `${dateStr.substring(0, 4)}-${dateStr.substring(4, 6)}-${dateStr.substring(6, 8)}`;
 }
 
 /**
- * Save last download date
+ * Check if directory is empty
  */
-function saveLastDownloadDate() {
-  const today = getTodayDateString();
-  fs.writeFileSync(LAST_DOWNLOAD_PATH, today, 'utf8');
+function isDirectoryEmpty(dirPath) {
+  if (!fs.existsSync(dirPath)) {
+    return true;
+  }
+  const items = fs.readdirSync(dirPath);
+  return items.length === 0;
 }
 
 /**
@@ -602,13 +600,44 @@ async function main() {
   const venues = JSON.parse(fs.readFileSync(venuesPath, 'utf8'));
   log(`📖 Loaded ${venues.length} venue(s) from venues.json\n`);
   
-  // Reset state before processing (new day or same-day rerun)
-  resetStateForRun();
+  // Load config for state management
+  const config = loadConfig();
+  const runDate = config.run_date || getRunDate();
+  const lastRawDate = config.last_raw_processed_date;
+  const rawTodayEmpty = isDirectoryEmpty(RAW_TODAY_DIR);
   
-  // CRITICAL: If same day, only check for NEW venues (venues without raw files)
-  // Also check for REMOVED venues (venues with raw files but not in venues.json)
-  // If no new venues found, abort to minimize API calls
-  if (lastDownload && lastDownload === today) {
+  log(`📊 State check:`);
+  log(`   run_date: ${runDate}`);
+  log(`   last_raw_processed_date: ${lastRawDate || 'null'}`);
+  log(`   raw/today/ empty: ${rawTodayEmpty}`);
+  
+  // Determine if we should download
+  let shouldDownload = false;
+  let isNewDay = false;
+  
+  if (rawTodayEmpty) {
+    // raw/today/ is empty - download all content
+    log(`\n📥 raw/today/ is empty - downloading all content`);
+    shouldDownload = true;
+    updateConfigField('last_run_status', 'running_raw');
+  } else if (lastRawDate === runDate) {
+    // raw/today/ not empty and last_raw_processed_date equals run_date - skip download
+    log(`\n⏭️  raw/today/ not empty and last_raw_processed_date (${lastRawDate}) equals run_date (${runDate}) - skipping download`);
+    updateConfigField('last_run_status', 'running_raw');
+    return; // Exit early - no download needed
+  } else {
+    // New day - archive and download
+    isNewDay = true;
+    log(`\n📅 New day detected (${runDate} vs ${lastRawDate})`);
+    archiveTodayToPrevious();
+    log(`📥 Downloading all content into raw/today/`);
+    shouldDownload = true;
+    updateConfigField('last_run_status', 'running_raw');
+  }
+  
+  // If same day and raw/today/ not empty, only check for NEW venues
+  const today = formatDateYYYYMMDD(runDate) || getTodayDateString();
+  if (!isNewDay && !rawTodayEmpty) {
     log(`⏭️  Same day as last download (${today}) - checking for new and removed venues`);
     
     // Get all venue IDs from venues.json
@@ -695,8 +724,9 @@ async function main() {
     const totalDownloaded = results.reduce((sum, r) => sum + (r.downloaded || 0), 0);
     const totalSkipped = results.reduce((sum, r) => sum + (r.skipped || 0), 0);
     
-    // Save last download date
-    saveLastDownloadDate();
+    // Update config after successful download
+    updateConfigField('last_raw_processed_date', runDate);
+    updateConfigField('last_run_status', 'running_raw');
     
     log(`\n📊 Summary:`);
     log(`   ✅ Successful: ${successful}`);
@@ -710,8 +740,7 @@ async function main() {
     return;
   }
   
-  // NEW DAY: Download all venues (full batch)
-  // State reset already handled by resetStateForRun()
+  // NEW DAY or FIRST RUN: Download all venues (full batch)
   
   // Filter by area if specified
   let venuesToProcess = venues;
@@ -750,8 +779,9 @@ async function main() {
   const totalDownloaded = results.reduce((sum, r) => sum + (r.downloaded || 0), 0);
   const totalSkipped = results.reduce((sum, r) => sum + (r.skipped || 0), 0);
   
-  // Save last download date
-  saveLastDownloadDate();
+  // Update config after successful download
+  updateConfigField('last_raw_processed_date', runDate);
+  updateConfigField('last_run_status', 'running_raw');
   
   log(`\n📊 Summary:`);
   log(`   ✅ Successful: ${successful}`);

@@ -1,7 +1,7 @@
 {
-  "run_date": null,
-  "last_raw_processed_date": null,
-  "last_run_status": "idle",
+  "run_date": "20260122",
+  "last_raw_processed_date": "20260122",
+  "last_run_status": "running_trimmed",
   "pipeline": {
     "maxIncrementalFiles": 15
   }
