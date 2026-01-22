@@ -1,4 +1,7 @@
 {
+  "run_date": null,
+  "last_raw_processed_date": null,
+  "last_run_status": "idle",
   "pipeline": {
     "maxIncrementalFiles": 15
   }

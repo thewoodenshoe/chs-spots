@@ -1,35 +1,32 @@
 #!/usr/bin/env node
 
 /**
- * Run Incremental Pipeline - Master Script
+ * Run Incremental Pipeline - Master Script with State Management and Recovery
  * 
- * Runs the full happy hour pipeline in incremental mode, ensuring:
- * 1. Raw HTML only downloads on new days
- * 2. Merge only processes changed raw files
- * 3. Trim only processes changed silver_merged files
- * 4. Gold (LLM) only processes changed silver_trimmed files (via hash check)
+ * Runs the full happy hour pipeline in incremental mode with:
+ * - Explicit state management via config.json
+ * - Recovery from failed runs
+ * - New day/same day detection
+ * - Status tracking at each step
  * 
- * This minimizes LLM API costs by only processing actual changes.
- * 
- * NOTE: Venues are treated as STATIC. This pipeline does NOT call Google Maps API.
- *       To add/update venues, manually run: node scripts/seed-venues.js --confirm
- * 
- * Usage: node scripts/run-incremental-pipeline.js [area-filter]
+ * Usage: node scripts/run-incremental-pipeline.js [run_date] [area-filter]
+ *   run_date: Optional YYYYMMDD format (defaults to today)
+ *   area-filter: Optional area name to filter venues
  */
 
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const { loadConfig, saveConfig, updateConfigField, getRunDate } = require('./utils/config');
 
-const AREA_FILTER = process.argv[2] || null;
+const RUN_DATE_PARAM = process.argv[2] && /^\d{8}$/.test(process.argv[2]) ? process.argv[2] : null;
+const AREA_FILTER = process.argv[2] && !/^\d{8}$/.test(process.argv[2]) ? process.argv[2] : (process.argv[3] || null);
 
 /**
  * Get current time in EST timezone formatted as HH:MM:SS
  */
 function getESTTime() {
   const now = new Date();
-  // EST is UTC-5, EDT is UTC-4 (daylight saving)
-  // Use toLocaleString with timeZone option for accurate EST/EDT
   const estTime = now.toLocaleString('en-US', {
     timeZone: 'America/New_York',
     hour12: false,
@@ -37,45 +34,24 @@ function getESTTime() {
     minute: '2-digit',
     second: '2-digit'
   });
-  // Format: HH:MM:SS (ensure 2-digit format)
   const parts = estTime.split(':');
   return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}:${parts[2].padStart(2, '0')}`;
 }
 
 /**
- * Clear raw/incremental/ folder at the start of each pipeline run
- * This ensures clean state - delta will repopulate it on new days,
- * download will populate it on same day (new venues only)
+ * Check if directory is empty
  */
-function clearRawIncremental() {
-  const RAW_INCREMENTAL_DIR = path.join(__dirname, '../data/raw/incremental');
-  
-  if (!fs.existsSync(RAW_INCREMENTAL_DIR)) {
-    return;
+function isDirectoryEmpty(dirPath) {
+  if (!fs.existsSync(dirPath)) {
+    return true;
   }
-  
-  try {
-    const dirs = fs.readdirSync(RAW_INCREMENTAL_DIR);
-    let cleared = 0;
-    
-    for (const dir of dirs) {
-      const dirPath = path.join(RAW_INCREMENTAL_DIR, dir);
-      const stats = fs.statSync(dirPath);
-      
-      if (stats.isDirectory()) {
-        fs.rmSync(dirPath, { recursive: true, force: true });
-        cleared++;
-      }
-    }
-    
-    if (cleared > 0) {
-      console.log(`🧹 Cleared ${cleared} venue(s) from raw/incremental/ (ensuring clean state)\n`);
-    }
-  } catch (error) {
-    console.warn(`⚠️  Warning: Could not clear raw/incremental/: ${error.message}`);
-  }
+  const items = fs.readdirSync(dirPath);
+  return items.length === 0;
 }
 
+/**
+ * Run a script and handle errors
+ */
 function runScript(scriptPath, args = []) {
   return new Promise((resolve, reject) => {
     const fullPath = path.join(__dirname, scriptPath);
@@ -88,7 +64,7 @@ function runScript(scriptPath, args = []) {
     console.log('='.repeat(60));
     
     const child = spawn('node', nodeArgs, {
-      stdio: 'inherit', // Pass through all output
+      stdio: 'inherit',
       cwd: path.join(__dirname, '..')
     });
     
@@ -111,79 +87,188 @@ function runScript(scriptPath, args = []) {
   });
 }
 
+/**
+ * Determine recovery point from last_run_status
+ */
+function getRecoveryPoint(lastRunStatus) {
+  const recoveryMap = {
+    'failed_at_raw': 'raw',
+    'failed_at_merged': 'merged',
+    'failed_at_trimmed': 'trimmed',
+    'failed_at_extract': 'extract'
+  };
+  return recoveryMap[lastRunStatus] || null;
+}
+
+/**
+ * Main pipeline function
+ */
 async function main() {
   const pipelineStartTime = getESTTime();
-  console.log('\n🚀 Starting Incremental Pipeline');
+  console.log('\n🚀 Starting Incremental Pipeline with State Management');
   console.log(`   Starting entire script at ${pipelineStartTime} EST`);
-  console.log('   Mode: Incremental (only process changes)');
-  console.log('   Goal: Minimize LLM API costs');
-  console.log('   📍 Using static venues.json - no Google API calls\n');
   
-  if (AREA_FILTER) {
-    console.log(`📍 Area filter: ${AREA_FILTER}\n`);
+  // Initialize config
+  const config = loadConfig();
+  const runDate = getRunDate(RUN_DATE_PARAM);
+  
+  // Update run_date in config
+  updateConfigField('run_date', runDate);
+  console.log(`   Run date: ${runDate}`);
+  
+  // Check for recovery
+  const lastRunStatus = config.last_run_status;
+  const recoveryPoint = getRecoveryPoint(lastRunStatus);
+  
+  if (recoveryPoint && lastRunStatus !== 'completed_successfully' && lastRunStatus !== 'idle') {
+    console.log(`\n⚠️  Previous run failed at ${lastRunStatus}. Attempting recovery from last known good state.`);
+    console.log(`   Recovery point: ${recoveryPoint}`);
   }
   
-  // Clear raw/incremental/ at the start to ensure clean state
-  // Delta will repopulate it on new days, download will populate it on same day (new venues only)
-  clearRawIncremental();
+  // Set initial status
+  updateConfigField('last_run_status', 'running_raw');
   
   try {
-    // Step 1: Download raw HTML
-    // - Same day: Only new venues (venues without raw files)
-    // - New day: All venues (full batch)
-    console.log('\n📥 Step 1: Download Raw HTML');
-    try {
-      await runScript('download-raw-html.js', AREA_FILTER ? [AREA_FILTER] : []);
-    } catch (error) {
-      if (error.message.includes('code 0')) {
-        // Script exited with 0 but we caught it as error - this shouldn't happen
-        // But handle gracefully if script exits early
-        console.log('   ⏭️  Download step skipped (same day - no new venues)');
+    // RAW STEPS
+    const RAW_TODAY_DIR = path.join(__dirname, '../data/raw/today');
+    const RAW_PREVIOUS_DIR = path.join(__dirname, '../data/raw/previous');
+    const rawTodayEmpty = isDirectoryEmpty(RAW_TODAY_DIR);
+    const lastRawDate = config.last_raw_processed_date;
+    
+    if (recoveryPoint && ['merged', 'trimmed', 'extract'].includes(recoveryPoint)) {
+      // Skip raw steps - recovering from later stage
+      console.log('\n⏭️  Skipping raw steps (recovering from later stage)');
+    } else {
+      console.log('\n📥 Step 1: Download Raw HTML');
+      
+      if (rawTodayEmpty) {
+        // Empty today/ - download all content
+        console.log('   📁 raw/today/ is empty - downloading all content');
+        updateConfigField('last_run_status', 'running_raw');
+        await runScript('download-raw-html.js', AREA_FILTER ? [AREA_FILTER] : []);
+        updateConfigField('last_raw_processed_date', runDate);
+        updateConfigField('last_run_status', 'running_raw');
+      } else if (lastRawDate === runDate) {
+        // Same day - skip downloading
+        console.log(`   ⏭️  raw/today/ not empty and last_raw_processed_date (${lastRawDate}) equals run_date (${runDate}) - skipping download`);
+        updateConfigField('last_run_status', 'running_raw');
       } else {
-        throw error;
+        // New day - archive and download
+        console.log(`   📅 New day detected (${runDate} vs ${lastRawDate})`);
+        console.log('   🗂️  Deleting raw/previous/, copying raw/today/ to raw/previous/');
+        
+        // Delete previous/
+        if (fs.existsSync(RAW_PREVIOUS_DIR)) {
+          fs.rmSync(RAW_PREVIOUS_DIR, { recursive: true, force: true });
+        }
+        fs.mkdirSync(RAW_PREVIOUS_DIR, { recursive: true });
+        
+        // Copy today/ to previous/
+        const todayDirs = fs.readdirSync(RAW_TODAY_DIR).filter(item => {
+          const itemPath = path.join(RAW_TODAY_DIR, item);
+          return fs.statSync(itemPath).isDirectory();
+        });
+        let copied = 0;
+        for (const dir of todayDirs) {
+          try {
+            const sourcePath = path.join(RAW_TODAY_DIR, dir);
+            const destPath = path.join(RAW_PREVIOUS_DIR, dir);
+            fs.cpSync(sourcePath, destPath, { recursive: true });
+            copied++;
+          } catch (error) {
+            console.warn(`   ⚠️  Failed to copy ${dir}: ${error.message}`);
+          }
+        }
+        console.log(`   ✅ Copied ${copied} venue(s) from raw/today/ to raw/previous/`);
+        
+        // Delete today/
+        for (const dir of todayDirs) {
+          fs.rmSync(path.join(RAW_TODAY_DIR, dir), { recursive: true, force: true });
+        }
+        console.log('   🗑️  Deleted all files from raw/today/');
+        
+        // Download all content
+        console.log('   📥 Downloading all content into raw/today/');
+        updateConfigField('last_run_status', 'running_raw');
+        await runScript('download-raw-html.js', AREA_FILTER ? [AREA_FILTER] : []);
+        updateConfigField('last_raw_processed_date', runDate);
+        updateConfigField('last_run_status', 'running_raw');
+      }
+      
+      // Delta comparison
+      console.log('\n🔍 Step 1.5: Delta Comparison (Raw HTML)');
+      updateConfigField('last_run_status', 'running_raw');
+      try {
+        await runScript('delta-raw-files.js');
+      } catch (error) {
+        if (error.message.includes('code 0')) {
+          console.log('   ⏭️  Delta step completed');
+        } else {
+          updateConfigField('last_run_status', 'failed_at_raw');
+          throw error;
+        }
       }
     }
     
-    // Step 1.5: Delta comparison (only on new day - finds what changed)
-    // Compares raw/today/ vs raw/previous/ and copies only changed files to raw/incremental/
-    console.log('\n🔍 Step 1.5: Delta Comparison (find changes)');
-    try {
-      await runScript('delta-raw-files.js');
-    } catch (error) {
-      if (error.message.includes('code 0')) {
-        console.log('   ⏭️  Delta step completed');
-      } else {
-        throw error;
+    // SILVER_MERGED STEPS
+    if (recoveryPoint && ['trimmed', 'extract'].includes(recoveryPoint)) {
+      console.log('\n⏭️  Skipping silver_merged steps (recovering from later stage)');
+    } else {
+      console.log('\n🔗 Step 2: Merge Raw Files');
+      updateConfigField('last_run_status', 'running_merged');
+      await runScript('merge-raw-files.js', AREA_FILTER ? [AREA_FILTER] : []);
+      updateConfigField('last_run_status', 'running_merged');
+    }
+    
+    // SILVER_TRIMMED STEPS
+    if (recoveryPoint && recoveryPoint === 'extract') {
+      console.log('\n⏭️  Skipping silver_trimmed steps (recovering from extract)');
+    } else {
+      console.log('\n✂️  Step 3: Trim Silver HTML');
+      updateConfigField('last_run_status', 'running_trimmed');
+      await runScript('trim-silver-html.js', AREA_FILTER ? [AREA_FILTER] : []);
+      updateConfigField('last_run_status', 'running_trimmed');
+      
+      console.log('\n🔍 Step 3.5: Delta Comparison (Trimmed Content)');
+      try {
+        await runScript('delta-trimmed-files.js');
+      } catch (error) {
+        if (error.message.includes('code 0')) {
+          console.log('   ⏭️  Delta step completed');
+        } else {
+          updateConfigField('last_run_status', 'failed_at_trimmed');
+          throw error;
+        }
       }
     }
     
-    // Step 2: Merge raw files (only processes files in raw/incremental/)
-    console.log('\n🔗 Step 2: Merge Raw Files (incremental)');
-    await runScript('merge-raw-files.js', AREA_FILTER ? [AREA_FILTER] : []);
+    // LLM EXTRACTION
+    console.log('\n🧠 Step 4: Extract Happy Hours with LLM');
+    updateConfigField('last_run_status', 'running_extract');
     
-    // Step 3: Trim silver HTML (only changed files)
-    console.log('\n✂️  Step 3: Trim Silver HTML (incremental)');
-    await runScript('trim-silver-html.js', AREA_FILTER ? [AREA_FILTER] : []);
-
-    // Step 3.5: Delta comparison on trimmed content (finds actual content changes)
-    // Compares silver_trimmed/today/ vs silver_trimmed/previous/ and copies only changed files to silver_trimmed/incremental/
-    // This compares trimmed content (no ads/tracking), so much more accurate than raw HTML comparison
-    console.log('\n🔍 Step 3.5: Delta Comparison (Trimmed Content - find actual content changes)');
-    try {
-      await runScript('delta-trimmed-files.js');
-    } catch (error) {
-      if (error.message.includes('code 0')) {
-        console.log('   ⏭️  Delta step completed');
-      } else {
-        throw error;
-      }
+    // Check incremental file count before running
+    const SILVER_TRIMMED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_trimmed/incremental');
+    let incrementalFileCount = 0;
+    if (fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
+      incrementalFileCount = fs.readdirSync(SILVER_TRIMMED_INCREMENTAL_DIR).filter(f => f.endsWith('.json')).length;
     }
-
-    // Step 4: Extract happy hours with LLM (only changed files via trimmed content delta)
-    console.log('\n🧠 Step 4: Extract Happy Hours with LLM (incremental - trimmed content delta)');
-    await runScript('extract-happy-hours.js', ['--incremental']);
     
-    // Step 5: Create spots from gold data
+    if (incrementalFileCount > 15) {
+      const errorMsg = `Too many incremental files (${incrementalFileCount} > 15). Manual review required.`;
+      console.error(`\n❌ ${errorMsg}`);
+      updateConfigField('last_run_status', 'failed_at_extract');
+      throw new Error(errorMsg);
+    }
+    
+    try {
+      await runScript('extract-happy-hours.js', ['--incremental']);
+      updateConfigField('last_run_status', 'completed_successfully');
+    } catch (error) {
+      updateConfigField('last_run_status', 'failed_at_extract');
+      throw error;
+    }
+    
+    // Step 5: Create spots
     console.log('\n📍 Step 5: Create Spots from Gold Data');
     await runScript('create-spots.js');
     
@@ -192,20 +277,22 @@ async function main() {
     console.log('✅ Incremental Pipeline Complete!');
     console.log(`   Finished entire script at ${pipelineEndTime} EST`);
     console.log('='.repeat(60));
-    console.log('\n📊 Summary:');
-    console.log('   • Raw HTML: Same day = new venues only, New day = all venues');
-    console.log('   • Delta (Raw): Finds changes in raw HTML (new day only)');
-    console.log('   • Merge: Only processes files in raw/incremental/');
-    console.log('   • Trim: Only processes files in silver_merged/incremental/');
-    console.log('   • Delta (Trimmed): Finds actual content changes in trimmed text (ignores ads/tracking)');
-    console.log('   • Gold (LLM): Only processes files in silver_trimmed/incremental/ (actual content changes)');
-    console.log('   • Spots: Updated from gold data');
-    console.log('\n💡 Result: Small batch per day - only actual content changes are processed!\n');
     
   } catch (error) {
     const pipelineEndTime = getESTTime();
     console.error('\n❌ Pipeline failed:', error.message);
     console.error(`   Pipeline ended at ${pipelineEndTime} EST`);
+    
+    // Status already updated in catch blocks above
+    const currentConfig = loadConfig();
+    if (currentConfig.last_run_status === 'running_raw') {
+      updateConfigField('last_run_status', 'failed_at_raw');
+    } else if (currentConfig.last_run_status === 'running_merged') {
+      updateConfigField('last_run_status', 'failed_at_merged');
+    } else if (currentConfig.last_run_status === 'running_trimmed') {
+      updateConfigField('last_run_status', 'failed_at_trimmed');
+    }
+    
     process.exit(1);
   }
 }
