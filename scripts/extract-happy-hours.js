@@ -15,6 +15,7 @@ const LLM_INSTRUCTIONS_PATH = path.join(__dirname, '../data/config/llm-instructi
 const CONFIG_PATH = path.join(__dirname, '../data/config/config.json');
 const VENUES_JSON_PATH = path.join(__dirname, '../data/reporting/venues.json');
 const LLM_CANDIDATES_HISTORY_PATH = path.join(__dirname, '../logs/llm-candidates-history.txt');
+const { updateConfigField } = require('./utils/config');
 
 // Ensure gold and incremental history directories exist
 if (!fs.existsSync(GOLD_DIR)) fs.mkdirSync(GOLD_DIR, { recursive: true });
@@ -87,7 +88,9 @@ async function extractHappyHours(isIncremental = false) {
 
         // Hard abort if too many files (unless -1 means unlimited)
         if (maxIncrementalFiles !== -1 && venueFiles.length > maxIncrementalFiles) {
-            console.error('\x1b[31m%s\x1b[0m', `ABORTING: Too many incremental files (${venueFiles.length} > ${maxIncrementalFiles}). Manual review required to avoid unexpected LLM costs.`);
+            const errorMsg = `Too many incremental files (${venueFiles.length} > ${maxIncrementalFiles}). Manual review required.`;
+            console.error('\x1b[31m%s\x1b[0m', `ABORTING: ${errorMsg}`);
+            updateConfigField('last_run_status', 'failed_at_extract');
             process.exit(1);
         }
     }
@@ -244,6 +247,9 @@ async function extractHappyHours(isIncremental = false) {
                         console.error(`\n❌ Rate limit exceeded (HTTP 429): ${errorData.error?.message || response.statusText}`);
                         console.error(`   Aborting extraction. Please wait and try again later.`);
                         console.error(`   Processed up to: ${venueData.venueName} (${venueId})`);
+                        if (isIncremental) {
+                            updateConfigField('last_run_status', 'failed_at_extract');
+                        }
                         process.exit(1);
                     }
                     throw new Error(`HTTP ${response.status}: ${errorData.error?.message || response.statusText}`);
@@ -305,6 +311,9 @@ async function extractHappyHours(isIncremental = false) {
                     console.error(`   Aborting extraction. Please wait and try again later.`);
                     console.error(`   Processed up to: ${venueData.venueName} (${venueId})`);
                     console.error(`   Error: ${error.message}`);
+                    if (isIncremental) {
+                        updateConfigField('last_run_status', 'failed_at_extract');
+                    }
                     process.exit(1);
                 }
                 
@@ -348,6 +357,12 @@ async function extractHappyHours(isIncremental = false) {
         // Add a small delay to avoid hitting API rate limits
         await new Promise(resolve => setTimeout(resolve, 1000));
     }
+    
+    // Update status on successful completion (incremental mode only)
+    if (isIncremental) {
+        updateConfigField('last_run_status', 'completed_successfully');
+    }
+    
     console.log('Happy hour extraction complete.');
 }
 

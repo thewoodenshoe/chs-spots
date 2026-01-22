@@ -62,6 +62,7 @@ const SILVER_TRIMMED_TODAY_DIR = path.join(SILVER_TRIMMED_DIR, 'today');
 const SILVER_TRIMMED_PREVIOUS_DIR = path.join(SILVER_TRIMMED_DIR, 'previous');
 const SILVER_TRIMMED_INCREMENTAL_DIR = path.join(SILVER_TRIMMED_DIR, 'incremental');
 const VENUES_PATH = path.join(__dirname, '../data/venues.json');
+const { loadConfig, updateConfigField, getRunDate } = require('./utils/config');
 
 // Ensure directories exist
 if (!fs.existsSync(SILVER_TRIMMED_DIR)) {
@@ -401,23 +402,89 @@ function copyDirectoryRecursive(source, dest) {
 }
 
 /**
+ * Check if directory is empty
+ */
+function isDirectoryEmpty(dirPath) {
+  if (!fs.existsSync(dirPath)) {
+    return true;
+  }
+  const items = fs.readdirSync(dirPath);
+  return items.length === 0;
+}
+
+/**
+ * Archive today/ to previous/ on new day
+ */
+function archiveTodayToPrevious() {
+  log(`📅 New day detected: archiving silver_trimmed/today/ to silver_trimmed/previous/`);
+  
+  // Delete all files from previous/
+  if (fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)) {
+    const previousFiles = fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'));
+    for (const file of previousFiles) {
+      fs.unlinkSync(path.join(SILVER_TRIMMED_PREVIOUS_DIR, file));
+    }
+  }
+  fs.mkdirSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true });
+  log(`  🗑️  Deleted all files from silver_trimmed/previous/`);
+  
+  // Copy all files from today/ to previous/
+  let copiedCount = 0;
+  if (fs.existsSync(SILVER_TRIMMED_TODAY_DIR)) {
+    const todayFiles = fs.readdirSync(SILVER_TRIMMED_TODAY_DIR).filter(f => f.endsWith('.json'));
+    for (const file of todayFiles) {
+      try {
+        const sourcePath = path.join(SILVER_TRIMMED_TODAY_DIR, file);
+        const destPath = path.join(SILVER_TRIMMED_PREVIOUS_DIR, file);
+        fs.copyFileSync(sourcePath, destPath);
+        copiedCount++;
+      } catch (error) {
+        log(`  ⚠️  Failed to copy ${file} from today/ to previous/: ${error.message}`);
+      }
+    }
+  }
+  log(`  ✅ Copied ${copiedCount} file(s) from silver_trimmed/today/ to silver_trimmed/previous/`);
+  
+  // Delete all files from today/
+  if (fs.existsSync(SILVER_TRIMMED_TODAY_DIR)) {
+    const todayFiles = fs.readdirSync(SILVER_TRIMMED_TODAY_DIR).filter(f => f.endsWith('.json'));
+    for (const file of todayFiles) {
+      fs.unlinkSync(path.join(SILVER_TRIMMED_TODAY_DIR, file));
+    }
+  }
+  log(`  🗑️  Deleted all files from silver_trimmed/today/`);
+}
+
+/**
  * Reset state for new day or same-day rerun
- * New day: Empty previous/, move incremental/ to previous/, move today/ to previous/, empty today/
- * Same day: Leave previous/ untouched, move incremental/ to previous/, empty today/
+ * Uses config.json instead of .last-trim file
  */
 function resetStateForRun() {
-  const today = new Date().toISOString().split('T')[0];
-  const LAST_TRIM_PATH = path.join(__dirname, '../data/silver_trimmed/.last-trim');
-  let lastTrim = null;
-  if (fs.existsSync(LAST_TRIM_PATH)) {
-    try {
-      lastTrim = fs.readFileSync(LAST_TRIM_PATH, 'utf8').trim();
-    } catch (e) {
-      // Ignore
+  const config = loadConfig();
+  const runDate = config.run_date || getRunDate();
+  const todayEmpty = isDirectoryEmpty(SILVER_TRIMMED_TODAY_DIR);
+  
+  log(`📊 State check:`);
+  log(`   run_date: ${runDate}`);
+  log(`   silver_trimmed/today/ empty: ${todayEmpty}`);
+  
+  // If today/ is not empty, archive it to previous/ (new day scenario)
+  if (!todayEmpty) {
+    archiveTodayToPrevious();
+  }
+  
+  // Clear incremental/ always at the start
+  if (fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
+    const incrementalFiles = fs.readdirSync(SILVER_TRIMMED_INCREMENTAL_DIR).filter(f => f.endsWith('.json'));
+    for (const file of incrementalFiles) {
+      fs.unlinkSync(path.join(SILVER_TRIMMED_INCREMENTAL_DIR, file));
+    }
+    if (incrementalFiles.length > 0) {
+      log(`  🧹 Cleared ${incrementalFiles.length} file(s) from silver_trimmed/incremental/`);
     }
   }
   
-  const isNewDay = !lastTrim || lastTrim !== today;
+  updateConfigField('last_run_status', 'running_trimmed');
   
   if (isNewDay) {
     log(`📅 New day detected: emptying previous/ and incremental/, copying today/ to previous/`);
@@ -528,11 +595,6 @@ function main() {
   // Reset state before processing (new day or same-day rerun)
   resetStateForRun();
   
-  // Save today's date
-  const today = new Date().toISOString().split('T')[0];
-  const LAST_TRIM_PATH = path.join(__dirname, '../data/silver_trimmed/.last-trim');
-  fs.writeFileSync(LAST_TRIM_PATH, today, 'utf8');
-  
   // INCREMENTAL MODE: Only process venues in silver_merged/incremental/
   if (!fs.existsSync(SILVER_MERGED_INCREMENTAL_DIR)) {
     log(`📁 Incremental directory not found: ${SILVER_MERGED_INCREMENTAL_DIR}`);
@@ -615,6 +677,9 @@ function main() {
   log(`   📉 Overall size reduction: ${overallReduction}`);
   log(`   📦 Original size: ${(totalOriginalSize / 1024 / 1024).toFixed(2)} MB`);
   log(`   📦 Trimmed size: ${(totalTrimmedSize / 1024 / 1024).toFixed(2)} MB`);
+  // Update status after successful trim
+  updateConfigField('last_run_status', 'running_trimmed');
+  
   log(`\n✨ Done! Trimmed files saved to ${SILVER_TRIMMED_TODAY_DIR}`);
 }
 

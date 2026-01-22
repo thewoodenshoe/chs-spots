@@ -48,8 +48,9 @@ const RAW_TODAY_DIR = path.join(__dirname, '../data/raw/today');
 const RAW_PREVIOUS_DIR = path.join(__dirname, '../data/raw/previous');
 const SILVER_MERGED_DIR = path.join(__dirname, '../data/silver_merged');
 const SILVER_MERGED_TODAY_DIR = path.join(__dirname, '../data/silver_merged/today');
-// Note: Silver doesn't need previous/ folder - only raw needs it for delta comparison
+const SILVER_MERGED_PREVIOUS_DIR = path.join(__dirname, '../data/silver_merged/previous');
 const SILVER_MERGED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_merged/incremental');
+const { loadConfig, updateConfigField, getRunDate } = require('./utils/config');
 // Try reporting/venues.json first (primary), fallback to data/venues.json (backwards compatibility)
 const REPORTING_VENUES_PATH = path.join(__dirname, '../data/reporting/venues.json');
 const VENUES_PATH = path.join(__dirname, '../data/venues.json');
@@ -61,7 +62,9 @@ if (!fs.existsSync(SILVER_MERGED_DIR)) {
 if (!fs.existsSync(SILVER_MERGED_TODAY_DIR)) {
   fs.mkdirSync(SILVER_MERGED_TODAY_DIR, { recursive: true });
 }
-// Silver only needs today/ and incremental/ - no previous/ needed
+if (!fs.existsSync(SILVER_MERGED_PREVIOUS_DIR)) {
+  fs.mkdirSync(SILVER_MERGED_PREVIOUS_DIR, { recursive: true });
+}
 if (!fs.existsSync(SILVER_MERGED_INCREMENTAL_DIR)) {
   fs.mkdirSync(SILVER_MERGED_INCREMENTAL_DIR, { recursive: true });
 }
@@ -232,39 +235,57 @@ function processVenue(venueId, venues) {
 }
 
 /**
- * On new day: Move yesterday's incremental to all/ before processing new incremental
- * This ensures all/ always has the full history
+ * Check if directory is empty
  */
-function moveIncrementalToAll() {
-  if (!fs.existsSync(SILVER_MERGED_INCREMENTAL_DIR)) {
-    return false;
+function isDirectoryEmpty(dirPath) {
+  if (!fs.existsSync(dirPath)) {
+    return true;
   }
+  const items = fs.readdirSync(dirPath);
+  return items.length === 0;
+}
+
+/**
+ * Archive today/ to previous/ on new day
+ */
+function archiveTodayToPrevious() {
+  log(`📅 New day detected: archiving silver_merged/today/ to silver_merged/previous/`);
   
-  const incrementalFiles = fs.readdirSync(SILVER_MERGED_INCREMENTAL_DIR).filter(f => f.endsWith('.json'));
-  
-  if (incrementalFiles.length === 0) {
-    return false;
-  }
-  
-  let moved = 0;
-  for (const file of incrementalFiles) {
-    try {
-      const sourcePath = path.join(SILVER_MERGED_INCREMENTAL_DIR, file);
-      const destPath = path.join(SILVER_MERGED_TODAY_DIR, file);
-      
-      // Move incremental file to all/ (overwrites if exists)
-      fs.copyFileSync(sourcePath, destPath);
-      moved++;
-    } catch (error) {
-      log(`  ⚠️  Failed to move ${file} to all/: ${error.message}`);
+  // Delete all files from previous/
+  if (fs.existsSync(SILVER_MERGED_PREVIOUS_DIR)) {
+    const previousFiles = fs.readdirSync(SILVER_MERGED_PREVIOUS_DIR).filter(f => f.endsWith('.json'));
+    for (const file of previousFiles) {
+      fs.unlinkSync(path.join(SILVER_MERGED_PREVIOUS_DIR, file));
     }
   }
+  fs.mkdirSync(SILVER_MERGED_PREVIOUS_DIR, { recursive: true });
+  log(`  🗑️  Deleted all files from silver_merged/previous/`);
   
-  if (moved > 0) {
-    log(`  ✅ Moved ${moved} file(s) from incremental/ to all/`);
+  // Copy all files from today/ to previous/
+  let copiedCount = 0;
+  if (fs.existsSync(SILVER_MERGED_TODAY_DIR)) {
+    const todayFiles = fs.readdirSync(SILVER_MERGED_TODAY_DIR).filter(f => f.endsWith('.json'));
+    for (const file of todayFiles) {
+      try {
+        const sourcePath = path.join(SILVER_MERGED_TODAY_DIR, file);
+        const destPath = path.join(SILVER_MERGED_PREVIOUS_DIR, file);
+        fs.copyFileSync(sourcePath, destPath);
+        copiedCount++;
+      } catch (error) {
+        log(`  ⚠️  Failed to copy ${file} from today/ to previous/: ${error.message}`);
+      }
+    }
   }
+  log(`  ✅ Copied ${copiedCount} file(s) from silver_merged/today/ to silver_merged/previous/`);
   
-  return moved > 0;
+  // Delete all files from today/
+  if (fs.existsSync(SILVER_MERGED_TODAY_DIR)) {
+    const todayFiles = fs.readdirSync(SILVER_MERGED_TODAY_DIR).filter(f => f.endsWith('.json'));
+    for (const file of todayFiles) {
+      fs.unlinkSync(path.join(SILVER_MERGED_TODAY_DIR, file));
+    }
+  }
+  log(`  🗑️  Deleted all files from silver_merged/today/`);
 }
 
 /**
@@ -273,27 +294,26 @@ function moveIncrementalToAll() {
 function main() {
   log('🔗 Starting Raw Files Merge\n');
   
-  // On new day: Move yesterday's incremental to all/ before processing
-  // This ensures all/ always has the full history
-  const today = new Date().toISOString().split('T')[0];
-  const LAST_MERGE_PATH = path.join(__dirname, '../data/silver_merged/.last-merge');
-  let lastMerge = null;
-  if (fs.existsSync(LAST_MERGE_PATH)) {
-    try {
-      lastMerge = fs.readFileSync(LAST_MERGE_PATH, 'utf8').trim();
-    } catch (e) {
-      // Ignore
-    }
+  // Load config for state management
+  const config = loadConfig();
+  const runDate = config.run_date || getRunDate();
+  const todayEmpty = isDirectoryEmpty(SILVER_MERGED_TODAY_DIR);
+  
+  log(`📊 State check:`);
+  log(`   run_date: ${runDate}`);
+  log(`   silver_merged/today/ empty: ${todayEmpty}`);
+  
+  // Check if we need to archive (new day scenario)
+  // Note: We don't track last_merged_processed_date separately - we use run_date
+  // If today/ is not empty, we assume it's from a previous run and should be archived on new day
+  if (!todayEmpty) {
+    // Check if this is a new day by comparing with run_date
+    // For simplicity, if today/ has files and we're running, archive them
+    log(`📅 silver_merged/today/ not empty - archiving to previous/`);
+    archiveTodayToPrevious();
   }
   
-  // If new day, move yesterday's incremental to all/
-  if (lastMerge && lastMerge !== today) {
-    log(`📅 New day detected - moving yesterday's incremental to all/\n`);
-    moveIncrementalToAll();
-  }
-  
-  // Save today's date
-  fs.writeFileSync(LAST_MERGE_PATH, today, 'utf8');
+  updateConfigField('last_run_status', 'running_merged');
   
   // Parse command-line arguments
   const args = process.argv.slice(2);
@@ -420,6 +440,9 @@ function main() {
   log(`   ✅ Merged: ${successful}`);
   log(`   ⏭️  Skipped (no changes): ${skipped}`);
   log(`   📄 Total pages: ${totalPages}`);
+  // Update status after successful merge
+  updateConfigField('last_run_status', 'running_merged');
+  
   log(`\n✨ Done! Merged files saved to: ${path.resolve(SILVER_MERGED_TODAY_DIR)}`);
   log(`   Incremental files: ${path.resolve(SILVER_MERGED_INCREMENTAL_DIR)}`);
 }
