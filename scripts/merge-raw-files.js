@@ -112,8 +112,8 @@ function loadMetadata(venueId) {
     }
   }
   
-  // Fallback to all/
-  const metadataPath = path.join(RAW_ALL_DIR, venueId, 'metadata.json');
+  // Fallback to today/ (was all/ before refactor)
+  const metadataPath = path.join(RAW_TODAY_DIR, venueId, 'metadata.json');
   if (!fs.existsSync(metadataPath)) {
     return {};
   }
