@@ -50,6 +50,7 @@ data/raw/
 !data/raw/.last-download
 data/silver_merged/
 data/silver_matched/
+data/silver_trimmed/
 data/gold/
 !data/gold/.bulk-complete
 
