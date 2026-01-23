@@ -187,6 +187,59 @@ function isFileFromToday(filePath) {
 }
 
 /**
+ * Archive today/ to previous/ on new day
+ */
+function archiveTodayToPrevious() {
+  log(`📅 New day detected: archiving raw/today/ to raw/previous/`);
+  
+  // Delete all files from raw/previous
+  if (fs.existsSync(RAW_PREVIOUS_DIR)) {
+    const previousDirs = fs.readdirSync(RAW_PREVIOUS_DIR);
+    for (const dir of previousDirs) {
+      const dirPath = path.join(RAW_PREVIOUS_DIR, dir);
+      if (fs.statSync(dirPath).isDirectory()) {
+        fs.rmSync(dirPath, { recursive: true, force: true });
+      }
+    }
+  }
+  fs.mkdirSync(RAW_PREVIOUS_DIR, { recursive: true });
+  log(`  🗑️  Deleted all files from raw/previous/`);
+  
+  // Copy all files from raw/today/ to raw/previous/
+  let copiedCount = 0;
+  if (fs.existsSync(RAW_TODAY_DIR)) {
+    const todayDirs = fs.readdirSync(RAW_TODAY_DIR).filter(item => {
+      const itemPath = path.join(RAW_TODAY_DIR, item);
+      return fs.statSync(itemPath).isDirectory();
+    });
+    
+    for (const dir of todayDirs) {
+      try {
+        const sourcePath = path.join(RAW_TODAY_DIR, dir);
+        const destPath = path.join(RAW_PREVIOUS_DIR, dir);
+        fs.cpSync(sourcePath, destPath, { recursive: true });
+        copiedCount++;
+      } catch (error) {
+        log(`  ⚠️  Failed to copy ${dir} from today/ to previous/: ${error.message}`);
+      }
+    }
+  }
+  log(`  ✅ Copied ${copiedCount} venue(s) from raw/today/ to raw/previous/`);
+  
+  // Delete all files from raw/today/
+  if (fs.existsSync(RAW_TODAY_DIR)) {
+    const todayDirs = fs.readdirSync(RAW_TODAY_DIR);
+    for (const dir of todayDirs) {
+      const dirPath = path.join(RAW_TODAY_DIR, dir);
+      if (fs.statSync(dirPath).isDirectory()) {
+        fs.rmSync(dirPath, { recursive: true, force: true });
+      }
+    }
+  }
+  log(`  🗑️  Deleted all files from raw/today/`);
+}
+
+/**
  * Reset state for new day or same-day rerun
  * New day: Empty previous/, move incremental/ to previous/, move today/ to previous/, empty today/
  * Same day: Leave previous/ untouched, move incremental/ to previous/, empty today/
@@ -569,11 +622,16 @@ async function processVenue(venue, saveToIncremental = false) {
 async function main() {
   log('📥 Starting Raw HTML Download\n');
   
-  const today = getTodayDateString();
-  const lastDownload = getLastDownloadDate();
+  // Load config for state management
+  const config = loadConfig();
+  const runDate = config.run_date || getRunDate();
+  const lastRawDate = config.last_raw_processed_date;
+  const rawTodayEmpty = isDirectoryEmpty(RAW_TODAY_DIR);
   
-  log(`📅 Today: ${today}`);
-  log(`📅 Last download: ${lastDownload || 'Never'}\n`);
+  const today = formatDateYYYYMMDD(runDate) || getTodayDateString();
+  
+  log(`📅 Run date: ${runDate}`);
+  log(`📅 Last raw processed: ${lastRawDate || 'Never'}\n`);
   
   // Parse command-line arguments
   const args = process.argv.slice(2);
@@ -599,12 +657,6 @@ async function main() {
   
   const venues = JSON.parse(fs.readFileSync(venuesPath, 'utf8'));
   log(`📖 Loaded ${venues.length} venue(s) from venues.json\n`);
-  
-  // Load config for state management
-  const config = loadConfig();
-  const runDate = config.run_date || getRunDate();
-  const lastRawDate = config.last_raw_processed_date;
-  const rawTodayEmpty = isDirectoryEmpty(RAW_TODAY_DIR);
   
   log(`📊 State check:`);
   log(`   run_date: ${runDate}`);
@@ -636,7 +688,6 @@ async function main() {
   }
   
   // If same day and raw/today/ not empty, only check for NEW venues
-  const today = formatDateYYYYMMDD(runDate) || getTodayDateString();
   if (!isNewDay && !rawTodayEmpty) {
     log(`⏭️  Same day as last download (${today}) - checking for new and removed venues`);
     
