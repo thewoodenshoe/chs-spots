@@ -3,17 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { SpotType } from './FilterModal';
 import { Spot } from '@/contexts/SpotsContext';
+import { useActivities } from '@/contexts/ActivitiesContext';
 import { Pencil } from 'lucide-react';
-
-const ACTIVITIES: SpotType[] = [
-  'Christmas Spots',
-  'Happy Hour',
-  'Fishing Spots',
-  'Sunset Spots',
-  'Pickleball Games',
-  'Bike Routes',
-  'Golf Cart Hacks',
-];
 
 interface EditSpotModalProps {
   isOpen: boolean;
@@ -39,7 +30,7 @@ export default function EditSpotModal({
   onClose,
   spot,
   pinLocation: externalPinLocation,
-  onMapClick,
+  onMapClick: _onMapClick, // eslint-disable-line @typescript-eslint/no-unused-vars
   onSubmit,
   onDelete,
 }: EditSpotModalProps) {
@@ -47,9 +38,13 @@ export default function EditSpotModal({
   const handleRef = useRef<HTMLDivElement>(null);
   const resizeHandleRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { activities } = useActivities();
+  const activityNames = activities.map(a => a.name as SpotType);
+  const defaultActivityName = activityNames[0] || 'Happy Hour';
+  
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedActivity, setSelectedActivity] = useState<SpotType>('Happy Hour');
+  const [selectedActivity, setSelectedActivity] = useState<SpotType>(defaultActivityName);
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [pinLocation, setPinLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -62,10 +57,15 @@ export default function EditSpotModal({
   // Initialize form with spot data
   useEffect(() => {
     if (spot && isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTitle(spot.title);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDescription(spot.description || '');
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedActivity(spot.type);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPhotoPreview(spot.photoUrl || null);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedPhoto(null);
     }
   }, [spot, isOpen]);
@@ -73,8 +73,10 @@ export default function EditSpotModal({
   // Sync external pin location
   useEffect(() => {
     if (externalPinLocation) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPinLocation(externalPinLocation);
     } else if (spot && isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPinLocation({ lat: spot.lat, lng: spot.lng });
     }
   }, [externalPinLocation, spot, isOpen]);
@@ -367,7 +369,7 @@ export default function EditSpotModal({
                 className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-base text-gray-800 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
                 required
               >
-                {ACTIVITIES.map((activity) => (
+                {activityNames.map((activity) => (
                   <option key={activity} value={activity}>
                     {activity}
                   </option>

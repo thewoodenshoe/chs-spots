@@ -1,6 +1,7 @@
 'use client';
 
 import { SpotType } from './FilterModal';
+import { useActivities } from '@/contexts/ActivitiesContext';
 import { Martini, Fish, Sunset, Gift, Activity, Bike, Car } from 'lucide-react';
 
 interface ActivityChipProps {
@@ -8,22 +9,27 @@ interface ActivityChipProps {
   onClick?: () => void;
 }
 
-const activityIcons: Record<SpotType, typeof Martini> = {
-  'Christmas Spots': Gift,
-  'Happy Hour': Martini,
-  'Fishing Spots': Fish,
-  'Sunset Spots': Sunset,
-  'Pickleball Games': Activity,
-  'Bike Routes': Bike,
-  'Golf Cart Hacks': Car,
+// Icon mapping for lucide-react components
+const iconMap: Record<string, typeof Martini> = {
+  'Martini': Martini,
+  'Fish': Fish,
+  'Sunset': Sunset,
+  'Gift': Gift,
+  'Activity': Activity,
+  'Bike': Bike,
+  'Car': Car,
 };
 
 export default function ActivityChip({ activity, onClick }: ActivityChipProps) {
+  const { activities } = useActivities();
   const Component = onClick ? 'button' : 'div';
   const baseClasses = 'flex w-full items-center justify-center gap-2 rounded-full bg-teal-600 px-4 py-3 min-h-[48px] text-sm font-semibold text-white shadow-lg transition-all hover:bg-teal-700 hover:shadow-xl active:scale-95 touch-manipulation';
   const clickableClasses = onClick ? 'cursor-pointer' : '';
 
-  const Icon = activityIcons[activity];
+  // Find activity in config and get its icon
+  const activityConfig = activities.find(a => a.name === activity);
+  const IconName = activityConfig?.icon || 'Activity';
+  const Icon = iconMap[IconName] || Activity;
 
   return (
     <Component

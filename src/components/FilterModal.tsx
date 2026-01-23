@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useActivities } from '@/contexts/ActivitiesContext';
 
 export type SpotType = 
   | 'Christmas Spots'
@@ -23,23 +24,17 @@ interface FilterModalProps {
   onActivityChange: (activity: SpotType) => void;
 }
 
-const ACTIVITIES: SpotType[] = [
-  'Christmas Spots',
-  'Happy Hour',
-  'Fishing Spots',
-  'Sunset Spots',
-  'Pickleball Games',
-  'Bike Routes',
-  'Golf Cart Hacks',
-];
-
 export default function FilterModal({
   isOpen,
   onClose,
   selectedActivity,
   onActivityChange,
 }: FilterModalProps) {
+  const { activities } = useActivities();
   const modalRef = useRef<HTMLDivElement>(null);
+  
+  // Get activity names from config
+  const activityNames = activities.map(a => a.name as SpotType);
 
   // Close on backdrop click
   useEffect(() => {
@@ -112,7 +107,7 @@ export default function FilterModal({
               Activity
             </label>
             <div className="space-y-3">
-              {ACTIVITIES.map((activity) => (
+              {activityNames.map((activity) => (
                 <label
                   key={activity}
                   className="flex cursor-pointer items-center rounded-xl border-2 border-gray-200 bg-gray-50 p-4 transition-all hover:border-teal-300 hover:bg-teal-50"

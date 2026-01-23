@@ -2,16 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { SpotType } from './FilterModal';
-
-const ACTIVITIES: SpotType[] = [
-  'Christmas Spots',
-  'Happy Hour',
-  'Fishing Spots',
-  'Sunset Spots',
-  'Pickleball Games',
-  'Bike Routes',
-  'Golf Cart Hacks',
-];
+import { useActivities } from '@/contexts/ActivitiesContext';
 
 interface SubmissionModalProps {
   isOpen: boolean;
@@ -37,6 +28,10 @@ export default function SubmissionModal({
   area,
   onSubmit,
 }: SubmissionModalProps) {
+  const { activities } = useActivities();
+  const activityNames = activities.map(a => a.name as SpotType);
+  const defaultActivityName = activityNames[0] || 'Happy Hour';
+  
   const sheetRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<HTMLDivElement>(null);
   const resizeHandleRef = useRef<HTMLDivElement>(null);
@@ -44,7 +39,7 @@ export default function SubmissionModal({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [selectedActivity, setSelectedActivity] = useState<SpotType>(
-    defaultActivity || 'Happy Hour'
+    defaultActivity || defaultActivityName
   );
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -58,11 +53,14 @@ export default function SubmissionModal({
   useEffect(() => {
     if (isOpen) {
       if (defaultActivity) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedActivity(defaultActivity);
-      } else {
-        setSelectedActivity('Happy Hour');
+      } else if (activityNames.length > 0) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setSelectedActivity(activityNames[0]);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultActivity, isOpen]);
 
   // Don't reset form when modal closes - preserve inputs
@@ -171,7 +169,7 @@ export default function SubmissionModal({
     // Reset form only after successful submission
       setTitle('');
       setDescription('');
-      setSelectedActivity('Happy Hour');
+      setSelectedActivity(defaultActivityName);
     setSelectedPhoto(null);
     setPhotoPreview(null);
     handleClose();
@@ -328,7 +326,7 @@ export default function SubmissionModal({
                 className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-base text-gray-800 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
                 required
               >
-                {ACTIVITIES.map((activity) => (
+                {activityNames.map((activity) => (
                   <option key={activity} value={activity}>
                     {activity}
                   </option>

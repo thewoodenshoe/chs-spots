@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SpotsProvider } from "@/contexts/SpotsContext";
 import { VenuesProvider } from "@/contexts/VenuesContext";
+import { ActivitiesProvider } from "@/contexts/ActivitiesContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,7 +39,9 @@ export default function RootLayout({
       >
         <SpotsProvider>
           <VenuesProvider>
-            {children}
+            <ActivitiesProvider>
+              {children}
+            </ActivitiesProvider>
           </VenuesProvider>
         </SpotsProvider>
       </body>

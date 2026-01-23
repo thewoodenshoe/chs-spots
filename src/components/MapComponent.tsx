@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { GoogleMap, LoadScript, Marker, InfoWindow, MarkerClusterer } from '@react-google-maps/api';
 import { useSpots, Spot } from '@/contexts/SpotsContext';
 import { useVenues, Venue } from '@/contexts/VenuesContext';
+import { useActivities } from '@/contexts/ActivitiesContext';
 import { Area, SpotType } from './FilterModal';
 
 // Google Maps API key - set in .env.local as NEXT_PUBLIC_GOOGLE_MAPS_KEY
@@ -19,32 +20,11 @@ const mapContainerStyle = {
   height: '100%',
 };
 
-// Emoji/icons for each spot type
-const typeIcons: Record<SpotType, string> = {
-  'Christmas Spots': '🎄',
-  'Happy Hour': '🍹',
-  'Fishing Spots': '🎣',
-  'Sunset Spots': '🌅',
-  'Pickleball Games': '🏓',
-  'Bike Routes': '🚴',
-  'Golf Cart Hacks': '🛺',
-};
-
-// Color mapping for each spot type
-const typeColors: Record<SpotType, string> = {
-  'Christmas Spots': '#f97316', // orange/coral
-  'Happy Hour': '#0d9488', // teal
-  'Fishing Spots': '#0284c7', // blue
-  'Sunset Spots': '#f59e0b', // amber
-  'Pickleball Games': '#10b981', // green
-  'Bike Routes': '#6366f1', // indigo
-  'Golf Cart Hacks': '#8b5cf6', // purple
-};
-
 // Create custom marker icon URL for each spot type
-function createMarkerIcon(spot: Spot): google.maps.Icon {
-  const emoji = typeIcons[spot.type];
-  const color = typeColors[spot.type];
+function createMarkerIcon(spot: Spot, activities: Array<{ name: string; emoji: string; color: string }>): google.maps.Icon {
+  const activityConfig = activities.find(a => a.name === spot.type);
+  const emoji = activityConfig?.emoji || '📍';
+  const color = activityConfig?.color || '#0d9488';
   
   // Create a data URL for the marker icon
   const svg = `
@@ -116,6 +96,7 @@ export default function MapComponent({
 }: MapComponentProps) {
   const { spots } = useSpots();
   const { venues } = useVenues();
+  const { activities } = useActivities();
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
@@ -457,7 +438,7 @@ export default function MapComponent({
                   <Marker
                     key={spot.id}
                     position={{ lat: spot.lat, lng: spot.lng }}
-                    icon={createMarkerIcon(spot)}
+                    icon={createMarkerIcon(spot, activities)}
                     clusterer={clusterer}
                     onClick={() => handleMarkerClick(spot)}
                     zIndex={1000} // Spots appear above venues
