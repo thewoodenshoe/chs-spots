@@ -16,6 +16,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { loadConfig } = require('./utils/config');
 
 // Logging setup
 const logDir = path.join(__dirname, '..', 'logs');
@@ -43,6 +44,17 @@ const REPORTING_DIR = path.join(__dirname, '../data/reporting');
 const SPOTS_PATH = path.join(REPORTING_DIR, 'spots.json');
 const REPORTING_VENUES_PATH = path.join(REPORTING_DIR, 'venues.json');
 const REPORTING_AREAS_PATH = path.join(REPORTING_DIR, 'areas.json');
+
+// Pipeline directory paths
+const RAW_PREVIOUS_DIR = path.join(__dirname, '../data/raw/previous');
+const RAW_TODAY_DIR = path.join(__dirname, '../data/raw/today');
+const RAW_INCREMENTAL_DIR = path.join(__dirname, '../data/raw/incremental');
+const SILVER_MERGED_PREVIOUS_DIR = path.join(__dirname, '../data/silver_merged/previous');
+const SILVER_MERGED_TODAY_DIR = path.join(__dirname, '../data/silver_merged/today');
+const SILVER_MERGED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_merged/incremental');
+const SILVER_TRIMMED_PREVIOUS_DIR = path.join(__dirname, '../data/silver_trimmed/previous');
+const SILVER_TRIMMED_TODAY_DIR = path.join(__dirname, '../data/silver_trimmed/today');
+const SILVER_TRIMMED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_trimmed/incremental');
 
 /**
  * Format happy hour description from gold data
@@ -416,6 +428,60 @@ function main() {
   // Summary
   const existingAutomatedCount = existingSpots.filter(s => s.source === 'automated').length;
   const totalAutomatedCount = spots.filter(s => s.source === 'automated').length;
+  
+  // Get pipeline state and file counts
+  const config = loadConfig();
+  const todayDate = config.run_date || 'N/A';
+  const previousDate = config.last_raw_processed_date || 'N/A';
+  
+  // Helper function to count directories (for raw) or files (for silver layers)
+  function countDirectories(dirPath) {
+    if (!fs.existsSync(dirPath)) return 0;
+    try {
+      return fs.readdirSync(dirPath).filter(item => {
+        const itemPath = path.join(dirPath, item);
+        return fs.statSync(itemPath).isDirectory();
+      }).length;
+    } catch {
+      return 0;
+    }
+  }
+  
+  function countFiles(dirPath) {
+    if (!fs.existsSync(dirPath)) return 0;
+    try {
+      return fs.readdirSync(dirPath).filter(item => {
+        const itemPath = path.join(dirPath, item);
+        return fs.statSync(itemPath).isFile() && item.endsWith('.json');
+      }).length;
+    } catch {
+      return 0;
+    }
+  }
+  
+  const rawPreviousCount = countDirectories(RAW_PREVIOUS_DIR);
+  const rawTodayCount = countDirectories(RAW_TODAY_DIR);
+  const rawIncrementalCount = countDirectories(RAW_INCREMENTAL_DIR);
+  const silverMergedPreviousCount = countFiles(SILVER_MERGED_PREVIOUS_DIR);
+  const silverMergedTodayCount = countFiles(SILVER_MERGED_TODAY_DIR);
+  const silverMergedIncrementalCount = countFiles(SILVER_MERGED_INCREMENTAL_DIR);
+  const silverTrimmedPreviousCount = countFiles(SILVER_TRIMMED_PREVIOUS_DIR);
+  const silverTrimmedTodayCount = countFiles(SILVER_TRIMMED_TODAY_DIR);
+  const silverTrimmedIncrementalCount = countFiles(SILVER_TRIMMED_INCREMENTAL_DIR);
+  
+  log(`\n📅 Pipeline State:`);
+  log(`   📆 Today's date: ${todayDate}`);
+  log(`   📆 Previous date: ${previousDate}`);
+  log(`   📁 Raw previous count: ${rawPreviousCount}`);
+  log(`   📁 Raw today count: ${rawTodayCount}`);
+  log(`   📁 Raw incremental count: ${rawIncrementalCount}`);
+  log(`   📦 Silver merged previous count: ${silverMergedPreviousCount}`);
+  log(`   📦 Silver merged today count: ${silverMergedTodayCount}`);
+  log(`   📦 Silver merged incremental count: ${silverMergedIncrementalCount}`);
+  log(`   ✂️  Silver trimmed previous count: ${silverTrimmedPreviousCount}`);
+  log(`   ✂️  Silver trimmed today count: ${silverTrimmedTodayCount}`);
+  log(`   ✂️  Silver trimmed incremental count: ${silverTrimmedIncrementalCount}`);
+  
   log(`\n📊 Summary:`);
   log(`   ✅ New automated spots created: ${processed}`);
   log(`   📋 Existing automated spots preserved: ${existingAutomatedCount}`);
