@@ -549,7 +549,9 @@ export default function MapComponent({
               )}
               
               <div className="mt-2 flex items-center gap-2 mb-2">
-                <span className="text-base">{typeIcons[selectedSpot.type]}</span>
+                <span className="text-base">
+                  {activities.find(a => a.name === selectedSpot.type)?.emoji || '📍'}
+                </span>
                 <span className="rounded-full bg-teal-100 px-2 py-0.5 text-xs font-medium text-teal-800">
                   {selectedSpot.type}
                 </span>

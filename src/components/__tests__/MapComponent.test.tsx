@@ -7,6 +7,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import MapComponent from '../MapComponent';
 import { SpotsProvider } from '@/contexts/SpotsContext';
 import { VenuesProvider } from '@/contexts/VenuesContext';
+import { ActivitiesProvider } from '@/contexts/ActivitiesContext';
 
 // Mock google.maps namespace
 global.google = {
@@ -126,8 +127,60 @@ jest.mock('@/contexts/VenuesContext', () => {
   };
 });
 
+// Mock useActivities hook - use global variable accessible from mock factory
+(global as any).__mockActivitiesContextValue__ = { 
+  activities: [
+    { name: 'Happy Hour', icon: 'Martini', emoji: '🍹', color: '#0d9488' },
+    { name: 'Fishing Spots (manual entry)', icon: 'Fish', emoji: '🎣', color: '#0284c7' },
+  ], 
+  loading: false, 
+  error: null 
+};
+
+jest.mock('@/contexts/ActivitiesContext', () => {
+  const React = require('react');
+  
+  // Create a test context - shared between provider and hook
+  const TestActivitiesContext = React.createContext({ 
+    activities: [], 
+    loading: false, 
+    error: null 
+  });
+  
+  // Create a mock provider that reads from global on each render
+  const MockActivitiesProvider = ({ children }: { children: React.ReactNode }) => {
+    // Read directly from global on each render to get latest value
+    const globalValue = (global as any).__mockActivitiesContextValue__ || { 
+      activities: [], 
+      loading: false, 
+      error: null 
+    };
+    const contextValue = {
+      activities: globalValue.activities || [],
+      loading: globalValue.loading || false,
+      error: globalValue.error || null,
+    };
+    return React.createElement(TestActivitiesContext.Provider, { value: contextValue }, children);
+  };
+  
+  // Mock hook that actually uses the context (so MapComponent can read from it)
+  const mockUseActivitiesHook = () => {
+    const context = React.useContext(TestActivitiesContext);
+    if (context === undefined) {
+      throw new Error('useActivities must be used within an ActivitiesProvider');
+    }
+    return context;
+  };
+  
+  return {
+    useActivities: mockUseActivitiesHook,
+    ActivitiesProvider: MockActivitiesProvider,
+  };
+});
+
 const { useSpots } = require('@/contexts/SpotsContext');
 const { useVenues, VenuesProvider } = require('@/contexts/VenuesContext');
+const { ActivitiesProvider } = require('@/contexts/ActivitiesContext');
 
 // Mock environment variable
 const originalEnv = process.env;
@@ -143,6 +196,15 @@ const originalEnv = process.env;
     useSpots.mockReturnValue({ spots: [], loading: false });
     // Update global mock value for VenuesProvider (hook reads from context via useContext)
     (global as any).__mockVenuesContextValue__ = { venues: [], loading: false, refreshVenues: jest.fn() };
+    // Update global mock value for ActivitiesProvider
+    (global as any).__mockActivitiesContextValue__ = { 
+      activities: [
+        { name: 'Happy Hour', icon: 'Martini', emoji: '🍹', color: '#0d9488' },
+        { name: 'Fishing Spots (manual entry)', icon: 'Fish', emoji: '🎣', color: '#0284c7' },
+      ], 
+      loading: false, 
+      error: null 
+    };
   });
 
 afterAll(() => {
@@ -212,7 +274,9 @@ describe.skip('MapComponent', () => {
     render(
       <SpotsProvider>
         <VenuesProvider>
-          <MapComponent selectedArea="Daniel Island" selectedActivity="Happy Hour" />
+          <ActivitiesProvider>
+            <MapComponent selectedArea="Daniel Island" selectedActivity="Happy Hour" />
+          </ActivitiesProvider>
         </VenuesProvider>
       </SpotsProvider>
     );
@@ -233,7 +297,9 @@ describe.skip('MapComponent', () => {
     render(
       <SpotsProvider>
         <VenuesProvider>
-          <MapComponent selectedArea="Daniel Island" selectedActivity="Happy Hour" />
+          <ActivitiesProvider>
+            <MapComponent selectedArea="Daniel Island" selectedActivity="Happy Hour" />
+          </ActivitiesProvider>
         </VenuesProvider>
       </SpotsProvider>
     );
@@ -362,7 +428,9 @@ describe.skip('MapComponent', () => {
     render(
       <SpotsProvider>
         <VenuesProvider>
-          <MapComponent selectedArea="Daniel Island" selectedActivity="Happy Hour" />
+          <ActivitiesProvider>
+            <MapComponent selectedArea="Daniel Island" selectedActivity="Happy Hour" />
+          </ActivitiesProvider>
         </VenuesProvider>
       </SpotsProvider>
     );
