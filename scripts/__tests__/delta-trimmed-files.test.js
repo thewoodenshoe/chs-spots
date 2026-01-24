@@ -29,13 +29,22 @@ function normalizeTextForHash(text) {
   // Remove Google Analytics / GTM IDs
   normalized = normalized.replace(/gtm-[a-z0-9]+/gi, '');
   normalized = normalized.replace(/UA-\d+-\d+/g, '');
+  normalized = normalized.replace(/G-[A-Z0-9]+/g, '');
   
-  // Remove common dynamic footers
+  // Remove common tracking parameters in URLs
+  normalized = normalized.replace(/[?&](sid|fbclid|utm_[^=\s&]+|gclid|_ga|_gid|ref|source|tracking|campaign)=[^\s&"']+/gi, '');
+  
+  // Remove dynamic footers
   normalized = normalized.replace(/Copyright\s+©\s+\d{4}/gi, '');
   normalized = normalized.replace(/All\s+rights\s+reserved/gi, '');
+  normalized = normalized.replace(/Powered\s+by\s+[^\s]+/gi, '');
+  normalized = normalized.replace(/©\s+\d{4}\s+[^\n]+/gi, '');
   
-  // Collapse whitespace
-  normalized = normalized.replace(/\s+/g, ' ').trim();
+  // Remove session IDs and tracking tokens
+  normalized = normalized.replace(/\b(session|sid|token|tracking)[-_]?[a-z0-9]{8,}\b/gi, '');
+  
+  // More aggressive whitespace collapse
+  normalized = normalized.replace(/[\s\n\r\t]+/g, ' ').trim();
   
   return normalized;
 }
@@ -655,5 +664,48 @@ describe('Delta Trimmed Files', () => {
     expect(todayHash).toBe(correctHash);
     expect(previousHash).toBe(correctHash);
     expect(todayHash).toBe(previousHash); // Should match even though venueHash differs
+  });
+
+  test('should normalize text with GTM ID or fbclid → hash same as clean version', () => {
+    const venueId = 'ChIJTestNormalization';
+    
+    // Text with GTM ID and tracking parameters
+    const textWithNoise = 'Happy Hour 4pm-6pm gtm-abc123xyz ?fbclid=1234567890&utm_source=test&utm_campaign=promo';
+    const cleanText = 'Happy Hour 4pm-6pm';
+    
+    // Normalize both
+    const normalizedWithNoise = normalizeTextForHash(textWithNoise);
+    const normalizedClean = normalizeTextForHash(cleanText);
+    
+    // Both should normalize to the same text (noise removed)
+    expect(normalizedWithNoise).toBe(normalizedClean);
+    
+    // Hash should be the same
+    const hashWithNoise = crypto.createHash('md5').update(normalizedWithNoise).digest('hex');
+    const hashClean = crypto.createHash('md5').update(normalizedClean).digest('hex');
+    expect(hashWithNoise).toBe(hashClean);
+    
+    // Create files with and without noise
+    const todayFileWithNoise = path.join(testTodayDir, `${venueId}-noise.json`);
+    const todayFileClean = path.join(testTodayDir, `${venueId}-clean.json`);
+    
+    const dataWithNoise = {
+      venueId: `${venueId}-noise`,
+      venueName: 'Test Venue With Noise',
+      pages: [{ url: 'https://example.com?fbclid=123', text: textWithNoise }]
+    };
+    const dataClean = {
+      venueId: `${venueId}-clean`,
+      venueName: 'Test Venue Clean',
+      pages: [{ url: 'https://example.com', text: cleanText }]
+    };
+    
+    fs.writeFileSync(todayFileWithNoise, JSON.stringify(dataWithNoise, null, 2));
+    fs.writeFileSync(todayFileClean, JSON.stringify(dataClean, null, 2));
+    
+    // Hashes should match after normalization
+    const hash1 = getTrimmedContentHash(todayFileWithNoise);
+    const hash2 = getTrimmedContentHash(todayFileClean);
+    expect(hash1).toBe(hash2);
   });
 });

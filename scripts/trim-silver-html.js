@@ -120,17 +120,27 @@ function normalizeText(text) {
   // Remove "Loading..." or placeholder phrases
   normalized = normalized.replace(/Loading\s+product\s+options\.\.\.|Loading\.\.\./gi, '');
   
-  // Remove Google Analytics / GTM IDs (e.g., "gtm-abc123", "UA-123456-7")
+  // Remove Google Analytics / GTM IDs (e.g., "gtm-abc123", "UA-123456-7", "G-[A-Z0-9]+")
   normalized = normalized.replace(/gtm-[a-z0-9]+/gi, '');
   normalized = normalized.replace(/UA-\d+-\d+/g, '');
+  normalized = normalized.replace(/G-[A-Z0-9]+/g, '');
   
-  // Remove common dynamic footers (e.g., "Copyright © 2026", "All rights reserved")
+  // Remove common tracking parameters in URLs (even if they appear in text)
+  // Strip ?sid=..., &fbclid=..., &utm_*, &gclid=*, etc.
+  normalized = normalized.replace(/[?&](sid|fbclid|utm_[^=\s&]+|gclid|_ga|_gid|ref|source|tracking|campaign)=[^\s&"']+/gi, '');
+  
+  // Remove dynamic footers: "Copyright © [year]", "All rights reserved", "Powered by ..."
   normalized = normalized.replace(/Copyright\s+©\s+\d{4}/gi, '');
   normalized = normalized.replace(/All\s+rights\s+reserved/gi, '');
+  normalized = normalized.replace(/Powered\s+by\s+[^\s]+/gi, '');
+  normalized = normalized.replace(/©\s+\d{4}\s+[^\n]+/gi, '');
   
-  // Collapse all whitespace (spaces, tabs, newlines) to single spaces and trim
-  // More aggressive: replace any sequence of whitespace with single space
-  normalized = normalized.replace(/\s+/g, ' ').trim();
+  // Remove session IDs and tracking tokens (common patterns)
+  normalized = normalized.replace(/\b(session|sid|token|tracking)[-_]?[a-z0-9]{8,}\b/gi, '');
+  
+  // More aggressive whitespace/newline collapse
+  // Replace any sequence of whitespace (including newlines, tabs) with single space
+  normalized = normalized.replace(/[\s\n\r\t]+/g, ' ').trim();
   
   return normalized;
 }
@@ -414,22 +424,31 @@ function isDirectoryEmpty(dirPath) {
 
 /**
  * Archive today/ to previous/ on new day
+ * Explicitly empties previous/ before copying to ensure clean state
  */
 function archiveTodayToPrevious() {
   log(`📅 New day detected: archiving silver_trimmed/today/ to silver_trimmed/previous/`);
   
-  // Delete all files from previous/
+  // Explicitly empty previous/ before copy
   if (fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)) {
-    const previousFiles = fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'));
-    for (const file of previousFiles) {
-      fs.unlinkSync(path.join(SILVER_TRIMMED_PREVIOUS_DIR, file));
+    const previousFiles = fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR);
+    for (const item of previousFiles) {
+      const itemPath = path.join(SILVER_TRIMMED_PREVIOUS_DIR, item);
+      const stat = fs.statSync(itemPath);
+      if (stat.isFile()) {
+        fs.unlinkSync(itemPath);
+      } else if (stat.isDirectory()) {
+        fs.rmSync(itemPath, { recursive: true, force: true });
+      }
     }
+  } else {
+    fs.mkdirSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true });
   }
-  fs.mkdirSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true });
-  log(`  🗑️  Deleted all files from silver_trimmed/previous/`);
+  log(`  🗑️  Emptied silver_trimmed/previous/`);
   
-  // Copy all files from today/ to previous/
+  // Copy all files from today/ to previous/ using fs.copyFileSync in a loop, preserving exact filenames
   let copiedCount = 0;
+  const copiedFilenames = [];
   if (fs.existsSync(SILVER_TRIMMED_TODAY_DIR)) {
     const todayFiles = fs.readdirSync(SILVER_TRIMMED_TODAY_DIR).filter(f => f.endsWith('.json'));
     for (const file of todayFiles) {
@@ -438,12 +457,24 @@ function archiveTodayToPrevious() {
         const destPath = path.join(SILVER_TRIMMED_PREVIOUS_DIR, file);
         fs.copyFileSync(sourcePath, destPath);
         copiedCount++;
+        if (copiedFilenames.length < 5) {
+          copiedFilenames.push(file);
+        }
       } catch (error) {
         log(`  ⚠️  Failed to copy ${file} from today/ to previous/: ${error.message}`);
       }
     }
   }
   log(`  ✅ Copied ${copiedCount} file(s) from silver_trimmed/today/ to silver_trimmed/previous/`);
+  if (copiedFilenames.length > 0) {
+    log(`  📋 First 5 filenames: ${copiedFilenames.join(', ')}`);
+  }
+  
+  // Verify previous/ now contains the files
+  const previousFilesAfter = fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)
+    ? fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'))
+    : [];
+  log(`  ✅ previous/ now contains ${previousFilesAfter.length} file(s)`);
   
   // Delete all files from today/
   if (fs.existsSync(SILVER_TRIMMED_TODAY_DIR)) {

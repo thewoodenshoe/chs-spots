@@ -66,16 +66,25 @@ function normalizeTextForHash(text) {
   // Remove "Loading..." or placeholder phrases
   normalized = normalized.replace(/Loading\s+product\s+options\.\.\.|Loading\.\.\./gi, '');
   
-  // Remove Google Analytics / GTM IDs (e.g., "gtm-abc123", "UA-123456-7")
+  // Remove Google Analytics / GTM IDs (e.g., "gtm-abc123", "UA-123456-7", "G-[A-Z0-9]+")
   normalized = normalized.replace(/gtm-[a-z0-9]+/gi, '');
   normalized = normalized.replace(/UA-\d+-\d+/g, '');
+  normalized = normalized.replace(/G-[A-Z0-9]+/g, '');
   
-  // Remove common dynamic footers (e.g., "Copyright © 2026", "All rights reserved")
+  // Remove common tracking parameters in URLs (even if they appear in text)
+  normalized = normalized.replace(/[?&](sid|fbclid|utm_[^=\s&]+|gclid|_ga|_gid|ref|source|tracking|campaign)=[^\s&"']+/gi, '');
+  
+  // Remove dynamic footers: "Copyright © [year]", "All rights reserved", "Powered by ..."
   normalized = normalized.replace(/Copyright\s+©\s+\d{4}/gi, '');
   normalized = normalized.replace(/All\s+rights\s+reserved/gi, '');
+  normalized = normalized.replace(/Powered\s+by\s+[^\s]+/gi, '');
+  normalized = normalized.replace(/©\s+\d{4}\s+[^\n]+/gi, '');
   
-  // Collapse all whitespace (spaces, tabs, newlines) to single spaces and trim
-  normalized = normalized.replace(/\s+/g, ' ').trim();
+  // Remove session IDs and tracking tokens
+  normalized = normalized.replace(/\b(session|sid|token|tracking)[-_]?[a-z0-9]{8,}\b/gi, '');
+  
+  // More aggressive whitespace/newline collapse
+  normalized = normalized.replace(/[\s\n\r\t]+/g, ' ').trim();
   
   return normalized;
 }
@@ -210,42 +219,66 @@ function main() {
     : [];
   
   // Debug logging: show file counts and sample filenames
-  log(`📊 File counts: previous/ contains ${previousFiles.length} file(s), all/ contains ${allFiles.length} file(s)`);
+  log(`📊 File counts: previous/ contains ${previousFiles.length} file(s), today/ contains ${allFiles.length} file(s)`);
   if (previousFiles.length > 0) {
     const firstFivePrevious = previousFiles.slice(0, 5);
     log(`   First 5 files in previous/: ${firstFivePrevious.join(', ')}`);
+  } else {
+    log(`   ⚠️  previous/ is empty`);
   }
   if (allFiles.length > 0) {
     const firstFiveAll = allFiles.slice(0, 5);
-    log(`   First 5 files in all/: ${firstFiveAll.join(', ')}`);
+    log(`   First 5 files in today/: ${firstFiveAll.join(', ')}`);
+  } else {
+    log(`   ⚠️  today/ is empty`);
   }
   log('');
   
-  // If previous/ is empty but all/ has files, we need to populate previous/ first
-  // This handles the case where trim ran and populated all/ but previous/ wasn't archived yet
+  // If previous/ is empty but today/ has files, we need to populate previous/ first
+  // This handles the case where trim ran and populated today/ but previous/ wasn't archived yet
   if (previousFiles.length === 0 && allFiles.length > 0) {
     if (lastTrim && lastTrim !== today) {
-      // New day - archive current all/ to previous/ (this is yesterday's data)
+      // New day - archive current today/ to previous/ (this is yesterday's data)
       log(`📅 New day detected (${today}, previous: ${lastTrim})`);
-      log(`📦 Archiving current all/ to previous/ (yesterday's data)...`);
+      log(`📦 Archiving current today/ to previous/ (yesterday's data)...`);
       const archived = archivePreviousDay();
       if (archived) {
         // Re-read previousFiles after archive
         previousFiles = fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'));
         log(`   ✅ After archive: previous/ now contains ${previousFiles.length} file(s)\n`);
+      } else {
+        // Archive failed or returned false - force copy from today/ to previous/
+        log(`⚠️  Archive returned false - forcing copy from today/ to previous/`);
+        if (!fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)) {
+          fs.mkdirSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true });
+        }
+        let copied = 0;
+        for (const file of allFiles) {
+          try {
+            const sourcePath = path.join(SILVER_TRIMMED_TODAY_DIR, file);
+            const destPath = path.join(SILVER_TRIMMED_PREVIOUS_DIR, file);
+            fs.copyFileSync(sourcePath, destPath);
+            copied++;
+          } catch (error) {
+            log(`  ⚠️  Failed to copy ${file}: ${error.message}`);
+          }
+        }
+        log(`  ✅ Copied ${copied} file(s) from today/ to previous/`);
+        previousFiles = fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'));
+        log(`   ✅ After copy: previous/ now contains ${previousFiles.length} file(s)\n`);
       }
     } else if (!lastTrim) {
       log(`📅 First run - no previous data to compare\n`);
     } else {
-      // Same day but previous/ is empty - force copy from all/ to previous/ for comparison
-      log(`⚠️  Same day but previous/ is empty - Populating empty previous/ from all/ for same-day delta`);
+      // Same day but previous/ is empty - force copy from today/ to previous/ for comparison
+      log(`⚠️  Same day but previous/ is empty - Populating empty previous/ from today/ for same-day delta`);
       
       // Ensure previous/ directory exists
       if (!fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)) {
         fs.mkdirSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true });
       }
       
-      // Force copy all files from all/ to previous/ with exact filenames
+      // Force copy all files from today/ to previous/ with exact filenames
       let copied = 0;
       for (const file of allFiles) {
         try {
@@ -258,7 +291,7 @@ function main() {
         }
       }
       
-      log(`  ✅ Copied ${copied} file(s) from all/ to previous/ for same-day comparison`);
+      log(`  ✅ Copied ${copied} file(s) from today/ to previous/ for same-day comparison`);
       
       // Re-read previousFiles after copy
       previousFiles = fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'));
