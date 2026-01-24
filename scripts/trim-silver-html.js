@@ -425,56 +425,89 @@ function isDirectoryEmpty(dirPath) {
 /**
  * Archive today/ to previous/ on new day
  * Explicitly empties previous/ before copying to ensure clean state
+ * Uses rmSync to completely remove and recreate directory for reliability
  */
 function archiveTodayToPrevious() {
   log(`📅 New day detected: archiving silver_trimmed/today/ to silver_trimmed/previous/`);
   
-  // Explicitly empty previous/ before copy
-  if (fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)) {
-    const previousFiles = fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR);
-    for (const item of previousFiles) {
-      const itemPath = path.join(SILVER_TRIMMED_PREVIOUS_DIR, item);
-      const stat = fs.statSync(itemPath);
-      if (stat.isFile()) {
-        fs.unlinkSync(itemPath);
-      } else if (stat.isDirectory()) {
-        fs.rmSync(itemPath, { recursive: true, force: true });
-      }
-    }
-  } else {
-    fs.mkdirSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true });
-  }
-  log(`  🗑️  Emptied silver_trimmed/previous/`);
+  // Get count of files in today/ before archiving
+  const todayFilesBefore = fs.existsSync(SILVER_TRIMMED_TODAY_DIR)
+    ? fs.readdirSync(SILVER_TRIMMED_TODAY_DIR).filter(f => f.endsWith('.json'))
+    : [];
+  const todayCountBefore = todayFilesBefore.length;
+  log(`  📊 today/ contains ${todayCountBefore} file(s) before archive`);
   
-  // Copy all files from today/ to previous/ using fs.copyFileSync in a loop, preserving exact filenames
+  // Explicitly empty previous/ by removing entire directory and recreating (more reliable)
+  if (fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)) {
+    fs.rmSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true, force: true });
+  }
+  fs.mkdirSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true });
+  log(`  🗑️  Emptied silver_trimmed/previous/ (removed directory and recreated)`);
+  
+  // Copy ALL files from today/ to previous/ using fs.copyFileSync in a loop, preserving exact filenames
+  // No filtering - copy everything that ends with .json
   let copiedCount = 0;
   const copiedFilenames = [];
+  const failedCopies = [];
+  
   if (fs.existsSync(SILVER_TRIMMED_TODAY_DIR)) {
     const todayFiles = fs.readdirSync(SILVER_TRIMMED_TODAY_DIR).filter(f => f.endsWith('.json'));
+    log(`  📋 Found ${todayFiles.length} .json file(s) in today/ to copy`);
+    
     for (const file of todayFiles) {
       try {
         const sourcePath = path.join(SILVER_TRIMMED_TODAY_DIR, file);
         const destPath = path.join(SILVER_TRIMMED_PREVIOUS_DIR, file);
+        
+        // Verify source file exists before copying
+        if (!fs.existsSync(sourcePath)) {
+          log(`  ⚠️  Source file does not exist: ${file}`);
+          failedCopies.push(file);
+          continue;
+        }
+        
         fs.copyFileSync(sourcePath, destPath);
+        
+        // Verify destination file was created
+        if (!fs.existsSync(destPath)) {
+          log(`  ⚠️  Copy failed - destination file not found: ${file}`);
+          failedCopies.push(file);
+          continue;
+        }
+        
         copiedCount++;
         if (copiedFilenames.length < 5) {
           copiedFilenames.push(file);
         }
       } catch (error) {
         log(`  ⚠️  Failed to copy ${file} from today/ to previous/: ${error.message}`);
+        failedCopies.push(file);
       }
     }
   }
+  
   log(`  ✅ Copied ${copiedCount} file(s) from silver_trimmed/today/ to silver_trimmed/previous/`);
+  if (failedCopies.length > 0) {
+    log(`  ⚠️  Failed to copy ${failedCopies.length} file(s): ${failedCopies.slice(0, 5).join(', ')}${failedCopies.length > 5 ? '...' : ''}`);
+  }
   if (copiedFilenames.length > 0) {
-    log(`  📋 First 5 filenames: ${copiedFilenames.join(', ')}`);
+    log(`  📋 First 5 filenames copied: ${copiedFilenames.join(', ')}`);
   }
   
-  // Verify previous/ now contains the files
+  // Verify previous/ now contains the files - should match today/ count
   const previousFilesAfter = fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)
     ? fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'))
     : [];
-  log(`  ✅ previous/ now contains ${previousFilesAfter.length} file(s)`);
+  const previousCountAfter = previousFilesAfter.length;
+  log(`  ✅ previous/ now contains ${previousCountAfter} file(s) (should match today/'s ${todayCountBefore})`);
+  
+  // Warn if counts don't match
+  if (previousCountAfter !== todayCountBefore) {
+    log(`  ⚠️  WARNING: Count mismatch! previous/ has ${previousCountAfter} files but today/ had ${todayCountBefore} files`);
+    log(`     This may indicate incomplete copy. Check logs above for failed copies.`);
+  } else {
+    log(`  ✅ Counts match - archive successful`);
+  }
   
   // Delete all files from today/
   if (fs.existsSync(SILVER_TRIMMED_TODAY_DIR)) {

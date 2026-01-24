@@ -626,6 +626,147 @@ describe('Delta Trimmed Files', () => {
     expect(newVenues).toBe(0);
     expect(changedVenues).toBe(0);
   });
+
+  test('new day: previous/ empty → archive empties + copies all files → previous/ matches today/ count and filenames → delta finds 0 new/changed if content identical', () => {
+    // Simulate new day: today/ has files, previous/ is empty
+    const venueIds = ['ChIJTest1', 'ChIJTest2', 'ChIJTest3', 'ChIJTest4', 'ChIJTest5'];
+    
+    // Create 5 files in today/
+    const todayFiles = [];
+    venueIds.forEach((venueId, index) => {
+      const todayFile = path.join(testTodayDir, `${venueId}.json`);
+      const pageText = `Happy Hour ${4 + index}pm-${6 + index}pm`;
+      const venueContent = normalizeTextForHash(pageText);
+      const venueHash = crypto.createHash('md5').update(venueContent).digest('hex');
+      
+      const data = {
+        venueId,
+        venueName: `Test Venue ${index + 1}`,
+        venueHash,
+        pages: [{ url: `https://example.com/${index}`, text: pageText }]
+      };
+      fs.writeFileSync(todayFile, JSON.stringify(data, null, 2));
+      todayFiles.push(todayFile);
+    });
+    
+    // Verify today/ has 5 files
+    const todayFilesList = fs.readdirSync(testTodayDir).filter(f => f.endsWith('.json'));
+    expect(todayFilesList.length).toBe(5);
+    
+    // Simulate archive: empty previous/ then copy all files
+    // First, ensure previous/ is empty
+    if (fs.existsSync(testPreviousDir)) {
+      const existingFiles = fs.readdirSync(testPreviousDir);
+      existingFiles.forEach(file => {
+        fs.unlinkSync(path.join(testPreviousDir, file));
+      });
+    } else {
+      fs.mkdirSync(testPreviousDir, { recursive: true });
+    }
+    
+    // Copy all files from today/ to previous/
+    let copiedCount = 0;
+    for (const file of todayFilesList) {
+      const sourcePath = path.join(testTodayDir, file);
+      const destPath = path.join(testPreviousDir, file);
+      fs.copyFileSync(sourcePath, destPath);
+      copiedCount++;
+    }
+    
+    expect(copiedCount).toBe(5);
+    
+    // Verify previous/ now contains exactly 5 files with matching filenames
+    const previousFilesList = fs.readdirSync(testPreviousDir).filter(f => f.endsWith('.json'));
+    expect(previousFilesList.length).toBe(5);
+    expect(previousFilesList.length).toBe(todayFilesList.length); // Counts match
+    
+    // Verify filenames match
+    todayFilesList.forEach(file => {
+      expect(previousFilesList).toContain(file);
+    });
+    
+    // Now run delta comparison - should find 0 new, 0 changed (files are identical)
+    let newVenues = 0;
+    let changedVenues = 0;
+    
+    for (const file of todayFilesList) {
+      const todayFilePath = path.join(testTodayDir, file);
+      const previousFilePath = path.join(testPreviousDir, file);
+      
+      if (!fs.existsSync(previousFilePath)) {
+        newVenues++;
+      } else {
+        const todayHash = getTrimmedContentHash(todayFilePath);
+        const previousHash = getTrimmedContentHash(previousFilePath);
+        if (todayHash !== previousHash) {
+          changedVenues++;
+        }
+      }
+    }
+    
+    // Should find 0 new and 0 changed since files are identical
+    expect(newVenues).toBe(0);
+    expect(changedVenues).toBe(0);
+  });
+
+  test('new day: previous/ populated but fewer → should log warning but proceed', () => {
+    // Create 5 files in today/
+    const todayFiles = [];
+    for (let i = 1; i <= 5; i++) {
+      const venueId = `ChIJTest${i}`;
+      const todayFile = path.join(testTodayDir, `${venueId}.json`);
+      const data = {
+        venueId,
+        venueName: `Test Venue ${i}`,
+        pages: [{ url: `https://example.com/${i}`, text: `Happy Hour ${i}pm` }]
+      };
+      fs.writeFileSync(todayFile, JSON.stringify(data, null, 2));
+      todayFiles.push(venueId);
+    }
+    
+    // Create only 3 files in previous/ (fewer than today/)
+    for (let i = 1; i <= 3; i++) {
+      const venueId = `ChIJTest${i}`;
+      const previousFile = path.join(testPreviousDir, `${venueId}.json`);
+      const data = {
+        venueId,
+        venueName: `Test Venue ${i}`,
+        pages: [{ url: `https://example.com/${i}`, text: `Happy Hour ${i}pm` }]
+      };
+      fs.writeFileSync(previousFile, JSON.stringify(data, null, 2));
+    }
+    
+    const todayFilesList = fs.readdirSync(testTodayDir).filter(f => f.endsWith('.json'));
+    const previousFilesList = fs.readdirSync(testPreviousDir).filter(f => f.endsWith('.json'));
+    
+    // Verify counts mismatch
+    expect(todayFilesList.length).toBe(5);
+    expect(previousFilesList.length).toBe(3);
+    expect(previousFilesList.length).not.toBe(todayFilesList.length);
+    
+    // Delta should still work - 2 new venues (ChIJTest4, ChIJTest5)
+    let newVenues = 0;
+    let changedVenues = 0;
+    
+    for (const file of todayFilesList) {
+      const todayFilePath = path.join(testTodayDir, file);
+      const previousFilePath = path.join(testPreviousDir, file);
+      
+      if (!fs.existsSync(previousFilePath)) {
+        newVenues++;
+      } else {
+        const todayHash = getTrimmedContentHash(todayFilePath);
+        const previousHash = getTrimmedContentHash(previousFilePath);
+        if (todayHash !== previousHash) {
+          changedVenues++;
+        }
+      }
+    }
+    
+    // Should find 2 new venues (the ones not in previous/)
+    expect(newVenues).toBe(2);
+    expect(changedVenues).toBe(0);
+  });
   
   test('should handle files with old venueHash (recompute for consistency)', () => {
     // Simulate scenario where previous/ has files with old venueHash

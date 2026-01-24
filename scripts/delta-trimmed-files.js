@@ -220,6 +220,15 @@ function main() {
   
   // Debug logging: show file counts and sample filenames
   log(`📊 File counts: previous/ contains ${previousFiles.length} file(s), today/ contains ${allFiles.length} file(s)`);
+  
+  // Warn if counts mismatch on new day (should match after archive)
+  if (lastTrim && lastTrim !== today && previousFiles.length > 0 && allFiles.length > 0) {
+    if (previousFiles.length !== allFiles.length) {
+      log(`   ⚠️  WARNING: Count mismatch on new day! previous/ has ${previousFiles.length} files but today/ has ${allFiles.length} files`);
+      log(`     This may indicate incomplete archive. Expected counts to match.`);
+    }
+  }
+  
   if (previousFiles.length > 0) {
     const firstFivePrevious = previousFiles.slice(0, 5);
     log(`   First 5 files in previous/: ${firstFivePrevious.join(', ')}`);
