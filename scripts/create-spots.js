@@ -48,10 +48,10 @@ const REPORTING_AREAS_PATH = path.join(REPORTING_DIR, 'areas.json');
 // Pipeline directory paths
 const RAW_PREVIOUS_DIR = path.join(__dirname, '../data/raw/previous');
 const RAW_TODAY_DIR = path.join(__dirname, '../data/raw/today');
-const RAW_INCREMENTAL_DIR = path.join(__dirname, '../data/raw/incremental');
+// Note: raw/incremental/ and silver_merged/incremental/ are no longer used
+// Comparison now happens at silver_trimmed layer only
 const SILVER_MERGED_PREVIOUS_DIR = path.join(__dirname, '../data/silver_merged/previous');
 const SILVER_MERGED_TODAY_DIR = path.join(__dirname, '../data/silver_merged/today');
-const SILVER_MERGED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_merged/incremental');
 const SILVER_TRIMMED_PREVIOUS_DIR = path.join(__dirname, '../data/silver_trimmed/previous');
 const SILVER_TRIMMED_TODAY_DIR = path.join(__dirname, '../data/silver_trimmed/today');
 const SILVER_TRIMMED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_trimmed/incremental');
@@ -461,10 +461,11 @@ function main() {
   
   const rawPreviousCount = countDirectories(RAW_PREVIOUS_DIR);
   const rawTodayCount = countDirectories(RAW_TODAY_DIR);
-  const rawIncrementalCount = countDirectories(RAW_INCREMENTAL_DIR);
+  // Note: raw/incremental/ and silver_merged/incremental/ are no longer used
+  const rawIncrementalCount = 0; // Obsolete - not used anymore
   const silverMergedPreviousCount = countFiles(SILVER_MERGED_PREVIOUS_DIR);
   const silverMergedTodayCount = countFiles(SILVER_MERGED_TODAY_DIR);
-  const silverMergedIncrementalCount = countFiles(SILVER_MERGED_INCREMENTAL_DIR);
+  const silverMergedIncrementalCount = 0; // Obsolete - not used anymore
   const silverTrimmedPreviousCount = countFiles(SILVER_TRIMMED_PREVIOUS_DIR);
   const silverTrimmedTodayCount = countFiles(SILVER_TRIMMED_TODAY_DIR);
   const silverTrimmedIncrementalCount = countFiles(SILVER_TRIMMED_INCREMENTAL_DIR);
