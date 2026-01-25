@@ -19,6 +19,7 @@ const path = require('path');
 const fs = require('fs');
 const { loadConfig, saveConfig, updateConfigField, getRunDate } = require('./utils/config');
 
+// Parse optional run_date parameter (YYYYMMDD format) - defaults to today if not provided
 const RUN_DATE_PARAM = process.argv[2] && /^\d{8}$/.test(process.argv[2]) ? process.argv[2] : null;
 const AREA_FILTER = process.argv[2] && !/^\d{8}$/.test(process.argv[2]) ? process.argv[2] : (process.argv[3] || null);
 
@@ -199,18 +200,25 @@ async function main() {
     
     // Initialize config
     const config = loadConfig();
+    
+    // Get effective run_date: use parameter if provided, otherwise default to today
+    // This overrides config.run_date when parameter is provided
     const runDate = getRunDate(RUN_DATE_PARAM);
+    const runDateSource = RUN_DATE_PARAM ? 'parameter (overrides config)' : 'default (today)';
     
     // Log full config at start
     console.log('\n📋 Pipeline Configuration:');
     console.log(JSON.stringify(config, null, 2));
-    console.log(`   Run date: ${runDate}`);
+    console.log(`\n📅 Effective run_date: ${runDate} (${runDateSource})`);
+    if (RUN_DATE_PARAM && config.run_date && RUN_DATE_PARAM !== config.run_date) {
+      console.log(`   Note: Parameter ${RUN_DATE_PARAM} overrides config.run_date ${config.run_date}`);
+    }
     console.log(`   Last raw processed date: ${config.last_raw_processed_date || 'null'}`);
     console.log(`   Last merged processed date: ${config.last_merged_processed_date || 'null'}`);
     console.log(`   Last trimmed processed date: ${config.last_trimmed_processed_date || 'null'}`);
     console.log(`   Last run status: ${config.last_run_status || 'idle'}`);
     
-    // Update run_date in config
+    // Update run_date in config with effective run_date
     updateConfigField('run_date', runDate);
     
     // Check for recovery
