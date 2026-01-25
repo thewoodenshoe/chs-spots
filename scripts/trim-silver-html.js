@@ -56,7 +56,7 @@ function log(message) {
 
 // Paths
 const SILVER_MERGED_TODAY_DIR = path.join(__dirname, '../data/silver_merged/today');
-const SILVER_MERGED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_merged/incremental');
+// Note: silver_merged/incremental/ is no longer used - comparison happens at trimmed layer
 const SILVER_TRIMMED_DIR = path.join(__dirname, '../data/silver_trimmed');
 const SILVER_TRIMMED_TODAY_DIR = path.join(SILVER_TRIMMED_DIR, 'today');
 const SILVER_TRIMMED_PREVIOUS_DIR = path.join(SILVER_TRIMMED_DIR, 'previous');
@@ -260,8 +260,8 @@ function needsUpdate(silverFilePath, trimmedFilePath) {
  * Process a single venue file
  */
 function processVenueFile(venueId, areaFilter = null) {
-  // INCREMENTAL MODE: Read from silver_merged/incremental/
-  const silverFilePath = path.join(SILVER_MERGED_INCREMENTAL_DIR, `${venueId}.json`);
+  // FULL MODE: Read from silver_merged/today/
+  const silverFilePath = path.join(SILVER_MERGED_TODAY_DIR, `${venueId}.json`);
   const trimmedFilePath = path.join(SILVER_TRIMMED_TODAY_DIR, `${venueId}.json`);
   
   if (!fs.existsSync(silverFilePath)) {
@@ -562,14 +562,8 @@ function main() {
   // Reset state before processing (new day or same-day rerun)
   resetStateForRun();
   
-  // INCREMENTAL MODE: Only process venues in silver_merged/incremental/
-  if (!fs.existsSync(SILVER_MERGED_INCREMENTAL_DIR)) {
-    log(`📁 Incremental directory not found: ${SILVER_MERGED_INCREMENTAL_DIR}`);
-    log(`   Creating directory...`);
-    fs.mkdirSync(SILVER_MERGED_INCREMENTAL_DIR, { recursive: true });
-  }
-  
-  // Clear output incremental folder at start
+  // FULL MODE: Get ALL venue files from silver_merged/today/
+  // Clear output incremental folder at start (for delta-trimmed-files.js later)
   if (fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
     try {
       const existingFiles = fs.readdirSync(SILVER_TRIMMED_INCREMENTAL_DIR);
@@ -584,26 +578,26 @@ function main() {
     }
   }
   
-  // Get venue files from silver_merged/incremental/ (incremental mode)
+  // Get ALL venue files from silver_merged/today/ (full mode)
   let venueFiles = [];
   try {
-    if (fs.existsSync(SILVER_MERGED_INCREMENTAL_DIR)) {
-      venueFiles = fs.readdirSync(SILVER_MERGED_INCREMENTAL_DIR).filter(file => file.endsWith('.json'));
+    if (fs.existsSync(SILVER_MERGED_TODAY_DIR)) {
+      venueFiles = fs.readdirSync(SILVER_MERGED_TODAY_DIR).filter(file => file.endsWith('.json'));
     }
   } catch (error) {
-    log(`❌ Error reading silver_merged/incremental directory: ${error.message}`);
+    log(`❌ Error reading silver_merged/today directory: ${error.message}`);
     process.exit(1);
   }
   
-  // If incremental folder is empty, stop processing
+  // If today folder is empty, stop processing
   if (venueFiles.length === 0) {
-    log(`⏭️  No incremental files found in ${SILVER_MERGED_INCREMENTAL_DIR}`);
-    log(`   Incremental folder is empty - nothing to trim.`);
-    log(`\n✨ Skipped trim (incremental mode - no changes)`);
+    log(`⏭️  No files found in ${SILVER_MERGED_TODAY_DIR}`);
+    log(`   Silver merged today folder is empty - nothing to trim.`);
+    log(`\n✨ Skipped trim (no files to process)`);
     return;
   }
   
-  log(`📁 Found ${venueFiles.length} venue file(s) in incremental folder.`);
+  log(`📁 Found ${venueFiles.length} venue file(s) in silver_merged/today/.`);
   
   // Process each venue
   let processed = 0;

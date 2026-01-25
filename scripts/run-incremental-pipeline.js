@@ -260,9 +260,7 @@ async function main() {
       } else {
         // New day - archive and download
         console.log(`   📅 New day detected (${runDate} vs ${lastRawDate})`);
-        console.log('   🗂️  New day reset: emptying previous/ and incremental/, copying today/ to previous/, emptying today/');
-        
-        const RAW_INCREMENTAL_DIR = path.join(__dirname, '../data/raw/incremental');
+        console.log('   🗂️  New day reset: emptying previous/, copying today/ to previous/, emptying today/');
         
         // Empty previous/ directory
         if (fs.existsSync(RAW_PREVIOUS_DIR)) {
@@ -271,17 +269,7 @@ async function main() {
         fs.mkdirSync(RAW_PREVIOUS_DIR, { recursive: true });
         console.log('   🗑️  Emptied raw/previous/');
         
-        // Empty incremental/ directory (never move it to previous/)
-        if (fs.existsSync(RAW_INCREMENTAL_DIR)) {
-          const incrementalDirs = fs.readdirSync(RAW_INCREMENTAL_DIR);
-          for (const dir of incrementalDirs) {
-            const dirPath = path.join(RAW_INCREMENTAL_DIR, dir);
-            if (fs.statSync(dirPath).isDirectory()) {
-              fs.rmSync(dirPath, { recursive: true, force: true });
-            }
-          }
-          console.log('   🗑️  Emptied raw/incremental/');
-        }
+        // Note: raw/incremental/ is no longer used - comparison happens at trimmed layer
         
         // Copy all files from today/ to previous/ using fs.copyFileSync loop (exact filenames preserved)
         let copiedCount = 0;
@@ -352,22 +340,9 @@ async function main() {
         updateConfigField('last_run_status', 'running_merged'); // Update to next step after raw completes
       }
       
-      // Delta comparison
-      console.log('\n🔍 Step 1.5: Delta Comparison (Raw HTML)');
-      updateConfigField('last_run_status', 'running_raw');
-      try {
-        await runScript('delta-raw-files.js');
-        // After delta completes successfully, update status to next step
-        updateConfigField('last_run_status', 'running_merged');
-      } catch (error) {
-        if (error.message.includes('code 0')) {
-          console.log('   ⏭️  Delta step completed');
-          updateConfigField('last_run_status', 'running_merged');
-        } else {
-          updateConfigField('last_run_status', 'failed_at_raw');
-          throw error;
-        }
-      }
+      // Note: Delta comparison removed - comparison now happens at silver_trimmed layer only
+      // Raw HTML has too much dynamic content (timestamps, session IDs, ads) for accurate comparison
+      updateConfigField('last_run_status', 'running_merged');
     }
     
     // SILVER_MERGED STEPS

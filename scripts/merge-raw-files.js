@@ -65,9 +65,7 @@ if (!fs.existsSync(SILVER_MERGED_TODAY_DIR)) {
 if (!fs.existsSync(SILVER_MERGED_PREVIOUS_DIR)) {
   fs.mkdirSync(SILVER_MERGED_PREVIOUS_DIR, { recursive: true });
 }
-if (!fs.existsSync(SILVER_MERGED_INCREMENTAL_DIR)) {
-  fs.mkdirSync(SILVER_MERGED_INCREMENTAL_DIR, { recursive: true });
-}
+// Note: silver_merged/incremental/ directory is no longer needed
 
 /**
  * Generate hash from URL (same as download-raw-html.js)
@@ -78,12 +76,11 @@ function urlToHash(url) {
 }
 
 /**
- * Get all HTML files for a venue from raw/incremental/<venue-id>/ (incremental mode)
+ * Get all HTML files for a venue from raw/today/<venue-id>/ (full mode)
  */
 function getVenueRawFiles(venueId) {
-  // INCREMENTAL MODE: Read from raw/incremental/
-  const RAW_INCREMENTAL_DIR = path.join(__dirname, '../data/raw/incremental');
-  const venueDir = path.join(RAW_INCREMENTAL_DIR, venueId);
+  // FULL MODE: Read from raw/today/ (all files)
+  const venueDir = path.join(RAW_TODAY_DIR, venueId);
   if (!fs.existsSync(venueDir)) {
     return [];
   }
@@ -101,21 +98,10 @@ function getVenueRawFiles(venueId) {
 }
 
 /**
- * Load URL metadata (checks incremental first, then all/)
+ * Load URL metadata from raw/today/
  */
 function loadMetadata(venueId) {
-  // Check incremental first
-  const RAW_INCREMENTAL_DIR = path.join(__dirname, '../data/raw/incremental');
-  const incrementalMetadataPath = path.join(RAW_INCREMENTAL_DIR, venueId, 'metadata.json');
-  if (fs.existsSync(incrementalMetadataPath)) {
-    try {
-      return JSON.parse(fs.readFileSync(incrementalMetadataPath, 'utf8'));
-    } catch (e) {
-      // Fall through to all/
-    }
-  }
-  
-  // Fallback to today/ (was all/ before refactor)
+  // FULL MODE: Read from raw/today/
   const metadataPath = path.join(RAW_TODAY_DIR, venueId, 'metadata.json');
   if (!fs.existsSync(metadataPath)) {
     return {};
@@ -127,35 +113,7 @@ function loadMetadata(venueId) {
   }
 }
 
-/**
- * Check if merged file needs update (incremental check)
- */
-function needsUpdate(venueId, rawFiles) {
-  const mergedPath = path.join(SILVER_MERGED_TODAY_DIR, `${venueId}.json`);
-  
-  // If merged file doesn't exist, needs update
-  if (!fs.existsSync(mergedPath)) {
-    return true;
-  }
-  
-  // Check if any raw file is newer than merged file
-  try {
-    const mergedStats = fs.statSync(mergedPath);
-    const mergedMtime = mergedStats.mtime;
-    
-    // If any raw file is newer, needs update
-    for (const rawFile of rawFiles) {
-      if (rawFile.modifiedAt > mergedMtime) {
-        return true;
-      }
-    }
-    
-    return false; // No changes detected
-  } catch (error) {
-    // If can't read merged file, assume needs update
-    return true;
-  }
-}
+// Note: needsUpdate() function removed - we now process all files in full mode
 
 /**
  * Process a single venue
@@ -173,12 +131,7 @@ function processVenue(venueId, venues) {
     return null;
   }
   
-  // INCREMENTAL: Skip if no changes detected
-  if (!needsUpdate(venueId, rawFiles)) {
-    log(`  ⏭️  Skipping ${venue.name} (${venueId}): No changes detected`);
-    return { venueId, venueName: venue.name, pages: 0, success: true, skipped: true };
-  }
-  
+  // FULL MODE: Process all files (no incremental skip)
   log(`  🔗 Merging ${rawFiles.length} file(s) for ${venue.name} (${venueId})`);
   
   // Load metadata
@@ -215,16 +168,10 @@ function processVenue(venueId, venues) {
     pages
   };
   
-  // Save merged file to silver_merged/all/ (main storage)
+  // Save merged file to silver_merged/today/ (main storage)
+  // FULL MODE: No incremental/ needed - comparison happens at trimmed layer
   const mergedPath = path.join(SILVER_MERGED_TODAY_DIR, `${venueId}.json`);
   fs.writeFileSync(mergedPath, JSON.stringify(mergedData, null, 2), 'utf8');
-  
-  // Also save to silver_merged/incremental/ for next step
-  if (!fs.existsSync(SILVER_MERGED_INCREMENTAL_DIR)) {
-    fs.mkdirSync(SILVER_MERGED_INCREMENTAL_DIR, { recursive: true });
-  }
-  const incrementalPath = path.join(SILVER_MERGED_INCREMENTAL_DIR, `${venueId}.json`);
-  fs.writeFileSync(incrementalPath, JSON.stringify(mergedData, null, 2), 'utf8');
   
   return {
     venueId,
@@ -361,48 +308,24 @@ function main() {
   }
   log(`📖 Loaded ${venues.length} venue(s) from venues.json\n`);
   
-  // INCREMENTAL MODE: Only process venues in raw/incremental/
-  const RAW_INCREMENTAL_DIR = path.join(__dirname, '../data/raw/incremental');
-  
-  if (!fs.existsSync(RAW_INCREMENTAL_DIR)) {
-    log(`📁 Incremental directory not found: ${RAW_INCREMENTAL_DIR}`);
-    log(`   Creating directory...`);
-    fs.mkdirSync(RAW_INCREMENTAL_DIR, { recursive: true });
-  }
-  
-  // Clear output incremental folder at start
-  if (fs.existsSync(SILVER_MERGED_INCREMENTAL_DIR)) {
-    try {
-      const existingFiles = fs.readdirSync(SILVER_MERGED_INCREMENTAL_DIR);
-      existingFiles.forEach(file => {
-        const filePath = path.join(SILVER_MERGED_INCREMENTAL_DIR, file);
-        if (fs.statSync(filePath).isFile()) {
-          fs.unlinkSync(filePath);
-        }
-      });
-    } catch (error) {
-      // Ignore errors when clearing
-    }
-  }
-  
-  // Get venue directories from raw/incremental/ (incremental mode)
+  // FULL MODE: Get ALL venue directories from raw/today/
   let venueDirs = [];
-  if (fs.existsSync(RAW_INCREMENTAL_DIR)) {
-    venueDirs = fs.readdirSync(RAW_INCREMENTAL_DIR).filter(item => {
-      const itemPath = path.join(RAW_INCREMENTAL_DIR, item);
+  if (fs.existsSync(RAW_TODAY_DIR)) {
+    venueDirs = fs.readdirSync(RAW_TODAY_DIR).filter(item => {
+      const itemPath = path.join(RAW_TODAY_DIR, item);
       return fs.statSync(itemPath).isDirectory();
     });
   }
   
-  // If incremental folder is empty, stop processing
+  // If today folder is empty, stop processing
   if (venueDirs.length === 0) {
-    log(`⏭️  No incremental files found in ${RAW_INCREMENTAL_DIR}`);
-    log(`   Incremental folder is empty - nothing to merge.`);
-    log(`\n✨ Skipped merge (incremental mode - no changes)`);
+    log(`⏭️  No venues found in ${RAW_TODAY_DIR}`);
+    log(`   Raw today folder is empty - nothing to merge.`);
+    log(`\n✨ Skipped merge (no raw files)`);
     return;
   }
   
-  log(`📁 Found ${venueDirs.length} venue(s) in incremental folder\n`);
+  log(`📁 Found ${venueDirs.length} venue(s) in raw/today/\n`);
   
   // Filter by area if specified
   if (areaFilter) {
@@ -444,7 +367,6 @@ function main() {
   updateConfigField('last_run_status', 'running_merged');
   
   log(`\n✨ Done! Merged files saved to: ${path.resolve(SILVER_MERGED_TODAY_DIR)}`);
-  log(`   Incremental files: ${path.resolve(SILVER_MERGED_INCREMENTAL_DIR)}`);
 }
 
 try {
