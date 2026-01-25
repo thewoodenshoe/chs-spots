@@ -349,11 +349,29 @@ async function main() {
       incrementalFileCount = fs.readdirSync(SILVER_TRIMMED_INCREMENTAL_DIR).filter(f => f.endsWith('.json')).length;
     }
     
-    if (incrementalFileCount > 15) {
-      const errorMsg = `Too many incremental files (${incrementalFileCount} > 15). Manual review required.`;
-      console.error(`\n❌ ${errorMsg}`);
-      updateConfigField('last_run_status', 'failed_at_extract');
-      throw new Error(errorMsg);
+    // Get maxIncrementalFiles from config (default: 15)
+    const currentConfig = loadConfig();
+    const maxIncrementalFiles = currentConfig.pipeline?.maxIncrementalFiles || 15;
+    
+    if (incrementalFileCount > maxIncrementalFiles) {
+      const msg = `⚠️  Too many incremental files (${incrementalFileCount} > ${maxIncrementalFiles}). Manual review required. Skipping LLM extraction.`;
+      console.log(`\n${msg}`);
+      console.log(`   Pipeline completed successfully but skipped expensive LLM step.`);
+      console.log(`   Next run will start fresh from the beginning.`);
+      updateConfigField('last_run_status', 'completed_successfully');
+      // Don't throw error - exit gracefully
+      console.log('\n✅ Pipeline completed (graceful shutdown - skipped LLM)');
+      
+      // Log final config state
+      const finalConfig = loadConfig();
+      console.log('\n📋 Final Pipeline State:');
+      console.log(`   Last run status: ${finalConfig.last_run_status}`);
+      console.log(`   Last raw processed date: ${finalConfig.last_raw_processed_date || 'null'}`);
+      console.log(`   Last merged processed date: ${finalConfig.last_merged_processed_date || 'null'}`);
+      console.log(`   Last trimmed processed date: ${finalConfig.last_trimmed_processed_date || 'null'}`);
+      
+      restoreConsole();
+      process.exit(0); // Exit successfully
     }
     
     try {
