@@ -253,6 +253,87 @@ function main() {
     log(`\n⚠️  No changes detected - incremental folder is empty`);
     log(`   Silver and gold steps will skip processing.`);
   }
+  
+  // On initial first run: verify raw/incremental matches raw/today
+  const isFirstRun = !hasPreviousData;
+  if (isFirstRun) {
+    log(`\n🔍 Initial run verification: Ensuring raw/incremental matches raw/today...`);
+    
+    let verifiedCount = 0;
+    let copiedCount = 0;
+    let missingCount = 0;
+    
+    // Get all venue directories from today/
+    const todayVenueDirs = fs.readdirSync(RAW_TODAY_DIR).filter(item => {
+      const itemPath = path.join(RAW_TODAY_DIR, item);
+      return fs.statSync(itemPath).isDirectory();
+    });
+    
+    for (const venueId of todayVenueDirs) {
+      const todayVenueDir = path.join(RAW_TODAY_DIR, venueId);
+      const incrementalVenueDir = path.join(RAW_INCREMENTAL_DIR, venueId);
+      
+      const todayFiles = getVenueHtmlFiles(todayVenueDir);
+      const incrementalFiles = incrementalVenueDir && fs.existsSync(incrementalVenueDir)
+        ? getVenueHtmlFiles(incrementalVenueDir)
+        : [];
+      
+      const incrementalFileMap = new Map(incrementalFiles.map(f => [f.file, f.path]));
+      
+      // Check each file in today/ exists in incremental/
+      for (const todayFileInfo of todayFiles) {
+        if (incrementalFileMap.has(todayFileInfo.file)) {
+          verifiedCount++;
+        } else {
+          // Missing file - copy it
+          copyToIncremental(venueId, todayFileInfo.file, todayFileInfo.path);
+          copiedCount++;
+          missingCount++;
+        }
+      }
+      
+      // Also ensure metadata.json exists in incremental/
+      const todayMetadataPath = path.join(todayVenueDir, 'metadata.json');
+      if (fs.existsSync(todayMetadataPath)) {
+        copyMetadataIfExists(venueId, todayVenueDir);
+      }
+    }
+    
+    log(`   ✅ Verified ${verifiedCount} file(s) already in incremental/`);
+    if (copiedCount > 0) {
+      log(`   📋 Copied ${copiedCount} missing file(s) to incremental/`);
+    }
+    if (missingCount === 0) {
+      log(`   ✅ Initial run verification complete: raw/incremental matches raw/today`);
+    } else {
+      log(`   ⚠️  Initial run verification: Found and fixed ${missingCount} missing file(s)`);
+    }
+    
+    // Final verification: count files
+    const todayTotalFiles = todayVenueDirs.reduce((total, venueId) => {
+      const venueDir = path.join(RAW_TODAY_DIR, venueId);
+      return total + getVenueHtmlFiles(venueDir).length;
+    }, 0);
+    
+    const incrementalTotalFiles = fs.existsSync(RAW_INCREMENTAL_DIR)
+      ? fs.readdirSync(RAW_INCREMENTAL_DIR)
+          .filter(item => {
+            const itemPath = path.join(RAW_INCREMENTAL_DIR, item);
+            return fs.statSync(itemPath).isDirectory();
+          })
+          .reduce((total, venueId) => {
+            const venueDir = path.join(RAW_INCREMENTAL_DIR, venueId);
+            return total + getVenueHtmlFiles(venueDir).length;
+          }, 0)
+      : 0;
+    
+    log(`   📊 File counts: today/ = ${todayTotalFiles}, incremental/ = ${incrementalTotalFiles}`);
+    if (todayTotalFiles === incrementalTotalFiles) {
+      log(`   ✅ File counts match - verification successful`);
+    } else {
+      log(`   ⚠️  File count mismatch - today/ has ${todayTotalFiles}, incremental/ has ${incrementalTotalFiles}`);
+    }
+  }
 }
 
 try {
