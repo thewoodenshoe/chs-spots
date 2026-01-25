@@ -226,8 +226,9 @@ async function main() {
     const recoveryPoint = getRecoveryPoint(lastRunStatus);
     
     if (recoveryPoint && lastRunStatus !== 'completed_successfully' && lastRunStatus !== 'idle') {
-      console.log(`\n⚠️  Previous run failed at ${lastRunStatus}. Attempting recovery from last known good state.`);
+      console.log(`\n⚠️  Previous run failed at ${lastRunStatus}. Resuming from failed_at_${recoveryPoint}`);
       console.log(`   Recovery point: ${recoveryPoint}`);
+      console.log(`   Pipeline will skip steps before ${recoveryPoint} and resume from there.`);
     }
     
     // Set initial status
@@ -251,7 +252,7 @@ async function main() {
         updateConfigField('last_run_status', 'running_raw');
         await runScript('download-raw-html.js', AREA_FILTER ? [AREA_FILTER] : []);
         updateConfigField('last_raw_processed_date', runDate);
-        updateConfigField('last_run_status', 'running_raw');
+        updateConfigField('last_run_status', 'running_merged'); // Update to next step after raw completes
       } else if (lastRawDate === runDate) {
         // Same day - skip downloading
         console.log(`   ⏭️  raw/today/ not empty and last_raw_processed_date (${lastRawDate}) equals run_date (${runDate}) - skipping download`);
@@ -259,44 +260,96 @@ async function main() {
       } else {
         // New day - archive and download
         console.log(`   📅 New day detected (${runDate} vs ${lastRawDate})`);
-        console.log('   🗂️  Deleting raw/previous/, copying raw/today/ to raw/previous/');
+        console.log('   🗂️  New day reset: emptying previous/ and incremental/, copying today/ to previous/, emptying today/');
         
-        // Delete previous/
+        const RAW_INCREMENTAL_DIR = path.join(__dirname, '../data/raw/incremental');
+        
+        // Empty previous/ directory
         if (fs.existsSync(RAW_PREVIOUS_DIR)) {
           fs.rmSync(RAW_PREVIOUS_DIR, { recursive: true, force: true });
         }
         fs.mkdirSync(RAW_PREVIOUS_DIR, { recursive: true });
+        console.log('   🗑️  Emptied raw/previous/');
         
-        // Copy today/ to previous/
-        const todayDirs = fs.readdirSync(RAW_TODAY_DIR).filter(item => {
-          const itemPath = path.join(RAW_TODAY_DIR, item);
-          return fs.statSync(itemPath).isDirectory();
-        });
-        let copied = 0;
-        for (const dir of todayDirs) {
-          try {
-            const sourcePath = path.join(RAW_TODAY_DIR, dir);
-            const destPath = path.join(RAW_PREVIOUS_DIR, dir);
-            fs.cpSync(sourcePath, destPath, { recursive: true });
-            copied++;
-          } catch (error) {
-            console.warn(`   ⚠️  Failed to copy ${dir}: ${error.message}`);
+        // Empty incremental/ directory (never move it to previous/)
+        if (fs.existsSync(RAW_INCREMENTAL_DIR)) {
+          const incrementalDirs = fs.readdirSync(RAW_INCREMENTAL_DIR);
+          for (const dir of incrementalDirs) {
+            const dirPath = path.join(RAW_INCREMENTAL_DIR, dir);
+            if (fs.statSync(dirPath).isDirectory()) {
+              fs.rmSync(dirPath, { recursive: true, force: true });
+            }
+          }
+          console.log('   🗑️  Emptied raw/incremental/');
+        }
+        
+        // Copy all files from today/ to previous/ using fs.copyFileSync loop (exact filenames preserved)
+        let copiedCount = 0;
+        const copiedFilenames = [];
+        if (fs.existsSync(RAW_TODAY_DIR)) {
+          const todayDirs = fs.readdirSync(RAW_TODAY_DIR).filter(item => {
+            const itemPath = path.join(RAW_TODAY_DIR, item);
+            return fs.statSync(itemPath).isDirectory();
+          });
+          
+          for (const dir of todayDirs) {
+            const sourceDir = path.join(RAW_TODAY_DIR, dir);
+            const destDir = path.join(RAW_PREVIOUS_DIR, dir);
+            
+            // Create destination directory
+            if (!fs.existsSync(destDir)) {
+              fs.mkdirSync(destDir, { recursive: true });
+            }
+            
+            // Copy all files in the directory using fs.copyFileSync
+            const files = fs.readdirSync(sourceDir);
+            let dirFileCount = 0;
+            for (const file of files) {
+              try {
+                const sourcePath = path.join(sourceDir, file);
+                const destPath = path.join(destDir, file);
+                
+                // Only copy files (not subdirectories)
+                if (fs.statSync(sourcePath).isFile()) {
+                  fs.copyFileSync(sourcePath, destPath);
+                  dirFileCount++;
+                  if (copiedFilenames.length < 5) {
+                    copiedFilenames.push(`${dir}/${file}`);
+                  }
+                }
+              } catch (error) {
+                console.warn(`   ⚠️  Failed to copy ${dir}/${file}: ${error.message}`);
+              }
+            }
+            
+            if (dirFileCount > 0) {
+              copiedCount++;
+            }
           }
         }
-        console.log(`   ✅ Copied ${copied} venue(s) from raw/today/ to raw/previous/`);
-        
-        // Delete today/
-        for (const dir of todayDirs) {
-          fs.rmSync(path.join(RAW_TODAY_DIR, dir), { recursive: true, force: true });
+        console.log(`   ✅ Copied ${copiedCount} venue(s) from raw/today/ to raw/previous/ (using copyFileSync, exact filenames preserved)`);
+        if (copiedFilenames.length > 0) {
+          console.log(`   📋 First 5 files copied: ${copiedFilenames.join(', ')}`);
         }
-        console.log('   🗑️  Deleted all files from raw/today/');
+        
+        // Empty today/
+        if (fs.existsSync(RAW_TODAY_DIR)) {
+          const todayDirs = fs.readdirSync(RAW_TODAY_DIR);
+          for (const dir of todayDirs) {
+            const dirPath = path.join(RAW_TODAY_DIR, dir);
+            if (fs.statSync(dirPath).isDirectory()) {
+              fs.rmSync(dirPath, { recursive: true, force: true });
+            }
+          }
+        }
+        console.log('   🗑️  Emptied raw/today/');
         
         // Download all content
         console.log('   📥 Downloading all content into raw/today/');
         updateConfigField('last_run_status', 'running_raw');
         await runScript('download-raw-html.js', AREA_FILTER ? [AREA_FILTER] : []);
         updateConfigField('last_raw_processed_date', runDate);
-        updateConfigField('last_run_status', 'running_raw');
+        updateConfigField('last_run_status', 'running_merged'); // Update to next step after raw completes
       }
       
       // Delta comparison
@@ -304,9 +357,12 @@ async function main() {
       updateConfigField('last_run_status', 'running_raw');
       try {
         await runScript('delta-raw-files.js');
+        // After delta completes successfully, update status to next step
+        updateConfigField('last_run_status', 'running_merged');
       } catch (error) {
         if (error.message.includes('code 0')) {
           console.log('   ⏭️  Delta step completed');
+          updateConfigField('last_run_status', 'running_merged');
         } else {
           updateConfigField('last_run_status', 'failed_at_raw');
           throw error;
@@ -321,7 +377,8 @@ async function main() {
       console.log('\n🔗 Step 2: Merge Raw Files');
       updateConfigField('last_run_status', 'running_merged');
       await runScript('merge-raw-files.js', AREA_FILTER ? [AREA_FILTER] : []);
-      updateConfigField('last_run_status', 'running_merged');
+      // After merge completes successfully, update status to next step
+      updateConfigField('last_run_status', 'running_trimmed');
     }
     
     // SILVER_TRIMMED STEPS
@@ -331,11 +388,13 @@ async function main() {
       console.log('\n✂️  Step 3: Trim Silver HTML');
       updateConfigField('last_run_status', 'running_trimmed');
       await runScript('trim-silver-html.js', AREA_FILTER ? [AREA_FILTER] : []);
-      updateConfigField('last_run_status', 'running_trimmed');
+      // After trim completes successfully, update status to next step
+      updateConfigField('last_run_status', 'running_extract');
       
       console.log('\n🔍 Step 3.5: Delta Comparison (Trimmed Content)');
       try {
         await runScript('delta-trimmed-files.js');
+        // Delta doesn't change status - still running_extract
       } catch (error) {
         if (error.message.includes('code 0')) {
           console.log('   ⏭️  Delta step completed');
@@ -482,7 +541,7 @@ async function main() {
       console.error(error.stack);
     }
     
-    // Status already updated in catch blocks above
+    // Update status to failed_at_{step} based on current status
     const currentConfig = loadConfig();
     if (currentConfig.last_run_status === 'running_raw') {
       updateConfigField('last_run_status', 'failed_at_raw');
@@ -490,6 +549,8 @@ async function main() {
       updateConfigField('last_run_status', 'failed_at_merged');
     } else if (currentConfig.last_run_status === 'running_trimmed') {
       updateConfigField('last_run_status', 'failed_at_trimmed');
+    } else if (currentConfig.last_run_status === 'running_extract') {
+      updateConfigField('last_run_status', 'failed_at_extract');
     }
     
     // Log final config state on error

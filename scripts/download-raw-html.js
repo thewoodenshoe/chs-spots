@@ -241,8 +241,10 @@ function archiveTodayToPrevious() {
 
 /**
  * Reset state for new day or same-day rerun
- * New day: Empty previous/, move incremental/ to previous/, move today/ to previous/, empty today/
- * Same day: Leave previous/ untouched, move incremental/ to previous/, empty today/
+ * New day: Empty previous/ and incremental/, copy today/ to previous/ (using copyFileSync), empty today/
+ * Same day: Leave previous/ untouched, empty incremental/ and today/
+ * 
+ * IMPORTANT: Never move incremental/ to previous/ - only copy from today/ to previous/
  */
 function resetStateForRun() {
   const today = getTodayDateString();
@@ -252,40 +254,28 @@ function resetStateForRun() {
   if (isNewDay) {
     log(`📅 New day detected: emptying previous/ and incremental/, copying today/ to previous/`);
     
-    // Empty previous/
+    // Empty previous/ directory
     if (fs.existsSync(RAW_PREVIOUS_DIR)) {
-      const previousDirs = fs.readdirSync(RAW_PREVIOUS_DIR);
-      for (const dir of previousDirs) {
-        const dirPath = path.join(RAW_PREVIOUS_DIR, dir);
+      fs.rmSync(RAW_PREVIOUS_DIR, { recursive: true, force: true });
+    }
+    fs.mkdirSync(RAW_PREVIOUS_DIR, { recursive: true });
+    log(`  🗑️  Emptied raw/previous/`);
+    
+    // Empty incremental/ directory (never move it to previous/)
+    if (fs.existsSync(RAW_INCREMENTAL_DIR)) {
+      const incrementalDirs = fs.readdirSync(RAW_INCREMENTAL_DIR);
+      for (const dir of incrementalDirs) {
+        const dirPath = path.join(RAW_INCREMENTAL_DIR, dir);
         if (fs.statSync(dirPath).isDirectory()) {
           fs.rmSync(dirPath, { recursive: true, force: true });
         }
       }
+      log(`  🗑️  Emptied raw/incremental/`);
     }
     
-    // Move all files from incremental/ to previous/ (if any)
-    if (fs.existsSync(RAW_INCREMENTAL_DIR)) {
-      const incrementalDirs = fs.readdirSync(RAW_INCREMENTAL_DIR).filter(item => {
-        const itemPath = path.join(RAW_INCREMENTAL_DIR, item);
-        return fs.statSync(itemPath).isDirectory();
-      });
-      
-      for (const dir of incrementalDirs) {
-        try {
-          const sourcePath = path.join(RAW_INCREMENTAL_DIR, dir);
-          const destPath = path.join(RAW_PREVIOUS_DIR, dir);
-          if (fs.existsSync(destPath)) {
-            fs.rmSync(destPath, { recursive: true, force: true });
-          }
-          fs.renameSync(sourcePath, destPath);
-        } catch (error) {
-          log(`  ⚠️  Failed to move ${dir} from incremental/ to previous/: ${error.message}`);
-        }
-      }
-    }
-    
-    // Move all files from today/ to previous/ (preserve exact filenames)
-    let copiedFromToday = 0;
+    // Copy all files from today/ to previous/ using fs.copyFileSync loop (exact filenames preserved)
+    let copiedCount = 0;
+    const copiedFilenames = [];
     if (fs.existsSync(RAW_TODAY_DIR)) {
       const todayDirs = fs.readdirSync(RAW_TODAY_DIR).filter(item => {
         const itemPath = path.join(RAW_TODAY_DIR, item);
@@ -293,19 +283,43 @@ function resetStateForRun() {
       });
       
       for (const dir of todayDirs) {
-        try {
-          const sourcePath = path.join(RAW_TODAY_DIR, dir);
-          const destPath = path.join(RAW_PREVIOUS_DIR, dir);
-          if (fs.existsSync(destPath)) {
-            fs.rmSync(destPath, { recursive: true, force: true });
+        const sourceDir = path.join(RAW_TODAY_DIR, dir);
+        const destDir = path.join(RAW_PREVIOUS_DIR, dir);
+        
+        // Create destination directory
+        if (!fs.existsSync(destDir)) {
+          fs.mkdirSync(destDir, { recursive: true });
+        }
+        
+        // Copy all files in the directory using fs.copyFileSync
+        const files = fs.readdirSync(sourceDir);
+        let dirFileCount = 0;
+        for (const file of files) {
+          try {
+            const sourcePath = path.join(sourceDir, file);
+            const destPath = path.join(destDir, file);
+            
+            // Only copy files (not subdirectories)
+            if (fs.statSync(sourcePath).isFile()) {
+              fs.copyFileSync(sourcePath, destPath);
+              dirFileCount++;
+              if (copiedFilenames.length < 5) {
+                copiedFilenames.push(`${dir}/${file}`);
+              }
+            }
+          } catch (error) {
+            log(`  ⚠️  Failed to copy ${dir}/${file}: ${error.message}`);
           }
-          // Copy recursively to preserve all files
-          copyDirectoryRecursive(sourcePath, destPath);
-          copiedFromToday++;
-        } catch (error) {
-          log(`  ⚠️  Failed to copy ${dir} from today/ to previous/: ${error.message}`);
+        }
+        
+        if (dirFileCount > 0) {
+          copiedCount++;
         }
       }
+    }
+    log(`  ✅ Copied ${copiedCount} venue(s) from raw/today/ to raw/previous/ (using copyFileSync, exact filenames preserved)`);
+    if (copiedFilenames.length > 0) {
+      log(`  📋 First 5 files copied: ${copiedFilenames.join(', ')}`);
     }
     
     // Empty today/
@@ -318,44 +332,22 @@ function resetStateForRun() {
         }
       }
     }
-    
-    // Empty incremental/
-    if (fs.existsSync(RAW_INCREMENTAL_DIR)) {
-      const incrementalDirs = fs.readdirSync(RAW_INCREMENTAL_DIR);
-      for (const dir of incrementalDirs) {
-        const dirPath = path.join(RAW_INCREMENTAL_DIR, dir);
-        if (fs.statSync(dirPath).isDirectory()) {
-          fs.rmSync(dirPath, { recursive: true, force: true });
-        }
-      }
-    }
-    
-    log(`  ✅ Copied ${copiedFromToday} venue(s) from today/ to previous/`);
-    log(`  ✅ Emptied today/ and incremental/`);
+    log(`  🗑️  Emptied raw/today/`);
   } else {
     log(`📅 Same-day rerun: emptying incremental/ and today/, repopulating today/, diff against previous/`);
     
     // Leave previous/ untouched (yesterday's baseline)
     
-    // Move all files from incremental/ to previous/ (if any)
+    // Empty incremental/ directory (never move it to previous/)
     if (fs.existsSync(RAW_INCREMENTAL_DIR)) {
-      const incrementalDirs = fs.readdirSync(RAW_INCREMENTAL_DIR).filter(item => {
-        const itemPath = path.join(RAW_INCREMENTAL_DIR, item);
-        return fs.statSync(itemPath).isDirectory();
-      });
-      
+      const incrementalDirs = fs.readdirSync(RAW_INCREMENTAL_DIR);
       for (const dir of incrementalDirs) {
-        try {
-          const sourcePath = path.join(RAW_INCREMENTAL_DIR, dir);
-          const destPath = path.join(RAW_PREVIOUS_DIR, dir);
-          if (fs.existsSync(destPath)) {
-            fs.rmSync(destPath, { recursive: true, force: true });
-          }
-          fs.renameSync(sourcePath, destPath);
-        } catch (error) {
-          log(`  ⚠️  Failed to move ${dir} from incremental/ to previous/: ${error.message}`);
+        const dirPath = path.join(RAW_INCREMENTAL_DIR, dir);
+        if (fs.statSync(dirPath).isDirectory()) {
+          fs.rmSync(dirPath, { recursive: true, force: true });
         }
       }
+      log(`  🗑️  Emptied raw/incremental/`);
     }
     
     // Empty today/
@@ -368,19 +360,7 @@ function resetStateForRun() {
         }
       }
     }
-    
-    // Empty incremental/
-    if (fs.existsSync(RAW_INCREMENTAL_DIR)) {
-      const incrementalDirs = fs.readdirSync(RAW_INCREMENTAL_DIR);
-      for (const dir of incrementalDirs) {
-        const dirPath = path.join(RAW_INCREMENTAL_DIR, dir);
-        if (fs.statSync(dirPath).isDirectory()) {
-          fs.rmSync(dirPath, { recursive: true, force: true });
-        }
-      }
-    }
-    
-    log(`  ✅ Emptied today/ and incremental/`);
+    log(`  🗑️  Emptied raw/today/`);
   }
 }
 
