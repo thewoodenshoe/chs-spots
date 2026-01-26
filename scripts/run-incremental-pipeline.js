@@ -425,14 +425,8 @@ async function main() {
     }
     
     // Step 5: Create spots (only if there were incremental changes)
-    const SILVER_TRIMMED_INCREMENTAL_DIR_CHECK = path.join(__dirname, '../data/silver_trimmed/incremental');
-    let hasIncrementalChanges = false;
-    let incrementalFileCount = 0;
-    if (fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR_CHECK)) {
-      const incrementalFiles = fs.readdirSync(SILVER_TRIMMED_INCREMENTAL_DIR_CHECK).filter(f => f.endsWith('.json'));
-      incrementalFileCount = incrementalFiles.length;
-      hasIncrementalChanges = incrementalFileCount > 0;
-    }
+    // Reuse incrementalFileCount from earlier check (line 391)
+    const hasIncrementalChanges = incrementalFileCount > 0;
     
     if (hasIncrementalChanges) {
       console.log('\n📍 Step 5: Create Spots from Gold Data');
