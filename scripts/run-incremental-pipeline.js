@@ -424,9 +424,25 @@ async function main() {
       throw error;
     }
     
-    // Step 5: Create spots
-    console.log('\n📍 Step 5: Create Spots from Gold Data');
-    await runScript('create-spots.js');
+    // Step 5: Create spots (only if there were incremental changes)
+    const SILVER_TRIMMED_INCREMENTAL_DIR_CHECK = path.join(__dirname, '../data/silver_trimmed/incremental');
+    let hasIncrementalChanges = false;
+    let incrementalFileCount = 0;
+    if (fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR_CHECK)) {
+      const incrementalFiles = fs.readdirSync(SILVER_TRIMMED_INCREMENTAL_DIR_CHECK).filter(f => f.endsWith('.json'));
+      incrementalFileCount = incrementalFiles.length;
+      hasIncrementalChanges = incrementalFileCount > 0;
+    }
+    
+    if (hasIncrementalChanges) {
+      console.log('\n📍 Step 5: Create Spots from Gold Data');
+      console.log(`   Found ${incrementalFileCount} incremental file(s) - processing spots`);
+      await runScript('create-spots.js');
+    } else {
+      console.log('\n📍 Step 5: Create Spots from Gold Data');
+      console.log('   ⏭️  No incremental changes detected - skipping spot creation');
+      console.log('   Spots from previous run are still valid (no new/updated happy hours)');
+    }
     
     // Try to extract final stats from create-spots.log
     let finalStats = {};
