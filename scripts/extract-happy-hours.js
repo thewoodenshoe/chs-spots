@@ -153,10 +153,23 @@ async function extractHappyHours(isIncremental = false) {
         }
     }
 
-    if (isIncremental && !fs.existsSync(BULK_COMPLETE_FLAG)) {
-        console.warn('Bulk extraction not marked as complete. Running in incremental mode requires prior bulk extraction.');
-        console.warn('Please run `npm run extract:bulk:prepare` and `npm run extract:bulk:process` first.');
-        process.exit(1);
+    // Check if bulk extraction is complete (either flag exists OR gold files exist)
+    if (isIncremental) {
+        const hasBulkCompleteFlag = fs.existsSync(BULK_COMPLETE_FLAG);
+        const hasGoldFiles = fs.existsSync(GOLD_DIR) && 
+            fs.readdirSync(GOLD_DIR).filter(f => f.endsWith('.json') && f !== 'bulk-results.json').length > 0;
+        
+        if (!hasBulkCompleteFlag && !hasGoldFiles) {
+            console.warn('Bulk extraction not marked as complete. Running in incremental mode requires prior bulk extraction.');
+            console.warn('Please run `npm run extract:bulk:prepare` and `npm run extract:bulk:process` first.');
+            process.exit(1);
+        }
+        
+        // If gold files exist but flag doesn't, create the flag for future runs
+        if (!hasBulkCompleteFlag && hasGoldFiles) {
+            console.log('📝 Gold files found but .bulk-complete flag missing - creating flag for future runs...');
+            fs.writeFileSync(BULK_COMPLETE_FLAG, new Date().toISOString(), 'utf8');
+        }
     }
 
     for (const file of venueFiles) {
