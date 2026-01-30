@@ -412,6 +412,185 @@ function main() {
     log(`\n⚠️  No changes detected - incremental folder is empty`);
     log(`   LLM extraction step will skip processing.`);
   }
+  
+  // Generate difference reports for LLM
+  if (newVenues + changedVenues > 0) {
+    generateDifferenceReports(newVenues, changedVenues);
+  }
+}
+
+/**
+ * Generate difference reports for each incremental file
+ * Creates timestamped directory in logs/differences_for_llm/ with JSON files showing actual differences
+ */
+function generateDifferenceReports(newVenues, changedVenues) {
+  try {
+    // Get EST timezone timestamp (YYYYMMDD-HHMM format, no seconds)
+    // EST is UTC-5, EDT is UTC-4 (daylight saving)
+    const now = new Date();
+    // Check if DST is in effect (rough approximation: March-November)
+    const month = now.getUTCMonth(); // 0-11
+    const isDST = month >= 2 && month <= 9; // March (2) to October (9)
+    const estOffset = isDST ? -4 : -5; // EDT is UTC-4, EST is UTC-5
+    const estTime = new Date(now.getTime() + (estOffset * 60 * 60 * 1000));
+    
+    // Format as YYYYMMDD-HHMM
+    const year = estTime.getUTCFullYear();
+    const monthStr = String(estTime.getUTCMonth() + 1).padStart(2, '0');
+    const dayStr = String(estTime.getUTCDate()).padStart(2, '0');
+    const hourStr = String(estTime.getUTCHours()).padStart(2, '0');
+    const minuteStr = String(estTime.getUTCMinutes()).padStart(2, '0');
+    const timestampDir = `${year}${monthStr}${dayStr}-${hourStr}${minuteStr}`;
+    
+    const DIFF_REPORTS_DIR = path.join(__dirname, '..', 'logs', 'differences_for_llm', timestampDir);
+    
+    // Create directory (parent directories created automatically)
+    if (!fs.existsSync(DIFF_REPORTS_DIR)) {
+      fs.mkdirSync(DIFF_REPORTS_DIR, { recursive: true });
+    }
+    
+    log(`\n📝 Generating difference reports in: ${path.resolve(DIFF_REPORTS_DIR)}`);
+    
+    // Load venues.json to get venue metadata
+    const VENUES_PATH = fs.existsSync(path.join(__dirname, '../data/venues.json'))
+      ? path.join(__dirname, '../data/venues.json')
+      : path.join(__dirname, '../data/reporting/venues.json');
+    
+    let venuesMap = {};
+    if (fs.existsSync(VENUES_PATH)) {
+      try {
+        const venuesData = JSON.parse(fs.readFileSync(VENUES_PATH, 'utf8'));
+        if (Array.isArray(venuesData)) {
+          venuesData.forEach(venue => {
+            if (venue.venueId) {
+              venuesMap[venue.venueId] = {
+                name: venue.name || venue.venueName || 'Unknown',
+                area: venue.area || 'Unknown',
+                website: venue.website || ''
+              };
+            }
+          });
+        }
+      } catch (error) {
+        log(`  ⚠️  Could not load venues.json: ${error.message}`);
+      }
+    }
+    
+    // Process each incremental file
+    const incrementalFiles = fs.readdirSync(SILVER_TRIMMED_INCREMENTAL_DIR).filter(f => f.endsWith('.json'));
+    let reportsGenerated = 0;
+    
+    for (const file of incrementalFiles) {
+      const venueId = path.basename(file, '.json');
+      const todayFilePath = path.join(SILVER_TRIMMED_TODAY_DIR, file);
+      const previousFilePath = path.join(SILVER_TRIMMED_PREVIOUS_DIR, file);
+      const incrementalFilePath = path.join(SILVER_TRIMMED_INCREMENTAL_DIR, file);
+      
+      try {
+        const todayData = JSON.parse(fs.readFileSync(todayFilePath, 'utf8'));
+        const venueInfo = venuesMap[venueId] || {
+          name: todayData.venueName || 'Unknown',
+          area: todayData.venueArea || 'Unknown',
+          website: todayData.website || ''
+        };
+        
+        const report = {
+          venueId: venueId,
+          venueName: venueInfo.name,
+          venueArea: venueInfo.area,
+          website: venueInfo.website,
+          scrapedAt: todayData.scrapedAt || null,
+          trimmedAt: todayData.trimmedAt || null,
+          difference: []
+        };
+        
+        // Check if it's a new venue
+        if (!fs.existsSync(previousFilePath)) {
+          report.difference.push({
+            type: 'new',
+            description: 'New venue - no previous version',
+            todayPages: (todayData.pages || []).length,
+            todayText: (todayData.pages || []).map(p => p.text || '').join('\n\n---PAGE BREAK---\n\n').substring(0, 2000) // First 2000 chars
+          });
+        } else {
+          // Compare today vs previous
+          const previousData = JSON.parse(fs.readFileSync(previousFilePath, 'utf8'));
+          const todayPages = todayData.pages || [];
+          const previousPages = previousData.pages || [];
+          
+          // Compare page by page
+          const maxPages = Math.max(todayPages.length, previousPages.length);
+          for (let i = 0; i < maxPages; i++) {
+            const todayPage = todayPages[i];
+            const previousPage = previousPages[i];
+            
+            if (!previousPage) {
+              report.difference.push({
+                type: 'page_added',
+                pageIndex: i,
+                description: `New page added: ${todayPage?.title || 'Untitled'}`,
+                text: (todayPage?.text || '').substring(0, 1000)
+              });
+            } else if (!todayPage) {
+              report.difference.push({
+                type: 'page_removed',
+                pageIndex: i,
+                description: `Page removed: ${previousPage?.title || 'Untitled'}`,
+                text: (previousPage?.text || '').substring(0, 1000)
+              });
+            } else {
+              // Compare text content
+              const todayText = todayPage.text || '';
+              const previousText = previousPage.text || '';
+              
+              if (todayText !== previousText) {
+                // Find actual differences (simplified - show first 500 chars of each)
+                const todayNormalized = normalizeTextForHash(todayText);
+                const previousNormalized = normalizeTextForHash(previousText);
+                
+                if (todayNormalized !== previousNormalized) {
+                  report.difference.push({
+                    type: 'content_changed',
+                    pageIndex: i,
+                    pageTitle: todayPage.title || previousPage.title || 'Untitled',
+                    description: 'Content changed in this page',
+                    previousText: previousText.substring(0, 1000),
+                    todayText: todayText.substring(0, 1000),
+                    previousTextLength: previousText.length,
+                    todayTextLength: todayText.length
+                  });
+                }
+              }
+            }
+          }
+          
+          // If no page differences found, check for metadata changes
+          if (report.difference.length === 0) {
+            report.difference.push({
+              type: 'metadata_changed',
+              description: 'File marked as changed but no text differences found (may be metadata or hash difference)',
+              todayHash: todayData.venueHash || 'N/A',
+              previousHash: previousData.venueHash || 'N/A'
+            });
+          }
+        }
+        
+        // Write report file
+        const reportPath = path.join(DIFF_REPORTS_DIR, `${venueId}.json`);
+        fs.writeFileSync(reportPath, JSON.stringify(report, null, 2), 'utf8');
+        reportsGenerated++;
+        
+      } catch (error) {
+        log(`  ⚠️  Error generating report for ${venueId}: ${error.message}`);
+      }
+    }
+    
+    log(`  ✅ Generated ${reportsGenerated} difference report(s)`);
+    
+  } catch (error) {
+    log(`  ⚠️  Error generating difference reports: ${error.message}`);
+    // Don't fail the pipeline if difference report generation fails
+  }
 }
 
 try {
