@@ -12,13 +12,7 @@
     "color": "#d97706"
   },
   {
-    "name": "Christmas Spots (manual entry)",
-    "icon": "Gift",
-    "emoji": "🎄",
-    "color": "#f97316"
-  },
-  {
-    "name": "Fishing Spots (manual entry)",
+    "name": "Fishing Spots",
     "icon": "Fish",
     "emoji": "🎣",
     "color": "#0284c7"

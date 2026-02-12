@@ -131,7 +131,7 @@ jest.mock('@/contexts/VenuesContext', () => {
 (global as any).__mockActivitiesContextValue__ = { 
   activities: [
     { name: 'Happy Hour', icon: 'Martini', emoji: '🍹', color: '#0d9488' },
-    { name: 'Fishing Spots (manual entry)', icon: 'Fish', emoji: '🎣', color: '#0284c7' },
+    { name: 'Fishing Spots', icon: 'Fish', emoji: '🎣', color: '#0284c7' },
   ], 
   loading: false, 
   error: null 
@@ -200,7 +200,7 @@ const originalEnv = process.env;
     (global as any).__mockActivitiesContextValue__ = { 
       activities: [
         { name: 'Happy Hour', icon: 'Martini', emoji: '🍹', color: '#0d9488' },
-        { name: 'Fishing Spots (manual entry)', icon: 'Fish', emoji: '🎣', color: '#0284c7' },
+        { name: 'Fishing Spots', icon: 'Fish', emoji: '🎣', color: '#0284c7' },
       ], 
       loading: false, 
       error: null 
