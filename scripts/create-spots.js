@@ -104,60 +104,27 @@ function formatHappyHourDescription(happyHour) {
 }
 
 /**
- * Create spot from gold data and venue data
- * Handles both new format (entries array) and old format (direct properties)
+ * Build time/specials/source from a group of entries for one activity type.
  */
-function createSpot(goldData, venueData, spotId) {
-  const happyHour = goldData.happyHour || {};
-  
-  // Only create spots for venues with happy hour found
-  if (!happyHour.found) {
-    return null;
-  }
-  
-  // Handle new format with entries array, or old format with direct properties
-  let entries = [];
-  if (happyHour.entries && Array.isArray(happyHour.entries) && happyHour.entries.length > 0) {
-    // New format: entries array
-    entries = happyHour.entries;
-  } else if (happyHour.times || happyHour.days || happyHour.specials) {
-    // Old format: direct properties - convert to entries format
-    entries = [{
-      times: happyHour.times,
-      days: happyHour.days,
-      specials: happyHour.specials || [],
-      source: happyHour.source
-    }];
-  } else {
-    // No valid happy hour data
-    return null;
-  }
-  
-  // Extract fields from first entry (or combine multiple entries)
-  // New structured format: separate fields instead of combined description
-  let happyHourTime = null;
-  let happyHourList = [];
+function buildSpotFields(entries) {
+  let promotionTime = null;
+  let promotionList = [];
   let sourceUrl = null;
-  
+
   if (entries.length === 1) {
     const entry = entries[0];
-    // Time: combine days and times if available
     if (entry.times) {
-      happyHourTime = entry.days ? `${entry.times} • ${entry.days}` : entry.times;
+      promotionTime = entry.days ? `${entry.times} • ${entry.days}` : entry.times;
     } else if (entry.days) {
-      happyHourTime = entry.days;
+      promotionTime = entry.days;
     }
-    // Happy Hour List: specials array
-    happyHourList = entry.specials || [];
-    // Source URL
+    promotionList = entry.specials || [];
     sourceUrl = entry.source || null;
   } else if (entries.length > 1) {
-    // Multiple entries (e.g., Happy Hour + Taco Tuesday + Late Night)
-    // Use label if available to differentiate entries
     const timeParts = [];
     const allSpecials = [];
     const sources = [];
-    
+
     for (const entry of entries) {
       if (entry.times || entry.days) {
         const label = entry.label ? `${entry.label}: ` : '';
@@ -169,7 +136,6 @@ function createSpot(goldData, venueData, spotId) {
         }
       }
       if (entry.specials && Array.isArray(entry.specials)) {
-        // Prefix specials with label if multiple entries to avoid confusion
         const prefix = entries.length > 1 && entry.label ? `[${entry.label}] ` : '';
         allSpecials.push(...entry.specials.map(s => `${prefix}${s}`));
       }
@@ -177,54 +143,115 @@ function createSpot(goldData, venueData, spotId) {
         sources.push(entry.source);
       }
     }
-    
-    happyHourTime = timeParts.length > 0 ? timeParts.join(', ') : null;
-    happyHourList = allSpecials;
+
+    promotionTime = timeParts.length > 0 ? timeParts.join(', ') : null;
+    promotionList = allSpecials;
     sourceUrl = sources.length > 0 ? sources[0] : null;
   }
-  
-  // Need at least time or specials to create a spot
-  if (!happyHourTime && (!happyHourList || happyHourList.length === 0)) {
-    return null;
+
+  return { promotionTime, promotionList, sourceUrl };
+}
+
+/**
+ * Create spots from gold data and venue data.
+ * Returns an ARRAY of spots — one per activity type found.
+ * A single venue can produce both a "Happy Hour" spot and a "Brunch" spot.
+ *
+ * Handles:
+ *  - New format with entries[] and activityType per entry
+ *  - Old format without activityType (defaults to "Happy Hour")
+ *  - Legacy format with direct properties (no entries array)
+ */
+function createSpots(goldData, venueData, startId) {
+  const happyHour = goldData.promotions || goldData.happyHour || {};
+
+  if (!happyHour.found) {
+    return [];
   }
-  
-  // Format description for backwards compatibility (keep for now)
-  let description = null;
-  if (entries.length === 1) {
-    description = formatHappyHourDescription(entries[0]);
-  } else if (entries.length > 1) {
-    const entryDescriptions = entries
-      .map(entry => formatHappyHourDescription(entry))
-      .filter(desc => desc !== null);
-    if (entryDescriptions.length > 0) {
-      description = entryDescriptions.join('\n\n---\n\n');
+
+  // Normalize all formats into an entries array
+  let entries = [];
+  if (happyHour.entries && Array.isArray(happyHour.entries) && happyHour.entries.length > 0) {
+    entries = happyHour.entries;
+  } else if (happyHour.times || happyHour.days || happyHour.specials) {
+    // Legacy format: direct properties
+    entries = [{
+      activityType: 'Happy Hour',
+      times: happyHour.times,
+      days: happyHour.days,
+      specials: happyHour.specials || [],
+      source: happyHour.source
+    }];
+  } else {
+    return [];
+  }
+
+  // Group entries by activityType (default to "Happy Hour" for backwards compat)
+  const grouped = {};
+  for (const entry of entries) {
+    const activityType = entry.activityType || 'Happy Hour';
+    if (!grouped[activityType]) {
+      grouped[activityType] = [];
     }
+    grouped[activityType].push(entry);
   }
-  
-  const spot = {
-    id: spotId,
-    lat: venueData.lat || venueData.geometry?.location?.lat,
-    lng: venueData.lng || venueData.geometry?.location?.lng,
-    title: goldData.venueName || venueData.name || 'Unknown Venue',
-    description: description, // Keep for backwards compatibility
-    // New structured fields
-    happyHourTime: happyHourTime,
-    happyHourList: happyHourList,
-    sourceUrl: sourceUrl,
-    lastUpdateDate: goldData.processedAt || null,
-    type: 'Happy Hour',
-    source: 'automated' // Mark as automated (vs manual)
-  };
-  
-  // Add photoUrl if available from venue
-  if (venueData.photoUrl) {
-    spot.photoUrl = venueData.photoUrl;
-  } else if (venueData.photos && venueData.photos.length > 0) {
-    // Use first photo from Google Places
-    spot.photoUrl = venueData.photos[0].photo_reference;
+
+  // Create one spot per activity type
+  const spots = [];
+  let idOffset = 0;
+
+  for (const [activityType, groupEntries] of Object.entries(grouped)) {
+    const { promotionTime, promotionList, sourceUrl } = buildSpotFields(groupEntries);
+
+    // Need at least time or specials to create a spot
+    if (!promotionTime && (!promotionList || promotionList.length === 0)) {
+      continue;
+    }
+
+    // Build backwards-compatible description
+    let description = null;
+    if (groupEntries.length === 1) {
+      description = formatHappyHourDescription(groupEntries[0]);
+    } else if (groupEntries.length > 1) {
+      const entryDescriptions = groupEntries
+        .map(entry => formatHappyHourDescription(entry))
+        .filter(desc => desc !== null);
+      if (entryDescriptions.length > 0) {
+        description = entryDescriptions.join('\n\n---\n\n');
+      }
+    }
+
+    const spot = {
+      id: startId + idOffset,
+      lat: venueData.lat || venueData.geometry?.location?.lat,
+      lng: venueData.lng || venueData.geometry?.location?.lng,
+      title: goldData.venueName || venueData.name || 'Unknown Venue',
+      description: description,
+      // Generic fields
+      promotionTime: promotionTime,
+      promotionList: promotionList,
+      // Legacy fields (backwards compat)
+      happyHourTime: promotionTime,
+      happyHourList: promotionList,
+      sourceUrl: sourceUrl,
+      lastUpdateDate: goldData.processedAt || null,
+      type: activityType,
+      source: 'automated',
+      venueId: goldData.venueId || undefined,
+    };
+
+    // Add photoUrl if available from venue
+    if (venueData.photoUrl) {
+      spot.photoUrl = venueData.photoUrl;
+    } else if (venueData.photos && venueData.photos.length > 0) {
+      spot.photoUrl = venueData.photos[0].photo_reference;
+    }
+
+    spots.push(spot);
+    idOffset++;
   }
-  
-  return spot;
+
+  return spots;
 }
 
 /**
@@ -352,29 +379,22 @@ function main() {
         continue;
       }
       
-      // Only create spots for venues with happy hour
-      if (!goldData.happyHour || !goldData.happyHour.found) {
+      // Only create spots for venues with promotions found
+      const promoData = goldData.promotions || goldData.happyHour || {};
+      if (!promoData.found) {
         noHappyHour++;
         continue;
       }
       
-      // Check if this venue already has a spot in the spots array we're building
-      // Match by venueId or lat/lng/title to prevent duplicates within this run
-      const hasExistingSpot = spots.some(s => {
-        if (s.source !== 'automated') return false;
-        // If spot has venueId, match by that
-        if (s.venueId === venueId) return true;
-        // Otherwise match by lat/lng/title
-        const venueLat = venueData.lat || venueData.geometry?.location?.lat;
-        const venueLng = venueData.lng || venueData.geometry?.location?.lng;
-        const venueName = goldData.venueName || venueData.name;
-        return s.lat === venueLat && s.lng === venueLng && s.title === venueName;
-      });
+      // Check which activity types this venue already has in spots we're building
+      const existingTypes = new Set(
+        spots
+          .filter(s => s.source === 'automated' && s.venueId === venueId)
+          .map(s => s.type)
+      );
       
-      if (hasExistingSpot) {
-        // Spot already added in this run - skip to prevent duplicates
-        skipped++;
-        continue;
+      if (existingTypes.size > 0) {
+        // Some activity types already present — createSpots will handle dedup below
       }
       
       // Calculate next ID (max of existing spots + 1)
@@ -383,30 +403,30 @@ function main() {
         : 0;
       const nextId = maxId + 1;
       
-      const spot = createSpot(goldData, venueData, nextId);
+      const newSpots = createSpots(goldData, venueData, nextId);
       
-      if (spot) {
-        // Validate spot has required fields
-        if (!spot.lat || !spot.lng) {
-          log(`  ⚠️  Skipping: Missing coordinates for ${goldData.venueName} (${venueId})`);
-          skipped++;
-          continue;
+      if (newSpots.length > 0) {
+        for (const spot of newSpots) {
+          // Skip if this venue+type combo already exists
+          if (existingTypes.has(spot.type)) {
+            skipped++;
+            continue;
+          }
+          
+          // Validate spot has required fields
+          if (!spot.lat || !spot.lng) {
+            log(`  ⚠️  Skipping: Missing coordinates for ${goldData.venueName} (${venueId})`);
+            skipped++;
+            continue;
+          }
+          
+          spots.push(spot);
+          processed++;
+          log(`  ✅ Created spot: ${spot.title} [${spot.type}] (${spot.id})`);
         }
-        
-        // Mark as automated and store venueId for future duplicate detection
-        spot.source = 'automated';
-        spot.venueId = venueId; // Store venueId for duplicate detection
-        
-        spots.push(spot);
-        processed++;
-        log(`  ✅ Created spot: ${spot.title} (${spot.id})`);
       } else {
-        // Spot creation returned null - likely incomplete data
+        // No valid spots created - likely incomplete data
         incompleteData++;
-        const hh = goldData.happyHour || {};
-        if (hh.times && !hh.days && (!hh.specials || hh.specials.length === 0)) {
-          log(`  ⚠️  Skipping: Incomplete data for ${goldData.venueName} (${venueId}) - only time "${hh.times}" with no days or specials`);
-        }
       }
       
     } catch (error) {

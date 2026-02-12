@@ -368,9 +368,11 @@ async function extractHappyHours(isIncremental = false) {
         }
 
         // Add metadata to the gold record (includes both raw and normalized hashes)
+        // "promotions" is the new canonical name; "happyHour" kept for backwards compat
         const goldRecord = {
             venueId: venueId,
             venueName: venueData.venueName,
+            promotions: result,
             happyHour: result,
             sourceHash: sourceHash,
             normalizedSourceHash: normalizedSourceHash,

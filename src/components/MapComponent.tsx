@@ -561,19 +561,21 @@ export default function MapComponent({
                 </div>
               )}
               
-              {/* Structured happy hour display with labels */}
-              {selectedSpot.happyHourTime && (
+              {/* Structured promotion display with activity-appropriate labels */}
+              {(selectedSpot.promotionTime || selectedSpot.happyHourTime) && (
                 <div className="mb-2">
                   <span className="font-semibold text-gray-700">Time: </span>
-                  <span className="text-gray-800">{selectedSpot.happyHourTime}</span>
+                  <span className="text-gray-800">{selectedSpot.promotionTime || selectedSpot.happyHourTime}</span>
                 </div>
               )}
               
-              {selectedSpot.happyHourList && selectedSpot.happyHourList.length > 0 && (
+              {((selectedSpot.promotionList && selectedSpot.promotionList.length > 0) || (selectedSpot.happyHourList && selectedSpot.happyHourList.length > 0)) && (
                 <div className="mb-2">
-                  <div className="font-semibold text-gray-700 mb-1">Happy Hour List:</div>
+                  <div className="font-semibold text-gray-700 mb-1">
+                    {selectedSpot.type === 'Brunch' ? 'Brunch Specials:' : 'Specials:'}
+                  </div>
                   <ul className="list-disc list-inside text-gray-800 space-y-0.5 ml-2">
-                    {selectedSpot.happyHourList.map((item, idx) => (
+                    {(selectedSpot.promotionList || selectedSpot.happyHourList).map((item: string, idx: number) => (
                       <li key={idx} className="text-xs">{item}</li>
                     ))}
                   </ul>
@@ -608,7 +610,7 @@ export default function MapComponent({
               )}
               
               {/* Fallback to description if new fields not available (backwards compatibility) */}
-              {!selectedSpot.happyHourTime && !selectedSpot.happyHourList && selectedSpot.description && (
+              {!selectedSpot.promotionTime && !selectedSpot.happyHourTime && !selectedSpot.promotionList && !selectedSpot.happyHourList && selectedSpot.description && (
                 <div className="mb-3">
                   {formatDescription(selectedSpot.description)}
                 </div>

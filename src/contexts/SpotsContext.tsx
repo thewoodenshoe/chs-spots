@@ -11,11 +11,15 @@ export interface Spot {
   photoUrl?: string;
   source?: 'manual' | 'automated';
   status?: 'pending' | 'approved' | 'denied';
-  // Structured happy hour fields
+  // Structured promotion fields (generic)
+  promotionTime?: string;
+  promotionList?: string[];
+  // Legacy happy hour fields (backwards compat)
   happyHourTime?: string;
   happyHourList?: string[];
   sourceUrl?: string;
   lastUpdateDate?: string;
+  venueId?: string;
 }
 
 interface SpotsContextType {
