@@ -330,39 +330,54 @@ async function main() {
   if (sendTelegram && TELEGRAM_TOKEN && TELEGRAM_CHAT) {
     try {
       const reportUrl = SERVER_URL ? `${SERVER_URL}/reports/report-${today}.html` : `(local) ${htmlPath}`;
-      const message = `📊 *CHS Spots Daily Report* – ${today}\n\n` +
-        `👥 Visitors (24h): ${analytics.stats?.visitors?.value ?? '–'}\n` +
-        `📄 Pageviews (24h): ${analytics.stats?.pageviews?.value ?? '–'}\n` +
-        `👥 Visitors (7d): ${analytics.weeklyStats?.visitors?.value ?? '–'}\n` +
-        `📍 Total spots: ${pipelineData.totalSpots}\n` +
-        `🤖 Model: ${pipelineData.llmModel}\n\n` +
-        `📎 Full report: ${reportUrl}`;
+      const lines = [
+        `CHS Spots Daily Report - ${today}`,
+        '',
+        `Visitors (24h): ${analytics.stats?.visitors?.value ?? '-'}`,
+        `Pageviews (24h): ${analytics.stats?.pageviews?.value ?? '-'}`,
+        `Visitors (7d): ${analytics.weeklyStats?.visitors?.value ?? '-'}`,
+        `Total spots: ${pipelineData.totalSpots}`,
+        `Model: ${pipelineData.llmModel}`,
+        '',
+        `Full report: ${reportUrl}`,
+      ];
 
-      // Send text message
-      await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+      // Send text message (no Markdown to avoid parse issues)
+      const sendRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           chat_id: TELEGRAM_CHAT,
-          text: message,
-          parse_mode: 'Markdown',
+          text: lines.join('\n'),
           disable_web_page_preview: true,
         }),
       });
+      const sendData = await sendRes.json();
+      if (!sendData.ok) {
+        console.warn('  ⚠ Telegram message response:', JSON.stringify(sendData));
+      }
 
-      // If PDF exists, also send as a document
+      // If PDF exists, also send as a document using multipart form
       if (pdfPath && fs.existsSync(pdfPath)) {
-        const FormData = (await import('node-fetch')).FormData || globalThis.FormData;
-        if (typeof FormData !== 'undefined') {
-          const formData = new FormData();
-          formData.append('chat_id', TELEGRAM_CHAT);
-          formData.append('document', new Blob([fs.readFileSync(pdfPath)]), `report-${today}.pdf`);
-          formData.append('caption', `📊 CHS Spots Report – ${today}`);
+        const pdfBuffer = fs.readFileSync(pdfPath);
+        const boundary = '----FormBoundary' + Date.now().toString(16);
+        const fileName = `report-${today}.pdf`;
+        const parts = [];
+        parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="chat_id"\r\n\r\n${TELEGRAM_CHAT}`);
+        parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="caption"\r\n\r\nCHS Spots Report - ${today}`);
+        parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="document"; filename="${fileName}"\r\nContent-Type: application/pdf\r\n\r\n`);
+        const head = Buffer.from(parts.join('\r\n') + '\r\n', 'utf8');
+        const tail = Buffer.from(`\r\n--${boundary}--\r\n`, 'utf8');
+        const body = Buffer.concat([head, pdfBuffer, tail]);
 
-          await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendDocument`, {
-            method: 'POST',
-            body: formData,
-          });
+        const docRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendDocument`, {
+          method: 'POST',
+          headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },
+          body,
+        });
+        const docData = await docRes.json();
+        if (!docData.ok) {
+          console.warn('  ⚠ Telegram PDF send:', JSON.stringify(docData));
         }
       }
 
