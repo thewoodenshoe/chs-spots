@@ -652,11 +652,16 @@ async function main() {
     log(`\n📥 raw/today/ is empty - downloading all content`);
     shouldDownload = true;
     updateConfigField('last_run_status', 'running_raw');
-  } else if (lastRawDate === runDate) {
-    // raw/today/ not empty and last_raw_processed_date equals run_date - skip download
+  } else if (lastRawDate === runDate && !areaFilter) {
+    // Same day, no area filter - skip download
     log(`\n⏭️  raw/today/ not empty and last_raw_processed_date (${lastRawDate}) equals run_date (${runDate}) - skipping download`);
     updateConfigField('last_run_status', 'running_raw');
     return; // Exit early - no download needed
+  } else if (lastRawDate === runDate && areaFilter) {
+    // Same day but area filter — fall through to "check for new venues" logic below
+    // This handles running multiple areas on the same day (e.g., DI then WA)
+    log(`\n📍 Same day, area filter "${areaFilter}" — checking for venues not yet downloaded`);
+    updateConfigField('last_run_status', 'running_raw');
   } else {
     // New day - archive and download
     isNewDay = true;

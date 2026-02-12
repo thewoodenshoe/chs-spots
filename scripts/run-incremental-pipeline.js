@@ -253,8 +253,16 @@ async function main() {
         await runScript('download-raw-html.js', AREA_FILTER ? [AREA_FILTER] : []);
         updateConfigField('last_raw_processed_date', runDate);
         updateConfigField('last_run_status', 'running_merged'); // Update to next step after raw completes
+      } else if (lastRawDate === runDate && AREA_FILTER) {
+        // Same day BUT area filter specified — run download to pick up venues
+        // from this area that aren't yet in raw/today/ (e.g., ran DI earlier, now running WA)
+        console.log(`   📍 Same day but area filter "${AREA_FILTER}" specified — downloading missing venues`);
+        updateConfigField('last_run_status', 'running_raw');
+        await runScript('download-raw-html.js', [AREA_FILTER]);
+        updateConfigField('last_raw_processed_date', runDate);
+        updateConfigField('last_run_status', 'running_merged');
       } else if (lastRawDate === runDate) {
-        // Same day - skip downloading
+        // Same day, no area filter - skip downloading
         console.log(`   ⏭️  raw/today/ not empty and last_raw_processed_date (${lastRawDate}) equals run_date (${runDate}) - skipping download`);
         updateConfigField('last_run_status', 'running_raw');
       } else {
