@@ -200,7 +200,7 @@ function main() {
   log(`   📄 Gold files created: ${successful}`);
   log(`   ✅ Bulk extraction marked as complete`);
   log(`\n✨ Done!`);
-  log(`   Next: Use extract-happy-hours.js --incremental for future extractions`);
+  log(`   Next: Use extract-promotions.js --incremental for future extractions`);
 }
 
 try {

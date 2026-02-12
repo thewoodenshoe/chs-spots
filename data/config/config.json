@@ -3,6 +3,6 @@
   "last_raw_processed_date": "20260130",
   "last_run_status": "completed_successfully",
   "pipeline": {
-    "maxIncrementalFiles": 15
+    "maxIncrementalFiles": 30
   }
 }

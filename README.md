@@ -147,7 +147,7 @@ chs-spots/
 │   ├── merge-raw-files.js            # Step 2: Merge
 │   ├── trim-silver-html.js           # Step 3: Trim
 │   ├── delta-trimmed-files.js        # Step 3.5: Delta comparison
-│   ├── extract-happy-hours.js        # Step 4: LLM extraction
+│   ├── extract-promotions.js          # Step 4: LLM extraction (happy hours + brunch)
 │   ├── create-spots.js               # Step 5: Generate spots
 │   └── utils/                        # Shared utilities (config, normalize)
 ├── src/

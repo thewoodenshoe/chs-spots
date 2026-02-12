@@ -6,7 +6,7 @@ const crypto = require('crypto');
 const mockFetch = jest.fn();
 jest.mock('node-fetch', () => mockFetch);
 
-const extractHappyHours = require('../scripts/extract-happy-hours');
+const extractHappyHours = require('../scripts/extract-promotions');
 
 // Helper function to create mock fetch responses
 function createMockFetchResponse(prompt) {

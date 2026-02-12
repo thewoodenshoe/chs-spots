@@ -427,7 +427,7 @@ async function main() {
       }
       
       try {
-        await runScript('extract-happy-hours.js', ['--incremental']);
+        await runScript('extract-promotions.js', ['--incremental']);
         updateConfigField('last_run_status', 'completed_successfully');
       } catch (error) {
         updateConfigField('last_run_status', 'failed_at_extract');

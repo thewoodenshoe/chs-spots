@@ -1,12 +1,12 @@
 /**
- * Wrapper script to run extract-happy-hours.js with automatic retry on rate limits
+ * Wrapper script to run extract-promotions.js with automatic retry on rate limits
  * 
  * This script:
- * - Runs extract-happy-hours.js in a loop
+ * - Runs extract-promotions.js in a loop
  * - Detects HTTP 429 (rate limit) errors
  * - Waits before retrying (increasing wait time on each retry)
  * - Continues until all venues are processed
- * - Logs progress to logs/extract-happy-hours-retry.log
+ * - Logs progress to logs/extract-promotions-retry.log
  */
 
 const { spawn } = require('child_process');
@@ -14,8 +14,8 @@ const fs = require('fs');
 const path = require('path');
 
 const LOG_DIR = path.join(__dirname, '..', 'logs');
-const LOG_FILE = path.join(LOG_DIR, 'extract-happy-hours-retry.log');
-const EXTRACT_SCRIPT = path.join(__dirname, 'extract-happy-hours.js');
+const LOG_FILE = path.join(LOG_DIR, 'extract-promotions-retry.log');
+const EXTRACT_SCRIPT = path.join(__dirname, 'extract-promotions.js');
 
 // Ensure log directory exists
 if (!fs.existsSync(LOG_DIR)) {
@@ -85,7 +85,7 @@ async function runWithRetries() {
   let waitTime = INITIAL_WAIT;
 
   log('='.repeat(60));
-  log('Starting extract-happy-hours with automatic retry on rate limits');
+  log('Starting extract-promotions with automatic retry on rate limits');
   log(`Log file: ${LOG_FILE}`);
   log('='.repeat(60));
 

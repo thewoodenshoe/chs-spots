@@ -263,7 +263,7 @@ function main() {
   // Check if gold directory exists
   if (!fs.existsSync(GOLD_DIR)) {
     log(`❌ Gold directory not found: ${GOLD_DIR}`);
-    log(`   Run extract-happy-hours.js first`);
+    log(`   Run extract-promotions.js first`);
     process.exit(1);
   }
   
