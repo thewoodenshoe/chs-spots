@@ -91,6 +91,7 @@ export default function Home() {
   const { spots, addSpot, updateSpot, deleteSpot } = useSpots();
   const { showToast } = useToast();
   const [healthStatus, setHealthStatus] = useState<'checking' | 'ok' | 'error'>('checking');
+  const [isHydrated, setIsHydrated] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -150,6 +151,10 @@ export default function Home() {
     }
     loadCenters();
   }, []); // Only load once on mount
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   // Lightweight health polling for a visible uptime indicator
   useEffect(() => {
@@ -456,8 +461,14 @@ export default function Home() {
 
       {/* Last updated timestamp (centered between venues toggle and add button) */}
       <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2 rounded-full bg-black/70 px-4 py-2 text-xs font-medium text-white backdrop-blur-md safe-area-bottom">
-        <span className="mr-2 inline-flex items-center">{healthIndicator}</span>
-        <span>last updated: {lastUpdatedEST}</span>
+        {isHydrated ? (
+          <>
+            <span className="mr-2 inline-flex items-center">{healthIndicator}</span>
+            <span>last updated: {lastUpdatedEST}</span>
+          </>
+        ) : (
+          <span>last updated: --</span>
+        )}
       </div>
 
       {/* Floating Action Button - Redesigned */}
