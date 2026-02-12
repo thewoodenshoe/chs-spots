@@ -49,7 +49,7 @@ describe('/api/areas route', () => {
     const mockAreas = [
       { name: 'Daniel Island', displayName: 'Daniel Island', center: { lat: 32.845, lng: -79.908 } },
       { name: 'North Charleston', displayName: 'North Charleston', center: { lat: 32.888, lng: -80.006 } },
-      { name: 'West Ashley', displayName: 'West Ashley', center: { lat: 32.785, lng: -80.04 } },
+      { name: 'West Ashley', displayName: 'West Ashley', center: { lat: 32.785, lng: -80.01 } },
     ];
 
     mockPathJoin.mockReturnValue('/mock/project/data/config/areas.json');
