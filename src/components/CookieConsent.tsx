@@ -41,7 +41,7 @@ export default function CookieConsent() {
     <div className="fixed bottom-14 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 rounded-xl bg-white/95 p-4 text-sm shadow-xl ring-1 ring-black/10 backdrop-blur-lg safe-area-bottom">
       <p className="mb-3 text-gray-700">
         We use cookies to understand how people use this app (anonymous analytics).
-        No personal data is collected.
+        No personal data is collected. Simply put, to understand what&#39;s used and how to improve this app.
       </p>
       <div className="flex gap-2">
         <button
