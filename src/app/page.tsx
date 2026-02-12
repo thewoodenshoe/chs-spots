@@ -11,6 +11,7 @@ import { useSpots, Spot } from '@/contexts/SpotsContext';
 import VenuesToggle from '@/components/VenuesToggle';
 import { useToast } from '@/components/Toast';
 import { trackAreaView, trackSpotClick, trackSpotSubmit, trackActivityFilter, trackVenueToggle } from '@/lib/analytics';
+import FeedbackModal from '@/components/FeedbackModal';
 
 const MAX_UPLOAD_BYTES = 700 * 1024;
 const MAX_IMAGE_DIMENSION = 1600;
@@ -102,6 +103,7 @@ export default function Home() {
   const [editingSpot, setEditingSpot] = useState<Spot | null>(null);
   const [editPinLocation, setEditPinLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [showAllVenues, setShowAllVenues] = useState(false);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   // Default center for Daniel Island (will be updated when area centers load)
   const defaultCenter = { lat: 32.862, lng: -79.908, zoom: 14 };
   const [mapCenter, setMapCenter] = useState(defaultCenter);
@@ -479,31 +481,41 @@ export default function Home() {
         )}
       </div>
 
-      {/* Floating Action Button - Redesigned */}
-      <button
-        onClick={handleAddSpot}
-        className="group fixed bottom-6 right-6 z-40 flex h-16 w-16 min-h-[64px] min-w-[64px] items-center justify-center rounded-full bg-teal-500 shadow-2xl transition-all hover:scale-110 active:scale-95 hover:bg-teal-600 safe-area-bottom touch-manipulation"
-        aria-label="Add new spot"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-8 w-8 text-white"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={3}
+      {/* Right-side button stack */}
+      <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3 safe-area-bottom">
+        {/* Feedback button */}
+        <button
+          onClick={() => setIsFeedbackOpen(true)}
+          className="flex h-12 w-12 min-h-[48px] min-w-[48px] items-center justify-center rounded-full bg-gray-700 shadow-xl transition-all hover:scale-110 active:scale-95 hover:bg-gray-800 touch-manipulation"
+          aria-label="Send feedback"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
-        {/* Desktop hover label */}
-        <span className="absolute right-full mr-4 hidden whitespace-nowrap rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
-          Add Spot
-        </span>
-      </button>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+        </button>
+
+        {/* Add Spot FAB */}
+        <button
+          onClick={handleAddSpot}
+          className="group flex h-16 w-16 min-h-[64px] min-w-[64px] items-center justify-center rounded-full bg-teal-500 shadow-2xl transition-all hover:scale-110 active:scale-95 hover:bg-teal-600 touch-manipulation"
+          aria-label="Add new spot"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-8 w-8 text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={3}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+        </button>
+      </div>
 
       {/* Filter Modal */}
       <FilterModal
@@ -551,6 +563,16 @@ export default function Home() {
             console.error('Error deleting spot:', error);
             throw error;
           }
+        }}
+      />
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={isFeedbackOpen}
+        onClose={() => setIsFeedbackOpen(false)}
+        onSuccess={() => {
+          setIsFeedbackOpen(false);
+          showToast('Feedback sent! Thank you.', 'success');
         }}
       />
     </div>

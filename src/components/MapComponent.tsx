@@ -565,14 +565,19 @@ export default function MapComponent({
             <div className="text-sm min-w-[200px] max-w-[300px]">
               <div className="font-bold text-gray-900 mb-1 text-base">{selectedSpot.title}</div>
               
-              {/* Pending badge for admin */}
-              {selectedSpot.status === 'pending' && (
-                <div className="mb-2">
+              {/* Status badges */}
+              <div className="mb-2 flex flex-wrap gap-1">
+                {selectedSpot.status === 'pending' && (
                   <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
                     Pending Approval
                   </span>
-                </div>
-              )}
+                )}
+                {selectedSpot.source === 'manual' && (
+                  <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+                    Added by user
+                  </span>
+                )}
+              </div>
               
               {/* Structured promotion display with activity-appropriate labels */}
               {(selectedSpot.promotionTime || selectedSpot.happyHourTime) && (
@@ -678,9 +683,9 @@ export default function MapComponent({
                   href={selectedVenue.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-blue-600 hover:underline break-all"
+                  className="text-sm text-blue-600 hover:underline font-medium"
                 >
-                  {selectedVenue.website}
+                  Website
                 </a>
               )}
               <div className="mt-2 text-xs text-gray-500 italic">

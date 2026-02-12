@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { sendApprovalRequest } from '@/lib/telegram';
 
 export async function DELETE(
   request: Request,
@@ -133,7 +134,7 @@ export async function PUT(
       );
     }
     
-    // Update the spot
+    // Update the spot — mark as pending so it goes through approval
     const updatedSpot = {
       ...spots[spotIndex],
       id: spotId, // Ensure ID is preserved
@@ -145,6 +146,8 @@ export async function PUT(
       type: spotData.type || spotData.activity || spots[spotIndex].type || 'Happy Hour',
       photoUrl: spotData.photoUrl !== undefined ? spotData.photoUrl : spots[spotIndex].photoUrl,
       area: spotData.area !== undefined ? spotData.area : spots[spotIndex].area,
+      status: 'pending', // Require re-approval after edit
+      editedAt: new Date().toISOString(),
     };
     
     spots[spotIndex] = updatedSpot;
@@ -158,6 +161,20 @@ export async function PUT(
         { error: 'Failed to update spot' },
         { status: 500 }
       );
+    }
+    
+    // Send Telegram approval notification for the edit (non-blocking)
+    try {
+      await sendApprovalRequest({
+        id: spotId,
+        title: `✏️ EDIT: ${updatedSpot.title}`,
+        type: updatedSpot.type,
+        lat: updatedSpot.lat,
+        lng: updatedSpot.lng,
+        description: updatedSpot.description,
+      });
+    } catch (telegramError) {
+      console.warn('Telegram notification for edit failed (spot still saved):', telegramError);
     }
     
     return NextResponse.json(updatedSpot, { status: 200 });
