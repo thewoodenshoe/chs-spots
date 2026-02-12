@@ -27,11 +27,11 @@
   "lint-staged": {
     "*.{ts,tsx}": [
       "eslint --fix",
-      "jest --findRelatedTests"
+      "jest --passWithNoTests --findRelatedTests"
     ],
     "src/**/*.{js,jsx}": [
       "eslint --fix",
-      "jest --findRelatedTests"
+      "jest --passWithNoTests --findRelatedTests"
     ]
   },
   "dependencies": {
