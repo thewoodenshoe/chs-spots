@@ -183,8 +183,12 @@ export default function MapComponent({
     });
   }, [venues, showAllVenues]);
 
-  // Handle map click for submission mode
+  // Handle map click — always dismiss open InfoWindows; forward to pin-drop in submission mode
   const handleMapClick = useCallback((e: google.maps.MapMouseEvent) => {
+    // Close any open InfoWindow on every map tap
+    setSelectedSpot(null);
+    setSelectedVenue(null);
+
     if (isSubmissionMode && e.latLng && onMapClick) {
       onMapClick(e.latLng.lat(), e.latLng.lng());
     }
