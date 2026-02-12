@@ -152,20 +152,26 @@ function createSpot(goldData, venueData, spotId) {
     // Source URL
     sourceUrl = entry.source || null;
   } else if (entries.length > 1) {
-    // Multiple entries - combine times/days, collect all specials
+    // Multiple entries (e.g., Happy Hour + Taco Tuesday + Late Night)
+    // Use label if available to differentiate entries
     const timeParts = [];
     const allSpecials = [];
     const sources = [];
     
     for (const entry of entries) {
-      if (entry.times) {
-        const timeStr = entry.days ? `${entry.times} • ${entry.days}` : entry.times;
+      if (entry.times || entry.days) {
+        const label = entry.label ? `${entry.label}: ` : '';
+        const timeStr = entry.days
+          ? `${label}${entry.times || ''} • ${entry.days}`.replace(/^\s*•\s*/, '')
+          : `${label}${entry.times}`;
         if (!timeParts.includes(timeStr)) {
           timeParts.push(timeStr);
         }
       }
       if (entry.specials && Array.isArray(entry.specials)) {
-        allSpecials.push(...entry.specials);
+        // Prefix specials with label if multiple entries to avoid confusion
+        const prefix = entries.length > 1 && entry.label ? `[${entry.label}] ` : '';
+        allSpecials.push(...entry.specials.map(s => `${prefix}${s}`));
       }
       if (entry.source && !sources.includes(entry.source)) {
         sources.push(entry.source);
@@ -174,7 +180,7 @@ function createSpot(goldData, venueData, spotId) {
     
     happyHourTime = timeParts.length > 0 ? timeParts.join(', ') : null;
     happyHourList = allSpecials;
-    sourceUrl = sources.length > 0 ? sources[0] : null; // Use first source
+    sourceUrl = sources.length > 0 ? sources[0] : null;
   }
   
   // Need at least time or specials to create a spot
