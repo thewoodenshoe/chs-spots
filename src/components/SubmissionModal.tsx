@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { SpotType } from './FilterModal';
 import { useActivities } from '@/contexts/ActivitiesContext';
+import { useToast } from './Toast';
 
 interface SubmissionModalProps {
   isOpen: boolean;
@@ -29,7 +30,8 @@ export default function SubmissionModal({
   onSubmit,
 }: SubmissionModalProps) {
   const { activities } = useActivities();
-  const activityNames = activities.map(a => a.name as SpotType);
+  const { showToast } = useToast();
+  const activityNames = activities.map(a => a.name);
   const defaultActivityName = activityNames[0] || 'Happy Hour';
   
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -38,7 +40,7 @@ export default function SubmissionModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedActivity, setSelectedActivity] = useState<SpotType>(
+  const [selectedActivity, setSelectedActivity] = useState(
     defaultActivity || defaultActivityName
   );
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
@@ -53,10 +55,10 @@ export default function SubmissionModal({
   useEffect(() => {
     if (isOpen) {
       if (defaultActivity) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
+         
         setSelectedActivity(defaultActivity);
       } else if (activityNames.length > 0) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
+         
         setSelectedActivity(activityNames[0]);
       }
     }
@@ -148,11 +150,11 @@ export default function SubmissionModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pinLocation) {
-      window.alert('Please drop a pin on the map first');
+      showToast('Please drop a pin on the map first', 'warning');
       return;
     }
     if (!title.trim()) {
-      window.alert('Please enter a title');
+      showToast('Please enter a title', 'warning');
       return;
     }
     
@@ -322,7 +324,7 @@ export default function SubmissionModal({
               </label>
               <select
                 value={selectedActivity}
-                onChange={(e) => setSelectedActivity(e.target.value as SpotType)}
+                onChange={(e) => setSelectedActivity(e.target.value)}
                 className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-base text-gray-800 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
                 required
               >

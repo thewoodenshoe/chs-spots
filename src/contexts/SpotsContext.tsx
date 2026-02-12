@@ -1,22 +1,21 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { SpotType } from '@/components/FilterModal';
-
 export interface Spot {
   id: number;
   lat: number;
   lng: number;
   title: string;
   description: string; // Keep for backwards compatibility
-  type: SpotType;
+  type: string;
   photoUrl?: string;
-  source?: 'manual' | 'automated'; // Indicates if spot was added manually or by script
-  // New structured happy hour fields
-  happyHourTime?: string; // Time with days (e.g., "4pm-6pm • Monday, Wednesday")
-  happyHourList?: string[]; // Array of specials/deals
-  sourceUrl?: string; // Source URL
-  lastUpdateDate?: string; // ISO date string
+  source?: 'manual' | 'automated';
+  status?: 'pending' | 'approved' | 'denied';
+  // Structured happy hour fields
+  happyHourTime?: string;
+  happyHourList?: string[];
+  sourceUrl?: string;
+  lastUpdateDate?: string;
 }
 
 interface SpotsContextType {
@@ -26,18 +25,44 @@ interface SpotsContextType {
   deleteSpot: (id: number) => Promise<void>;
   refreshSpots: () => Promise<void>;
   loading: boolean;
+  isAdmin: boolean;
 }
 
 const SpotsContext = createContext<SpotsContextType | undefined>(undefined);
 
+// Check for admin mode from URL or localStorage
+function checkAdminMode(): boolean {
+  if (typeof window === 'undefined') return false;
+  
+  // Check URL param first
+  const params = new URLSearchParams(window.location.search);
+  const adminParam = params.get('admin');
+  
+  if (adminParam === 'amsterdam') {
+    localStorage.setItem('chs_admin', 'true');
+    return true;
+  }
+  
+  // Check localStorage (persists across page loads)
+  return localStorage.getItem('chs_admin') === 'true';
+}
+
 export function SpotsProvider({ children }: { children: ReactNode }) {
   const [spots, setSpots] = useState<Spot[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check admin mode on mount
+  useEffect(() => {
+    setIsAdmin(checkAdminMode());
+  }, []);
 
   // Load spots from API on mount
   const loadSpots = async () => {
     try {
-      const response = await fetch('/api/spots');
+      const admin = checkAdminMode();
+      const url = admin ? '/api/spots?admin=amsterdam' : '/api/spots';
+      const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
         // Ensure data is an array, default to empty array if not
@@ -75,11 +100,10 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
       if (response.ok) {
         // Try to parse response, but handle empty responses gracefully
         try {
-          const newSpot = await response.json();
-          // Refresh spots from API to get the latest data
+          await response.json();
           await refreshSpots();
           return;
-        } catch (parseError) {
+        } catch {
           // Response was OK but empty/invalid JSON - that's fine, just refresh
           await refreshSpots();
           return;
@@ -96,8 +120,7 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
             // Non-JSON error response, use status text
             errorMessage = response.statusText || errorMessage;
           }
-        } catch (jsonError) {
-          // Failed to parse error response, use status text
+        } catch {
           errorMessage = response.statusText || `HTTP ${response.status}`;
         }
         throw new Error(errorMessage);
@@ -119,11 +142,9 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
       });
 
       if (response.ok) {
-        // Refresh spots from API to get the latest data
         await refreshSpots();
         return;
       } else {
-        // Handle error response - check if it has JSON body
         let errorMessage = 'Failed to update spot';
         try {
           const contentType = response.headers.get('content-type');
@@ -133,7 +154,7 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
           } else {
             errorMessage = response.statusText || errorMessage;
           }
-        } catch (jsonError) {
+        } catch {
           errorMessage = response.statusText || `HTTP ${response.status}`;
         }
         throw new Error(errorMessage);
@@ -151,11 +172,9 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
       });
 
       if (response.ok) {
-        // Refresh spots from API to get the latest data
         await refreshSpots();
         return;
       } else {
-        // Handle error response - check if it has JSON body
         let errorMessage = 'Failed to delete spot';
         try {
           const contentType = response.headers.get('content-type');
@@ -165,7 +184,7 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
           } else {
             errorMessage = response.statusText || errorMessage;
           }
-        } catch (jsonError) {
+        } catch {
           errorMessage = response.statusText || `HTTP ${response.status}`;
         }
         throw new Error(errorMessage);
@@ -177,7 +196,7 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <SpotsContext.Provider value={{ spots, addSpot, updateSpot, deleteSpot, refreshSpots, loading }}>
+    <SpotsContext.Provider value={{ spots, addSpot, updateSpot, deleteSpot, refreshSpots, loading, isAdmin }}>
       {children}
     </SpotsContext.Provider>
   );

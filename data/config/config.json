@@ -1,6 +1,6 @@
 {
-  "run_date": "20260126",
-  "last_raw_processed_date": "20260126",
+  "run_date": "20260130",
+  "last_raw_processed_date": "20260130",
   "last_run_status": "completed_successfully",
   "pipeline": {
     "maxIncrementalFiles": 15

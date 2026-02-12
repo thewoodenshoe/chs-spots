@@ -1,0 +1,166 @@
+/**
+ * Telegram Bot API helper
+ * 
+ * Sends messages to the admin's Telegram chat for spot approval.
+ * Uses the Telegram Bot API directly (no external library needed).
+ * 
+ * Required env vars:
+ *   TELEGRAM_BOT_TOKEN - Bot token from BotFather
+ *   TELEGRAM_ADMIN_CHAT_ID - Your personal chat ID (get via @userinfobot)
+ */
+
+const TELEGRAM_API = 'https://api.telegram.org/bot';
+
+function getBotToken(): string {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) {
+    throw new Error('TELEGRAM_BOT_TOKEN not set in environment variables');
+  }
+  return token;
+}
+
+function getAdminChatId(): string {
+  const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+  if (!chatId) {
+    throw new Error('TELEGRAM_ADMIN_CHAT_ID not set in environment variables');
+  }
+  return chatId;
+}
+
+/**
+ * Send a message to the admin with inline keyboard buttons
+ */
+export async function sendApprovalRequest(spot: {
+  id: number;
+  title: string;
+  type: string;
+  lat: number;
+  lng: number;
+  description?: string;
+}): Promise<boolean> {
+  try {
+    const token = getBotToken();
+    const chatId = getAdminChatId();
+    
+    const mapLink = `https://www.google.com/maps?q=${spot.lat},${spot.lng}`;
+    const message = [
+      `🆕 *New Spot Submission*`,
+      ``,
+      `📍 *${escapeMarkdown(spot.title)}*`,
+      `🏷 Type: ${escapeMarkdown(spot.type)}`,
+      `📝 ${spot.description ? escapeMarkdown(spot.description.substring(0, 200)) : 'No description'}`,
+      `🗺 [View on Map](${mapLink})`,
+      ``,
+      `ID: \`${spot.id}\``,
+    ].join('\n');
+
+    const response = await fetch(`${TELEGRAM_API}${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: message,
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { text: '✅ Approve', callback_data: `approve_${spot.id}` },
+              { text: '❌ Deny', callback_data: `deny_${spot.id}` },
+            ],
+          ],
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Telegram API error:', errorData);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Failed to send Telegram approval request:', error);
+    return false;
+  }
+}
+
+/**
+ * Send a simple notification to admin
+ */
+export async function sendNotification(text: string): Promise<boolean> {
+  try {
+    const token = getBotToken();
+    const chatId = getAdminChatId();
+
+    const response = await fetch(`${TELEGRAM_API}${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text,
+        parse_mode: 'Markdown',
+      }),
+    });
+
+    return response.ok;
+  } catch (error) {
+    console.error('Failed to send Telegram notification:', error);
+    return false;
+  }
+}
+
+/**
+ * Answer a callback query (acknowledge button press)
+ */
+export async function answerCallbackQuery(callbackQueryId: string, text: string): Promise<boolean> {
+  try {
+    const token = getBotToken();
+
+    const response = await fetch(`${TELEGRAM_API}${token}/answerCallbackQuery`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        callback_query_id: callbackQueryId,
+        text,
+      }),
+    });
+
+    return response.ok;
+  } catch (error) {
+    console.error('Failed to answer callback query:', error);
+    return false;
+  }
+}
+
+/**
+ * Edit the original message after approval/denial
+ */
+export async function editMessage(chatId: string | number, messageId: number, newText: string): Promise<boolean> {
+  try {
+    const token = getBotToken();
+
+    const response = await fetch(`${TELEGRAM_API}${token}/editMessageText`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        message_id: messageId,
+        text: newText,
+        parse_mode: 'Markdown',
+      }),
+    });
+
+    return response.ok;
+  } catch (error) {
+    console.error('Failed to edit Telegram message:', error);
+    return false;
+  }
+}
+
+/**
+ * Escape special characters for Telegram MarkdownV1
+ */
+function escapeMarkdown(text: string): string {
+  return text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
+}

@@ -1,8 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { sendApprovalRequest } from '@/lib/telegram';
 
-export async function GET() {
+export async function GET(request: Request) {
+  // Check for admin mode via query param
+  const { searchParams } = new URL(request.url);
+  const isAdmin = searchParams.get('admin') === 'amsterdam';
+  
   // Read from reporting folder (contains only found:true spots)
   const spotsPath = path.join(process.cwd(), 'data', 'reporting', 'spots.json');
   const venuesPath = path.join(process.cwd(), 'data', 'reporting', 'venues.json');
@@ -41,24 +47,34 @@ export async function GET() {
         venues = [];
       }
     }
-  } catch (e) {
+  } catch {
     // Venues file may not exist or be readable - that's ok, continue without enrichment
   }
   
+  // Filter spots by status: 
+  // - Admin sees everything (including pending/denied)
+  // - Regular users see only approved + automated (no status field = legacy approved)
+  const visibleSpots = isAdmin 
+    ? spots 
+    : spots.filter((spot: any) => {
+        // Automated spots from pipeline have no status field — always visible
+        if (spot.source === 'automated' || !spot.source) return true;
+        // Manual spots: only show if approved (or no status = legacy)
+        return !spot.status || spot.status === 'approved';
+      });
+
   // Transform spots to match SpotsContext format
-  // Handle both old format (activity, no id) and new format (type, id)
-  const transformedSpots = spots.map((spot: any, index: number) => {
-    // Convert old format to new format
+  const transformedSpots = visibleSpots.map((spot: any, index: number) => {
     const transformed: any = {
-      id: spot.id || index + 1, // Generate ID if missing
+      id: spot.id || index + 1,
       lat: spot.lat,
       lng: spot.lng,
       title: spot.title,
-      description: spot.description || '', // Keep for backwards compatibility
-      type: spot.type || spot.activity || 'Happy Hour', // Use type if available, fallback to activity
+      description: spot.description || '',
+      type: spot.type || spot.activity || 'Happy Hour',
       photoUrl: spot.photoUrl,
-      source: spot.source || 'automated', // Default to 'automated' for backward compatibility
-      // Include labeled fields if available
+      source: spot.source || 'automated',
+      status: spot.status || 'approved', // Default to approved for legacy spots
       happyHourTime: spot.happyHourTime || undefined,
       happyHourList: spot.happyHourList || undefined,
       sourceUrl: spot.sourceUrl || undefined,
@@ -66,7 +82,7 @@ export async function GET() {
       venueId: spot.venueId || undefined,
     };
     
-    // Try to enrich with area information from venues
+    // Enrich with area information from venues
     const matchingVenue = venues.find(
       (venue: any) => venue.name === spot.title || venue.name.toLowerCase() === spot.title.toLowerCase()
     );
@@ -125,7 +141,7 @@ export async function POST(request: Request) {
       : 0;
     const newId = maxId + 1;
     
-    // Create new spot object (convert to old format for compatibility)
+    // Create new spot with pending status (requires admin approval via Telegram)
     const newSpot = {
       id: newId,
       title: spotData.title,
@@ -136,7 +152,9 @@ export async function POST(request: Request) {
       type: spotData.type || spotData.activity || 'Happy Hour',
       photoUrl: spotData.photoUrl,
       area: spotData.area,
-      source: 'manual', // Mark as manually added - should never be removed by scripts
+      source: 'manual',
+      status: 'pending', // Requires approval via Telegram
+      submittedAt: new Date().toISOString(),
     };
     
     // Add new spot
@@ -151,6 +169,20 @@ export async function POST(request: Request) {
         { error: 'Failed to save spot' },
         { status: 500 }
       );
+    }
+    
+    // Send Telegram approval notification (non-blocking — don't fail if Telegram is down)
+    try {
+      await sendApprovalRequest({
+        id: newId,
+        title: newSpot.title,
+        type: newSpot.type,
+        lat: newSpot.lat,
+        lng: newSpot.lng,
+        description: newSpot.description,
+      });
+    } catch (telegramError) {
+      console.warn('Telegram notification failed (spot still saved):', telegramError);
     }
     
     // Return the new spot

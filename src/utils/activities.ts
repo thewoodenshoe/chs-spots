@@ -24,8 +24,8 @@ export function loadActivities(): Activity[] {
   try {
     if (fs.existsSync(activitiesPath)) {
       const content = fs.readFileSync(activitiesPath, 'utf8');
-      cachedActivities = JSON.parse(content);
-      return cachedActivities;
+      cachedActivities = JSON.parse(content) as Activity[];
+      return cachedActivities!
     }
   } catch (error) {
     console.error('Error loading activities.json:', error);

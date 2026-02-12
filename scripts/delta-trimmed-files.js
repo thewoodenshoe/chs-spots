@@ -17,6 +17,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { normalizeText } = require('./utils/normalize');
 
 // Logging setup
 const logDir = path.join(__dirname, '..', 'logs');
@@ -48,51 +49,6 @@ if (!fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)) {
 }
 
 /**
- * Normalize text (same logic as trim-silver-html.js)
- */
-function normalizeTextForHash(text) {
-  if (!text || typeof text !== 'string') {
-    return '';
-  }
-  
-  let normalized = text;
-  
-  // Remove ISO timestamps (e.g., "2026-01-20T15:34:58.724Z" or "2026-01-20")
-  normalized = normalized.replace(/\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?/g, '');
-  
-  // Remove day-of-week + month-day patterns (e.g., "Wednesday January 28th", "Thursday January 29th")
-  normalized = normalized.replace(/\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(st|nd|rd|th)?(,\s+\d{4})?\b/gi, '');
-  
-  // Remove common month-day patterns (e.g., "Jan 20", "Jan 20, 2026", "January 20, 2026", "January 28th")
-  normalized = normalized.replace(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(st|nd|rd|th)?(,\s+\d{4})?\b/gi, '');
-  
-  // Remove "Loading..." or placeholder phrases
-  normalized = normalized.replace(/Loading\s+product\s+options\.\.\.|Loading\.\.\./gi, '');
-  
-  // Remove Google Analytics / GTM IDs (e.g., "gtm-abc123", "UA-123456-7", "G-[A-Z0-9]+")
-  normalized = normalized.replace(/gtm-[a-z0-9]+/gi, '');
-  normalized = normalized.replace(/UA-\d+-\d+/g, '');
-  normalized = normalized.replace(/G-[A-Z0-9]+/g, '');
-  
-  // Remove common tracking parameters in URLs (even if they appear in text)
-  normalized = normalized.replace(/[?&](sid|fbclid|utm_[^=\s&]+|gclid|_ga|_gid|ref|source|tracking|campaign)=[^\s&"']+/gi, '');
-  
-  // Remove dynamic footers: "Copyright © [year]", "All rights reserved", "Powered by ..."
-  normalized = normalized.replace(/Copyright\s+©\s+\d{4}/gi, '');
-  normalized = normalized.replace(/All\s+rights\s+reserved/gi, '');
-  normalized = normalized.replace(/Powered\s+by\s+[^\s]+/gi, '');
-  normalized = normalized.replace(/©\s+\d{4}\s+[^\n]+/gi, '');
-  
-  // Remove session IDs and tracking tokens
-  normalized = normalized.replace(/\b(session|sid|token|tracking)[-_]?[a-z0-9]{8,}\b/gi, '');
-  
-  // More aggressive whitespace/newline collapse
-  normalized = normalized.replace(/[\s\n\r\t]+/g, ' ').trim();
-  
-  return normalized;
-}
-
-/**
  * Get trimmed content hash from a trimmed JSON file
  * Always normalizes text before hashing to ensure consistent comparison
  * Uses venueHash if available (from new trim-silver-html.js), otherwise computes from pages
@@ -111,7 +67,7 @@ function getTrimmedContentHash(filePath) {
     const pagesContent = pages.map(p => {
       const text = p.text || '';
       // Normalize text (same as trim-silver-html.js normalizeText function)
-      return normalizeTextForHash(text);
+      return normalizeText(text);
     }).join('\n');
     
     const computedHash = crypto.createHash('md5').update(pagesContent).digest('hex');
@@ -545,8 +501,8 @@ function generateDifferenceReports(newVenues, changedVenues) {
               
               if (todayText !== previousText) {
                 // Find actual differences (simplified - show first 500 chars of each)
-                const todayNormalized = normalizeTextForHash(todayText);
-                const previousNormalized = normalizeTextForHash(previousText);
+                const todayNormalized = normalizeText(todayText);
+                const previousNormalized = normalizeText(previousText);
                 
                 if (todayNormalized !== previousNormalized) {
                   report.difference.push({

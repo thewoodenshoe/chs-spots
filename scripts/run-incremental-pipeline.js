@@ -380,62 +380,64 @@ async function main() {
       }
     }
     
-    // LLM EXTRACTION
-    console.log('\n🧠 Step 4: Extract Happy Hours with LLM');
-    updateConfigField('last_run_status', 'running_extract');
-    
-    // Check incremental file count before running
+    // Check incremental file count before running LLM or spots
     const SILVER_TRIMMED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_trimmed/incremental');
     let incrementalFileCount = 0;
     if (fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
       incrementalFileCount = fs.readdirSync(SILVER_TRIMMED_INCREMENTAL_DIR).filter(f => f.endsWith('.json')).length;
     }
     
-    // Get maxIncrementalFiles from config (default: 15)
-    const currentConfig = loadConfig();
-    const maxIncrementalFiles = currentConfig.pipeline?.maxIncrementalFiles || 15;
-    
-    if (incrementalFileCount > maxIncrementalFiles) {
-      const msg = `⚠️  Too many incremental files (${incrementalFileCount} > ${maxIncrementalFiles}). Manual review required. Skipping LLM extraction.`;
-      console.log(`\n${msg}`);
-      console.log(`   Pipeline completed successfully but skipped expensive LLM step.`);
-      console.log(`   Next run will start fresh from the beginning.`);
-      updateConfigField('last_run_status', 'completed_successfully');
-      // Don't throw error - exit gracefully
-      console.log('\n✅ Pipeline completed (graceful shutdown - skipped LLM)');
-      
-      // Log final config state
-      const finalConfig = loadConfig();
-      console.log('\n📋 Final Pipeline State:');
-      console.log(`   Last run status: ${finalConfig.last_run_status}`);
-      console.log(`   Last raw processed date: ${finalConfig.last_raw_processed_date || 'null'}`);
-      console.log(`   Last merged processed date: ${finalConfig.last_merged_processed_date || 'null'}`);
-      console.log(`   Last trimmed processed date: ${finalConfig.last_trimmed_processed_date || 'null'}`);
-      
-      restoreConsole();
-      process.exit(0); // Exit successfully
-    }
-    
-    try {
-      await runScript('extract-happy-hours.js', ['--incremental']);
-      updateConfigField('last_run_status', 'completed_successfully');
-    } catch (error) {
-      updateConfigField('last_run_status', 'failed_at_extract');
-      throw error;
-    }
-    
-    // Step 5: Create spots (only if there were incremental changes)
-    // Reuse incrementalFileCount from earlier check (line 391)
     const hasIncrementalChanges = incrementalFileCount > 0;
     
-    if (hasIncrementalChanges) {
+    if (!hasIncrementalChanges) {
+      // No changes at all — skip both LLM and spots
+      console.log('\n🧠 Step 4: Extract Happy Hours with LLM');
+      console.log('   ⏭️  No incremental changes detected — skipping LLM extraction entirely');
+      console.log('\n📍 Step 5: Create Spots from Gold Data');
+      console.log('   ⏭️  No incremental changes detected — skipping spot creation');
+      console.log('   Spots from previous run are still valid (no new/updated happy hours)');
+      updateConfigField('last_run_status', 'completed_successfully');
+    } else {
+      // LLM EXTRACTION
+      console.log('\n🧠 Step 4: Extract Happy Hours with LLM');
+      console.log(`   Found ${incrementalFileCount} incremental file(s) to process`);
+      updateConfigField('last_run_status', 'running_extract');
+      
+      // Get maxIncrementalFiles from config (default: 15)
+      const currentConfig = loadConfig();
+      const maxIncrementalFiles = currentConfig.pipeline?.maxIncrementalFiles || 15;
+      
+      if (incrementalFileCount > maxIncrementalFiles) {
+        const msg = `⚠️  Too many incremental files (${incrementalFileCount} > ${maxIncrementalFiles}). Manual review required. Skipping LLM extraction.`;
+        console.log(`\n${msg}`);
+        console.log(`   Pipeline completed successfully but skipped expensive LLM step.`);
+        console.log(`   Next run will start fresh from the beginning.`);
+        updateConfigField('last_run_status', 'completed_successfully');
+        console.log('\n✅ Pipeline completed (graceful shutdown - skipped LLM)');
+        
+        const finalConfig = loadConfig();
+        console.log('\n📋 Final Pipeline State:');
+        console.log(`   Last run status: ${finalConfig.last_run_status}`);
+        console.log(`   Last raw processed date: ${finalConfig.last_raw_processed_date || 'null'}`);
+        console.log(`   Last merged processed date: ${finalConfig.last_merged_processed_date || 'null'}`);
+        console.log(`   Last trimmed processed date: ${finalConfig.last_trimmed_processed_date || 'null'}`);
+        
+        restoreConsole();
+        process.exit(0);
+      }
+      
+      try {
+        await runScript('extract-happy-hours.js', ['--incremental']);
+        updateConfigField('last_run_status', 'completed_successfully');
+      } catch (error) {
+        updateConfigField('last_run_status', 'failed_at_extract');
+        throw error;
+      }
+      
+      // Step 5: Create spots
       console.log('\n📍 Step 5: Create Spots from Gold Data');
       console.log(`   Found ${incrementalFileCount} incremental file(s) - processing spots`);
       await runScript('create-spots.js');
-    } else {
-      console.log('\n📍 Step 5: Create Spots from Gold Data');
-      console.log('   ⏭️  No incremental changes detected - skipping spot creation');
-      console.log('   Spots from previous run are still valid (no new/updated happy hours)');
     }
     
     // Try to extract final stats from create-spots.log

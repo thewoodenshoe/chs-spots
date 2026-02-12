@@ -5,6 +5,7 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env.local') });
 const fetchModule = require('node-fetch');
 const fetch = typeof fetchModule === 'function' ? fetchModule : fetchModule.default;
 const crypto = require('crypto');
+const { normalizeText } = require('./utils/normalize');
 
 const SILVER_TRIMMED_DIR = path.join(__dirname, '../data/silver_trimmed/today');
 const SILVER_TRIMMED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_trimmed/incremental');
@@ -185,20 +186,35 @@ async function extractHappyHours(isIncremental = false) {
             continue;
         }
 
-        // Create hash from pages content (text or html) for change detection
-        // Use text field if available (from silver_trimmed), otherwise fallback to html
+        // Create both raw and normalized hashes from pages content
+        // Raw hash: exact content match (legacy compatibility)
+        // Normalized hash: strips dates, tracking IDs, dynamic noise — the real change detector
         const pagesContent = venueData.pages.map(p => p.text || p.html || '').join('\n');
         const sourceHash = crypto.createHash('md5').update(pagesContent).digest('hex');
+        
+        const normalizedContent = venueData.pages.map(p => normalizeText(p.text || p.html || '')).join('\n');
+        const normalizedSourceHash = crypto.createHash('md5').update(normalizedContent).digest('hex');
 
-        // Check if already processed and no changes (works in both bulk and incremental modes)
-        // Skip LLM call if content hasn't changed - saves API costs
+        // Check if already processed and no meaningful changes
+        // Uses normalizedSourceHash first (strips noise), falls back to raw sourceHash
         if (fs.existsSync(goldFilePath)) {
             try {
                 const existingGoldData = JSON.parse(fs.readFileSync(goldFilePath, 'utf8'));
-                if (existingGoldData.sourceHash === sourceHash) {
-                    console.log(`Skipping ${venueData.venueName} (${venueId}): No changes detected.`);
+                
+                // Primary check: normalized hash (ignores dates, tracking IDs, etc.)
+                if (existingGoldData.normalizedSourceHash && existingGoldData.normalizedSourceHash === normalizedSourceHash) {
+                    console.log(`Skipping ${venueData.venueName} (${venueId}): No meaningful changes (normalized hash match).`);
                     continue;
                 }
+                
+                // Fallback: raw hash (for gold files that don't have normalizedSourceHash yet)
+                if (!existingGoldData.normalizedSourceHash && existingGoldData.sourceHash === sourceHash) {
+                    console.log(`Skipping ${venueData.venueName} (${venueId}): No changes detected (raw hash match).`);
+                    continue;
+                }
+                
+                // Content actually changed — proceed with LLM
+                console.log(`  🔄 Content changed for ${venueData.venueName} (${venueId}) — sending to LLM`);
             } catch (error) {
                 console.warn(`Could not read existing gold file for ${venueId}, re-processing.`);
             }
@@ -351,12 +367,13 @@ async function extractHappyHours(isIncremental = false) {
             }
         }
 
-        // Add metadata to the gold record
+        // Add metadata to the gold record (includes both raw and normalized hashes)
         const goldRecord = {
             venueId: venueId,
             venueName: venueData.venueName,
             happyHour: result,
             sourceHash: sourceHash,
+            normalizedSourceHash: normalizedSourceHash,
             processedAt: new Date().toISOString()
         };
 

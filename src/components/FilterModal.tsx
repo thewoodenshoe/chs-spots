@@ -3,19 +3,11 @@
 import { useEffect, useRef } from 'react';
 import { useActivities } from '@/contexts/ActivitiesContext';
 
-export type SpotType = 
-  | 'Christmas Spots'
-  | 'Happy Hour'
-  | 'Fishing Spots'
-  | 'Sunset Spots'
-  | 'Pickleball Games'
-  | 'Bike Routes'
-  | 'Golf Cart Hacks';
+// SpotType is a dynamic string — activity names come from data/config/activities.json
+export type SpotType = string;
 
-// Area type - should match names in data/areas.json
-// All areas from areas.json: Daniel Island, Mount Pleasant, Downtown Charleston, Sullivan's Island, North Charleston, West Ashley, James Island
-// Note: Park Circle has been removed
-export type Area = 'Daniel Island' | 'Mount Pleasant' | 'James Island' | 'Downtown Charleston' | 'Sullivan\'s Island' | 'North Charleston' | 'West Ashley';
+// Area is a dynamic string — area names come from data/areas.json
+export type Area = string;
 
 interface FilterModalProps {
   isOpen: boolean;
@@ -34,7 +26,7 @@ export default function FilterModal({
   const modalRef = useRef<HTMLDivElement>(null);
   
   // Get activity names from config
-  const activityNames = activities.map(a => a.name as SpotType);
+  const activityNames = activities.map(a => a.name);
 
   // Close on backdrop click
   useEffect(() => {

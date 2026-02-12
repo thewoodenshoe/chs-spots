@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
@@ -7,12 +8,12 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const dataDir = path.join(process.cwd(), 'data');
-    const spotsPath = path.join(dataDir, 'spots.json');
+    const reportingDir = path.join(process.cwd(), 'data', 'reporting');
+    const spotsPath = path.join(reportingDir, 'spots.json');
     
-    // Ensure data directory exists
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
+    // Ensure reporting directory exists
+    if (!fs.existsSync(reportingDir)) {
+      fs.mkdirSync(reportingDir, { recursive: true });
     }
     
     const { id } = await params;
@@ -78,12 +79,12 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const dataDir = path.join(process.cwd(), 'data');
-    const spotsPath = path.join(dataDir, 'spots.json');
+    const reportingDir = path.join(process.cwd(), 'data', 'reporting');
+    const spotsPath = path.join(reportingDir, 'spots.json');
     
-    // Ensure data directory exists
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
+    // Ensure reporting directory exists
+    if (!fs.existsSync(reportingDir)) {
+      fs.mkdirSync(reportingDir, { recursive: true });
     }
     
     const { id } = await params;

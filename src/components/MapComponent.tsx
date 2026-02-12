@@ -493,7 +493,16 @@ export default function MapComponent({
             onCloseClick={handleInfoWindowClose}
           >
             <div className="text-sm min-w-[200px] max-w-[300px]">
-              <div className="font-bold text-gray-900 mb-3 text-base">{selectedSpot.title}</div>
+              <div className="font-bold text-gray-900 mb-1 text-base">{selectedSpot.title}</div>
+              
+              {/* Pending badge for admin */}
+              {selectedSpot.status === 'pending' && (
+                <div className="mb-2">
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+                    Pending Approval
+                  </span>
+                </div>
+              )}
               
               {/* Structured happy hour display with labels */}
               {selectedSpot.happyHourTime && (

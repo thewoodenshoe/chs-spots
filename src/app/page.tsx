@@ -9,6 +9,7 @@ import AreaSelector, { getAreaCentersSync } from '@/components/AreaSelector';
 import ActivityChip from '@/components/ActivityChip';
 import { useSpots, Spot } from '@/contexts/SpotsContext';
 import VenuesToggle from '@/components/VenuesToggle';
+import { useToast } from '@/components/Toast';
 
 // Dynamically import MapComponent to avoid SSR issues with Google Maps
 const MapComponent = dynamic(() => import('@/components/MapComponent'), {
@@ -22,6 +23,7 @@ const MapComponent = dynamic(() => import('@/components/MapComponent'), {
 
 export default function Home() {
   const { addSpot, updateSpot, deleteSpot } = useSpots();
+  const { showToast } = useToast();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -44,7 +46,7 @@ export default function Home() {
         if (response.ok) {
           const areasConfig = await response.json();
           const centers: Record<string, { lat: number; lng: number; zoom: number }> = {};
-          areasConfig.forEach((area: any) => {
+          areasConfig.forEach((area: { name: string; center: { lat: number; lng: number } }) => {
             centers[area.name] = {
               lat: area.center.lat,
               lng: area.center.lng,
@@ -67,6 +69,7 @@ export default function Home() {
   useEffect(() => {
     const centers = Object.keys(areaCenters).length > 0 ? areaCenters : getAreaCentersSync();
     if (centers[selectedArea]) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMapCenter(centers[selectedArea]);
     }
   }, [selectedArea, areaCenters]);
@@ -142,9 +145,10 @@ export default function Home() {
       // Clear form and close modal, but keep marker on map (it's now in the spots array)
       setPinLocation(null);
       setIsSubmissionOpen(false);
+      showToast('Spot submitted! Pending approval.', 'success');
     } catch (error) {
       console.error('Error submitting spot:', error);
-      alert('Failed to submit spot. Please try again.');
+      showToast('Failed to submit spot. Please try again.', 'error');
     }
   };
 
@@ -190,7 +194,7 @@ export default function Home() {
       setIsEditOpen(false);
     } catch (error) {
       console.error('Error updating spot:', error);
-      alert('Failed to update spot. Please try again.');
+      showToast('Failed to update spot. Please try again.', 'error');
     }
   };
 

@@ -4,6 +4,8 @@ import "./globals.css";
 import { SpotsProvider } from "@/contexts/SpotsContext";
 import { VenuesProvider } from "@/contexts/VenuesContext";
 import { ActivitiesProvider } from "@/contexts/ActivitiesContext";
+import { ToastProvider } from "@/components/Toast";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,13 +39,17 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SpotsProvider>
-          <VenuesProvider>
-            <ActivitiesProvider>
-              {children}
-            </ActivitiesProvider>
-          </VenuesProvider>
-        </SpotsProvider>
+        <ErrorBoundary>
+          <ToastProvider>
+            <SpotsProvider>
+              <VenuesProvider>
+                <ActivitiesProvider>
+                  {children}
+                </ActivitiesProvider>
+              </VenuesProvider>
+            </SpotsProvider>
+          </ToastProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

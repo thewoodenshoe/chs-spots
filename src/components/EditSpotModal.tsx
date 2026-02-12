@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { SpotType } from './FilterModal';
 import { Spot } from '@/contexts/SpotsContext';
 import { useActivities } from '@/contexts/ActivitiesContext';
+import { useToast } from './Toast';
 import { Pencil } from 'lucide-react';
 
 interface EditSpotModalProps {
@@ -39,12 +40,13 @@ export default function EditSpotModal({
   const resizeHandleRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { activities } = useActivities();
-  const activityNames = activities.map(a => a.name as SpotType);
+  const { showToast } = useToast();
+  const activityNames = activities.map(a => a.name);
   const defaultActivityName = activityNames[0] || 'Happy Hour';
   
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedActivity, setSelectedActivity] = useState<SpotType>(defaultActivityName);
+  const [selectedActivity, setSelectedActivity] = useState(defaultActivityName);
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [pinLocation, setPinLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -59,13 +61,13 @@ export default function EditSpotModal({
     if (spot && isOpen) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setTitle(spot.title);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+       
       setDescription(spot.description || '');
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+       
       setSelectedActivity(spot.type);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+       
       setPhotoPreview(spot.photoUrl || null);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+       
       setSelectedPhoto(null);
     }
   }, [spot, isOpen]);
@@ -76,7 +78,7 @@ export default function EditSpotModal({
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setPinLocation(externalPinLocation);
     } else if (spot && isOpen) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+       
       setPinLocation({ lat: spot.lat, lng: spot.lng });
     }
   }, [externalPinLocation, spot, isOpen]);
@@ -160,11 +162,11 @@ export default function EditSpotModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!spot || !pinLocation) {
-      window.alert('Please ensure location is set');
+      showToast('Please ensure location is set', 'warning');
       return;
     }
     if (!title.trim()) {
-      window.alert('Please enter a title');
+      showToast('Please enter a title', 'warning');
       return;
     }
 
@@ -182,25 +184,27 @@ export default function EditSpotModal({
       handleClose();
     } catch (error) {
       console.error('Error updating spot:', error);
-        window.alert('Failed to update spot. Please try again.');
+      showToast('Failed to update spot. Please try again.', 'error');
     }
   };
 
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   const handleDelete = async () => {
     if (!spot || !onDelete) return;
+    setShowDeleteConfirm(true);
+  };
 
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${spot.title}"? This action cannot be undone.`
-    );
-
-    if (confirmed) {
-      try {
-        await onDelete(spot.id);
-        handleClose();
-      } catch (error) {
-        console.error('Error deleting spot:', error);
-        window.alert('Failed to delete spot. Please try again.');
-      }
+  const confirmDelete = async () => {
+    if (!spot || !onDelete) return;
+    setShowDeleteConfirm(false);
+    try {
+      await onDelete(spot.id);
+      showToast('Spot deleted', 'success');
+      handleClose();
+    } catch (error) {
+      console.error('Error deleting spot:', error);
+      showToast('Failed to delete spot. Please try again.', 'error');
     }
   };
 
@@ -365,7 +369,7 @@ export default function EditSpotModal({
               </label>
               <select
                 value={selectedActivity}
-                onChange={(e) => setSelectedActivity(e.target.value as SpotType)}
+                onChange={(e) => setSelectedActivity(e.target.value)}
                 className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-base text-gray-800 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
                 required
               >
@@ -446,7 +450,7 @@ export default function EditSpotModal({
             </button>
 
             {/* Delete Button */}
-            {onDelete && (
+            {onDelete && !showDeleteConfirm && (
               <button
                 type="button"
                 onClick={handleDelete}
@@ -454,6 +458,29 @@ export default function EditSpotModal({
               >
                 Delete Spot
               </button>
+            )}
+            {onDelete && showDeleteConfirm && (
+              <div className="rounded-xl border-2 border-red-300 bg-red-50 p-4 mb-4">
+                <p className="text-sm text-red-800 mb-3 font-medium">
+                  Delete &quot;{spot.title}&quot;? This cannot be undone.
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={confirmDelete}
+                    className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700"
+                  >
+                    Yes, Delete
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
             )}
           </form>
         </div>

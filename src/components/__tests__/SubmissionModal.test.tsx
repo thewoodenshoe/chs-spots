@@ -1,8 +1,29 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import SubmissionModal from '../SubmissionModal';
-import { SpotType } from '../FilterModal';
+
+// Mock contexts
+jest.mock('@/contexts/ActivitiesContext', () => ({
+  useActivities: () => ({
+    activities: [
+      { name: 'Happy Hour', icon: 'Martini', emoji: '🍹', color: '#0d9488' },
+      { name: 'Fishing Spots', icon: 'Fish', emoji: '🎣', color: '#0284c7' },
+      { name: 'Sunset Spots', icon: 'Sunset', emoji: '🌅', color: '#f59e0b' },
+      { name: 'Christmas Spots', icon: 'Gift', emoji: '🎄', color: '#f97316' },
+      { name: 'Pickleball Games', icon: 'Activity', emoji: '🏓', color: '#10b981' },
+      { name: 'Bike Routes', icon: 'Bike', emoji: '🚴', color: '#6366f1' },
+      { name: 'Golf Cart Hacks', icon: 'Car', emoji: '🛺', color: '#8b5cf6' },
+    ],
+    loading: false,
+    error: null,
+  }),
+}));
+
+jest.mock('../Toast', () => ({
+  useToast: () => ({ showToast: jest.fn() }),
+}));
 
 // Mock FileReader
 global.FileReader = class FileReader {
