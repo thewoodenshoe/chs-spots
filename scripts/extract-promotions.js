@@ -22,6 +22,21 @@ const { updateConfigField } = require('./utils/config');
 if (!fs.existsSync(GOLD_DIR)) fs.mkdirSync(GOLD_DIR, { recursive: true });
 if (!fs.existsSync(INCREMENTAL_HISTORY_DIR)) fs.mkdirSync(INCREMENTAL_HISTORY_DIR, { recursive: true });
 
+function parseAreaFilter(areaFilterRaw) {
+    if (!areaFilterRaw) return null;
+    const areas = areaFilterRaw
+        .split(',')
+        .map(a => a.trim().toLowerCase())
+        .filter(Boolean);
+    return areas.length > 0 ? new Set(areas) : null;
+}
+
+function hasEntriesMissingActivityType(goldData) {
+    const promotions = goldData.promotions || goldData.happyHour || {};
+    const entries = Array.isArray(promotions.entries) ? promotions.entries : [];
+    return entries.some(entry => !entry.activityType || String(entry.activityType).trim() === '');
+}
+
 async function extractHappyHours(isIncremental = false) {
     // Access your API key as an environment variable (see README)
     const GROK_API_KEY = process.env.GROK_API_KEY;
@@ -32,6 +47,14 @@ async function extractHappyHours(isIncremental = false) {
     const GROK_API_URL = 'https://api.x.ai/v1/chat/completions';
     const GROK_MODEL = 'grok-4-fast-reasoning'; // Faster model with good reasoning, higher rate limits
     console.log(`Starting happy hour extraction (${isIncremental ? 'incremental' : 'bulk'})...`);
+    const areaFilterSet = parseAreaFilter(process.env.AREA_FILTER);
+    const forceReprocessMissingActivityType = process.env.FORCE_REPROCESS_MISSING_ACTIVITY_TYPE === 'true';
+    if (areaFilterSet) {
+        console.log(`📍 AREA_FILTER active: ${Array.from(areaFilterSet).join(', ')}`);
+    }
+    if (forceReprocessMissingActivityType) {
+        console.log(`🔄 FORCE_REPROCESS_MISSING_ACTIVITY_TYPE enabled`);
+    }
 
     // INCREMENTAL MODE: Only process venues in silver_trimmed/incremental/
     let venueFiles = [];
@@ -173,6 +196,23 @@ async function extractHappyHours(isIncremental = false) {
         }
     }
 
+    // Build venue area lookup for files that may not have venueArea in silver_trimmed
+    let venueAreaMap = new Map();
+    if (fs.existsSync(VENUES_JSON_PATH)) {
+        try {
+            const venues = JSON.parse(fs.readFileSync(VENUES_JSON_PATH, 'utf8'));
+            if (Array.isArray(venues)) {
+                venueAreaMap = new Map(
+                    venues
+                        .filter(v => v.id)
+                        .map(v => [v.id, (v.area || '').toLowerCase()])
+                );
+            }
+        } catch {
+            // Non-fatal: fallback to venueData.venueArea only
+        }
+    }
+
     for (const file of venueFiles) {
         const venueId = path.basename(file, '.json');
         const silverFilePath = path.join(sourceDir, file);
@@ -184,6 +224,14 @@ async function extractHappyHours(isIncremental = false) {
         } catch (error) {
             console.error(`Error reading venue file ${file}: ${error.message}`);
             continue;
+        }
+
+        // Optional area filter to target re-processing (e.g., West Ashley + Mount Pleasant)
+        if (areaFilterSet) {
+            const venueArea = (venueData.venueArea || venueAreaMap.get(venueId) || '').toLowerCase();
+            if (!areaFilterSet.has(venueArea)) {
+                continue;
+            }
         }
 
         // Create both raw and normalized hashes from pages content
@@ -200,17 +248,25 @@ async function extractHappyHours(isIncremental = false) {
         if (fs.existsSync(goldFilePath)) {
             try {
                 const existingGoldData = JSON.parse(fs.readFileSync(goldFilePath, 'utf8'));
+                const missingActivityType = hasEntriesMissingActivityType(existingGoldData);
+                const shouldForce = forceReprocessMissingActivityType && missingActivityType;
                 
                 // Primary check: normalized hash (ignores dates, tracking IDs, etc.)
                 if (existingGoldData.normalizedSourceHash && existingGoldData.normalizedSourceHash === normalizedSourceHash) {
-                    console.log(`Skipping ${venueData.venueName} (${venueId}): No meaningful changes (normalized hash match).`);
-                    continue;
+                    if (!shouldForce) {
+                        console.log(`Skipping ${venueData.venueName} (${venueId}): No meaningful changes (normalized hash match).`);
+                        continue;
+                    }
+                    console.log(`  🔄 Reprocessing ${venueData.venueName} (${venueId}) despite hash match: missing activityType in existing gold.`);
                 }
                 
                 // Fallback: raw hash (for gold files that don't have normalizedSourceHash yet)
                 if (!existingGoldData.normalizedSourceHash && existingGoldData.sourceHash === sourceHash) {
-                    console.log(`Skipping ${venueData.venueName} (${venueId}): No changes detected (raw hash match).`);
-                    continue;
+                    if (!shouldForce) {
+                        console.log(`Skipping ${venueData.venueName} (${venueId}): No changes detected (raw hash match).`);
+                        continue;
+                    }
+                    console.log(`  🔄 Reprocessing ${venueData.venueName} (${venueId}) despite raw hash match: missing activityType in existing gold.`);
                 }
                 
                 // Content actually changed — proceed with LLM

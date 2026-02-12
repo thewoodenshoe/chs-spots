@@ -928,8 +928,8 @@ async function fetchKnownVenuesByName(areaName, knownVenueNames) {
 
 // Main execution
 (async () => {
-  // Parse command-line arguments for area filtering
-  const args = process.argv.slice(2);
+  // Parse command-line arguments for area filtering (skip --flags)
+  const args = process.argv.slice(2).filter(a => !a.startsWith('--'));
   let areaFilter = null;
   if (args.length > 0) {
     areaFilter = args[0].trim();

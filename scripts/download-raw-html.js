@@ -439,15 +439,39 @@ function readRawHtml(venueId, url) {
  * Fetch URL with retries
  */
 async function fetchUrl(url, retries = 2) {
+  const headerProfiles = [
+    {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache',
+    },
+    {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache',
+    },
+    {
+      'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Upgrade-Insecure-Requests': '1',
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache',
+    }
+  ];
+
   for (let i = 0; i <= retries; i++) {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15000);
+      const headers = headerProfiles[i % headerProfiles.length];
       
       const response = await fetch(url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        },
+        headers,
         redirect: 'follow',
         signal: controller.signal
       });
@@ -455,6 +479,12 @@ async function fetchUrl(url, retries = 2) {
       clearTimeout(timeoutId);
       
       if (!response.ok) {
+        // Some sites intermittently return 403 for bot-like traffic.
+        // Retry after a slightly longer delay with a different header profile.
+        if (response.status === 403 && i < retries) {
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          throw new Error('HTTP 403');
+        }
         throw new Error(`HTTP ${response.status}`);
       }
       

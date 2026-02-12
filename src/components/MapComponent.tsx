@@ -151,14 +151,27 @@ export default function MapComponent({
   }, [selectedArea, mapCenter, map]);
 
   // Filter spots based on area and activity
+  const venueAreaById = useMemo(() => {
+    const map = new Map<string, Area>();
+    for (const venue of venues) {
+      if (venue.id && venue.area) {
+        map.set(venue.id, venue.area as Area);
+      }
+    }
+    return map;
+  }, [venues]);
+
+  // Prefer venue.area for filtering; fallback to coordinate heuristic for legacy/manual spots
   const filteredSpots = useMemo(() => {
     return spots.filter((spot) => {
-      const spotArea = getAreaFromCoordinates(spot.lat, spot.lng);
+      const spotArea = spot.venueId
+        ? (venueAreaById.get(spot.venueId) || getAreaFromCoordinates(spot.lat, spot.lng))
+        : getAreaFromCoordinates(spot.lat, spot.lng);
       const areaMatch = spotArea === selectedArea;
       const activityMatch = spot.type === selectedActivity;
       return areaMatch && activityMatch;
     });
-  }, [spots, selectedArea, selectedActivity]);
+  }, [spots, selectedArea, selectedActivity, venueAreaById]);
 
   // Filter venues - when showAllVenues is true, show ALL venues regardless of area
   const filteredVenues = useMemo(() => {
