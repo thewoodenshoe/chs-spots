@@ -24,6 +24,7 @@ const MapComponent = dynamic(() => import('@/components/MapComponent'), {
 export default function Home() {
   const { spots, addSpot, updateSpot, deleteSpot } = useSpots();
   const { showToast } = useToast();
+  const [healthStatus, setHealthStatus] = useState<'checking' | 'ok' | 'error'>('checking');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -84,11 +85,41 @@ export default function Home() {
     loadCenters();
   }, []); // Only load once on mount
 
+  // Lightweight health polling for a visible uptime indicator
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkHealth = async () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      try {
+        const response = await fetch('/api/health', {
+          cache: 'no-store',
+          signal: controller.signal,
+        });
+        if (!isMounted) return;
+        setHealthStatus(response.ok ? 'ok' : 'error');
+      } catch {
+        if (!isMounted) return;
+        setHealthStatus('error');
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    };
+
+    checkHealth();
+    const intervalId = window.setInterval(checkHealth, 60000);
+    return () => {
+      isMounted = false;
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
   // Update map center when selectedArea changes
   useEffect(() => {
     const centers = Object.keys(areaCenters).length > 0 ? areaCenters : getAreaCentersSync();
     if (centers[selectedArea]) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+       
       setMapCenter(centers[selectedArea]);
     }
   }, [selectedArea, areaCenters]);
@@ -244,6 +275,16 @@ export default function Home() {
     return `${get('year')}-${get('month')}-${get('day')} ${get('hour')}:${get('minute')}:${get('second')}`;
   }, [spots]);
 
+  const healthIndicator = useMemo(() => {
+    if (healthStatus === 'ok') {
+      return <span className="text-green-400">✔</span>;
+    }
+    if (healthStatus === 'error') {
+      return <span className="text-red-400">✖</span>;
+    }
+    return <span className="text-yellow-300">…</span>;
+  }, [healthStatus]);
+
   return (
     <div className="relative h-screen w-screen overflow-hidden">
       {/* Fixed Top Bar - Redesigned */}
@@ -335,7 +376,8 @@ export default function Home() {
 
       {/* Last updated timestamp (centered between venues toggle and add button) */}
       <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2 rounded-full bg-black/70 px-4 py-2 text-xs font-medium text-white backdrop-blur-md safe-area-bottom">
-        last updated: {lastUpdatedEST}
+        <span className="mr-2 inline-flex items-center">{healthIndicator}</span>
+        <span>last updated: {lastUpdatedEST}</span>
       </div>
 
       {/* Floating Action Button - Redesigned */}
