@@ -149,6 +149,12 @@ async function handleCallback(callbackQuery: any, token: string): Promise<void> 
 export function startTelegramPolling(intervalMs = 5000): void {
   if (intervalId) return; // Already running
 
+  const pollingEnabled = process.env.TELEGRAM_POLLING_ENABLED === 'true';
+  if (!pollingEnabled) {
+    console.log('[Telegram] Polling disabled (set TELEGRAM_POLLING_ENABLED=true to enable).');
+    return;
+  }
+
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) {
     console.log('[Telegram] No TELEGRAM_BOT_TOKEN set, polling disabled.');
