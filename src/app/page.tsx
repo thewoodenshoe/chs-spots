@@ -103,7 +103,7 @@ export default function Home() {
   const [editPinLocation, setEditPinLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [showAllVenues, setShowAllVenues] = useState(false);
   // Default center for Daniel Island (will be updated when area centers load)
-  const defaultCenter = { lat: 32.845, lng: -79.908, zoom: 14 };
+  const defaultCenter = { lat: 32.862, lng: -79.908, zoom: 14 };
   const [mapCenter, setMapCenter] = useState(defaultCenter);
   const [areaCenters, setAreaCenters] = useState<Record<string, { lat: number; lng: number; zoom: number }>>({});
 

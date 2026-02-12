@@ -11,7 +11,7 @@ import { Area, SpotType } from './FilterModal';
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || '';
 
 // Default center: Daniel Island
-const DEFAULT_CENTER = { lat: 32.845, lng: -79.908 };
+const DEFAULT_CENTER = { lat: 32.862, lng: -79.908 };
 const DEFAULT_ZOOM = 14;
 
 // Map container style

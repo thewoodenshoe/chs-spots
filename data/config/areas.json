@@ -4,7 +4,7 @@
     "displayName": "Daniel Island",
     "description": "Includes Clements Ferry Road and northern extensions",
     "center": {
-      "lat": 32.845,
+      "lat": 32.862,
       "lng": -79.908
     },
     "radiusMeters": 8000,

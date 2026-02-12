@@ -23,7 +23,7 @@ async function loadAreaCenters(): Promise<Record<string, { lat: number; lng: num
     const areasConfig = await response.json();
     
     const centers: Record<string, { lat: number; lng: number; zoom: number }> = {};
-    areasConfig.forEach((area: any) => {
+    areasConfig.forEach((area: { name: string; center: { lat: number; lng: number } }) => {
       centers[area.name] = {
         lat: area.center.lat,
         lng: area.center.lng,
@@ -37,7 +37,7 @@ async function loadAreaCenters(): Promise<Record<string, { lat: number; lng: num
     console.error('Error loading area centers:', error);
     // Fallback to hardcoded values if API fails
     return {
-      'Daniel Island': { lat: 32.845, lng: -79.908, zoom: 14 },
+      'Daniel Island': { lat: 32.862, lng: -79.908, zoom: 14 },
       'Mount Pleasant': { lat: 32.800, lng: -79.860, zoom: 14 },
       'James Island': { lat: 32.720, lng: -79.950, zoom: 14 },
       'Downtown Charleston': { lat: 32.776, lng: -79.931, zoom: 15 },
@@ -159,7 +159,7 @@ export function getAreaCentersSync(): Record<string, { lat: number; lng: number;
   }
   // Return default if not loaded yet
   return {
-    'Daniel Island': { lat: 32.845, lng: -79.908, zoom: 14 },
+    'Daniel Island': { lat: 32.862, lng: -79.908, zoom: 14 },
     'Mount Pleasant': { lat: 32.800, lng: -79.860, zoom: 14 },
     'James Island': { lat: 32.720, lng: -79.950, zoom: 14 },
     'Downtown Charleston': { lat: 32.776, lng: -79.931, zoom: 15 },
