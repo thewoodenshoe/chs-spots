@@ -10,6 +10,7 @@ import ActivityChip from '@/components/ActivityChip';
 import { useSpots, Spot } from '@/contexts/SpotsContext';
 import VenuesToggle from '@/components/VenuesToggle';
 import { useToast } from '@/components/Toast';
+import { trackAreaView, trackSpotClick, trackSpotSubmit, trackActivityFilter, trackVenueToggle } from '@/lib/analytics';
 
 const MAX_UPLOAD_BYTES = 700 * 1024;
 const MAX_IMAGE_DIMENSION = 1600;
@@ -206,6 +207,7 @@ export default function Home() {
 
   const handleAreaChange = (area: Area) => {
     setSelectedArea(area);
+    trackAreaView(area);
     // Use loaded area centers or fallback to sync version
     const centers = Object.keys(areaCenters).length > 0 ? areaCenters : getAreaCentersSync();
     if (centers[area]) {
@@ -225,6 +227,7 @@ export default function Home() {
   };
 
   const handleEditSpot = (spot: Spot) => {
+    trackSpotClick(spot.id, spot.title, selectedArea);
     setEditingSpot(spot);
     setEditPinLocation({ lat: spot.lat, lng: spot.lng });
     setIsEditOpen(true);
@@ -260,6 +263,7 @@ export default function Home() {
       // Clear form and close modal, but keep marker on map (it's now in the spots array)
       setPinLocation(null);
       setIsSubmissionOpen(false);
+      trackSpotSubmit(selectedArea, data.type);
       showToast('Spot submitted! Pending approval.', 'success');
     } catch (error) {
       console.error('Error submitting spot:', error);
@@ -455,7 +459,11 @@ export default function Home() {
         {/* Venues Toggle Button */}
         <VenuesToggle
           showVenues={showAllVenues}
-          onToggle={() => setShowAllVenues(!showAllVenues)}
+          onToggle={() => {
+            const newVal = !showAllVenues;
+            setShowAllVenues(newVal);
+            trackVenueToggle(newVal);
+          }}
         />
       </div>
 
@@ -502,7 +510,10 @@ export default function Home() {
         isOpen={isFilterOpen}
         onClose={() => setIsFilterOpen(false)}
         selectedActivity={selectedActivity}
-        onActivityChange={setSelectedActivity}
+        onActivityChange={(activity: SpotType) => {
+          setSelectedActivity(activity);
+          trackActivityFilter(activity);
+        }}
       />
 
       {/* Submission Modal - Bottom Sheet */}

@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { SpotsProvider } from "@/contexts/SpotsContext";
 import { VenuesProvider } from "@/contexts/VenuesContext";
 import { ActivitiesProvider } from "@/contexts/ActivitiesContext";
 import { ToastProvider } from "@/components/Toast";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import CookieConsent from "@/components/CookieConsent";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +36,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const umamiWebsiteId = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
+  const umamiHost = process.env.NEXT_PUBLIC_UMAMI_HOST || '/u';
+
   return (
     <html lang="en">
       <body
@@ -45,11 +50,20 @@ export default function RootLayout({
               <VenuesProvider>
                 <ActivitiesProvider>
                   {children}
+                  <CookieConsent />
                 </ActivitiesProvider>
               </VenuesProvider>
             </SpotsProvider>
           </ToastProvider>
         </ErrorBoundary>
+        {umamiWebsiteId && (
+          <Script
+            src={`${umamiHost}/script.js`}
+            data-website-id={umamiWebsiteId}
+            data-auto-track="false"
+            strategy="afterInteractive"
+          />
+        )}
       </body>
     </html>
   );
