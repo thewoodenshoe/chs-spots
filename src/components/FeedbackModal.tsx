@@ -79,7 +79,7 @@ export default function FeedbackModal({ isOpen, onClose, onSuccess }: FeedbackMo
           />
           <input
             type="email"
-            placeholder="Email (optional)"
+            placeholder="Email (optional, if you want me to respond to you)"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
