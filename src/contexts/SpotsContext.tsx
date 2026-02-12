@@ -115,6 +115,9 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
       } else {
         // Handle error response - check if it has JSON body
         let errorMessage = 'Failed to add spot';
+        if (response.status === 413) {
+          throw new Error('Image upload is too large. Please use a smaller photo.');
+        }
         try {
           const contentType = response.headers.get('content-type');
           if (contentType && contentType.includes('application/json')) {
@@ -122,7 +125,12 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
             errorMessage = error.error || errorMessage;
           } else {
             // Non-JSON error response, use status text
-            errorMessage = response.statusText || errorMessage;
+            const rawText = await response.text();
+            if (/request entity too large/i.test(rawText)) {
+              errorMessage = 'Image upload is too large. Please use a smaller photo.';
+            } else {
+              errorMessage = response.statusText || errorMessage;
+            }
           }
         } catch {
           errorMessage = response.statusText || `HTTP ${response.status}`;
