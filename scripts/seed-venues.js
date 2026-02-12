@@ -1059,10 +1059,15 @@ async function fetchKnownVenuesByName(areaName, knownVenueNames) {
           }
         }
         
-        // 2. Text Search API (complement to Nearby Search)
-        logVerbose(`  Text Search: "${venueType} in ${areaName}"`);
-        const textSearchResults = await fetchTextSearch(areaName, venueType);
-        logVerbose(`    Found ${textSearchResults.length} results from Text Search`);
+        // 2. Text Search API (complement to Nearby Search) - non-fatal if it fails
+        let textSearchResults = [];
+        try {
+          logVerbose(`  Text Search: "${venueType} in ${areaName}"`);
+          textSearchResults = await fetchTextSearch(areaName, venueType);
+          logVerbose(`    Found ${textSearchResults.length} results from Text Search`);
+        } catch (textError) {
+          log(`   ⚠️  Text search failed for ${areaName} (${venueType}): ${textError.message} — continuing with grid results`);
+        }
         
         // 3. Known venues search (explicit name-based search for known venues)
         // This ensures 100% coverage for known venues that might not be found by generic searches

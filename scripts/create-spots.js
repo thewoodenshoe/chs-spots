@@ -106,6 +106,16 @@ function formatHappyHourDescription(happyHour) {
 /**
  * Build time/specials/source from a group of entries for one activity type.
  */
+/**
+ * Normalize LLM placeholder strings to null.
+ */
+function normalizeField(val) {
+  if (!val || typeof val !== 'string') return null;
+  const lower = val.trim().toLowerCase();
+  if (lower === 'not specified' || lower === 'unknown' || lower === 'n/a' || lower === '') return null;
+  return val.trim();
+}
+
 function buildSpotFields(entries) {
   let promotionTime = null;
   let promotionList = [];
@@ -113,10 +123,12 @@ function buildSpotFields(entries) {
 
   if (entries.length === 1) {
     const entry = entries[0];
-    if (entry.times) {
-      promotionTime = entry.days ? `${entry.times} • ${entry.days}` : entry.times;
-    } else if (entry.days) {
-      promotionTime = entry.days;
+    const times = normalizeField(entry.times);
+    const days = normalizeField(entry.days);
+    if (times) {
+      promotionTime = days ? `${times} • ${days}` : times;
+    } else if (days) {
+      promotionTime = days;
     }
     promotionList = entry.specials || [];
     sourceUrl = entry.source || null;
@@ -126,11 +138,13 @@ function buildSpotFields(entries) {
     const sources = [];
 
     for (const entry of entries) {
-      if (entry.times || entry.days) {
+      const times = normalizeField(entry.times);
+      const days = normalizeField(entry.days);
+      if (times || days) {
         const label = entry.label ? `${entry.label}: ` : '';
-        const timeStr = entry.days
-          ? `${label}${entry.times || ''} • ${entry.days}`.replace(/^\s*•\s*/, '')
-          : `${label}${entry.times}`;
+        const timeStr = days
+          ? `${label}${times || ''} • ${days}`.replace(/^\s*•\s*/, '')
+          : `${label}${times}`;
         if (!timeParts.includes(timeStr)) {
           timeParts.push(timeStr);
         }
@@ -183,6 +197,27 @@ function createSpots(goldData, venueData, startId) {
       source: happyHour.source
     }];
   } else {
+    return [];
+  }
+
+  // Filter out very low-confidence entries and entries with no usable data
+  entries = entries.filter(entry => {
+    // Skip very low confidence (< 40) — these are almost always false positives
+    if (entry.confidence !== undefined && entry.confidence < 40) {
+      return false;
+    }
+    // Normalize "Not specified" / empty strings to null for filtering
+    const times = entry.times && entry.times !== 'Not specified' ? entry.times : null;
+    const days = entry.days && entry.days !== 'Not specified' ? entry.days : null;
+    const specials = entry.specials && Array.isArray(entry.specials) && entry.specials.length > 0 ? entry.specials : null;
+    // Need at least one usable field
+    if (!times && !days && !specials) {
+      return false;
+    }
+    return true;
+  });
+
+  if (entries.length === 0) {
     return [];
   }
 
