@@ -270,7 +270,7 @@ function createSpots(goldData, venueData, startId) {
       // Legacy fields (backwards compat)
       happyHourTime: promotionTime,
       happyHourList: promotionList,
-      sourceUrl: sourceUrl,
+      sourceUrl: sourceUrl || venueData.website || null,
       lastUpdateDate: goldData.processedAt || null,
       type: activityType,
       source: 'automated',

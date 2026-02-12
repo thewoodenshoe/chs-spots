@@ -597,14 +597,13 @@ export default function MapComponent({
               
               {selectedSpot.sourceUrl && (
                 <div className="mb-2">
-                  <span className="font-semibold text-gray-700">Source: </span>
                   <a 
                     href={selectedSpot.sourceUrl} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline text-xs break-all"
+                    className="text-blue-600 hover:underline text-sm font-medium"
                   >
-                    {selectedSpot.sourceUrl}
+                    Website
                   </a>
                 </div>
               )}
