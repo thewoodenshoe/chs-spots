@@ -22,6 +22,16 @@ const { updateConfigField } = require('./utils/config');
 if (!fs.existsSync(GOLD_DIR)) fs.mkdirSync(GOLD_DIR, { recursive: true });
 if (!fs.existsSync(INCREMENTAL_HISTORY_DIR)) fs.mkdirSync(INCREMENTAL_HISTORY_DIR, { recursive: true });
 
+async function fetchWithTimeout(url, options = {}, timeoutMs = 120000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        return await fetch(url, { ...options, signal: controller.signal });
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
 function parseAreaFilter(areaFilterRaw) {
     if (!areaFilterRaw) return null;
     const areas = areaFilterRaw
@@ -48,12 +58,16 @@ async function extractHappyHours(isIncremental = false) {
     const GROK_MODEL = 'grok-4-fast-reasoning'; // Faster model with good reasoning, higher rate limits
     console.log(`Starting happy hour extraction (${isIncremental ? 'incremental' : 'bulk'})...`);
     const areaFilterSet = parseAreaFilter(process.env.AREA_FILTER);
+    // Permanent safeguard: always reprocess legacy gold records that still miss activityType.
+    // This can be disabled only by explicitly setting AUTO_REPROCESS_MISSING_ACTIVITY_TYPE=false.
+    const autoReprocessMissingActivityType = process.env.AUTO_REPROCESS_MISSING_ACTIVITY_TYPE !== 'false';
     const forceReprocessMissingActivityType = process.env.FORCE_REPROCESS_MISSING_ACTIVITY_TYPE === 'true';
+    const reprocessMissingActivityType = autoReprocessMissingActivityType || forceReprocessMissingActivityType;
     if (areaFilterSet) {
         console.log(`📍 AREA_FILTER active: ${Array.from(areaFilterSet).join(', ')}`);
     }
-    if (forceReprocessMissingActivityType) {
-        console.log(`🔄 FORCE_REPROCESS_MISSING_ACTIVITY_TYPE enabled`);
+    if (reprocessMissingActivityType) {
+        console.log(`🔄 Missing activityType auto-reprocess enabled`);
     }
 
     // INCREMENTAL MODE: Only process venues in silver_trimmed/incremental/
@@ -249,7 +263,7 @@ async function extractHappyHours(isIncremental = false) {
             try {
                 const existingGoldData = JSON.parse(fs.readFileSync(goldFilePath, 'utf8'));
                 const missingActivityType = hasEntriesMissingActivityType(existingGoldData);
-                const shouldForce = forceReprocessMissingActivityType && missingActivityType;
+                const shouldForce = reprocessMissingActivityType && missingActivityType;
                 
                 // Primary check: normalized hash (ignores dates, tracking IDs, etc.)
                 if (existingGoldData.normalizedSourceHash && existingGoldData.normalizedSourceHash === normalizedSourceHash) {
@@ -305,7 +319,7 @@ async function extractHappyHours(isIncremental = false) {
         while (retries > 0) {
             let response;
             try {
-                response = await fetch(GROK_API_URL, {
+                response = await fetchWithTimeout(GROK_API_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -323,7 +337,7 @@ async function extractHappyHours(isIncremental = false) {
                         max_tokens: 2048,
                         temperature: 0.7
                     })
-                });
+                }, 120000);
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
@@ -389,6 +403,9 @@ async function extractHappyHours(isIncremental = false) {
                 break;
                 
             } catch (error) {
+                if (error && error.name === 'AbortError') {
+                    error = new Error('LLM request timed out after 120 seconds');
+                }
                 // Check if this is a 429 error from the error message (in case it wasn't caught in response.ok check)
                 const statusCode = error.message?.match(/HTTP (\d+)/)?.[1];
                 if (statusCode === 429 || statusCode === '429') {
