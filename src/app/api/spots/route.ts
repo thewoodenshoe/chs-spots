@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { sendApprovalRequest } from '@/lib/telegram';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 export async function GET(request: Request) {
   // Check for admin mode via query param
@@ -99,6 +100,15 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  // Rate limit: 3 submissions per minute per IP
+  const clientIp = getClientIp(request);
+  if (!checkRateLimit(clientIp, 3, 60_000)) {
+    return NextResponse.json(
+      { error: 'Too many submissions. Please wait a moment and try again.' },
+      { status: 429 },
+    );
+  }
+
   try {
     const dataDir = path.join(process.cwd(), 'data');
     const reportingDir = path.join(dataDir, 'reporting');

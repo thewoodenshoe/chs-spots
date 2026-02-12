@@ -588,7 +588,7 @@ export default function MapComponent({
                     {selectedSpot.type === 'Brunch' ? 'Brunch Specials:' : 'Specials:'}
                   </div>
                   <ul className="list-disc list-inside text-gray-800 space-y-0.5 ml-2">
-                    {(selectedSpot.promotionList || selectedSpot.happyHourList).map((item: string, idx: number) => (
+                    {(selectedSpot.promotionList ?? selectedSpot.happyHourList ?? []).map((item: string, idx: number) => (
                       <li key={idx} className="text-xs">{item}</li>
                     ))}
                   </ul>
