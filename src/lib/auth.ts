@@ -2,20 +2,16 @@
  * Server-side admin authentication.
  *
  * Write operations (PUT, DELETE on spots) require admin auth.
- * Supported methods (checked in order):
- *   1. `Authorization: Bearer <ADMIN_API_KEY>` header
- *   2. `x-admin-key: <ADMIN_API_KEY>` header
- *   3. `?admin=<ADMIN_SECRET>` query param (for backwards compat with frontend)
+ * Set ADMIN_API_KEY in .env.local to a strong random string. No fallback.
  *
- * The secret is stored in ADMIN_API_KEY env var. Falls back to the legacy
- * hardcoded value for backwards compatibility, but should be overridden in
- * production via .env.local.
+ * Supported methods (checked in order):
+ *   1. Authorization: Bearer <ADMIN_API_KEY>
+ *   2. x-admin-key: <ADMIN_API_KEY>
+ *   3. ?admin=<ADMIN_API_KEY> (for frontend; same value as env)
  */
 
-const LEGACY_SECRET = 'amsterdam';
-
 function getAdminSecret(): string {
-  return process.env.ADMIN_API_KEY || LEGACY_SECRET;
+  return process.env.ADMIN_API_KEY || '';
 }
 
 export function isAdminRequest(request: Request): boolean {

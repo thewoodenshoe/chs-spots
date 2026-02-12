@@ -1,4 +1,4 @@
-# Charleston Local Spots
+# CHS Finds
 
 A crowdsourced map for discovering local hotspots in Charleston, SC — happy hours, fishing spots, sunset views, and more. Built with Next.js, Google Maps, and AI-powered venue extraction.
 
@@ -23,6 +23,15 @@ Create `.env.local` with these keys:
 | `GROK_API_KEY` | Yes | Grok API key for LLM happy hour extraction |
 | `TELEGRAM_BOT_TOKEN` | Yes | Telegram bot token (from BotFather) for spot approval |
 | `TELEGRAM_ADMIN_CHAT_ID` | Yes | Your Telegram chat ID (send `/start` to your bot to get it) |
+| `ADMIN_API_KEY` | Production | Strong random string for admin auth (edit/delete spots). No default. |
+| `TELEGRAM_WEBHOOK_SECRET` | Optional | Secret token for webhook verification; set in Telegram `setWebhook` and this env. |
+| `SERVER_PUBLIC_URL` | Ops | e.g. `https://chsfinds.com` for report links and Telegram messages. |
+
+## Production / Security
+
+- **Admin auth**: Set `ADMIN_API_KEY` in `.env.local` to a strong random string. Visit `https://yoursite.com?admin=YOUR_KEY` once to enable admin mode in the browser; the same key is used for API auth.
+- **Google Maps API key**: In [Google Cloud Console](https://console.cloud.google.com/apis/credentials), restrict the Maps JavaScript API key to **HTTP referrers**: `https://chsfinds.com/*`, `https://www.chsfinds.com/*` (and `http://localhost:*` for dev). This prevents key theft.
+- **Telegram webhook**: If using the webhook (not polling), set `TELEGRAM_WEBHOOK_SECRET` and pass the same value when calling Telegram’s `setWebhook` so only Telegram can trigger approve/deny.
 
 ## Configuration
 

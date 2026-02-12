@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { sendNotification } from '@/lib/telegram';
+import { sendNotification, escapeMarkdown } from '@/lib/telegram';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import { feedbackSchema, parseOrError } from '@/lib/validations';
 
@@ -24,10 +24,10 @@ export async function POST(request: Request) {
     const text = [
       '💬 *User Feedback*',
       '',
-      `👤 Name: ${name || 'Anonymous'}`,
-      `📧 Email: ${email || 'Not provided'}`,
+      `👤 Name: ${escapeMarkdown(name || 'Anonymous')}`,
+      `📧 Email: ${escapeMarkdown(email || 'Not provided')}`,
       '',
-      `📝 ${message}`,
+      `📝 ${escapeMarkdown(message)}`,
     ].join('\n');
 
     await sendNotification(text);

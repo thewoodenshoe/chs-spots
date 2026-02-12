@@ -386,7 +386,7 @@ export default function Home() {
         {/* Title Row */}
         <div className="flex h-14 items-center justify-center px-4">
           <h1 className="text-2xl font-bold text-white drop-shadow-lg tracking-tight">
-            Charleston Hotspots
+            CHS Finds
           </h1>
         </div>
         

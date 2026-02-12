@@ -20,8 +20,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Charleston Local Spots",
-  description: "Crowdsourced map for the best of Daniel Island life",
+  title: "CHS Finds",
+  description: "Discover the best of Charleston — happy hours, brunch, fishing, and more.",
 };
 
 export const viewport: Viewport = {

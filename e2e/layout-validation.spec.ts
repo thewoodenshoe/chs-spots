@@ -8,10 +8,10 @@ test.describe('Layout Validation - Header and Map', () => {
     // Wait for page to load
     await page.waitForLoadState('networkidle');
     
-    // Check title contains "Charleston Hotspots"
-    const title = page.getByRole('heading', { name: /Charleston Hotspots/i });
+    // Check title contains "CHS Finds"
+    const title = page.getByRole('heading', { name: /CHS Finds/i });
     await expect(title).toBeVisible();
-    await expect(title).toContainText('Charleston Hotspots');
+    await expect(title).toContainText('CHS Finds');
     
     // Wait for Google Map to load - check for map canvas or business label
     // Google Maps renders as iframe or canvas elements
@@ -55,7 +55,7 @@ test.describe('Layout Validation - Header and Map', () => {
     await page.waitForTimeout(2000);
     
     // Check title is visible and not overlapped
-    const title = page.getByRole('heading', { name: /Charleston Hotspots/i });
+    const title = page.getByRole('heading', { name: /CHS Finds/i });
     await expect(title).toBeVisible();
     
     // Get title position

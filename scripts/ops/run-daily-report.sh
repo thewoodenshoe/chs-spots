@@ -16,9 +16,9 @@ set -a
 source "$APP_DIR/.env.local"
 set +a
 
-# Extra env vars for the report
-export UMAMI_WEBSITE_ID="${NEXT_PUBLIC_UMAMI_WEBSITE_ID:-8aca5f03-57b4-431a-b6bd-5d9c9d5867ca}"
-export SERVER_PUBLIC_URL="${SERVER_PUBLIC_URL:-http://73.169.148.105:8080}"
+# Extra env vars for the report (set in .env.local on server)
+export UMAMI_WEBSITE_ID="${NEXT_PUBLIC_UMAMI_WEBSITE_ID:-}"
+export SERVER_PUBLIC_URL="${SERVER_PUBLIC_URL:-https://chsfinds.com}"
 
 node scripts/ops/generate-report.js --send-telegram >> "$LOG_FILE" 2>&1
 

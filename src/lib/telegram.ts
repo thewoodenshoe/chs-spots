@@ -159,8 +159,8 @@ export async function editMessage(chatId: string | number, messageId: number, ne
 }
 
 /**
- * Escape special characters for Telegram MarkdownV1
+ * Escape special characters for Telegram MarkdownV1 (exported for use in feedback etc.)
  */
-function escapeMarkdown(text: string): string {
+export function escapeMarkdown(text: string): string {
   return text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
 }

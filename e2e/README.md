@@ -1,6 +1,6 @@
 # Playwright E2E Tests
 
-End-to-end tests for Charleston Hotspots using Playwright.
+End-to-end tests for CHS Finds using Playwright.
 
 ## Running Tests
 

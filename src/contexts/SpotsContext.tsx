@@ -48,7 +48,7 @@ function getAdminSecret(): string | null {
   }
 
   if (localStorage.getItem('chs_admin') === 'true') {
-    return localStorage.getItem('chs_admin_key') || 'amsterdam';
+    return localStorage.getItem('chs_admin_key');
   }
 
   return null;

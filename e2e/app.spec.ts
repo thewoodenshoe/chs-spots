@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Charleston Hotspots App', () => {
+test.describe('CHS Finds App', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the app
     await page.goto('/');
@@ -12,7 +12,7 @@ test.describe('Charleston Hotspots App', () => {
 
   test('should load the homepage with header', async ({ page }) => {
     // Check that the title is visible
-    await expect(page.getByRole('heading', { name: /Charleston Hotspots/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /CHS Finds/i })).toBeVisible();
   });
 
   test('should display area selector with Daniel Island as default', async ({ page }) => {
@@ -204,7 +204,7 @@ test.describe('Charleston Hotspots App', () => {
     await page.waitForTimeout(2000);
     
     // Check that header is still visible
-    await expect(page.getByRole('heading', { name: /Charleston Hotspots/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /CHS Finds/i })).toBeVisible();
     
     // Check that add button is still visible
     const addButton = page.getByRole('button', { name: /Add new spot|Add Spot/i }).or(
@@ -280,7 +280,7 @@ test.describe('Charleston Hotspots App', () => {
       await page.waitForTimeout(1000);
       
       // Header should always be visible
-      await expect(page.getByRole('heading', { name: /Charleston Hotspots/i })).toBeVisible();
+      await expect(page.getByRole('heading', { name: /CHS Finds/i })).toBeVisible();
       
       // Area selector should be visible
       await expect(page.getByText('Daniel Island').or(page.locator('select'))).toBeVisible();
@@ -338,7 +338,7 @@ test.describe('Charleston Hotspots App', () => {
       await page.waitForTimeout(2000);
       
       // Verify page renders on mobile
-      await expect(page.getByRole('heading', { name: /Charleston Hotspots/i })).toBeVisible();
+      await expect(page.getByRole('heading', { name: /CHS Finds/i })).toBeVisible();
       
       // Check that description container would be visible (if InfoWindow opens)
       const bodyVisible = await page.locator('body').isVisible();
@@ -353,7 +353,7 @@ test.describe('Charleston Hotspots App', () => {
       await page.waitForTimeout(2000);
       
       // Verify page renders on desktop
-      await expect(page.getByRole('heading', { name: /Charleston Hotspots/i })).toBeVisible();
+      await expect(page.getByRole('heading', { name: /CHS Finds/i })).toBeVisible();
       
       // Check that description container would be visible (if InfoWindow opens)
       const bodyVisible = await page.locator('body').isVisible();
