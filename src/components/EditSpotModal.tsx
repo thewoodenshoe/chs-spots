@@ -50,6 +50,7 @@ export default function EditSpotModal({
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [pinLocation, setPinLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [sheetHeight, setSheetHeight] = useState(400);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
@@ -59,7 +60,7 @@ export default function EditSpotModal({
   // Initialize form with spot data
   useEffect(() => {
     if (spot && isOpen) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+       
       setTitle(spot.title);
        
       setDescription(spot.description || '');
@@ -75,7 +76,7 @@ export default function EditSpotModal({
   // Sync external pin location
   useEffect(() => {
     if (externalPinLocation) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+       
       setPinLocation(externalPinLocation);
     } else if (spot && isOpen) {
        
@@ -170,6 +171,7 @@ export default function EditSpotModal({
       return;
     }
 
+    setIsSubmitting(true);
     try {
       await onSubmit({
         id: spot.id,
@@ -179,12 +181,14 @@ export default function EditSpotModal({
         lat: pinLocation.lat,
         lng: pinLocation.lng,
         photo: selectedPhoto || undefined,
-        photoUrl: selectedPhoto ? undefined : spot.photoUrl, // Keep existing if no new photo
+        photoUrl: selectedPhoto ? undefined : spot.photoUrl,
       });
       handleClose();
     } catch (error) {
       console.error('Error updating spot:', error);
       showToast('Failed to update spot. Please try again.', 'error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -443,10 +447,18 @@ export default function EditSpotModal({
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={!pinLocation || !title.trim()}
+              disabled={!pinLocation || !title.trim() || isSubmitting}
               className="w-full rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 px-6 py-4 text-base font-bold text-white shadow-lg transition-all hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-lg mb-3"
             >
-              Update Spot
+              {isSubmitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Updating...
+                </span>
+              ) : 'Update Spot'}
             </button>
 
             {/* Delete Button */}

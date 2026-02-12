@@ -45,6 +45,7 @@ export default function SubmissionModal({
   );
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [sheetHeight, setSheetHeight] = useState(400); // Default height in pixels
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
@@ -65,8 +66,17 @@ export default function SubmissionModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultActivity, isOpen]);
 
-  // Don't reset form when modal closes - preserve inputs
-  // Only reset when explicitly closing after submission
+  // Reset form when modal opens for a fresh start
+  useEffect(() => {
+    if (isOpen) {
+      setTitle('');
+      setDescription('');
+      setSelectedPhoto(null);
+      setPhotoPreview(null);
+      setIsSubmitting(false);
+    }
+  }, [isOpen]);
+
   const handleClose = () => {
     onClose();
   };
@@ -157,24 +167,23 @@ export default function SubmissionModal({
       showToast('Please enter a title', 'warning');
       return;
     }
-    
-    // Submit with or without photo (photo is optional)
-    await onSubmit({
-      title: title.trim(),
-      description: description.trim(),
-      type: selectedActivity,
-      lat: pinLocation.lat,
-      lng: pinLocation.lng,
-      photo: selectedPhoto || undefined, // Photo is optional
-    });
-    
-    // Reset form only after successful submission
-      setTitle('');
-      setDescription('');
-      setSelectedActivity(defaultActivityName);
-    setSelectedPhoto(null);
-    setPhotoPreview(null);
-    handleClose();
+
+    setIsSubmitting(true);
+    try {
+      await onSubmit({
+        title: title.trim(),
+        description: description.trim(),
+        type: selectedActivity,
+        lat: pinLocation.lat,
+        lng: pinLocation.lng,
+        photo: selectedPhoto || undefined,
+      });
+      handleClose();
+    } catch {
+      // Error toast is handled by the parent
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const startDrag = (e: React.MouseEvent | React.TouchEvent) => {
@@ -427,10 +436,18 @@ export default function SubmissionModal({
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={!pinLocation || !title.trim()}
+              disabled={!pinLocation || !title.trim() || isSubmitting}
               className="w-full rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 px-6 py-4 text-base font-bold text-white shadow-lg transition-all hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-lg mb-4"
             >
-              Submit Spot
+              {isSubmitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Submitting...
+                </span>
+              ) : 'Submit Spot'}
             </button>
           </form>
         </div>

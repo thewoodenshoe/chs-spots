@@ -94,7 +94,7 @@ export default function MapComponent({
   onEditSpot,
   showAllVenues = false,
 }: MapComponentProps) {
-  const { spots } = useSpots();
+  const { spots, loading: spotsLoading } = useSpots();
   const { venues } = useVenues();
   const { activities } = useActivities();
   const [map, setMap] = useState<google.maps.Map | null>(null);
@@ -177,17 +177,45 @@ export default function MapComponent({
     }
   }, [isSubmissionMode, onMapClick]);
 
+  // Check if a position is near the viewport edge and nudge the map if needed
+  const smartPan = useCallback((position: { lat: number; lng: number }) => {
+    if (!map) return;
+    const bounds = map.getBounds();
+    if (!bounds) return;
+
+    const ne = bounds.getNorthEast();
+    const sw = bounds.getSouthWest();
+    const latSpan = ne.lat() - sw.lat();
+    const lngSpan = ne.lng() - sw.lng();
+
+    // If marker is within 20% of any edge, nudge the map so the InfoWindow has room
+    const margin = 0.20;
+    let panLat = 0;
+    let panLng = 0;
+
+    if (position.lat > ne.lat() - latSpan * margin) panLat = -latSpan * 0.25;
+    if (position.lat < sw.lat() + latSpan * margin) panLat = latSpan * 0.25;
+    if (position.lng > ne.lng() - lngSpan * margin) panLng = -lngSpan * 0.25;
+    if (position.lng < sw.lng() + lngSpan * margin) panLng = lngSpan * 0.25;
+
+    if (panLat !== 0 || panLng !== 0) {
+      map.panTo({ lat: position.lat + panLat, lng: position.lng + panLng });
+    }
+  }, [map]);
+
   // Handle marker click
   const handleMarkerClick = useCallback((spot: Spot) => {
     setSelectedSpot(spot);
-    setSelectedVenue(null); // Close venue info window if open
-  }, []);
+    setSelectedVenue(null);
+    smartPan({ lat: spot.lat, lng: spot.lng });
+  }, [smartPan]);
 
   // Handle venue marker click
   const handleVenueMarkerClick = useCallback((venue: Venue) => {
     setSelectedVenue(venue);
-    setSelectedSpot(null); // Close spot info window if open
-  }, []);
+    setSelectedSpot(null);
+    smartPan({ lat: venue.lat, lng: venue.lng });
+  }, [smartPan]);
 
   // Close info window
   const handleInfoWindowClose = useCallback(() => {
@@ -421,6 +449,25 @@ export default function MapComponent({
       {toastMessage && (
         <div className="fixed top-20 left-1/2 z-[60] -translate-x-1/2 animate-slide-down rounded-lg bg-gray-900 px-4 py-3 text-sm font-medium text-white shadow-2xl safe-area-top">
           {toastMessage}
+        </div>
+      )}
+
+      {/* Submission mode banner */}
+      {isSubmissionMode && (
+        <div className="absolute top-2 left-1/2 z-[55] -translate-x-1/2 rounded-full bg-teal-600 px-5 py-2 shadow-lg">
+          <span className="text-sm font-semibold text-white">
+            {pinLocation ? 'Pin dropped — drag to adjust' : 'Tap the map to drop a pin'}
+          </span>
+        </div>
+      )}
+
+      {/* Empty state (only after spots have loaded) */}
+      {!isSubmissionMode && !spotsLoading && filteredSpots.length === 0 && (
+        <div className="absolute top-2 left-1/2 z-[55] -translate-x-1/2 rounded-xl bg-white/90 px-5 py-3 shadow-lg backdrop-blur-sm">
+          <p className="text-sm font-medium text-gray-700">
+            No {selectedActivity} spots in {selectedArea}
+          </p>
+          <p className="text-xs text-gray-500 mt-0.5">Try a different area or activity</p>
         </div>
       )}
       

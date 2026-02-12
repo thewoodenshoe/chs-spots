@@ -38,6 +38,25 @@ export default function Home() {
   const [mapCenter, setMapCenter] = useState(defaultCenter);
   const [areaCenters, setAreaCenters] = useState<Record<string, { lat: number; lng: number; zoom: number }>>({});
 
+  // Escape key closes modals
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (isEditOpen) {
+          setIsEditOpen(false);
+          setEditingSpot(null);
+          setEditPinLocation(null);
+        } else if (isSubmissionOpen) {
+          setIsSubmissionOpen(false);
+        } else if (isFilterOpen) {
+          setIsFilterOpen(false);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isEditOpen, isSubmissionOpen, isFilterOpen]);
+
   // Load area centers on mount
   useEffect(() => {
     async function loadCenters() {
