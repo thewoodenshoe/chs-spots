@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { GoogleMap, LoadScript, Marker, InfoWindow, MarkerClusterer } from '@react-google-maps/api';
 import { useSpots, Spot } from '@/contexts/SpotsContext';
 import { useVenues, Venue } from '@/contexts/VenuesContext';
@@ -101,9 +101,18 @@ export default function MapComponent({
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
-  const [center, setCenter] = useState<{ lat: number; lng: number }>(DEFAULT_CENTER);
-  const [zoom, setZoom] = useState(DEFAULT_ZOOM);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Lazy-initialized state for the *first* center/zoom only.
+  // useState(() => ...) runs once; the value never changes, so re-renders
+  // won't push the map back to the starting position.
+  const [initialCenter] = useState(() =>
+    mapCenter ? { lat: mapCenter.lat, lng: mapCenter.lng } : DEFAULT_CENTER
+  );
+  const [initialZoom] = useState(() => mapCenter?.zoom ?? DEFAULT_ZOOM);
+
+  // Track the last area we centered on so we only recenter on *actual* area changes
+  const lastCenteredArea = useRef(selectedArea);
 
   // Request user geolocation on load
   useEffect(() => {
@@ -117,11 +126,11 @@ export default function MapComponent({
           setUserLocation(userPos);
           // Only center on user if they're in the Charleston area (rough bounds)
           if (
+            map &&
             userPos.lat >= 32.6 && userPos.lat <= 32.9 &&
             userPos.lng >= -80.0 && userPos.lng <= -79.7
           ) {
-            setCenter(userPos);
-            setZoom(14);
+            map.panTo(userPos);
           }
         },
         (error) => {
@@ -130,13 +139,13 @@ export default function MapComponent({
         }
       );
     }
-  }, []);
+  }, [map]);
 
-  // Reset map center and zoom when selectedArea or mapCenter changes
-  // This ensures the map resets even if user manually zoomed out
+  // Recenter map ONLY when the user picks a different area
   useEffect(() => {
-    if (map && mapCenter) {
-      map.setCenter({ lat: mapCenter.lat, lng: mapCenter.lng });
+    if (map && mapCenter && selectedArea !== lastCenteredArea.current) {
+      lastCenteredArea.current = selectedArea;
+      map.panTo({ lat: mapCenter.lat, lng: mapCenter.lng });
       map.setZoom(mapCenter.zoom);
     }
   }, [selectedArea, mapCenter, map]);
@@ -303,15 +312,15 @@ export default function MapComponent({
           setToastMessage(`Closest: ${closest.spot.title} (${closest.distance.toFixed(1)} miles)`);
           
           // Center map on closest spot
-          map.setCenter({ lat: closest.spot.lat, lng: closest.spot.lng });
+          map.panTo({ lat: closest.spot.lat, lng: closest.spot.lng });
           map.setZoom(15);
           
           // Clear toast after 3 seconds
           setTimeout(() => setToastMessage(null), 3000);
         },
-        (error) => {
+        () => {
           // Location permission denied or error - use map center as fallback
-          const origin = map.getCenter()?.toJSON() || center;
+          const origin = map.getCenter()?.toJSON() || DEFAULT_CENTER;
           if (!origin) {
             setToastMessage('Unable to determine location');
             setTimeout(() => setToastMessage(null), 3000);
@@ -334,7 +343,7 @@ export default function MapComponent({
           setToastMessage(`Closest from map center: ${closest.spot.title} (${closest.distance.toFixed(1)} miles)`);
           
           // Center map on closest spot
-          map.setCenter({ lat: closest.spot.lat, lng: closest.spot.lng });
+          map.panTo({ lat: closest.spot.lat, lng: closest.spot.lng });
           map.setZoom(15);
           
           // Clear toast after 3 seconds
@@ -348,7 +357,7 @@ export default function MapComponent({
       );
     } else {
       // Geolocation not supported - use map center
-      const origin = map.getCenter()?.toJSON() || center;
+      const origin = map.getCenter()?.toJSON() || DEFAULT_CENTER;
       if (!origin) {
         setToastMessage('Location not supported');
         setTimeout(() => setToastMessage(null), 3000);
@@ -371,13 +380,13 @@ export default function MapComponent({
       setToastMessage(`Closest from map center: ${closest.spot.title} (${closest.distance.toFixed(1)} miles)`);
       
       // Center map on closest spot
-      map.setCenter({ lat: closest.spot.lat, lng: closest.spot.lng });
+      map.panTo({ lat: closest.spot.lat, lng: closest.spot.lng });
       map.setZoom(15);
       
       // Clear toast after 3 seconds
       setTimeout(() => setToastMessage(null), 3000);
     }
-  }, [map, filteredSpots, center]);
+  }, [map, filteredSpots]);
 
   // Listen for findClosestSpot event
   useEffect(() => {
@@ -418,10 +427,10 @@ export default function MapComponent({
       <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
         <GoogleMap
           mapContainerStyle={mapContainerStyle}
-          center={mapCenter ? { lat: mapCenter.lat, lng: mapCenter.lng } : center}
-          zoom={mapCenter ? mapCenter.zoom : zoom}
+          center={initialCenter}
+          zoom={initialZoom}
           onClick={handleMapClick}
-          onLoad={(map) => setMap(map)}
+          onLoad={(mapInstance) => setMap(mapInstance)}
           options={{
             fullscreenControl: false,
             mapTypeControl: false,
@@ -491,6 +500,7 @@ export default function MapComponent({
           <InfoWindow
             position={{ lat: selectedSpot.lat, lng: selectedSpot.lng }}
             onCloseClick={handleInfoWindowClose}
+            options={{ disableAutoPan: true }}
           >
             <div className="text-sm min-w-[200px] max-w-[300px]">
               <div className="font-bold text-gray-900 mb-1 text-base">{selectedSpot.title}</div>
@@ -592,6 +602,7 @@ export default function MapComponent({
           <InfoWindow
             position={{ lat: selectedVenue.lat, lng: selectedVenue.lng }}
             onCloseClick={handleInfoWindowClose}
+            options={{ disableAutoPan: true }}
           >
             <div className="text-sm min-w-[200px] max-w-[300px]">
               <div className="font-bold text-gray-900 mb-2 text-base">{selectedVenue.name}</div>
