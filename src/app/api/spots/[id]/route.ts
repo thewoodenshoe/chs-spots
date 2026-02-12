@@ -134,7 +134,7 @@ export async function PUT(
       );
     }
     
-    // Update the spot — mark as pending so it goes through approval
+    // Apply the edit immediately — spot stays visible, no re-approval needed
     const updatedSpot = {
       ...spots[spotIndex],
       id: spotId, // Ensure ID is preserved
@@ -146,7 +146,6 @@ export async function PUT(
       type: spotData.type || spotData.activity || spots[spotIndex].type || 'Happy Hour',
       photoUrl: spotData.photoUrl !== undefined ? spotData.photoUrl : spots[spotIndex].photoUrl,
       area: spotData.area !== undefined ? spotData.area : spots[spotIndex].area,
-      status: 'pending', // Require re-approval after edit
       editedAt: new Date().toISOString(),
     };
     
@@ -163,7 +162,7 @@ export async function PUT(
       );
     }
     
-    // Send Telegram approval notification for the edit (non-blocking)
+    // Notify admin on Telegram about the edit (non-blocking, informational only)
     try {
       await sendApprovalRequest({
         id: spotId,

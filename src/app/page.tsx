@@ -308,6 +308,7 @@ export default function Home() {
       setEditPinLocation(null);
       setEditingSpot(null);
       setIsEditOpen(false);
+      showToast('Spot updated!', 'success');
     } catch (error) {
       console.error('Error updating spot:', error);
       const message = error instanceof Error ? error.message : 'Failed to update spot. Please try again.';
