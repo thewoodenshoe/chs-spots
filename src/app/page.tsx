@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import FilterModal, { Area, SpotType } from '@/components/FilterModal';
 import SubmissionModal from '@/components/SubmissionModal';
 import EditSpotModal from '@/components/EditSpotModal';
@@ -22,7 +22,7 @@ const MapComponent = dynamic(() => import('@/components/MapComponent'), {
 });
 
 export default function Home() {
-  const { addSpot, updateSpot, deleteSpot } = useSpots();
+  const { spots, addSpot, updateSpot, deleteSpot } = useSpots();
   const { showToast } = useToast();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
@@ -217,6 +217,33 @@ export default function Home() {
     }
   };
 
+  const lastUpdatedEST = useMemo(() => {
+    const validDates = spots
+      .map((spot) => spot.lastUpdateDate)
+      .filter((value): value is string => Boolean(value))
+      .map((value) => new Date(value))
+      .filter((date) => !Number.isNaN(date.getTime()));
+
+    if (validDates.length === 0) {
+      return 'N/A';
+    }
+
+    const latest = new Date(Math.max(...validDates.map((date) => date.getTime())));
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }).formatToParts(latest);
+
+    const get = (type: string) => parts.find((p) => p.type === type)?.value || '00';
+    return `${get('year')}-${get('month')}-${get('day')} ${get('hour')}:${get('minute')}:${get('second')}`;
+  }, [spots]);
+
   return (
     <div className="relative h-screen w-screen overflow-hidden">
       {/* Fixed Top Bar - Redesigned */}
@@ -304,6 +331,11 @@ export default function Home() {
           showVenues={showAllVenues}
           onToggle={() => setShowAllVenues(!showAllVenues)}
         />
+      </div>
+
+      {/* Last updated timestamp (centered between venues toggle and add button) */}
+      <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2 rounded-full bg-black/70 px-4 py-2 text-xs font-medium text-white backdrop-blur-md safe-area-bottom">
+        last updated: {lastUpdatedEST}
       </div>
 
       {/* Floating Action Button - Redesigned */}
