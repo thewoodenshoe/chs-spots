@@ -243,21 +243,24 @@ function main() {
   
   // Load config for state management
   const config = loadConfig();
-  const runDate = config.run_date || getRunDate();
+  const runDate = process.env.PIPELINE_RUN_DATE || config.run_date || getRunDate();
+  const lastMergedDate = config.last_merged_processed_date || null;
   const todayEmpty = isDirectoryEmpty(SILVER_MERGED_TODAY_DIR);
+  const isNewDayForMerged = !lastMergedDate || lastMergedDate !== runDate;
   
   log(`📊 State check:`);
   log(`   run_date: ${runDate}`);
+  log(`   last_merged_processed_date: ${lastMergedDate || 'null'}`);
   log(`   silver_merged/today/ empty: ${todayEmpty}`);
+  log(`   is_new_day_for_merged: ${isNewDayForMerged}`);
   
-  // Check if we need to archive (new day scenario)
-  // Note: We don't track last_merged_processed_date separately - we use run_date
-  // If today/ is not empty, we assume it's from a previous run and should be archived on new day
-  if (!todayEmpty) {
-    // Check if this is a new day by comparing with run_date
-    // For simplicity, if today/ has files and we're running, archive them
+  // Archive only when the merged layer has crossed into a new run_date.
+  // Same-day reruns (including AREA_FILTER reruns) should preserve today/.
+  if (!todayEmpty && isNewDayForMerged) {
     log(`📅 silver_merged/today/ not empty - archiving to previous/`);
     archiveTodayToPrevious();
+  } else if (!todayEmpty && !isNewDayForMerged) {
+    log(`📅 Same-day merge rerun detected - preserving silver_merged/today/`);
   }
   
   updateConfigField('last_run_status', 'running_merged');
@@ -365,6 +368,7 @@ function main() {
   log(`   📄 Total pages: ${totalPages}`);
   // Update status after successful merge
   updateConfigField('last_run_status', 'running_merged');
+  updateConfigField('last_merged_processed_date', runDate);
   
   log(`\n✨ Done! Merged files saved to: ${path.resolve(SILVER_MERGED_TODAY_DIR)}`);
 }

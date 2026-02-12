@@ -44,6 +44,8 @@ const REPORTING_DIR = path.join(__dirname, '../data/reporting');
 const SPOTS_PATH = path.join(REPORTING_DIR, 'spots.json');
 const REPORTING_VENUES_PATH = path.join(REPORTING_DIR, 'venues.json');
 const REPORTING_AREAS_PATH = path.join(REPORTING_DIR, 'areas.json');
+const REPORTING_INDEXES_DIR = path.join(REPORTING_DIR, 'indexes');
+const REPORTING_AREA_INDEXES_DIR = path.join(REPORTING_INDEXES_DIR, 'by-area');
 
 // Pipeline directory paths
 const RAW_PREVIOUS_DIR = path.join(__dirname, '../data/raw/previous');
@@ -321,6 +323,9 @@ function main() {
     fs.mkdirSync(REPORTING_DIR, { recursive: true });
     log(`📁 Created reporting directory: ${REPORTING_DIR}\n`);
   }
+  if (!fs.existsSync(REPORTING_AREA_INDEXES_DIR)) {
+    fs.mkdirSync(REPORTING_AREA_INDEXES_DIR, { recursive: true });
+  }
   
   // Load venues
   let venues;
@@ -485,6 +490,58 @@ function main() {
     fs.copyFileSync(AREAS_PATH, REPORTING_AREAS_PATH);
     log(`✅ Copied areas.json to ${REPORTING_AREAS_PATH}`);
   }
+
+  // Build per-area indexes (venueId-keyed, not canonical storage)
+  const automatedSpots = spots.filter(s => s.source === 'automated' && s.venueId);
+  const areaIndex = {};
+  for (const spot of automatedSpots) {
+    const venue = venueMap.get(spot.venueId);
+    const area = (venue && venue.area) ? venue.area : 'Unknown';
+    if (!areaIndex[area]) {
+      areaIndex[area] = {
+        area,
+        venueIds: new Set(),
+        spotIds: [],
+        byType: {}
+      };
+    }
+    areaIndex[area].venueIds.add(spot.venueId);
+    areaIndex[area].spotIds.push(spot.id);
+    areaIndex[area].byType[spot.type] = (areaIndex[area].byType[spot.type] || 0) + 1;
+  }
+
+  // Clear existing area index files to avoid stale indexes
+  const oldIndexFiles = fs.readdirSync(REPORTING_AREA_INDEXES_DIR).filter(f => f.endsWith('.json'));
+  for (const file of oldIndexFiles) {
+    fs.unlinkSync(path.join(REPORTING_AREA_INDEXES_DIR, file));
+  }
+
+  const summary = {};
+  for (const [area, data] of Object.entries(areaIndex)) {
+    const areaSlug = area.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    const record = {
+      area,
+      venueIds: Array.from(data.venueIds).sort(),
+      spotIds: data.spotIds.sort((a, b) => a - b),
+      byType: data.byType
+    };
+    fs.writeFileSync(
+      path.join(REPORTING_AREA_INDEXES_DIR, `${areaSlug || 'unknown'}.json`),
+      JSON.stringify(record, null, 2),
+      'utf8'
+    );
+    summary[area] = {
+      venueCount: record.venueIds.length,
+      spotCount: record.spotIds.length,
+      byType: record.byType
+    };
+  }
+  fs.writeFileSync(
+    path.join(REPORTING_AREA_INDEXES_DIR, '_index.json'),
+    JSON.stringify({ generatedAt: new Date().toISOString(), areas: summary }, null, 2),
+    'utf8'
+  );
+  log(`✅ Wrote per-area indexes to ${REPORTING_AREA_INDEXES_DIR}`);
   
   // Summary
   const existingAutomatedCount = existingSpots.filter(s => s.source === 'automated').length;

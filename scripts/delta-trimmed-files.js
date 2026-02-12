@@ -18,6 +18,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { normalizeText } = require('./utils/normalize');
+const { loadConfig, getRunDate } = require('./utils/config');
 
 // Logging setup
 const logDir = path.join(__dirname, '..', 'logs');
@@ -38,7 +39,6 @@ function log(message) {
 const SILVER_TRIMMED_TODAY_DIR = path.join(__dirname, '../data/silver_trimmed/today');
 const SILVER_TRIMMED_PREVIOUS_DIR = path.join(__dirname, '../data/silver_trimmed/previous');
 const SILVER_TRIMMED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_trimmed/incremental');
-const LAST_TRIM_PATH = path.join(__dirname, '../data/silver_trimmed/.last-trim');
 
 // Ensure directories exist
 if (!fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
@@ -87,76 +87,17 @@ function getTrimmedContentHash(filePath) {
 }
 
 /**
- * Get today's date string (YYYY-MM-DD)
- */
-function getTodayDateString() {
-  const today = new Date();
-  return today.toISOString().split('T')[0];
-}
-
-/**
- * Get last trim date from metadata
- */
-function getLastTrimDate() {
-  if (!fs.existsSync(LAST_TRIM_PATH)) {
-    return null;
-  }
-  try {
-    return fs.readFileSync(LAST_TRIM_PATH, 'utf8').trim();
-  } catch (e) {
-    return null;
-  }
-}
-
-/**
- * Archive current trimmed/all/ to trimmed/previous/ on new day
- */
-function archivePreviousDay() {
-  const today = getTodayDateString();
-  const lastTrim = getLastTrimDate();
-  
-  // If no previous trim or same day, no need to archive
-  if (!lastTrim || lastTrim === today) {
-    return false;
-  }
-  
-  log(`📅 New day detected (${today}, previous: ${lastTrim})`);
-  log(`📦 Archiving previous day's trimmed data...`);
-  
-  // Remove existing previous/ directory
-  if (fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)) {
-    fs.rmSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true, force: true });
-  }
-  fs.mkdirSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true });
-  
-  // Copy all files from all/ to previous/
-  if (!fs.existsSync(SILVER_TRIMMED_TODAY_DIR)) {
-    return false;
-  }
-  
-  const files = fs.readdirSync(SILVER_TRIMMED_TODAY_DIR).filter(f => f.endsWith('.json'));
-  let archived = 0;
-  
-  for (const file of files) {
-    try {
-      const sourcePath = path.join(SILVER_TRIMMED_TODAY_DIR, file);
-      const destPath = path.join(SILVER_TRIMMED_PREVIOUS_DIR, file);
-      fs.copyFileSync(sourcePath, destPath);
-      archived++;
-    } catch (error) {
-      log(`  ⚠️  Failed to archive ${file}: ${error.message}`);
-    }
-  }
-  
-  log(`  ✅ Archived ${archived} file(s) to silver_trimmed/previous/`);
-  return true;
-}
-
-/**
  * Main function
  */
 function main() {
   log('🔍 Starting Delta Comparison (Trimmed Content)\n');
+  const config = loadConfig();
+  const runDate = process.env.PIPELINE_RUN_DATE || config.run_date || getRunDate();
+  const manifestPath = process.env.PIPELINE_MANIFEST_PATH || null;
+  log(`📅 Effective delta run_date: ${runDate}`);
+  if (manifestPath) {
+    log(`🧾 Run manifest: ${manifestPath}`);
+  }
   
   // Check if silver_trimmed/all/ exists
   if (!fs.existsSync(SILVER_TRIMMED_TODAY_DIR)) {
@@ -165,119 +106,17 @@ function main() {
     process.exit(1);
   }
   
-  // Check if this is a new day - archive previous day's data
-  const today = getTodayDateString();
-  const lastTrim = getLastTrimDate();
-  
-  // Check if previous/ directory exists and has files
-  let previousFiles = fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR) 
+  const previousFiles = fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR) 
     ? fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'))
     : [];
-  let allFiles = fs.existsSync(SILVER_TRIMMED_TODAY_DIR)
+  const allFiles = fs.existsSync(SILVER_TRIMMED_TODAY_DIR)
     ? fs.readdirSync(SILVER_TRIMMED_TODAY_DIR).filter(f => f.endsWith('.json'))
     : [];
-  
-  // Debug logging: show file counts and sample filenames
   log(`📊 File counts: previous/ contains ${previousFiles.length} file(s), today/ contains ${allFiles.length} file(s)`);
-  
-  // Warn if counts mismatch on new day (should match after archive)
-  if (lastTrim && lastTrim !== today && previousFiles.length > 0 && allFiles.length > 0) {
-    if (previousFiles.length !== allFiles.length) {
-      log(`   ⚠️  WARNING: Count mismatch on new day! previous/ has ${previousFiles.length} files but today/ has ${allFiles.length} files`);
-      log(`     This may indicate incomplete archive. Expected counts to match.`);
-    }
-  }
-  
-  if (previousFiles.length > 0) {
-    const firstFivePrevious = previousFiles.slice(0, 5);
-    log(`   First 5 files in previous/: ${firstFivePrevious.join(', ')}`);
-  } else {
-    log(`   ⚠️  previous/ is empty`);
-  }
-  if (allFiles.length > 0) {
-    const firstFiveAll = allFiles.slice(0, 5);
-    log(`   First 5 files in today/: ${firstFiveAll.join(', ')}`);
-  } else {
-    log(`   ⚠️  today/ is empty`);
+  if (previousFiles.length === 0) {
+    log(`📅 previous/ is empty — treating all today files as new venues`);
   }
   log('');
-  
-  // If previous/ is empty but today/ has files, we need to populate previous/ first
-  // This handles the case where trim ran and populated today/ but previous/ wasn't archived yet
-  if (previousFiles.length === 0 && allFiles.length > 0) {
-    if (lastTrim && lastTrim !== today) {
-      // New day - archive current today/ to previous/ (this is yesterday's data)
-      log(`📅 New day detected (${today}, previous: ${lastTrim})`);
-      log(`📦 Archiving current today/ to previous/ (yesterday's data)...`);
-      const archived = archivePreviousDay();
-      if (archived) {
-        // Re-read previousFiles after archive
-        previousFiles = fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'));
-        log(`   ✅ After archive: previous/ now contains ${previousFiles.length} file(s)\n`);
-      } else {
-        // Archive failed or returned false - force copy from today/ to previous/
-        log(`⚠️  Archive returned false - forcing copy from today/ to previous/`);
-        if (!fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)) {
-          fs.mkdirSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true });
-        }
-        let copied = 0;
-        for (const file of allFiles) {
-          try {
-            const sourcePath = path.join(SILVER_TRIMMED_TODAY_DIR, file);
-            const destPath = path.join(SILVER_TRIMMED_PREVIOUS_DIR, file);
-            fs.copyFileSync(sourcePath, destPath);
-            copied++;
-          } catch (error) {
-            log(`  ⚠️  Failed to copy ${file}: ${error.message}`);
-          }
-        }
-        log(`  ✅ Copied ${copied} file(s) from today/ to previous/`);
-        previousFiles = fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'));
-        log(`   ✅ After copy: previous/ now contains ${previousFiles.length} file(s)\n`);
-      }
-    } else if (!lastTrim) {
-      log(`📅 First run - no previous data to compare\n`);
-    } else {
-      // Same day but previous/ is empty - force copy from today/ to previous/ for comparison
-      log(`⚠️  Same day but previous/ is empty - Populating empty previous/ from today/ for same-day delta`);
-      
-      // Ensure previous/ directory exists
-      if (!fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)) {
-        fs.mkdirSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true });
-      }
-      
-      // Force copy all files from today/ to previous/ with exact filenames
-      let copied = 0;
-      for (const file of allFiles) {
-        try {
-          const sourcePath = path.join(SILVER_TRIMMED_TODAY_DIR, file);
-          const destPath = path.join(SILVER_TRIMMED_PREVIOUS_DIR, file);
-          fs.copyFileSync(sourcePath, destPath);
-          copied++;
-        } catch (error) {
-          log(`  ⚠️  Failed to copy ${file}: ${error.message}`);
-        }
-      }
-      
-      log(`  ✅ Copied ${copied} file(s) from today/ to previous/ for same-day comparison`);
-      
-      // Re-read previousFiles after copy
-      previousFiles = fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'));
-      log(`   ✅ After copy: previous/ now contains ${previousFiles.length} file(s)\n`);
-    }
-  } else if (lastTrim && lastTrim !== today && previousFiles.length > 0) {
-    // New day and previous/ already has data - archive it (refresh)
-    log(`📅 New day detected (${today}, previous: ${lastTrim})`);
-    log(`📦 Archiving previous day's trimmed data...`);
-    archivePreviousDay();
-    // Re-read previousFiles after archive
-    previousFiles = fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'));
-    log(`   ✅ After archive: previous/ now contains ${previousFiles.length} file(s)\n`);
-  } else if (!lastTrim) {
-    log(`📅 First run - no previous data to compare\n`);
-  } else {
-    log(`📅 Same day as last trim (${today}) - comparing against previous day's data\n`);
-  }
   
   // Clear incremental folder at start
   if (fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
@@ -320,14 +159,6 @@ function main() {
       // New venue - copy to incremental
       fs.copyFileSync(todayFilePath, incrementalFilePath);
       log(`  ✨ New venue: ${venueId}`);
-      newVenues++;
-      continue;
-    }
-    
-    // Verify file exists in previousFilesList (sanity check)
-    if (!previousFilesList.includes(file)) {
-      log(`  ⚠️  WARNING: File ${file} exists in previous/ but not in previousFilesList - treating as new`);
-      fs.copyFileSync(todayFilePath, incrementalFilePath);
       newVenues++;
       continue;
     }
@@ -418,8 +249,9 @@ function generateDifferenceReports(newVenues, changedVenues) {
         const venuesData = JSON.parse(fs.readFileSync(VENUES_PATH, 'utf8'));
         if (Array.isArray(venuesData)) {
           venuesData.forEach(venue => {
-            if (venue.venueId) {
-              venuesMap[venue.venueId] = {
+            const venueId = venue.id || venue.place_id || venue.venueId;
+            if (venueId) {
+              venuesMap[venueId] = {
                 name: venue.name || venue.venueName || 'Unknown',
                 area: venue.area || 'Unknown',
                 website: venue.website || ''

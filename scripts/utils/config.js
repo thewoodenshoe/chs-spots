@@ -34,6 +34,8 @@ function loadConfig() {
   const defaultConfig = {
     run_date: getTodayDateString(),
     last_raw_processed_date: null,
+    last_merged_processed_date: null,
+    last_trimmed_processed_date: null,
     last_run_status: 'idle',
     pipeline: {
       maxIncrementalFiles: 15

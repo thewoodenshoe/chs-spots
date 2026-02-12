@@ -25,6 +25,7 @@ const AREA_FILTER = process.argv[2] && !/^\d{8}$/.test(process.argv[2]) ? proces
 
 // Logging setup
 let logFileStream = null;
+let currentRunContext = null;
 const originalConsole = {
   log: console.log,
   error: console.error,
@@ -150,7 +151,16 @@ function runScript(scriptPath, args = []) {
     
     const child = spawn('node', nodeArgs, {
       stdio: 'inherit',
-      cwd: path.join(__dirname, '..')
+      cwd: path.join(__dirname, '..'),
+      env: {
+        ...process.env,
+        ...(currentRunContext ? {
+          PIPELINE_RUN_DATE: currentRunContext.runDate,
+          PIPELINE_RUN_ID: currentRunContext.runId,
+          PIPELINE_MANIFEST_PATH: currentRunContext.manifestPath,
+          AREA_FILTER: currentRunContext.areaFilter || ''
+        } : {})
+      }
     });
     
     child.on('close', (code) => {
@@ -170,6 +180,73 @@ function runScript(scriptPath, args = []) {
       reject(error);
     });
   });
+}
+
+function createRunManifest(runDate, areaFilter, logPath) {
+  const manifestsDir = path.join(__dirname, '..', 'logs', 'pipeline-manifests');
+  if (!fs.existsSync(manifestsDir)) {
+    fs.mkdirSync(manifestsDir, { recursive: true });
+  }
+
+  const now = new Date();
+  const runId = `${runDate}-${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+  const manifestPath = path.join(manifestsDir, `run-${runId}.json`);
+  const manifest = {
+    runId,
+    runDate,
+    areaFilter: areaFilter || null,
+    startedAt: now.toISOString(),
+    finishedAt: null,
+    status: 'running',
+    logPath,
+    steps: {
+      raw: { status: 'pending', startedAt: null, finishedAt: null },
+      merged: { status: 'pending', startedAt: null, finishedAt: null },
+      trimmed: { status: 'pending', startedAt: null, finishedAt: null },
+      delta: { status: 'pending', startedAt: null, finishedAt: null },
+      extract: { status: 'pending', startedAt: null, finishedAt: null },
+      spots: { status: 'pending', startedAt: null, finishedAt: null }
+    }
+  };
+
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
+  return { runId, manifestPath };
+}
+
+function updateManifestStep(manifestPath, stepName, status) {
+  if (!manifestPath || !fs.existsSync(manifestPath)) return;
+  try {
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    const now = new Date().toISOString();
+    if (!manifest.steps[stepName]) {
+      manifest.steps[stepName] = { status: 'pending', startedAt: null, finishedAt: null };
+    }
+    manifest.steps[stepName].status = status;
+    if (status === 'running') {
+      manifest.steps[stepName].startedAt = now;
+      manifest.steps[stepName].finishedAt = null;
+    } else if (status === 'completed' || status === 'skipped' || status === 'failed') {
+      if (!manifest.steps[stepName].startedAt) {
+        manifest.steps[stepName].startedAt = now;
+      }
+      manifest.steps[stepName].finishedAt = now;
+    }
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
+  } catch (error) {
+    console.warn(`⚠️  Could not update manifest step ${stepName}: ${error.message}`);
+  }
+}
+
+function finalizeManifest(manifestPath, status) {
+  if (!manifestPath || !fs.existsSync(manifestPath)) return;
+  try {
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    manifest.status = status;
+    manifest.finishedAt = new Date().toISOString();
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
+  } catch (error) {
+    console.warn(`⚠️  Could not finalize manifest: ${error.message}`);
+  }
 }
 
 /**
@@ -220,6 +297,16 @@ async function main() {
     
     // Update run_date in config with effective run_date
     updateConfigField('run_date', runDate);
+
+    // Create run manifest and context for child scripts
+    const manifestInfo = createRunManifest(runDate, AREA_FILTER, logPath);
+    currentRunContext = {
+      runId: manifestInfo.runId,
+      runDate,
+      areaFilter: AREA_FILTER || null,
+      manifestPath: manifestInfo.manifestPath
+    };
+    console.log(`🧾 Run manifest: ${manifestInfo.manifestPath}`);
     
     // Check for recovery
     const lastRunStatus = config.last_run_status;
@@ -243,8 +330,10 @@ async function main() {
     if (recoveryPoint && ['merged', 'trimmed', 'extract'].includes(recoveryPoint)) {
       // Skip raw steps - recovering from later stage
       console.log('\n⏭️  Skipping raw steps (recovering from later stage)');
+      updateManifestStep(currentRunContext.manifestPath, 'raw', 'skipped');
     } else {
       console.log('\n📥 Step 1: Download Raw HTML');
+      updateManifestStep(currentRunContext.manifestPath, 'raw', 'running');
       
       if (rawTodayEmpty) {
         // Empty today/ - download all content
@@ -253,6 +342,7 @@ async function main() {
         await runScript('download-raw-html.js', AREA_FILTER ? [AREA_FILTER] : []);
         updateConfigField('last_raw_processed_date', runDate);
         updateConfigField('last_run_status', 'running_merged'); // Update to next step after raw completes
+        updateManifestStep(currentRunContext.manifestPath, 'raw', 'completed');
       } else if (lastRawDate === runDate && AREA_FILTER) {
         // Same day BUT area filter specified — run download to pick up venues
         // from this area that aren't yet in raw/today/ (e.g., ran DI earlier, now running WA)
@@ -261,10 +351,12 @@ async function main() {
         await runScript('download-raw-html.js', [AREA_FILTER]);
         updateConfigField('last_raw_processed_date', runDate);
         updateConfigField('last_run_status', 'running_merged');
+        updateManifestStep(currentRunContext.manifestPath, 'raw', 'completed');
       } else if (lastRawDate === runDate) {
         // Same day, no area filter - skip downloading
         console.log(`   ⏭️  raw/today/ not empty and last_raw_processed_date (${lastRawDate}) equals run_date (${runDate}) - skipping download`);
         updateConfigField('last_run_status', 'running_raw');
+        updateManifestStep(currentRunContext.manifestPath, 'raw', 'skipped');
       } else {
         // New day - archive and download
         console.log(`   📅 New day detected (${runDate} vs ${lastRawDate})`);
@@ -346,6 +438,7 @@ async function main() {
         await runScript('download-raw-html.js', AREA_FILTER ? [AREA_FILTER] : []);
         updateConfigField('last_raw_processed_date', runDate);
         updateConfigField('last_run_status', 'running_merged'); // Update to next step after raw completes
+        updateManifestStep(currentRunContext.manifestPath, 'raw', 'completed');
       }
       
       // Note: Delta comparison removed - comparison now happens at silver_trimmed layer only
@@ -356,33 +449,44 @@ async function main() {
     // SILVER_MERGED STEPS
     if (recoveryPoint && ['trimmed', 'extract'].includes(recoveryPoint)) {
       console.log('\n⏭️  Skipping silver_merged steps (recovering from later stage)');
+      updateManifestStep(currentRunContext.manifestPath, 'merged', 'skipped');
     } else {
       console.log('\n🔗 Step 2: Merge Raw Files');
+      updateManifestStep(currentRunContext.manifestPath, 'merged', 'running');
       updateConfigField('last_run_status', 'running_merged');
       await runScript('merge-raw-files.js', AREA_FILTER ? [AREA_FILTER] : []);
       // After merge completes successfully, update status to next step
       updateConfigField('last_run_status', 'running_trimmed');
+      updateManifestStep(currentRunContext.manifestPath, 'merged', 'completed');
     }
     
     // SILVER_TRIMMED STEPS
     if (recoveryPoint && recoveryPoint === 'extract') {
       console.log('\n⏭️  Skipping silver_trimmed steps (recovering from extract)');
+      updateManifestStep(currentRunContext.manifestPath, 'trimmed', 'skipped');
+      updateManifestStep(currentRunContext.manifestPath, 'delta', 'skipped');
     } else {
       console.log('\n✂️  Step 3: Trim Silver HTML');
+      updateManifestStep(currentRunContext.manifestPath, 'trimmed', 'running');
       updateConfigField('last_run_status', 'running_trimmed');
       await runScript('trim-silver-html.js', AREA_FILTER ? [AREA_FILTER] : []);
       // After trim completes successfully, update status to next step
       updateConfigField('last_run_status', 'running_extract');
+      updateManifestStep(currentRunContext.manifestPath, 'trimmed', 'completed');
       
       console.log('\n🔍 Step 3.5: Delta Comparison (Trimmed Content)');
+      updateManifestStep(currentRunContext.manifestPath, 'delta', 'running');
       try {
         await runScript('delta-trimmed-files.js');
         // Delta doesn't change status - still running_extract
+        updateManifestStep(currentRunContext.manifestPath, 'delta', 'completed');
       } catch (error) {
         if (error.message.includes('code 0')) {
           console.log('   ⏭️  Delta step completed');
+          updateManifestStep(currentRunContext.manifestPath, 'delta', 'completed');
         } else {
           updateConfigField('last_run_status', 'failed_at_trimmed');
+          updateManifestStep(currentRunContext.manifestPath, 'delta', 'failed');
           throw error;
         }
       }
@@ -401,14 +505,17 @@ async function main() {
       // No changes at all — skip both LLM and spots
       console.log('\n🧠 Step 4: Extract Happy Hours with LLM');
       console.log('   ⏭️  No incremental changes detected — skipping LLM extraction entirely');
+      updateManifestStep(currentRunContext.manifestPath, 'extract', 'skipped');
       console.log('\n📍 Step 5: Create Spots from Gold Data');
       console.log('   ⏭️  No incremental changes detected — skipping spot creation');
       console.log('   Spots from previous run are still valid (no new/updated happy hours)');
+      updateManifestStep(currentRunContext.manifestPath, 'spots', 'skipped');
       updateConfigField('last_run_status', 'completed_successfully');
     } else {
       // LLM EXTRACTION
       console.log('\n🧠 Step 4: Extract Happy Hours with LLM');
       console.log(`   Found ${incrementalFileCount} incremental file(s) to process`);
+      updateManifestStep(currentRunContext.manifestPath, 'extract', 'running');
       updateConfigField('last_run_status', 'running_extract');
       
       // Get maxIncrementalFiles from config (default: 15)
@@ -421,6 +528,8 @@ async function main() {
         console.log(`   Pipeline completed successfully but skipped expensive LLM step.`);
         console.log(`   Next run will start fresh from the beginning.`);
         updateConfigField('last_run_status', 'completed_successfully');
+        updateManifestStep(currentRunContext.manifestPath, 'extract', 'skipped');
+        updateManifestStep(currentRunContext.manifestPath, 'spots', 'skipped');
         console.log('\n✅ Pipeline completed (graceful shutdown - skipped LLM)');
         
         const finalConfig = loadConfig();
@@ -431,21 +540,26 @@ async function main() {
         console.log(`   Last trimmed processed date: ${finalConfig.last_trimmed_processed_date || 'null'}`);
         
         restoreConsole();
+        finalizeManifest(currentRunContext.manifestPath, 'completed_successfully');
         process.exit(0);
       }
       
       try {
         await runScript('extract-promotions.js', ['--incremental']);
         updateConfigField('last_run_status', 'completed_successfully');
+        updateManifestStep(currentRunContext.manifestPath, 'extract', 'completed');
       } catch (error) {
         updateConfigField('last_run_status', 'failed_at_extract');
+        updateManifestStep(currentRunContext.manifestPath, 'extract', 'failed');
         throw error;
       }
       
       // Step 5: Create spots
       console.log('\n📍 Step 5: Create Spots from Gold Data');
       console.log(`   Found ${incrementalFileCount} incremental file(s) - processing spots`);
+      updateManifestStep(currentRunContext.manifestPath, 'spots', 'running');
       await runScript('create-spots.js');
+      updateManifestStep(currentRunContext.manifestPath, 'spots', 'completed');
     }
     
     // Try to extract final stats from create-spots.log
@@ -512,6 +626,7 @@ async function main() {
     console.log(`   Last raw processed date: ${finalConfig.last_raw_processed_date || 'null'}`);
     console.log(`   Last merged processed date: ${finalConfig.last_merged_processed_date || 'null'}`);
     console.log(`   Last trimmed processed date: ${finalConfig.last_trimmed_processed_date || 'null'}`);
+    finalizeManifest(currentRunContext.manifestPath, 'completed_successfully');
     
   } catch (error) {
     const pipelineEndTime = Date.now();
@@ -555,6 +670,7 @@ async function main() {
     console.error(`   Last raw processed date: ${finalConfig.last_raw_processed_date || 'null'}`);
     console.error(`   Last merged processed date: ${finalConfig.last_merged_processed_date || 'null'}`);
     console.error(`   Last trimmed processed date: ${finalConfig.last_trimmed_processed_date || 'null'}`);
+    finalizeManifest(currentRunContext?.manifestPath, finalConfig.last_run_status || 'failed');
     
     restoreConsole();
     process.exit(1);

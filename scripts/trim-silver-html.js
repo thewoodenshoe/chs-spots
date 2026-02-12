@@ -558,16 +558,23 @@ function archiveTodayToPrevious() {
  */
 function resetStateForRun() {
   const config = loadConfig();
-  const runDate = config.run_date || getRunDate();
+  const runDate = process.env.PIPELINE_RUN_DATE || config.run_date || getRunDate();
+  const lastTrimmedDate = config.last_trimmed_processed_date || null;
   const todayEmpty = isDirectoryEmpty(SILVER_TRIMMED_TODAY_DIR);
+  const isNewDayForTrimmed = !lastTrimmedDate || lastTrimmedDate !== runDate;
   
   log(`📊 State check:`);
   log(`   run_date: ${runDate}`);
+  log(`   last_trimmed_processed_date: ${lastTrimmedDate || 'null'}`);
   log(`   silver_trimmed/today/ empty: ${todayEmpty}`);
+  log(`   is_new_day_for_trimmed: ${isNewDayForTrimmed}`);
   
-  // If today/ is not empty, archive it to previous/ (new day scenario)
-  if (!todayEmpty) {
+  // Archive only on true date rollover for trimmed layer.
+  // Same-day reruns should preserve today/ for non-target areas.
+  if (!todayEmpty && isNewDayForTrimmed) {
     archiveTodayToPrevious();
+  } else if (!todayEmpty && !isNewDayForTrimmed) {
+    log(`📅 Same-day trim rerun detected - preserving silver_trimmed/today/`);
   }
   
   // Clear incremental/ always at the start
@@ -589,8 +596,11 @@ function resetStateForRun() {
  */
 function main() {
   const areaFilter = process.argv[2] || null;
+  const config = loadConfig();
+  const runDate = process.env.PIPELINE_RUN_DATE || config.run_date || getRunDate();
   
   log(`\n📄 Starting HTML trimming${areaFilter ? ` (filter: ${areaFilter})` : ''}...`);
+  log(`📅 Effective trim run_date: ${runDate}`);
   
   // Reset state before processing (new day or same-day rerun)
   resetStateForRun();
@@ -673,6 +683,7 @@ function main() {
   log(`   📦 Trimmed size: ${(totalTrimmedSize / 1024 / 1024).toFixed(2)} MB`);
   // Update status after successful trim
   updateConfigField('last_run_status', 'running_trimmed');
+  updateConfigField('last_trimmed_processed_date', runDate);
   
   log(`\n✨ Done! Trimmed files saved to ${SILVER_TRIMMED_TODAY_DIR}`);
 }
