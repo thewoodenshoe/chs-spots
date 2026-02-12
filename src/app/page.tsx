@@ -277,12 +277,36 @@ export default function Home() {
 
   const healthIndicator = useMemo(() => {
     if (healthStatus === 'ok') {
-      return <span className="text-green-400">✔</span>;
+      return (
+        <span
+          className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-green-600 text-xs font-bold text-white shadow-sm"
+          aria-label="Healthy"
+          title="Healthy"
+        >
+          ✓
+        </span>
+      );
     }
     if (healthStatus === 'error') {
-      return <span className="text-red-400">✖</span>;
+      return (
+        <span
+          className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white shadow-sm"
+          aria-label="Unhealthy"
+          title="Unhealthy"
+        >
+          ✕
+        </span>
+      );
     }
-    return <span className="text-yellow-300">…</span>;
+    return (
+      <span
+        className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-yellow-500 text-xs font-bold text-black shadow-sm"
+        aria-label="Checking status"
+        title="Checking status"
+      >
+        …
+      </span>
+    );
   }, [healthStatus]);
 
   return (
