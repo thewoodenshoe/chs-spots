@@ -113,7 +113,9 @@ export default function Home() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (isEditOpen) {
+        if (isFeedbackOpen) {
+          setIsFeedbackOpen(false);
+        } else if (isEditOpen) {
           setIsEditOpen(false);
           setEditingSpot(null);
           setEditPinLocation(null);
@@ -126,7 +128,7 @@ export default function Home() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isEditOpen, isSubmissionOpen, isFilterOpen]);
+  }, [isFeedbackOpen, isEditOpen, isSubmissionOpen, isFilterOpen]);
 
   // Load area centers on mount
   useEffect(() => {

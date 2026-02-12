@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { answerCallbackQuery, editMessage } from '@/lib/telegram';
+import { atomicWriteFileSync } from '@/lib/atomic-write';
 
 /**
  * Telegram Bot Webhook
@@ -16,6 +17,16 @@ import { answerCallbackQuery, editMessage } from '@/lib/telegram';
  * For local development, use polling mode instead (see /api/telegram/poll).
  */
 export async function POST(request: Request) {
+  // Verify the request came from Telegram using the secret_token
+  const webhookSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
+  if (webhookSecret) {
+    const headerSecret = request.headers.get('x-telegram-bot-api-secret-token');
+    if (headerSecret !== webhookSecret) {
+      console.warn('[Telegram] Webhook request with invalid/missing secret token');
+      return NextResponse.json({ ok: false }, { status: 403 });
+    }
+  }
+
   try {
     const update = await request.json();
     
@@ -64,7 +75,7 @@ export async function POST(request: Request) {
       
       if (action === 'approve') {
         spots[spotIndex] = { ...spot, status: 'approved' };
-        fs.writeFileSync(spotsPath, JSON.stringify(spots, null, 2), 'utf8');
+        atomicWriteFileSync(spotsPath, JSON.stringify(spots, null, 2));
         
         await answerCallbackQuery(callbackQuery.id, `Approved: ${spot.title}`);
         if (chatId && messageId) {
@@ -73,7 +84,7 @@ export async function POST(request: Request) {
       } else {
         // Deny — remove the spot entirely (soft delete)
         spots[spotIndex] = { ...spot, status: 'denied' };
-        fs.writeFileSync(spotsPath, JSON.stringify(spots, null, 2), 'utf8');
+        atomicWriteFileSync(spotsPath, JSON.stringify(spots, null, 2));
         
         await answerCallbackQuery(callbackQuery.id, `Denied: ${spot.title}`);
         if (chatId && messageId) {

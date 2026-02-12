@@ -4,11 +4,13 @@ import fs from 'fs';
 import path from 'path';
 import { sendApprovalRequest } from '@/lib/telegram';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import { atomicWriteFileSync } from '@/lib/atomic-write';
+import { isAdminRequest } from '@/lib/auth';
+import { createSpotSchema, parseOrError } from '@/lib/validations';
 
 export async function GET(request: Request) {
-  // Check for admin mode via query param
-  const { searchParams } = new URL(request.url);
-  const isAdmin = searchParams.get('admin') === 'amsterdam';
+  // Check for admin mode via auth helper (supports header, query param, etc.)
+  const isAdmin = isAdminRequest(request);
   
   // Read from reporting folder (contains only found:true spots)
   const spotsPath = path.join(process.cwd(), 'data', 'reporting', 'spots.json');
@@ -119,16 +121,13 @@ export async function POST(request: Request) {
       fs.mkdirSync(reportingDir, { recursive: true });
     }
     
-    // Parse request body
-    const spotData = await request.json();
-    
-    // Validate required fields
-    if (!spotData.title || !spotData.lat || !spotData.lng) {
-      return NextResponse.json(
-        { error: 'Missing required fields: title, lat, lng' },
-        { status: 400 }
-      );
+    // Parse and validate request body
+    const raw = await request.json();
+    const parsed = parseOrError(createSpotSchema, raw);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
+    const spotData = parsed.data;
     
     // Load existing spots
     let spots: any[] = [];
@@ -170,9 +169,9 @@ export async function POST(request: Request) {
     // Add new spot
     spots.push(newSpot);
     
-    // Write back to file
+    // Write back to file (atomic to prevent corruption)
     try {
-      fs.writeFileSync(spotsPath, JSON.stringify(spots, null, 2), 'utf8');
+      atomicWriteFileSync(spotsPath, JSON.stringify(spots, null, 2));
     } catch (error) {
       console.error('Error writing spots.json:', error);
       return NextResponse.json(

@@ -35,20 +35,37 @@ interface SpotsContextType {
 const SpotsContext = createContext<SpotsContextType | undefined>(undefined);
 
 // Check for admin mode from URL or localStorage
-function checkAdminMode(): boolean {
-  if (typeof window === 'undefined') return false;
-  
-  // Check URL param first
+function getAdminSecret(): string | null {
+  if (typeof window === 'undefined') return null;
+
   const params = new URLSearchParams(window.location.search);
   const adminParam = params.get('admin');
-  
-  if (adminParam === 'amsterdam') {
+
+  if (adminParam) {
+    localStorage.setItem('chs_admin_key', adminParam);
     localStorage.setItem('chs_admin', 'true');
-    return true;
+    return adminParam;
   }
-  
-  // Check localStorage (persists across page loads)
-  return localStorage.getItem('chs_admin') === 'true';
+
+  if (localStorage.getItem('chs_admin') === 'true') {
+    return localStorage.getItem('chs_admin_key') || 'amsterdam';
+  }
+
+  return null;
+}
+
+function checkAdminMode(): boolean {
+  return getAdminSecret() !== null;
+}
+
+/** Build headers that include admin auth when available */
+function adminHeaders(extra: Record<string, string> = {}): Record<string, string> {
+  const secret = getAdminSecret();
+  const headers: Record<string, string> = { ...extra };
+  if (secret) {
+    headers['x-admin-key'] = secret;
+  }
+  return headers;
 }
 
 export function SpotsProvider({ children }: { children: ReactNode }) {
@@ -64,8 +81,8 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
   // Load spots from API on mount
   const loadSpots = async () => {
     try {
-      const admin = checkAdminMode();
-      const url = admin ? '/api/spots?admin=amsterdam' : '/api/spots';
+      const secret = getAdminSecret();
+      const url = secret ? `/api/spots?admin=${encodeURIComponent(secret)}` : '/api/spots';
       const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
@@ -147,9 +164,7 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
     try {
       const response = await fetch(`/api/spots/${spotData.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: adminHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(spotData),
       });
 
@@ -181,6 +196,7 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
     try {
       const response = await fetch(`/api/spots/${id}`, {
         method: 'DELETE',
+        headers: adminHeaders(),
       });
 
       if (response.ok) {

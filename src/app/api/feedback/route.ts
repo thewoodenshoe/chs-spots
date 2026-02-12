@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { sendNotification } from '@/lib/telegram';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import { feedbackSchema, parseOrError } from '@/lib/validations';
 
 export async function POST(request: Request) {
   // Rate limit: 2 feedback messages per minute per IP
@@ -13,14 +14,12 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { name, email, message } = await request.json();
-
-    if (!message || typeof message !== 'string' || message.trim().length === 0) {
-      return NextResponse.json(
-        { error: 'Message is required' },
-        { status: 400 },
-      );
+    const raw = await request.json();
+    const parsed = parseOrError(feedbackSchema, raw);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
+    const { name, email, message } = parsed.data;
 
     const text = [
       '💬 *User Feedback*',
@@ -28,7 +27,7 @@ export async function POST(request: Request) {
       `👤 Name: ${name || 'Anonymous'}`,
       `📧 Email: ${email || 'Not provided'}`,
       '',
-      `📝 ${message.substring(0, 1000)}`,
+      `📝 ${message}`,
     ].join('\n');
 
     await sendNotification(text);

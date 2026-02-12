@@ -3,11 +3,22 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { sendApprovalRequest } from '@/lib/telegram';
+import { atomicWriteFileSync } from '@/lib/atomic-write';
+import { isAdminRequest, unauthorizedResponse } from '@/lib/auth';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import { updateSpotSchema, parseOrError } from '@/lib/validations';
 
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!isAdminRequest(request)) return unauthorizedResponse();
+
+  const clientIp = getClientIp(request);
+  if (!checkRateLimit(`delete:${clientIp}`, 5, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   try {
     const reportingDir = path.join(process.cwd(), 'data', 'reporting');
     const spotsPath = path.join(reportingDir, 'spots.json');
@@ -54,9 +65,9 @@ export async function DELETE(
       );
     }
     
-    // Write back to file
+    // Write back to file (atomic)
     try {
-      fs.writeFileSync(spotsPath, JSON.stringify(spots, null, 2), 'utf8');
+      atomicWriteFileSync(spotsPath, JSON.stringify(spots, null, 2));
     } catch (error) {
       console.error('Error writing spots.json:', error);
       return NextResponse.json(
@@ -79,6 +90,13 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!isAdminRequest(request)) return unauthorizedResponse();
+
+  const clientIp = getClientIp(request);
+  if (!checkRateLimit(`put:${clientIp}`, 5, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   try {
     const reportingDir = path.join(process.cwd(), 'data', 'reporting');
     const spotsPath = path.join(reportingDir, 'spots.json');
@@ -98,16 +116,13 @@ export async function PUT(
       );
     }
     
-    // Parse request body
-    const spotData = await request.json();
-    
-    // Validate required fields
-    if (!spotData.title || !spotData.lat || !spotData.lng) {
-      return NextResponse.json(
-        { error: 'Missing required fields: title, lat, lng' },
-        { status: 400 }
-      );
+    // Parse and validate request body
+    const raw = await request.json();
+    const parsed = parseOrError(updateSpotSchema, raw);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
+    const spotData = parsed.data;
     
     // Load existing spots
     let spots: any[] = [];
@@ -151,9 +166,9 @@ export async function PUT(
     
     spots[spotIndex] = updatedSpot;
     
-    // Write back to file
+    // Write back to file (atomic)
     try {
-      fs.writeFileSync(spotsPath, JSON.stringify(spots, null, 2), 'utf8');
+      atomicWriteFileSync(spotsPath, JSON.stringify(spots, null, 2));
     } catch (error) {
       console.error('Error writing spots.json:', error);
       return NextResponse.json(

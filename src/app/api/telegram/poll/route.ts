@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { answerCallbackQuery, editMessage } from '@/lib/telegram';
+import { atomicWriteFileSync } from '@/lib/atomic-write';
 
 /**
  * Telegram Polling Endpoint
@@ -20,7 +21,11 @@ import { answerCallbackQuery, editMessage } from '@/lib/telegram';
 // Store the last update offset to avoid processing duplicates
 let lastOffset = 0;
 
-export async function GET() {
+export async function GET(request: Request) {
+  // Protect poll endpoint with admin auth
+  const { isAdminRequest, unauthorizedResponse } = await import('@/lib/auth');
+  if (!isAdminRequest(request)) return unauthorizedResponse();
+
   try {
     const token = process.env.TELEGRAM_BOT_TOKEN;
     if (!token) {
@@ -88,14 +93,14 @@ export async function GET() {
 
         if (action === 'approve') {
           spots[spotIndex] = { ...spot, status: 'approved' };
-          fs.writeFileSync(spotsPath, JSON.stringify(spots, null, 2), 'utf8');
+          atomicWriteFileSync(spotsPath, JSON.stringify(spots, null, 2));
           await answerCallbackQuery(callbackQuery.id, `Approved: ${spot.title}`);
           if (chatId && messageId) {
             await editMessage(chatId, messageId, `✅ *Approved*: ${spot.title}\n\nSpot is now visible on the map.`);
           }
         } else {
           spots[spotIndex] = { ...spot, status: 'denied' };
-          fs.writeFileSync(spotsPath, JSON.stringify(spots, null, 2), 'utf8');
+          atomicWriteFileSync(spotsPath, JSON.stringify(spots, null, 2));
           await answerCallbackQuery(callbackQuery.id, `Denied: ${spot.title}`);
           if (chatId && messageId) {
             await editMessage(chatId, messageId, `❌ *Denied*: ${spot.title}\n\nSpot has been rejected.`);

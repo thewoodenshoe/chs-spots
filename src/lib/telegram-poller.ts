@@ -10,6 +10,7 @@
 import fs from 'fs';
 import path from 'path';
 import { answerCallbackQuery, editMessage } from './telegram';
+import { atomicWriteFileSync } from './atomic-write';
 
 let lastOffset = 0;
 let intervalId: ReturnType<typeof setInterval> | null = null;
@@ -124,7 +125,7 @@ async function handleCallback(callbackQuery: any, token: string): Promise<void> 
   spots[spotIndex] = { ...spot, status: newStatus };
 
   try {
-    fs.writeFileSync(spotsPath, JSON.stringify(spots, null, 2), 'utf8');
+    atomicWriteFileSync(spotsPath, JSON.stringify(spots, null, 2));
   } catch (err) {
     console.error('[Telegram] Failed to write spots.json:', err);
     await answerCallbackQuery(callbackQuery.id, 'Error saving — try again');
