@@ -472,6 +472,37 @@ async function fetchUrl(url, retries = 2) {
   }
 }
 
+// URLs matching these patterns are never useful for promotion extraction
+const SKIP_URL_PATTERNS = [
+  /\.pdf(\?|$)/i,             // PDF files (binary, can't extract text)
+  /\.docx?(\?|$)/i,           // Word docs
+  /\.xlsx?(\?|$)/i,           // Excel files
+  /\.pptx?(\?|$)/i,           // PowerPoint files
+  /\.jpe?g(\?|$)/i,           // Images
+  /\.png(\?|$)/i,
+  /\.gif(\?|$)/i,
+  /\.svg(\?|$)/i,
+  /\.webp(\?|$)/i,
+  /\/event-?calendar\b/i,     // Event calendar pages (change weekly, not promo-related)
+  /\/upcoming-?events\b/i,    // Upcoming events listings
+  /\/events-?calendar\b/i,
+  /\/blog\b/i,                // Blog posts (not promo-related)
+  /\/news\b/i,                // News pages
+  /\/press\b/i,               // Press pages
+  /\/careers?\b/i,            // Careers/jobs pages
+  /\/jobs?\b/i,
+  /\/privacy-?policy\b/i,     // Legal pages
+  /\/terms/i,
+  /\/cookie-?policy\b/i,
+];
+
+/**
+ * Check if a URL should be skipped (binary files, event calendars, etc.)
+ */
+function shouldSkipUrl(url) {
+  return SKIP_URL_PATTERNS.some(pattern => pattern.test(url));
+}
+
 /**
  * Find subpage links from HTML
  */
@@ -491,6 +522,11 @@ function findSubpageLinks(html, baseUrl) {
       
       // Only include links from the same domain
       if (urlObj.hostname === baseUrlObj.hostname) {
+        // Skip binary files, event calendars, blogs, legal pages
+        if (shouldSkipUrl(resolvedUrl)) {
+          return;
+        }
+
         const hrefLower = href.toLowerCase();
         const linkText = $(elem).text().toLowerCase();
         

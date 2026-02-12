@@ -79,11 +79,87 @@ if (!fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
   fs.mkdirSync(SILVER_TRIMMED_INCREMENTAL_DIR, { recursive: true });
 }
 
+// Maximum chars per page after trimming — anything beyond this is truncated
+const MAX_PAGE_CHARS = 50000;
+
+// URLs that should be entirely skipped (not relevant for promotions)
+const SKIP_PAGE_URL_PATTERNS = [
+  /\/event-?calendar\b/i,
+  /\/upcoming-?events\b/i,
+  /\/events-?calendar\b/i,
+  /\/blog\b/i,
+  /\/news\b/i,
+  /\/press\b/i,
+  /\/careers?\b/i,
+  /\/jobs?\b/i,
+  /\/privacy-?policy\b/i,
+  /\/terms/i,
+  /\/cookie-?policy\b/i,
+];
+
+// Boilerplate text patterns to strip after extraction
+const BOILERPLATE_PATTERNS = [
+  // Cookie consent
+  /we use cookies[^.]*\./gi,
+  /this (?:site|website) uses cookies[^.]*\./gi,
+  /by (?:continuing|using) (?:this|our) (?:site|website)[^.]*cookies[^.]*\./gi,
+  /accept (?:all )?cookies/gi,
+  /cookie (?:policy|preferences|settings|consent)/gi,
+  // Terms / Privacy
+  /we have updated our[^.]*terms[^.]*\./gi,
+  /terms of (?:service|use)/gi,
+  /privacy policy/gi,
+  // Newsletter
+  /sign ?up (?:for|to) (?:our|the) (?:newsletter|emails?|mailing list)[^.]*\./gi,
+  /subscribe to (?:our|the) (?:newsletter|emails?)[^.]*\./gi,
+  /enter your email[^.]*\./gi,
+  // Social media CTAs (not the actual content links, just "Follow Us" type noise)
+  /follow us on (?:instagram|facebook|twitter|tiktok|social media)[^.]*\./gi,
+  /(?:find|join|connect with) us on (?:instagram|facebook|twitter|tiktok)[^.]*\./gi,
+  // Google Calendar / ICS links (event page noise)
+  /Google Calendar ICS/g,
+  /Add to Calendar/gi,
+  /View Event →/g,
+];
+
+/**
+ * Check if a page URL should be entirely skipped
+ */
+function shouldSkipPage(url) {
+  if (!url) return false;
+  // Skip PDFs and binary files
+  if (/\.(?:pdf|docx?|xlsx?|pptx?|jpe?g|png|gif|svg|webp)(\?|$)/i.test(url)) {
+    return true;
+  }
+  return SKIP_PAGE_URL_PATTERNS.some(pattern => pattern.test(url));
+}
+
+/**
+ * Strip boilerplate text patterns
+ */
+function stripBoilerplate(text) {
+  let cleaned = text;
+  for (const pattern of BOILERPLATE_PATTERNS) {
+    cleaned = cleaned.replace(pattern, '');
+  }
+  return cleaned;
+}
+
 /**
  * Trim HTML and extract visible text
  */
-function trimHtml(html) {
+function trimHtml(html, pageUrl) {
   if (!html || typeof html !== 'string') {
+    return '';
+  }
+
+  // Skip PDF binary content entirely
+  if (html.trimStart().startsWith('%PDF')) {
+    return '';
+  }
+
+  // Skip pages by URL pattern
+  if (shouldSkipPage(pageUrl)) {
     return '';
   }
 
@@ -98,6 +174,16 @@ function trimHtml(html) {
     
     // Remove hidden elements
     $('[style*="display: none"], [style*="display:none"], [hidden]').remove();
+    
+    // Remove cookie consent banners
+    $('.cookie-banner, .cookie-consent, .cookie-notice, #cookie-banner, #cookie-consent, #gdpr-consent, .gdpr-banner').remove();
+    $('[class*="cookie"], [id*="cookie-consent"], [id*="cookie-banner"]').remove();
+    
+    // Remove newsletter signup forms
+    $('.newsletter, .newsletter-signup, .email-signup, #newsletter').remove();
+    
+    // Remove social media widgets
+    $('.social-links, .social-media, .social-icons, .share-buttons').remove();
     
     // Remove comments
     $('*').contents().filter(function() {
@@ -153,18 +239,26 @@ function trimHtml(html) {
       text = bodyDirectText + '\n\n' + text;
     }
     
+    // Strip boilerplate text
+    text = stripBoilerplate(text);
+    
     // Normalize whitespace - preserve line breaks but clean up excessive spaces
-    // Don't replace \n with spaces - preserve paragraph structure
     text = text
       .replace(/[ \t]+/g, ' ')        // Multiple spaces/tabs → single space (but keep \n)
       .replace(/\n\s*\n\s*\n+/g, '\n\n')  // Multiple newlines → max 2
       .trim();
     
+    // Enforce per-page character cap
+    if (text.length > MAX_PAGE_CHARS) {
+      text = text.substring(0, MAX_PAGE_CHARS) + '\n[...truncated at ' + MAX_PAGE_CHARS + ' chars]';
+    }
+    
     return text;
   } catch (error) {
     log(`Error parsing HTML: ${error.message}`);
     // Fallback: try to extract plain text without parsing
-    return html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+    const fallback = html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+    return fallback.length > MAX_PAGE_CHARS ? fallback.substring(0, MAX_PAGE_CHARS) : fallback;
   }
 }
 
@@ -232,10 +326,15 @@ function processVenueFile(venueId, areaFilter = null) {
     const originalSize = originalHtml.length;
     totalOriginalSize += originalSize;
     
-    // Trim HTML to visible text
-    const trimmedText = trimHtml(originalHtml);
+    // Trim HTML to visible text (pass URL for skip-page filtering)
+    const trimmedText = trimHtml(originalHtml, page.url);
     const trimmedSize = trimmedText.length;
     totalTrimmedSize += trimmedSize;
+    
+    // Skip empty pages (PDF binary, skipped URLs, etc.)
+    if (!trimmedText || trimmedText.length === 0) {
+      continue;
+    }
     
     // Normalize text and URL for hash computation
     const cleanUrl = normalizeUrl(page.url);
