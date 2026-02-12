@@ -579,26 +579,59 @@ export default function MapComponent({
                 )}
               </div>
               
-              {/* Structured promotion display with activity-appropriate labels */}
-              {(selectedSpot.promotionTime || selectedSpot.happyHourTime) && (
-                <div className="mb-2">
-                  <span className="font-semibold text-gray-700">Time: </span>
-                  <span className="text-gray-800">{selectedSpot.promotionTime || selectedSpot.happyHourTime}</span>
-                </div>
-              )}
-              
-              {((selectedSpot.promotionList && selectedSpot.promotionList.length > 0) || (selectedSpot.happyHourList && selectedSpot.happyHourList.length > 0)) && (
-                <div className="mb-2">
-                  <div className="font-semibold text-gray-700 mb-1">
-                    {selectedSpot.type === 'Brunch' ? 'Brunch Specials:' : 'Specials:'}
+              {/* Schedule / Time — split on bullet separator for readability */}
+              {(selectedSpot.promotionTime || selectedSpot.happyHourTime) && (() => {
+                const raw = selectedSpot.promotionTime || selectedSpot.happyHourTime || '';
+                const parts = raw.split(/\s*[•]\s*/).map((p: string) => p.trim()).filter(Boolean);
+                return (
+                  <div className="mb-2">
+                    <div className="font-semibold text-gray-700 mb-0.5 text-xs uppercase tracking-wide">Schedule</div>
+                    <div className="space-y-0.5">
+                      {parts.map((part: string, idx: number) => (
+                        <div key={idx} className="text-xs text-gray-800 leading-snug">{part}</div>
+                      ))}
+                    </div>
                   </div>
-                  <ul className="list-disc list-inside text-gray-800 space-y-0.5 ml-2">
-                    {(selectedSpot.promotionList ?? selectedSpot.happyHourList ?? []).map((item: string, idx: number) => (
-                      <li key={idx} className="text-xs">{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+                );
+              })()}
+
+              {/* Specials list — extract bracketed labels into bold headings */}
+              {((selectedSpot.promotionList && selectedSpot.promotionList.length > 0) || (selectedSpot.happyHourList && selectedSpot.happyHourList.length > 0)) && (() => {
+                const items: string[] = selectedSpot.promotionList ?? selectedSpot.happyHourList ?? [];
+                // Group items by their [Label] prefix, or "Other" if none
+                const groups: { label: string; entries: string[] }[] = [];
+                const groupMap: Record<string, string[]> = {};
+                const order: string[] = [];
+                items.forEach((item: string) => {
+                  const match = item.match(/^\[([^\]]+)\]\s*(.*)/);
+                  const label = match ? match[1] : '';
+                  const text = match ? match[2] : item;
+                  if (!text.trim()) return;
+                  if (!groupMap[label]) { groupMap[label] = []; order.push(label); }
+                  groupMap[label].push(text.trim());
+                });
+                order.forEach(label => groups.push({ label, entries: groupMap[label] }));
+
+                return (
+                  <div className="mb-2">
+                    <div className="font-semibold text-gray-700 mb-1 text-xs uppercase tracking-wide">
+                      {selectedSpot.type === 'Brunch' ? 'Brunch Specials' : 'Specials'}
+                    </div>
+                    <div className="space-y-1.5">
+                      {groups.map((g, gIdx) => (
+                        <div key={gIdx}>
+                          {g.label && <div className="text-xs font-semibold text-gray-700">{g.label}</div>}
+                          {g.entries.map((entry, eIdx) => (
+                            <div key={eIdx} className="text-xs text-gray-600 pl-2">
+                              {entry}
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
               
               {selectedSpot.sourceUrl && (
                 <div className="mb-2">
