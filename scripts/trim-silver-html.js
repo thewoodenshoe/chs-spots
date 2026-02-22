@@ -470,6 +470,56 @@ function archiveTodayToPrevious() {
   const todayCountBefore = todayFilesBefore.length;
   log(`  📊 today/ contains ${todayCountBefore} file(s) before archive`);
   
+  // ── 7-day rolling archive: snapshot previous/ before overwrite ──
+  try {
+    const ARCHIVE_BASE = path.join(SILVER_TRIMMED_DIR, 'archive');
+    const prevFiles = fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)
+      ? fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'))
+      : [];
+    if (prevFiles.length > 0) {
+      // Use the run_date from config to label the archive
+      let dateLabel = 'unknown';
+      try {
+        const cfg = JSON.parse(fs.readFileSync(path.join(__dirname, '../data/config/config.json'), 'utf8'));
+        dateLabel = cfg.last_trimmed_processed_date || cfg.run_date || 'unknown';
+      } catch { /* use default */ }
+      
+      const archiveDir = path.join(ARCHIVE_BASE, dateLabel);
+      if (!fs.existsSync(archiveDir)) {
+        fs.mkdirSync(archiveDir, { recursive: true });
+        let archiveCount = 0;
+        for (const f of prevFiles) {
+          fs.copyFileSync(
+            path.join(SILVER_TRIMMED_PREVIOUS_DIR, f),
+            path.join(archiveDir, f)
+          );
+          archiveCount++;
+        }
+        log(`  📦 Archived ${archiveCount} previous file(s) to archive/${dateLabel}`);
+      } else {
+        log(`  📦 Archive ${dateLabel} already exists — skipping`);
+      }
+      
+      // Clean archives older than 14 days
+      if (fs.existsSync(ARCHIVE_BASE)) {
+        const cutoff = Date.now() - (14 * 24 * 60 * 60 * 1000);
+        const dirs = fs.readdirSync(ARCHIVE_BASE).filter(d => /^\d{8}$/.test(d));
+        for (const d of dirs) {
+          const y = parseInt(d.substring(0, 4));
+          const m = parseInt(d.substring(4, 6)) - 1;
+          const dd = parseInt(d.substring(6, 8));
+          const dirDate = new Date(y, m, dd).getTime();
+          if (dirDate < cutoff) {
+            fs.rmSync(path.join(ARCHIVE_BASE, d), { recursive: true, force: true });
+            log(`  🗑️  Cleaned old archive: ${d}`);
+          }
+        }
+      }
+    }
+  } catch (archiveErr) {
+    log(`  ⚠️  Archive failed (non-fatal): ${archiveErr.message}`);
+  }
+  
   // Explicitly empty previous/ by removing entire directory and recreating (more reliable)
   if (fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)) {
     fs.rmSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true, force: true });

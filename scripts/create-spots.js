@@ -16,7 +16,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { loadConfig } = require('./utils/config');
+const { loadConfig, loadWatchlist } = require('./utils/config');
 
 // Logging setup
 const logDir = path.join(__dirname, '..', 'logs');
@@ -273,6 +273,7 @@ function createSpots(goldData, venueData, startId) {
       sourceUrl: sourceUrl || venueData.website || null,
       lastUpdateDate: goldData.processedAt || null,
       type: activityType,
+      area: venueData.area || 'Unknown',
       source: 'automated',
       venueId: goldData.venueId || undefined,
     };
@@ -400,6 +401,9 @@ function main() {
   let noHappyHour = 0;
   let incompleteData = 0;
   
+  const watchlist = loadWatchlist();
+  let excludedCount = 0;
+
   for (const goldPath of goldFiles) {
     try {
       const goldContent = fs.readFileSync(goldPath, 'utf8');
@@ -416,6 +420,11 @@ function main() {
       if (!venueData) {
         missingVenue++;
         log(`  ⚠️  Skipping: Venue not found in venues.json: ${venueId}`);
+        continue;
+      }
+
+      if (watchlist.excluded.has(venueId)) {
+        excludedCount++;
         continue;
       }
       
@@ -606,6 +615,7 @@ function main() {
   log(`   📋 Existing automated spots preserved: ${existingAutomatedCount}`);
   log(`   👤 Manual spots preserved: ${manualSpotsCount}`);
   log(`   ⚠️  Skipped (already exists): ${skipped}`);
+  if (excludedCount > 0) log(`   🚫 Excluded (watchlist): ${excludedCount}`);
   log(`   ❌ Missing venue data: ${missingVenue}`);
   log(`   ℹ️  No happy hour: ${noHappyHour}`);
   log(`   📋 Incomplete data: ${incompleteData} (time only, no days/specials)`);

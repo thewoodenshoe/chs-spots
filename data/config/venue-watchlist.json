@@ -1,0 +1,917 @@
+{
+  "updatedAt": "2026-02-22",
+  "venues": {
+    "ChIJBQJOFn9l_ogRcQ1zXfeDmUE": {
+      "name": "Bojangles",
+      "area": "Daniel Island",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJXzKtOu9v_ogRIOHVSoikRNg": {
+      "name": "Domino's Pizza",
+      "area": "Daniel Island",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJJzeRRvFv_ogRuZCbksM-8xs": {
+      "name": "Hampton Inn Charleston - Daniel Island",
+      "area": "Daniel Island",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJN44sI-9v_ogRjWvP4mBGYcI": {
+      "name": "Subway",
+      "area": "Daniel Island",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJg11W3Gx6_ogRmHd2zRgvXP0": {
+      "name": "Courtyard by Marriott Charleston Historic District",
+      "area": "Downtown Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJ7Z_03zZ6_ogRgwag7uJqPqw": {
+      "name": "Courtyard by Marriott Charleston Waterfront",
+      "area": "Downtown Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJPVmBwHJ6_ogRLeMOdgnMPTE": {
+      "name": "Domino's Pizza",
+      "area": "Downtown Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJobIsnWx6_ogR5CQ0bFRHaFE": {
+      "name": "Embassy Suites by Hilton Charleston Historic District",
+      "area": "Downtown Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJy3xggGt6_ogRJ-gRKsY6pmo": {
+      "name": "Hampton Inn Charleston-Historic District",
+      "area": "Downtown Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJQygNMTd6_ogRVhiOzXsfy1E": {
+      "name": "Hilton Garden Inn Charleston Waterfront/Downtown",
+      "area": "Downtown Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJH90cEDZ6_ogRwC3_IU0wiS0": {
+      "name": "Holiday Inn Express & Suites Charleston Dwtn - Westedge by IHG",
+      "area": "Downtown Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJg13aGRJ6_ogR7SCuFOc_pEA": {
+      "name": "Subway",
+      "area": "Downtown Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJ-4O_5jd6_ogRhfWbh6uV3qk": {
+      "name": "Wendy's",
+      "area": "Downtown Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJf_cujqlz_ogRoH-dlH3tn9M": {
+      "name": "Domino's Pizza",
+      "area": "Isle of Palms",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJDYkYu6lz_ogRhM-QH0Ps4Xg": {
+      "name": "Subway",
+      "area": "Isle of Palms",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJx2URNgt5_ogR-MpZ88Jz8og": {
+      "name": "Bojangles",
+      "area": "James Island",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJcSfBegl5_ogRZbU6JjRxo3I": {
+      "name": "Chick-fil-A",
+      "area": "James Island",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJ_6a-vgZ5_ogR_18aEtquGXY": {
+      "name": "Domino's Pizza",
+      "area": "James Island",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJyZN6jwZ5_ogRm1QrjMc7Vjg": {
+      "name": "Papa Johns Pizza",
+      "area": "James Island",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJ_Qvygwl5_ogR_K7WHweW138": {
+      "name": "Taco Bell",
+      "area": "James Island",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJ0wlOYAZ5_ogR5qDPF7i3RZc": {
+      "name": "Zaxby's Chicken Fingers & Buffalo Wings",
+      "area": "James Island",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJO7I-6vRw_ogRU1xThzDNJyE": {
+      "name": "Best Western Patriots Point",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJ61ubjN5x_ogRpuhXS1ehd2I": {
+      "name": "Chick-fil-A",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJ84f7yq9x_ogRnjJXk_ZpYgA": {
+      "name": "Chick-fil-A",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJNe0lXpFx_ogRWzcuYeQXxmc": {
+      "name": "Chipotle Mexican Grill",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJpeXs54xw_ogRDbs4R0aZQ5c": {
+      "name": "Comfort Inn & Suites Patriots Point",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJqQ22HJNx_ogRbhHROGS_i3s": {
+      "name": "Courtyard by Marriott Charleston Mt. Pleasant",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJG-bQmK9x_ogRZFRkANpIMtc": {
+      "name": "Domino's Pizza",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJs4WH9V9w_ogR15cBDPfL9oM": {
+      "name": "Extended Stay America Suites- Charleston - Mt. Pleasant",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJDSW8xxxy_ogR5PJKrVERBKA": {
+      "name": "Hampton Inn & Suites Charleston/Mt. Pleasant-Isle Of Palms",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJCyFdxvRw_ogRsbNxZY9S5BE": {
+      "name": "Hampton Inn Charleston/Mt. Pleasant-Patriots Point",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJday_Kjxx_ogRcNHxH23hFMg": {
+      "name": "Holiday Inn Express & Suites",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJ_a59uhdy_ogRzle80gMMxTU": {
+      "name": "Homewood Suites by Hilton Charleston - Mt. Pleasant",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJN6vZ__Nx_ogRB7Yns22lvr4": {
+      "name": "IHOP",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJt5s6rPZw_ogR5qSTTVC0Ef4": {
+      "name": "Jimmy John's",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJw5PA1rxx_ogRaFaHpaUJouQ": {
+      "name": "Papa Johns Pizza",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJCwfOavVw_ogRoIPc0ZIzz2M": {
+      "name": "Quality Inn Mt. Pleasant - Charleston",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJvwBd8PNx_ogRVJxLGi7mt3I": {
+      "name": "Raising Cane's Chicken Fingers",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJU5jed79x_ogR8ag7ZinB6p4": {
+      "name": "Red Roof PLUS+ Mt Pleasant - Patriots Point",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJ8xz7lxxy_ogRIrlKTrKztQA": {
+      "name": "Residence Inn by Marriott Charleston Mt. Pleasant",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJycJQWPVw_ogR8zf77tvRv0w": {
+      "name": "Sleep Inn Mt. Pleasant - Charleston",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJm4VSq99x_ogRegWLDVuXf6o": {
+      "name": "Subway",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJmVWCTbNt_ogRXolc57RsUok": {
+      "name": "Subway",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJ2WYlDAVx_ogRnEklRgBflE4": {
+      "name": "Taco Bell",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJq2QZYdlx_ogR-vBW976oKUE": {
+      "name": "Waffle House",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJL-Wr3Ntx_ogRsDw9lP54Abo": {
+      "name": "Wendy's",
+      "area": "Mount Pleasant",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJiViM2PRk_ogRcLB7aI1tMcA": {
+      "name": "Bojangles",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJrWIrfstj_ogRPoUAuC0HHOo": {
+      "name": "Bojangles",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJ2f1_cVdj_ogRs4HakoBKmos": {
+      "name": "Bojangles",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJy3vUcxZj_ogRNfhaVZTPquU": {
+      "name": "Burger King",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJ4yFmBdBj_ogRrTxJrig-g8k": {
+      "name": "Candlewood Suites Charleston - Northwoods, an IHG Hotel",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJ-5FbS35j_ogRMz2qilWqdFw": {
+      "name": "Checkers",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJVyrRNFR7_ogRoSZcNl3hPfw": {
+      "name": "Checkers",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJQWZPglxj_ogRE5MOZxc_Pag": {
+      "name": "Chick-fil-A",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJ7ZHJOk9j_ogRG2lI7NUgDU8": {
+      "name": "Chili's Grill & Bar",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJuZBB-8Rj_ogRXdwsqxz7_q8": {
+      "name": "Chipotle Mexican Grill",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJT3hfKUVj_ogRueIycgr0aDg": {
+      "name": "Chipotle Mexican Grill",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJT5kjeFdj_ogRvWv1a207xuU": {
+      "name": "Comfort Inn & Suites Charleston Airport Convention Center",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJ7bLhCs9j_ogRo-kmtDeZGQU": {
+      "name": "Country Inn & Suites By Radisson, Charleston North, SC",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJQ801xFhj_ogRqS3OLsfNrJQ": {
+      "name": "Courtyard by Marriott North Charleston Airport/Coliseum",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJY5dR91tj_ogR_Wmf9kfe1ho": {
+      "name": "Crowne Plaza Charleston Airport - Conv Ctr, an IHG Hotel",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJg9CGFVdj_ogRpxIDAfWLmP8": {
+      "name": "Days Inn & Suites by Wyndham Charleston Airport West",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJ2VoVskVl_ogRh9RKTxAu7po": {
+      "name": "Domino's Pizza",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJMWr1z5lj_ogRCHt9EqQo0Mo": {
+      "name": "Domino's Pizza",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJ1eLJsKt8_ogREIsYqRQYtkU": {
+      "name": "Domino's Pizza",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJ4_2BRc5j_ogRuJ0kAYQqycg": {
+      "name": "DoubleTree by Hilton Hotel & Suites Charleston Airport",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJSdqhWk9j_ogROfyjPHssEAU": {
+      "name": "DoubleTree by Hilton Hotel North Charleston - Convention Center",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJkcfLnVdj_ogRat1zi9lRqhc": {
+      "name": "Econo Lodge Coliseum",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJCUeWMlFj_ogRL3enSGmosoc": {
+      "name": "Embassy Suites by Hilton Charleston Airport Hotel & Convention Center",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJE9b7HVtj_ogRxSJhjRWosW0": {
+      "name": "Fairfield by Marriott Inn & Suites Charleston Airport/Convention Center",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJsfLrk8xj_ogR2DVKknMaYmw": {
+      "name": "Fairfield by Marriott Inn & Suites Charleston North/Ashley Phosphate",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJ4xwH0VZj_ogRb5p-0xLAg3c": {
+      "name": "Firehouse Subs West Montague",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJa4hxAsRj_ogRFH-j6dajZIM": {
+      "name": "Five Guys",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJXSJjXUVj_ogRX2URBZwEpY8": {
+      "name": "Golden Corral Buffet & Grill",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJ4b3TT8xj_ogRq-1ccgUDexI": {
+      "name": "Hampton Inn Charleston-North",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJQcvT_M1j_ogRoaExkX8qee8": {
+      "name": "Hawthorn Suites by Wyndham North Charleston SC",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJf5Y90U5j_ogRm4_4yWYS8yg": {
+      "name": "Hilton Garden Inn Charleston Airport",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJOSEYk9Fj_ogR6ePwYQ7294Y": {
+      "name": "Holiday Inn Express & Suites Charleston - Northwoods by IHG",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJ239ewlZj_ogRfZn-LbHxhtg": {
+      "name": "Holiday Inn Express & Suites Charleston Arpt-Conv Ctr Area by IHG",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJnS6zNFFj_ogRPmEM-7oikPk": {
+      "name": "Homewood Suites by Hilton Charleston Airport",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJQbhrLFJj_ogRBKUuArcBxIY": {
+      "name": "Hyatt Place Charleston Airport/Convention Center",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJh5tRYMlj_ogRPw5KGjZC1-E": {
+      "name": "Hyatt Place North Charleston",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJkWlOg8tj_ogRIJ2riwxz3C4": {
+      "name": "IHOP",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJ27HSskRj_ogRg59wpb9-A38": {
+      "name": "IHOP",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJBx2s735j_ogR-i_0T4tt5Qk": {
+      "name": "Little Caesars Pizza",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJvxz7tnFi_ogR_dwI8qmZLfo": {
+      "name": "Little Caesars Pizza",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJv4_qFax8_ogRPSgRD1cXTLk": {
+      "name": "Little Caesars Pizza",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJFxA_Z9pj_ogRgZOaRDa8PqE": {
+      "name": "Olive Garden Italian Restaurant",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJF6sdk9pj_ogRQWlteBRWNTQ": {
+      "name": "Outback Steakhouse",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJQW8MRsRj_ogRuxhJbtGy7fY": {
+      "name": "Panda Express",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJ8_ioF3hj_ogRb7xCQsK8TyI": {
+      "name": "Papa Johns Pizza",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJI9M009pj_ogRKy0ABCInv48": {
+      "name": "Pizza Hut",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJBTDMsoJj_ogRo2EXkyRWDNM": {
+      "name": "Popeyes Louisiana Kitchen",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJLwM6Ecxj_ogRCRYLTayJ6a8": {
+      "name": "Quality Inn & Suites North Charleston - Ashley Phosphate",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJoVL_ZFlj_ogRTDhleKy_m6s": {
+      "name": "Quality Inn Coliseum",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJYRIzyMZj_ogRymvd0a-gapU": {
+      "name": "Raising Cane's Chicken Fingers",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJe-2yoF5j_ogRC7O0Z26GOhY": {
+      "name": "Red Lobster",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJMcJsVs5j_ogRwZeKKp55YNY": {
+      "name": "Red Roof Inn North Charleston Coliseum",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJd4fbTlFj_ogRUCnjKXyPNJE": {
+      "name": "Residence Inn by Marriott Charleston Airport",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJn1axRc1j_ogRCNygXr3nCrQ": {
+      "name": "SpringHill Suites by Marriott Charleston North/Ashley Phosphate",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJK9R2Zcxk_ogRrHnU2mJwiHw": {
+      "name": "Subway",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJFWLdxA9k_ogR6sbKTKAlWjg": {
+      "name": "Subway",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJ-x_UJZ1j_ogRKZ6z1Jlc2tY": {
+      "name": "Subway",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJAfNNSsNj_ogRE1y52ItfAXo": {
+      "name": "Subway",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJtcJ9TEBi_ogRmy5O_qfmcx4": {
+      "name": "Subway",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJP9rdFqp8_ogReEeaKnx5UEA": {
+      "name": "Subway",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJjZVMEitj_ogRHU7YVChpWoA": {
+      "name": "Subway",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJUygnKPVk_ogRriYHdvtAaJs": {
+      "name": "Waffle House",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJU2C7-85j_ogRAFW04XBntZw": {
+      "name": "Waffle House",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJS9CzuOli_ogRSrqhO1lkdrg": {
+      "name": "Waffle House",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJ00017lZj_ogRP3gQTdUsxEA": {
+      "name": "Waffle House",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJpT_xbsRj_ogRWfh4dhOLZ_A": {
+      "name": "Wingstop",
+      "area": "North Charleston",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJqczVGAp8_ogR1vj31OBKsTo": {
+      "name": "Best Western Charleston Inn",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJHTkqihN8_ogRmeLA5cQAlFs": {
+      "name": "Captain D's",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJx17hClJ6_ogR7sF3KVwnUhw": {
+      "name": "Chick-fil-A",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJS-Xt4Fl8_ogRqbb-LugpDWo": {
+      "name": "Chick-fil-A",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJreeZDQx8_ogRUq8jQUrnpPc": {
+      "name": "Chick-fil-A",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJldB0daF9_ogRYvV5x0XPtRU": {
+      "name": "Chick-fil-A",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJOeYsWhV8_ogRPm52CalvzSs": {
+      "name": "Chick-fil-A",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJi0OTnhV8_ogRaDiTbV-pjC4": {
+      "name": "Cook Out",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJvRSK-2R8_ogRrk6FRQ6yKNg": {
+      "name": "Domino's Pizza",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJSeoAC89__ogRIzW4h3dR2_Y": {
+      "name": "Domino's Pizza",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJ5-eDnHp8_ogRz27cfPVJNBI": {
+      "name": "Firehouse Subs West Ashley",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJ93L4Ej98_ogR7g2eL3XdYtk": {
+      "name": "Hampton Inn & Suites Charleston/West Ashley",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJdzfv0D58_ogRyguN7kiYk6o": {
+      "name": "Hardee's",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJDUE4SzN6_ogRwabybY00a2Y": {
+      "name": "Holiday Inn Charleston-Riverview by IHG",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJPcUPNxR8_ogRZzs-oDVBtu4": {
+      "name": "Holiday Inn Express Charleston US Hwy 17 & I-526 by IHG",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJpfErnjJ6_ogR045I7eyJ754": {
+      "name": "La Quinta Inn & Suites by Wyndham Charleston Riverview",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJn1akto57_ogRw7s54nvV5rk": {
+      "name": "Little Caesars Pizza",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJKQmkYW58_ogR109L0MC7_yU": {
+      "name": "Outback Steakhouse",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJ5-eDnHp8_ogREWOYeKlJfFM": {
+      "name": "Papa Johns Pizza",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJ9dT5Bc97_ogR5i6PsnPeLQw": {
+      "name": "Papa Johns Pizza",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJP9EbCOB8_ogRdlMHzf0-lzY": {
+      "name": "Pizza Hut",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJkxiZfs17_ogRvSKY_xrexC8": {
+      "name": "Residence Inn by Marriott Charleston Riverview",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJRcf-Gwp8_ogRFWjKVkGgYHM": {
+      "name": "Sleep Inn Charleston - West Ashley",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJgYP2yjJ6_ogR73a8zAfBGJY": {
+      "name": "SpringHill Suites by Marriott Charleston Riverview",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJm-mDDAh9_ogRxhRNevLOkgM": {
+      "name": "Subway",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJgQFsu3l8_ogRIM-1QMFaarA": {
+      "name": "Subway",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJOeYsWhV8_ogRTfpLv_T88zw": {
+      "name": "Subway",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJPWtViTd8_ogROFi7ozUp6XY": {
+      "name": "Subway",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJlz7NCs9__ogR9xWqTR3ood8": {
+      "name": "Subway",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJw5sFmRV8_ogRm4IqY2OoKb0": {
+      "name": "Taco Bell",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJ9Q3V_RR8_ogR4JceDizX28w": {
+      "name": "Town & Country Inn and Suites",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Hotel/lodging, not a restaurant"
+    },
+    "ChIJJfIA88x7_ogRQXrqPJZCsnU": {
+      "name": "Waffle House",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJA-u2qzl8_ogRCAcdxQ7FXwI": {
+      "name": "Waffle House",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJiSDQ2Hp5_ogR0ReiOCZhxdc": {
+      "name": "Wendy's",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJKQWrb258_ogRqVLDOkJ2SIs": {
+      "name": "Zaxby's Chicken Fingers & Buffalo Wings",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJOXbDowl9_ogRfP0FpGoeq8E": {
+      "name": "Zaxby's Chicken Fingers & Buffalo Wings",
+      "area": "West Ashley",
+      "status": "excluded",
+      "reason": "Fast food chain, no happy hour/brunch"
+    },
+    "ChIJlxxFERJ6_ogRyuFVYZioWlY": {
+      "name": "Food For the Southern Soul",
+      "area": "North Charleston",
+      "status": "flagged",
+      "reason": "Changed 9/9 days, no promos. Cloudflare CDN noise."
+    },
+    "ChIJs43LHhd5_ogRHgM-dMGmbro": {
+      "name": "Campground at James Island County Park",
+      "area": "West Ashley",
+      "status": "flagged",
+      "reason": "Changed 4/9 days, no promos. Not a restaurant."
+    },
+    "ChIJA1vVLY57_ogR8syPUAQNKJ4": {
+      "name": "Locker Room Sports Cafe",
+      "area": "North Charleston",
+      "status": "flagged",
+      "reason": "Changed 7/9 days, no promos found."
+    },
+    "ChIJG0Nz-jNv_ogRABdnmGiH3T0": {
+      "name": "New Realm Brewing Co.",
+      "area": "Daniel Island",
+      "status": "flagged",
+      "reason": "Changed 5/9 days, no promos. Brewery - may add events."
+    }
+  }
+}

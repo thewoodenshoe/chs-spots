@@ -26,7 +26,6 @@ Create `.env.local` with these keys:
 | `ADMIN_API_KEY` | Production | Strong random string for admin auth (edit/delete spots). No default. |
 | `TELEGRAM_WEBHOOK_SECRET` | Optional | Secret token for webhook verification; set in Telegram `setWebhook` and this env. |
 | `SERVER_PUBLIC_URL` | Ops | e.g. `https://chsfinds.com` for report links and Telegram messages. |
-
 ## Production / Security
 
 - **Admin auth**: Set `ADMIN_API_KEY` in `.env.local` to a strong random string. Visit `https://yoursite.com?admin=YOUR_KEY` once to enable admin mode in the browser; the same key is used for API auth.
@@ -173,5 +172,10 @@ chs-spots/
 - **Pipeline stuck**: Check `data/config/config.json` — reset `last_run_status` to `idle`
 - **Too many LLM calls**: Increase `maxIncrementalFiles` in config or check normalization
 - **Maps not loading**: Verify `NEXT_PUBLIC_GOOGLE_MAPS_KEY` in `.env.local`
+- **"For development purposes only" or no Google logo**: Google shows this when Maps API isn't fully configured for production. Fix in [Google Cloud Console](https://console.cloud.google.com/):
+  1. **Enable billing** — Maps requires billing to be enabled (you get $200/month free credit)
+  2. **Enable Maps JavaScript API** — APIs & Services → Enable APIs → Maps JavaScript API
+  3. **Allow your domain** — API key restrictions: add `https://chsfinds.com/*` and `https://www.chsfinds.com/*` to HTTP referrers (plus `http://localhost:*` for dev)
+  4. **Production env var** — Ensure `NEXT_PUBLIC_GOOGLE_MAPS_KEY` is set in your hosting platform (Vercel, etc.) — it must be present at build time for Next.js
 - **Telegram not working**: Ensure `TELEGRAM_ADMIN_CHAT_ID` is set (send `/start` to your bot)
 - **Edit/delete broken**: Should now work — was fixed (path mismatch bug)

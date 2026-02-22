@@ -9,6 +9,12 @@ import { isAdminRequest } from '@/lib/auth';
 import { createSpotSchema, parseOrError } from '@/lib/validations';
 
 export async function GET(request: Request) {
+  // Rate-limit reads (60 req/min per IP)
+  const ip = getClientIp(request);
+  if (!checkRateLimit(`spots-get:${ip}`, 60, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   // Check for admin mode via auth helper (supports header, query param, etc.)
   const isAdmin = isAdminRequest(request);
   

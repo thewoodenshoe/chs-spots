@@ -20,7 +20,16 @@ const mapContainerStyle = {
   height: '100%',
 };
 
-// Create custom marker icon URL for each spot type
+// Base64-encoded circle SVGs for cluster icons (number is drawn by marker-clusterer on top)
+function createClusterCircleUrl(size: number, fill: string): string {
+  const r = size / 2 - 2;
+  const cx = size / 2;
+  const cy = size / 2;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="white" stroke-width="2"/></svg>`;
+  const base64 = btoa(svg);
+  return `data:image/svg+xml;base64,${base64}`;
+}
+
 function createMarkerIcon(spot: Spot, activities: Array<{ name: string; emoji: string; color: string }>): google.maps.Icon {
   const activityConfig = activities.find(a => a.name === spot.type);
   const emoji = activityConfig?.emoji || '📍';
@@ -504,7 +513,15 @@ export default function MapComponent({
         >
         {/* Curated Spots with Clustering */}
         {filteredSpots.length > 0 && (
-          <MarkerClusterer>
+          <MarkerClusterer
+            options={{
+              styles: [
+                { url: createClusterCircleUrl(40, '#0d9488'), height: 40, width: 40, textColor: '#fff', textSize: 14, fontWeight: 'bold', anchorText: [12, 0] },
+                { url: createClusterCircleUrl(48, '#0d9488'), height: 48, width: 48, textColor: '#fff', textSize: 16, fontWeight: 'bold', anchorText: [14, 0] },
+                { url: createClusterCircleUrl(56, '#0d9488'), height: 56, width: 56, textColor: '#fff', textSize: 18, fontWeight: 'bold', anchorText: [17, 0] },
+              ],
+            }}
+          >
             {(clusterer) => (
               <>
                 {filteredSpots.map((spot) => (
@@ -514,7 +531,7 @@ export default function MapComponent({
                     icon={createMarkerIcon(spot, activities)}
                     clusterer={clusterer}
                     onClick={() => handleMarkerClick(spot)}
-                    zIndex={1000} // Spots appear above venues
+                    zIndex={1000}
                   />
                 ))}
               </>
@@ -524,7 +541,15 @@ export default function MapComponent({
 
         {/* All Venues (Red Markers) - Debugging/Visualization */}
         {showAllVenues && filteredVenues.length > 0 && (
-          <MarkerClusterer>
+          <MarkerClusterer
+            options={{
+              styles: [
+                { url: createClusterCircleUrl(40, '#64748b'), height: 40, width: 40, textColor: '#fff', textSize: 14, fontWeight: 'bold', anchorText: [12, 0] },
+                { url: createClusterCircleUrl(48, '#64748b'), height: 48, width: 48, textColor: '#fff', textSize: 16, fontWeight: 'bold', anchorText: [14, 0] },
+                { url: createClusterCircleUrl(56, '#64748b'), height: 56, width: 56, textColor: '#fff', textSize: 18, fontWeight: 'bold', anchorText: [17, 0] },
+              ],
+            }}
+          >
             {(clusterer) => (
               <>
                 {filteredVenues.map((venue) => (
@@ -534,7 +559,7 @@ export default function MapComponent({
                     icon={createVenueMarkerIcon()}
                     clusterer={clusterer}
                     onClick={() => handleVenueMarkerClick(venue)}
-                    zIndex={500} // Venues appear below spots
+                    zIndex={500}
                   />
                 ))}
               </>

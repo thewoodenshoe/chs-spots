@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 interface FeedbackModalProps {
   isOpen: boolean;
@@ -14,6 +14,23 @@ export default function FeedbackModal({ isOpen, onClose, onSuccess }: FeedbackMo
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // On mobile, scroll the focused input into view when virtual keyboard appears
+  const handleFocusInput = useCallback(() => {
+    // Small delay to let the keyboard finish opening
+    setTimeout(() => {
+      modalRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }, 300);
+  }, []);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = ''; };
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -50,12 +67,15 @@ export default function FeedbackModal({ isOpen, onClose, onSuccess }: FeedbackMo
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Send feedback">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
-      {/* Modal */}
-      <div className="relative z-10 w-full max-w-md rounded-t-2xl sm:rounded-2xl bg-white p-5 shadow-2xl safe-area-bottom">
+      {/* Modal — centered on all devices, scrollable if keyboard shrinks viewport */}
+      <div
+        ref={modalRef}
+        className="relative z-10 w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl"
+      >
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-gray-900">Send Feedback</h2>
           <button
@@ -75,20 +95,23 @@ export default function FeedbackModal({ isOpen, onClose, onSuccess }: FeedbackMo
             placeholder="Name (optional)"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            onFocus={handleFocusInput}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
           />
           <input
             type="email"
-            placeholder="Email (optional, if you want me to respond to you)"
+            placeholder="Email (optional)"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            onFocus={handleFocusInput}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
           />
           <textarea
             placeholder="Your feedback..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            rows={4}
+            onFocus={handleFocusInput}
+            rows={3}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 resize-none"
             required
           />

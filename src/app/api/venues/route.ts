@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 export async function GET(request: Request) {
+  const ip = getClientIp(request);
+  if (!checkRateLimit(`venues-get:${ip}`, 60, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   // Read from reporting folder (contains only found:true venues)
   const venuesPath = path.join(process.cwd(), 'data', 'reporting', 'venues.json');
   const { searchParams } = new URL(request.url);

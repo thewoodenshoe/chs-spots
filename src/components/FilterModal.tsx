@@ -60,6 +60,9 @@ export default function FilterModal({
       {/* Bottom Sheet */}
       <div
         ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Filter activities"
         className="fixed bottom-0 left-0 right-0 z-50 max-h-[85vh] overflow-y-auto rounded-t-3xl bg-white shadow-2xl safe-area-bottom animate-slide-up"
       >
         {/* Handle */}

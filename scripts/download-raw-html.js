@@ -14,7 +14,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { URL } = require('url');
-const { loadConfig, updateConfigField, getRunDate } = require('./utils/config');
+const { loadConfig, updateConfigField, getRunDate, loadWatchlist } = require('./utils/config');
 
 // Logging setup
 const logDir = path.join(__dirname, '..', 'logs');
@@ -57,7 +57,10 @@ if (!fs.existsSync(RAW_INCREMENTAL_DIR)) {
 
 // Constants
 const MAX_SUBPAGES = 10;
-const PARALLEL_WORKERS = 15; // Increased from 5 to speed up downloads
+// NUC (i5-7260U, 4 threads, 16GB): downloads are network-bound, not CPU-bound.
+// 40 concurrent connections is the sweet spot — keeps the pipe full without
+// overwhelming DNS or triggering upstream rate-limits.
+const PARALLEL_WORKERS = parseInt(process.env.PIPELINE_WORKERS || '40', 10);
 const SUBMENU_KEYWORDS_PATH = path.join(__dirname, '../data/config/submenu-keywords.json');
 
 // Load submenu keywords from config file
@@ -701,8 +704,18 @@ async function main() {
     process.exit(1);
   }
   
-  const venues = JSON.parse(fs.readFileSync(venuesPath, 'utf8'));
-  log(`📖 Loaded ${venues.length} venue(s) from venues.json\n`);
+  let venues = JSON.parse(fs.readFileSync(venuesPath, 'utf8'));
+  log(`📖 Loaded ${venues.length} venue(s) from venues.json`);
+
+  // Filter out excluded venues from watchlist
+  const watchlist = loadWatchlist();
+  if (watchlist.excluded.size > 0) {
+    const before = venues.length;
+    venues = venues.filter(v => !watchlist.excluded.has(v.id || v.place_id));
+    log(`🚫 Excluded ${before - venues.length} venue(s) from watchlist (${watchlist.excluded.size} total in list)\n`);
+  } else {
+    log('');
+  }
   
   log(`📊 State check:`);
   log(`   run_date: ${runDate}`);

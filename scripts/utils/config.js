@@ -118,11 +118,46 @@ function getRunDate(runDateParam = null) {
   return getTodayDateString();
 }
 
+// ── Venue Watchlist ─────────────────────────────────────────────
+const WATCHLIST_PATH = path.join(__dirname, '../../data/config/venue-watchlist.json');
+
+let _watchlistCache = null;
+
+/**
+ * Load venue watchlist (excluded/flagged venues).
+ * Returns { excluded: Set<venueId>, flagged: Set<venueId>, all: Map<venueId, entry> }
+ * Caches result for the duration of the process.
+ */
+function loadWatchlist() {
+  if (_watchlistCache) return _watchlistCache;
+
+  const result = { excluded: new Set(), flagged: new Set(), all: new Map() };
+
+  if (!fs.existsSync(WATCHLIST_PATH)) return result;
+
+  try {
+    const data = JSON.parse(fs.readFileSync(WATCHLIST_PATH, 'utf8'));
+    const venues = data.venues || {};
+    for (const [id, entry] of Object.entries(venues)) {
+      result.all.set(id, entry);
+      if (entry.status === 'excluded') result.excluded.add(id);
+      else if (entry.status === 'flagged') result.flagged.add(id);
+    }
+  } catch (err) {
+    console.warn(`⚠️  Could not load watchlist: ${err.message}`);
+  }
+
+  _watchlistCache = result;
+  return result;
+}
+
 module.exports = {
   loadConfig,
   saveConfig,
   updateConfigField,
   getRunDate,
   getTodayDateString,
-  CONFIG_PATH
+  loadWatchlist,
+  CONFIG_PATH,
+  WATCHLIST_PATH
 };

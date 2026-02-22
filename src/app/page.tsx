@@ -427,8 +427,8 @@ export default function Home() {
         />
       </div>
 
-      {/* Bottom Left Button Group */}
-      <div className="fixed bottom-6 left-6 z-40 flex flex-col sm:flex-row gap-3 safe-area-bottom">
+      {/* Bottom Left Button Group - left-24 leaves space for Google Maps logo (required by ToS) */}
+      <div className="fixed bottom-6 left-24 z-40 flex flex-col sm:flex-row gap-3 safe-area-bottom">
         {/* Closest Nearby Button */}
         <button
           onClick={() => {

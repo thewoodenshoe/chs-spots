@@ -22,11 +22,34 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "CHS Finds",
   description: "Discover the best of Charleston — happy hours, brunch, fishing, and more.",
+  metadataBase: new URL("https://chsfinds.com"),
+  openGraph: {
+    title: "CHS Finds",
+    description: "Discover the best of Charleston — happy hours, brunch, fishing, and more.",
+    url: "https://chsfinds.com",
+    siteName: "CHS Finds",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary",
+    title: "CHS Finds",
+    description: "Discover the best of Charleston — happy hours, brunch, fishing, and more.",
+  },
+  icons: {
+    icon: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  themeColor: "#0d9488",
 };
 
 export default function RootLayout({

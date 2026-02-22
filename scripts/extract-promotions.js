@@ -16,7 +16,7 @@ const LLM_INSTRUCTIONS_PATH = path.join(__dirname, '../data/config/llm-instructi
 const CONFIG_PATH = path.join(__dirname, '../data/config/config.json');
 const VENUES_JSON_PATH = path.join(__dirname, '../data/reporting/venues.json');
 const LLM_CANDIDATES_HISTORY_PATH = path.join(__dirname, '../logs/llm-candidates-history.txt');
-const { updateConfigField } = require('./utils/config');
+const { updateConfigField, loadWatchlist } = require('./utils/config');
 
 // Ensure gold and incremental history directories exist
 if (!fs.existsSync(GOLD_DIR)) fs.mkdirSync(GOLD_DIR, { recursive: true });
@@ -55,7 +55,23 @@ async function extractHappyHours(isIncremental = false) {
         process.exit(1);
     }
     const GROK_API_URL = 'https://api.x.ai/v1/chat/completions';
-    const GROK_MODEL = 'grok-4-fast-reasoning'; // Faster model with good reasoning, higher rate limits
+    const GROK_MODEL = 'grok-4-fast-reasoning';
+    
+    // Load LLM instructions once (system message) — xAI auto-caches identical
+    // system messages at 75% discount ($0.05/M instead of $0.20/M input tokens)
+    let systemPrompt;
+    try {
+        const rawInstructions = fs.readFileSync(LLM_INSTRUCTIONS_PATH, 'utf8');
+        // Extract everything BEFORE the venue-specific content placeholder as the system prompt
+        const splitMarker = 'Here is the website content for';
+        const splitIdx = rawInstructions.indexOf(splitMarker);
+        systemPrompt = splitIdx > 0
+            ? rawInstructions.substring(0, splitIdx).trim()
+            : rawInstructions.trim();
+    } catch (error) {
+        console.error(`Error reading LLM instructions from ${LLM_INSTRUCTIONS_PATH}: ${error.message}`);
+        process.exit(1);
+    }
     console.log(`Starting happy hour extraction (${isIncremental ? 'incremental' : 'bulk'})...`);
     const areaFilterSet = parseAreaFilter(process.env.AREA_FILTER);
     // Permanent safeguard: always reprocess legacy gold records that still miss activityType.
@@ -210,7 +226,7 @@ async function extractHappyHours(isIncremental = false) {
         }
     }
 
-    // Build venue area lookup for files that may not have venueArea in silver_trimmed
+    // Build venue area lookup for area filter
     let venueAreaMap = new Map();
     if (fs.existsSync(VENUES_JSON_PATH)) {
         try {
@@ -227,10 +243,18 @@ async function extractHappyHours(isIncremental = false) {
         }
     }
 
+    const watchlist = loadWatchlist();
+    let watchlistSkipped = 0;
+
     for (const file of venueFiles) {
         const venueId = path.basename(file, '.json');
         const silverFilePath = path.join(sourceDir, file);
         const goldFilePath = path.join(GOLD_DIR, `${venueId}.json`);
+
+        if (watchlist.excluded.has(venueId)) {
+            watchlistSkipped++;
+            continue;
+        }
 
         let venueData;
         try {
@@ -292,25 +316,13 @@ async function extractHappyHours(isIncremental = false) {
         
         console.log(`Processing ${venueData.venueName} (${venueId})...`);
 
-        // Load LLM instructions from config file
-        let llmInstructions;
-        try {
-            llmInstructions = fs.readFileSync(LLM_INSTRUCTIONS_PATH, 'utf8');
-        } catch (error) {
-            console.error(`Error reading LLM instructions from ${LLM_INSTRUCTIONS_PATH}: ${error.message}`);
-            process.exit(1);
-        }
-
-        // Replace placeholders in the instructions template
-        // Use 'text' field if available (from silver_trimmed), otherwise fallback to 'html'
+        // Build user message with venue content
+        // In incremental mode, only include pages that actually changed (if diff data available)
         const contentPlaceholder = venueData.pages.map(p => {
             const content = p.text || p.html || '';
             return `URL: ${p.url}\nContent:\n${content}`;
         }).join('\n---\n');
-        const prompt = llmInstructions
-            .replace(/{VENUE_ID}/g, venueId)
-            .replace(/{VENUE_NAME}/g, venueData.venueName)
-            .replace(/{CONTENT_PLACEHOLDER}/g, contentPlaceholder);
+        const userMessage = `Here is the website content for ${venueData.venueName} from various pages:\n---\n${contentPlaceholder}\n---\n\nReturn the JSON result with venueId "${venueId}" and venueName "${venueData.venueName}".`;
 
         let result;
         let retries = 3;
@@ -329,13 +341,17 @@ async function extractHappyHours(isIncremental = false) {
                         model: GROK_MODEL,
                         messages: [
                             {
+                                role: 'system',
+                                content: systemPrompt
+                            },
+                            {
                                 role: 'user',
-                                content: prompt
+                                content: userMessage
                             }
                         ],
                         stream: false,
                         max_tokens: 2048,
-                        temperature: 0.7
+                        temperature: 0.2
                     })
                 }, 120000);
 
@@ -398,7 +414,7 @@ async function extractHappyHours(isIncremental = false) {
                         };
                     }
                 }
-                
+
                 // Success - break out of retry loop
                 break;
                 

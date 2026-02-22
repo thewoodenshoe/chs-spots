@@ -1080,8 +1080,11 @@ async function fetchKnownVenuesByName(areaName, knownVenueNames) {
         // Combine all results (grid search + text search + known venues search)
         const allResults = [...allNearbyResults, ...textSearchResults, ...knownVenueResults];
         
-        // Filter for alcohol-serving venues
-        const alcoholServingResults = allResults.filter(isAlcoholServingVenue);
+        // Filter for alcohol-serving venues (known venues bypass the filter — they were hand-picked)
+        const knownVenueIds = new Set(knownVenueResults.map(r => r.place_id).filter(Boolean));
+        const alcoholServingResults = allResults.filter(r =>
+          knownVenueIds.has(r.place_id) || isAlcoholServingVenue(r)
+        );
         logVerbose(`  Filtered: ${allResults.length} unique results → ${alcoholServingResults.length} alcohol-serving venues (excluded ${allResults.length - alcoholServingResults.length} stores/hospitals/etc.)`);
         
         // Deduplicate by place_id

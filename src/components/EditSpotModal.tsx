@@ -246,6 +246,9 @@ export default function EditSpotModal({
       {/* Bottom Sheet */}
       <div
         ref={sheetRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Edit spot"
         className="fixed bottom-0 left-0 right-0 z-50 bg-white shadow-2xl safe-area-bottom transition-transform duration-300 ease-out"
         style={{
           height: `${sheetHeight}px`,

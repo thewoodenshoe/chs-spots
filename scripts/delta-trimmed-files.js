@@ -18,7 +18,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { normalizeText } = require('./utils/normalize');
-const { loadConfig, getRunDate } = require('./utils/config');
+const { loadConfig, getRunDate, loadWatchlist } = require('./utils/config');
 
 // Logging setup
 const logDir = path.join(__dirname, '..', 'logs');
@@ -48,41 +48,138 @@ if (!fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)) {
   fs.mkdirSync(SILVER_TRIMMED_PREVIOUS_DIR, { recursive: true });
 }
 
+// ── Minimum-change thresholds ───────────────────────────────────
+// A venue is only marked "changed" if the *meaningful* text difference
+// exceeds BOTH an absolute and a relative threshold.
+const MIN_CHANGE_CHARS = 300;   // absolute: at least 300 chars different
+const MIN_CHANGE_PCT   = 5.0;   // relative: at least 5 % of the content
+
 /**
- * Get trimmed content hash from a trimmed JSON file
- * Always normalizes text before hashing to ensure consistent comparison
- * Uses venueHash if available (from new trim-silver-html.js), otherwise computes from pages
- * 
- * IMPORTANT: Always recomputes hash from normalized text to ensure consistency,
- * even if venueHash exists. This handles cases where files were created with
- * older normalization logic.
+ * Strip the URL down to just origin + pathname (no query / fragment)
+ * so that the same page scraped with different tracking params matches.
  */
-function getTrimmedContentHash(filePath) {
+function canonicalUrl(url) {
+  if (!url) return '';
   try {
-    const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    
-    // Always compute hash from normalized page texts for consistency
-    // This ensures files created with older normalization logic are compared correctly
-    const pages = data.pages || [];
-    const pagesContent = pages.map(p => {
-      const text = p.text || '';
-      // Normalize text (same as trim-silver-html.js normalizeText function)
-      return normalizeText(text);
-    }).join('\n');
-    
-    const computedHash = crypto.createHash('md5').update(pagesContent).digest('hex');
-    
-    // If venueHash exists and differs from computed hash, log a warning
-    // This helps identify normalization inconsistencies
-    if (data.venueHash && data.venueHash !== computedHash) {
-      const venueId = data.venueId || path.basename(filePath, '.json');
-      log(`  ⚠️  Hash mismatch for ${venueId}: venueHash=${data.venueHash.substring(0, 8)}... vs computed=${computedHash.substring(0, 8)}... (using computed)`);
+    const u = new URL(url);
+    return (u.origin + u.pathname).replace(/\/+$/, '');
+  } catch {
+    return url.split('?')[0].split('#')[0].replace(/\/+$/, '');
+  }
+}
+
+/**
+ * Build a word-frequency bag from text.
+ * Words shorter than 3 chars are ignored to reduce noise.
+ */
+function wordBag(text) {
+  const bag = {};
+  const words = text.toLowerCase().split(/\s+/);
+  for (const w of words) {
+    if (w.length < 3) continue;
+    bag[w] = (bag[w] || 0) + 1;
+  }
+  return bag;
+}
+
+/**
+ * Compute how different two word bags are.
+ * Returns { addedWords, removedWords, changedChars } — the estimated
+ * number of characters that are truly different (added + removed words).
+ */
+function wordBagDiff(bagA, bagB) {
+  let addedChars = 0;
+  let removedChars = 0;
+
+  const allKeys = new Set([...Object.keys(bagA), ...Object.keys(bagB)]);
+  for (const k of allKeys) {
+    const a = bagA[k] || 0;
+    const b = bagB[k] || 0;
+    const delta = b - a;
+    if (delta > 0) addedChars += delta * (k.length + 1);   // +1 for space
+    if (delta < 0) removedChars += (-delta) * (k.length + 1);
+  }
+  return { addedChars, removedChars, changedChars: addedChars + removedChars };
+}
+
+/**
+ * Compare two venue JSON files **page-by-page using URL matching**
+ * and decide whether the venue has meaningfully changed.
+ *
+ * Uses a word-bag diff approach: tokenises normalised text into words and
+ * counts words that were added or removed.  This is order-independent and
+ * robust to small shifts, re-ordering of sections, and minor wording tweaks.
+ *
+ * Returns { changed: boolean, reason: string, charsDiff: number, pctDiff: number }
+ */
+function compareVenues(todayFilePath, previousFilePath) {
+  try {
+    const todayData    = JSON.parse(fs.readFileSync(todayFilePath, 'utf8'));
+    const previousData = JSON.parse(fs.readFileSync(previousFilePath, 'utf8'));
+
+    const todayPages    = (todayData.pages || []);
+    const previousPages = (previousData.pages || []);
+
+    // Filter out Cloudflare CDN challenge pages — these contain randomly
+    // generated filler text that changes daily and is never restaurant content
+    const isUsablePage = (page) => {
+      const url = page.url || '';
+      if (/\/cdn-cgi\//i.test(url)) return false;
+      if (/\/challenge-platform\//i.test(url)) return false;
+      return true;
+    };
+
+    const filteredTodayPages = todayPages.filter(isUsablePage);
+    const filteredPreviousPages = previousPages.filter(isUsablePage);
+
+    // Build lookup of previous pages by canonical URL
+    const prevByUrl = {};
+    for (const p of filteredPreviousPages) {
+      const key = canonicalUrl(p.url);
+      if (key) prevByUrl[key] = p;
     }
-    
-    return computedHash;
+
+    // Gather ALL normalised text per side, matched by URL where possible
+    let prevAllText = '';
+    let todayAllText = '';
+
+    const matchedPrevUrls = new Set();
+    for (const tp of filteredTodayPages) {
+      const key = canonicalUrl(tp.url);
+      todayAllText += ' ' + normalizeText(tp.text || '');
+      const pp = key ? prevByUrl[key] : null;
+      if (pp) {
+        matchedPrevUrls.add(key);
+        prevAllText += ' ' + normalizeText(pp.text || '');
+      }
+    }
+    for (const pp of filteredPreviousPages) {
+      const key = canonicalUrl(pp.url);
+      if (key && !matchedPrevUrls.has(key)) {
+        prevAllText += ' ' + normalizeText(pp.text || '');
+      }
+    }
+
+    // Quick identity check (fast path)
+    if (prevAllText.trim() === todayAllText.trim()) {
+      return { changed: false, reason: 'identical', charsDiff: 0, pctDiff: 0 };
+    }
+
+    // Word-bag diff
+    const prevBag  = wordBag(prevAllText);
+    const todayBag = wordBag(todayAllText);
+    const { changedChars } = wordBagDiff(prevBag, todayBag);
+
+    const totalChars = Math.max(prevAllText.length, todayAllText.length, 1);
+    const pctDiff = changedChars / totalChars * 100;
+
+    // Apply thresholds
+    if (changedChars >= MIN_CHANGE_CHARS && pctDiff >= MIN_CHANGE_PCT) {
+      return { changed: true,  reason: 'content', charsDiff: changedChars, pctDiff };
+    }
+    return { changed: false, reason: changedChars > 0 ? 'below_threshold' : 'identical', charsDiff: changedChars, pctDiff };
   } catch (error) {
-    log(`  ⚠️  Error reading file ${filePath}: ${error.message}`);
-    return null;
+    return { changed: true, reason: `error: ${error.message}`, charsDiff: -1, pctDiff: -1 };
   }
 }
 
@@ -91,6 +188,7 @@ function getTrimmedContentHash(filePath) {
  */
 function main() {
   log('🔍 Starting Delta Comparison (Trimmed Content)\n');
+  log(`   Thresholds: min ${MIN_CHANGE_CHARS} chars AND min ${MIN_CHANGE_PCT}% change\n`);
   const config = loadConfig();
   const runDate = process.env.PIPELINE_RUN_DATE || config.run_date || getRunDate();
   const manifestPath = process.env.PIPELINE_MANIFEST_PATH || null;
@@ -99,7 +197,7 @@ function main() {
     log(`🧾 Run manifest: ${manifestPath}`);
   }
   
-  // Check if silver_trimmed/all/ exists
+  // Check if silver_trimmed/today/ exists
   if (!fs.existsSync(SILVER_TRIMMED_TODAY_DIR)) {
     log(`❌ Trimmed directory not found: ${SILVER_TRIMMED_TODAY_DIR}`);
     log(`   Run trim-silver-html.js first.`);
@@ -130,12 +228,10 @@ function main() {
     }
   }
   
-  // Refresh todayFiles list after potential archive (in case archive modified today/)
+  // Refresh file lists
   const todayFilesList = fs.existsSync(SILVER_TRIMMED_TODAY_DIR)
     ? fs.readdirSync(SILVER_TRIMMED_TODAY_DIR).filter(f => f.endsWith('.json'))
     : [];
-  
-  // Refresh previousFiles list as well
   const previousFilesList = fs.existsSync(SILVER_TRIMMED_PREVIOUS_DIR)
     ? fs.readdirSync(SILVER_TRIMMED_PREVIOUS_DIR).filter(f => f.endsWith('.json'))
     : [];
@@ -146,42 +242,45 @@ function main() {
   let newVenues = 0;
   let changedVenues = 0;
   let unchangedVenues = 0;
+  let belowThreshold = 0;
+  let excludedVenues = 0;
+
+  const watchlist = loadWatchlist();
+  if (watchlist.excluded.size > 0) {
+    log(`🚫 Watchlist loaded: ${watchlist.excluded.size} excluded venue(s) will be skipped\n`);
+  }
   
   // Process each file
   for (const file of todayFilesList) {
     const venueId = path.basename(file, '.json');
+
+    if (watchlist.excluded.has(venueId)) {
+      excludedVenues++;
+      continue;
+    }
     const todayFilePath = path.join(SILVER_TRIMMED_TODAY_DIR, file);
     const previousFilePath = path.join(SILVER_TRIMMED_PREVIOUS_DIR, file);
     const incrementalFilePath = path.join(SILVER_TRIMMED_INCREMENTAL_DIR, file);
     
     // Check if venue is new (doesn't exist in previous/)
     if (!fs.existsSync(previousFilePath)) {
-      // New venue - copy to incremental
       fs.copyFileSync(todayFilePath, incrementalFilePath);
       log(`  ✨ New venue: ${venueId}`);
       newVenues++;
       continue;
     }
     
-    // Venue exists in both - check for changes in trimmed content
-    const todayHash = getTrimmedContentHash(todayFilePath);
-    const previousHash = getTrimmedContentHash(previousFilePath);
+    // Venue exists in both — smart comparison
+    const result = compareVenues(todayFilePath, previousFilePath);
     
-    if (!todayHash || !previousHash) {
-      // Error reading hashes - treat as changed to be safe
+    if (result.changed) {
       fs.copyFileSync(todayFilePath, incrementalFilePath);
-      log(`  ⚠️  Changed venue (hash error): ${venueId}`);
+      log(`  🔄 Changed venue: ${venueId}  (${result.charsDiff} chars, ${result.pctDiff.toFixed(1)}%)`);
       changedVenues++;
-      continue;
-    }
-    
-    if (todayHash !== previousHash) {
-      // Trimmed content changed - copy to incremental
-      fs.copyFileSync(todayFilePath, incrementalFilePath);
-      log(`  🔄 Changed venue: ${venueId}`);
-      changedVenues++;
+    } else if (result.reason === 'below_threshold') {
+      log(`  ⏭️  Below threshold: ${venueId}  (${result.charsDiff} chars, ${result.pctDiff.toFixed(1)}%)`);
+      belowThreshold++;
     } else {
-      // No change in trimmed content
       unchangedVenues++;
     }
   }
@@ -191,10 +290,11 @@ function main() {
   log(`   ✨ New venues: ${newVenues}`);
   log(`   🔄 Changed venues: ${changedVenues}`);
   log(`   ⏭️  Unchanged venues: ${unchangedVenues}`);
+  log(`   🚫 Below threshold (noise filtered): ${belowThreshold}`);
+  if (excludedVenues > 0) log(`   🚫 Excluded (watchlist): ${excludedVenues}`);
   log(`   📄 Total files ready for LLM: ${newVenues + changedVenues}`);
   log(`\n✨ Done! Changed files copied to: ${path.resolve(SILVER_TRIMMED_INCREMENTAL_DIR)}`);
   
-  // If no changes, log warning
   if (newVenues + changedVenues === 0) {
     log(`\n⚠️  No changes detected - incremental folder is empty`);
     log(`   LLM extraction step will skip processing.`);

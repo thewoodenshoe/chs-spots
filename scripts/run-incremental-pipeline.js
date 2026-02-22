@@ -20,8 +20,10 @@ const fs = require('fs');
 const { loadConfig, saveConfig, updateConfigField, getRunDate } = require('./utils/config');
 
 // Parse optional run_date parameter (YYYYMMDD format) - defaults to today if not provided
-const RUN_DATE_PARAM = process.argv[2] && /^\d{8}$/.test(process.argv[2]) ? process.argv[2] : null;
-const AREA_FILTER = process.argv[2] && !/^\d{8}$/.test(process.argv[2]) ? process.argv[2] : (process.argv[3] || null);
+// Flags like --confirm, --force etc. are NOT area filters
+const cliArgs = process.argv.slice(2).filter(a => !a.startsWith('--'));
+const RUN_DATE_PARAM = cliArgs[0] && /^\d{8}$/.test(cliArgs[0]) ? cliArgs[0] : null;
+const AREA_FILTER = cliArgs[0] && !/^\d{8}$/.test(cliArgs[0]) ? cliArgs[0] : (cliArgs[1] || null);
 
 // Logging setup
 let logFileStream = null;
@@ -257,7 +259,8 @@ function getRecoveryPoint(lastRunStatus) {
     'failed_at_raw': 'raw',
     'failed_at_merged': 'merged',
     'failed_at_trimmed': 'trimmed',
-    'failed_at_extract': 'extract'
+    'failed_at_extract': 'extract',
+    'failed_at_spots': 'spots'
   };
   return recoveryMap[lastRunStatus] || null;
 }
@@ -321,6 +324,74 @@ async function main() {
     // Set initial status
     updateConfigField('last_run_status', 'running_raw');
     
+    // ── 7-day rolling archive ───────────────────────────────────────
+    // Before any today→previous overwrite, snapshot the current "previous"
+    // (i.e. yesterday's data) to a dated archive directory so we keep a
+    // rolling window of historical data for analysis.
+    const ARCHIVE_RETENTION_DAYS = 14;
+    
+    function archiveDirectory(sourceDir, archiveBase, dateLabel) {
+      if (!fs.existsSync(sourceDir)) return;
+      // Exclude archive/, hidden files, and non-data subdirectories
+      const EXCLUDE = new Set(['archive', 'archive-incremental', 'incremental-history', '.bulk-complete']);
+      const files = fs.readdirSync(sourceDir).filter(f => !f.startsWith('.') && !EXCLUDE.has(f));
+      if (files.length === 0) return;
+      
+      const archiveDir = path.join(archiveBase, dateLabel);
+      if (fs.existsSync(archiveDir)) {
+        console.log(`   📦 Archive ${archiveDir} already exists — skipping`);
+        return;
+      }
+      fs.mkdirSync(archiveDir, { recursive: true });
+      
+      let count = 0;
+      for (const item of files) {
+        const src = path.join(sourceDir, item);
+        const dst = path.join(archiveDir, item);
+        const stat = fs.statSync(src);
+        if (stat.isDirectory()) {
+          // For raw/ which has venue subdirectories (one level deep)
+          fs.mkdirSync(dst, { recursive: true });
+          const subFiles = fs.readdirSync(src);
+          for (const sf of subFiles) {
+            const sfSrc = path.join(src, sf);
+            if (fs.statSync(sfSrc).isFile()) {
+              fs.copyFileSync(sfSrc, path.join(dst, sf));
+            }
+          }
+          count++;
+        } else if (stat.isFile()) {
+          fs.copyFileSync(src, dst);
+          count++;
+        }
+      }
+      console.log(`   📦 Archived ${count} item(s) to ${archiveDir}`);
+    }
+    
+    function cleanOldArchives(archiveBase) {
+      if (!fs.existsSync(archiveBase)) return;
+      const cutoff = Date.now() - (ARCHIVE_RETENTION_DAYS * 24 * 60 * 60 * 1000);
+      const dirs = fs.readdirSync(archiveBase).filter(d => /^\d{8}$/.test(d));
+      for (const d of dirs) {
+        // Parse YYYYMMDD to a date
+        const y = parseInt(d.substring(0, 4));
+        const m = parseInt(d.substring(4, 6)) - 1;
+        const dd = parseInt(d.substring(6, 8));
+        const dirDate = new Date(y, m, dd).getTime();
+        if (dirDate < cutoff) {
+          const dirPath = path.join(archiveBase, d);
+          fs.rmSync(dirPath, { recursive: true, force: true });
+          console.log(`   🗑️  Cleaned old archive: ${d}`);
+        }
+      }
+    }
+    
+    // Archive paths
+    const RAW_ARCHIVE_BASE = path.join(__dirname, '../data/raw/archive');
+    const SILVER_TRIMMED_ARCHIVE_BASE = path.join(__dirname, '../data/silver_trimmed/archive');
+    const SILVER_TRIMMED_INCR_ARCHIVE_BASE = path.join(__dirname, '../data/silver_trimmed/archive-incremental');
+    const GOLD_ARCHIVE_BASE = path.join(__dirname, '../data/gold/archive');
+    
     // RAW STEPS
     const RAW_TODAY_DIR = path.join(__dirname, '../data/raw/today');
     const RAW_PREVIOUS_DIR = path.join(__dirname, '../data/raw/previous');
@@ -360,6 +431,13 @@ async function main() {
       } else {
         // New day - archive and download
         console.log(`   📅 New day detected (${runDate} vs ${lastRawDate})`);
+        
+        // Archive previous/ before overwriting (7-day rolling archive)
+        const archiveLabel = lastRawDate || 'unknown';
+        console.log(`   📦 Archiving raw/previous/ as ${archiveLabel}`);
+        archiveDirectory(RAW_PREVIOUS_DIR, RAW_ARCHIVE_BASE, archiveLabel);
+        cleanOldArchives(RAW_ARCHIVE_BASE);
+        
         console.log('   🗂️  New day reset: emptying previous/, copying today/ to previous/, emptying today/');
         
         // Empty previous/ directory
@@ -492,8 +570,22 @@ async function main() {
       }
     }
     
-    // Check incremental file count before running LLM or spots
+    // Archive incremental files for analysis (before LLM possibly modifies state)
     const SILVER_TRIMMED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_trimmed/incremental');
+    try {
+      if (fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
+        const incrFiles = fs.readdirSync(SILVER_TRIMMED_INCREMENTAL_DIR).filter(f => f.endsWith('.json'));
+        if (incrFiles.length > 0) {
+          console.log(`\n📦 Archiving ${incrFiles.length} incremental file(s) for analysis`);
+          archiveDirectory(SILVER_TRIMMED_INCREMENTAL_DIR, SILVER_TRIMMED_INCR_ARCHIVE_BASE, runDate);
+          cleanOldArchives(SILVER_TRIMMED_INCR_ARCHIVE_BASE);
+        }
+      }
+    } catch (archiveErr) {
+      console.warn(`   ⚠️  Incremental archive failed (non-fatal): ${archiveErr.message}`);
+    }
+    
+    // Check incremental file count before running LLM or spots
     let incrementalFileCount = 0;
     if (fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
       incrementalFileCount = fs.readdirSync(SILVER_TRIMMED_INCREMENTAL_DIR).filter(f => f.endsWith('.json')).length;
@@ -523,14 +615,30 @@ async function main() {
       const maxIncrementalFiles = currentConfig.pipeline?.maxIncrementalFiles || 15;
       
       if (incrementalFileCount > maxIncrementalFiles) {
-        const msg = `⚠️  Too many incremental files (${incrementalFileCount} > ${maxIncrementalFiles}). Manual review required. Skipping LLM extraction.`;
+        const msg = `⚠️  Too many incremental files (${incrementalFileCount} > ${maxIncrementalFiles}). Skipping LLM extraction.`;
         console.log(`\n${msg}`);
-        console.log(`   Pipeline completed successfully but skipped expensive LLM step.`);
-        console.log(`   Next run will start fresh from the beginning.`);
+        console.log(`   Pipeline completed data capture but skipped expensive LLM step.`);
+        console.log(`   All raw/silver/gold data is archived for later analysis.`);
         updateConfigField('last_run_status', 'completed_successfully');
         updateManifestStep(currentRunContext.manifestPath, 'extract', 'skipped');
         updateManifestStep(currentRunContext.manifestPath, 'spots', 'skipped');
-        console.log('\n✅ Pipeline completed (graceful shutdown - skipped LLM)');
+        
+        // Still archive gold files even though LLM was skipped
+        try {
+          const GOLD_DIR_SKIP = path.join(__dirname, '../data/gold');
+          if (fs.existsSync(GOLD_DIR_SKIP)) {
+            const goldFiles = fs.readdirSync(GOLD_DIR_SKIP).filter(f => f.endsWith('.json'));
+            if (goldFiles.length > 0) {
+              console.log(`\n📦 Archiving ${goldFiles.length} gold file(s) (LLM skipped but preserving state)`);
+              archiveDirectory(GOLD_DIR_SKIP, GOLD_ARCHIVE_BASE, runDate);
+              cleanOldArchives(GOLD_ARCHIVE_BASE);
+            }
+          }
+        } catch (archiveErr) {
+          console.warn(`   ⚠️  Gold archive failed (non-fatal): ${archiveErr.message}`);
+        }
+        
+        console.log('\n✅ Pipeline completed (data captured, LLM skipped)');
         
         const finalConfig = loadConfig();
         console.log('\n📋 Final Pipeline State:');
@@ -538,15 +646,27 @@ async function main() {
         console.log(`   Last raw processed date: ${finalConfig.last_raw_processed_date || 'null'}`);
         console.log(`   Last merged processed date: ${finalConfig.last_merged_processed_date || 'null'}`);
         console.log(`   Last trimmed processed date: ${finalConfig.last_trimmed_processed_date || 'null'}`);
+        console.log(`   Incremental files preserved: ${incrementalFileCount} (for later analysis)`);
         
-        restoreConsole();
         finalizeManifest(currentRunContext.manifestPath, 'completed_successfully');
-        process.exit(0);
+        // Flush log stream before exiting — process.exit() would kill pending I/O
+        if (logFileStream) {
+          logFileStream.end(() => {
+            logFileStream = null;
+            restoreConsole();
+            process.exit(0);
+          });
+          // Safety timeout in case end() callback never fires
+          setTimeout(() => { restoreConsole(); process.exit(0); }, 2000);
+        } else {
+          restoreConsole();
+          process.exit(0);
+        }
+        return; // prevent further execution while waiting for flush
       }
       
       try {
         await runScript('extract-promotions.js', ['--incremental']);
-        updateConfigField('last_run_status', 'completed_successfully');
         updateManifestStep(currentRunContext.manifestPath, 'extract', 'completed');
       } catch (error) {
         updateConfigField('last_run_status', 'failed_at_extract');
@@ -557,9 +677,32 @@ async function main() {
       // Step 5: Create spots
       console.log('\n📍 Step 5: Create Spots from Gold Data');
       console.log(`   Found ${incrementalFileCount} incremental file(s) - processing spots`);
+      updateConfigField('last_run_status', 'running_spots');
       updateManifestStep(currentRunContext.manifestPath, 'spots', 'running');
-      await runScript('create-spots.js');
-      updateManifestStep(currentRunContext.manifestPath, 'spots', 'completed');
+      try {
+        await runScript('create-spots.js');
+        updateManifestStep(currentRunContext.manifestPath, 'spots', 'completed');
+        updateConfigField('last_run_status', 'completed_successfully');
+      } catch (error) {
+        updateConfigField('last_run_status', 'failed_at_spots');
+        updateManifestStep(currentRunContext.manifestPath, 'spots', 'failed');
+        throw error;
+      }
+    }
+    
+    // Archive gold files daily for rolling analysis
+    try {
+      const GOLD_DIR = path.join(__dirname, '../data/gold');
+      if (fs.existsSync(GOLD_DIR)) {
+        const goldFiles = fs.readdirSync(GOLD_DIR).filter(f => f.endsWith('.json'));
+        if (goldFiles.length > 0) {
+          console.log(`\n📦 Archiving ${goldFiles.length} gold file(s)`);
+          archiveDirectory(GOLD_DIR, GOLD_ARCHIVE_BASE, runDate);
+          cleanOldArchives(GOLD_ARCHIVE_BASE);
+        }
+      }
+    } catch (archiveErr) {
+      console.warn(`   ⚠️  Gold archive failed (non-fatal): ${archiveErr.message}`);
     }
     
     // Try to extract final stats from create-spots.log
@@ -653,14 +796,19 @@ async function main() {
     
     // Update status to failed_at_{step} based on current status
     const currentConfig = loadConfig();
-    if (currentConfig.last_run_status === 'running_raw') {
-      updateConfigField('last_run_status', 'failed_at_raw');
-    } else if (currentConfig.last_run_status === 'running_merged') {
-      updateConfigField('last_run_status', 'failed_at_merged');
-    } else if (currentConfig.last_run_status === 'running_trimmed') {
-      updateConfigField('last_run_status', 'failed_at_trimmed');
-    } else if (currentConfig.last_run_status === 'running_extract') {
-      updateConfigField('last_run_status', 'failed_at_extract');
+    const statusMap = {
+      'running_raw': 'failed_at_raw',
+      'running_merged': 'failed_at_merged',
+      'running_trimmed': 'failed_at_trimmed',
+      'running_extract': 'failed_at_extract',
+      'running_spots': 'failed_at_spots'
+    };
+    const failedStatus = statusMap[currentConfig.last_run_status];
+    if (failedStatus) {
+      updateConfigField('last_run_status', failedStatus);
+    } else if (currentConfig.last_run_status !== 'completed_successfully') {
+      // Catch-all: if status is unexpected, mark as failed
+      updateConfigField('last_run_status', 'failed_unknown');
     }
     
     // Log final config state on error
