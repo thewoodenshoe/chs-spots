@@ -23,12 +23,14 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  // Ensure Turbopack resolves from the project root, not a parent directory
   turbopack: {
     root: process.cwd(),
   },
 
-  // Security headers on all routes
+  outputFileTracingExcludes: {
+    '/*': ['./data/**'],
+  },
+
   async headers() {
     return [
       {
@@ -38,7 +40,6 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Limit API request body size (2MB — covers base64 photos)
   serverExternalPackages: [],
 };
 
