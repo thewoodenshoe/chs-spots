@@ -1,38 +1,9 @@
 /**
  * Lightweight Umami analytics wrapper.
  *
- * All tracking is gated on cookie consent. If the user hasn't opted in,
- * calls are silently no-ops.
- *
- * Umami is loaded with data-auto-track="false" so we manually fire the
- * initial pageview and custom events only after consent is granted.
+ * Tracking is always enabled — no consent gate required since Umami is
+ * privacy-first (no cookies, no personal data, GDPR-compliant by default).
  */
-
-const CONSENT_KEY = 'analytics_consent';
-
-// ── consent helpers ──────────────────────────────────────────────
-
-export function hasConsent(): boolean {
-  if (typeof window === 'undefined') return false;
-  return localStorage.getItem(CONSENT_KEY) === 'granted';
-}
-
-export function grantConsent(): void {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(CONSENT_KEY, 'granted');
-  // Fire the initial pageview now that consent is given
-  trackPageview();
-}
-
-export function revokeConsent(): void {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(CONSENT_KEY, 'denied');
-}
-
-export function consentUndecided(): boolean {
-  if (typeof window === 'undefined') return true;
-  return localStorage.getItem(CONSENT_KEY) === null;
-}
 
 // ── tracking helpers ─────────────────────────────────────────────
 
@@ -46,15 +17,13 @@ function getUmami(): UmamiTracker | null {
   return (window as any).umami ?? null;
 }
 
-/** Track a pageview (call once after consent + on SPA navigations). */
+/** Track a pageview. */
 export function trackPageview(): void {
-  if (!hasConsent()) return;
   getUmami()?.track();
 }
 
 /** Track a named custom event with optional payload. */
 export function trackEvent(name: string, data?: Record<string, unknown>): void {
-  if (!hasConsent()) return;
   getUmami()?.track(name, data);
 }
 

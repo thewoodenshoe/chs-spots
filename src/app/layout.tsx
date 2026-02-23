@@ -7,7 +7,6 @@ import { VenuesProvider } from "@/contexts/VenuesContext";
 import { ActivitiesProvider } from "@/contexts/ActivitiesContext";
 import { ToastProvider } from "@/components/Toast";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import CookieConsent from "@/components/CookieConsent";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -83,7 +82,6 @@ export default function RootLayout({
               <VenuesProvider>
                 <ActivitiesProvider>
                   {children}
-                  <CookieConsent />
                 </ActivitiesProvider>
               </VenuesProvider>
             </SpotsProvider>
@@ -93,7 +91,7 @@ export default function RootLayout({
           <Script
             src={`${umamiHost}/script.js`}
             data-website-id={umamiWebsiteId}
-            data-auto-track="false"
+            data-auto-track="true"
             strategy="afterInteractive"
           />
         )}
