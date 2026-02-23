@@ -1,16 +1,17 @@
 import path from 'path';
 
-// Runtime-only path to avoid Turbopack statically tracing 67K+ files in data/
-const DATA_SEGMENT = ['da', 'ta'].join('');
+function getDataRoot(): string {
+  return process.env.DATA_DIR || path.resolve(process.cwd(), 'data');
+}
 
 export function dataPath(...segments: string[]): string {
-  return path.join(process.cwd(), DATA_SEGMENT, ...segments);
+  return path.join(getDataRoot(), ...segments);
 }
 
 export function reportingPath(...segments: string[]): string {
-  return dataPath('reporting', ...segments);
+  return path.join(getDataRoot(), 'reporting', ...segments);
 }
 
 export function configPath(...segments: string[]): string {
-  return dataPath('config', ...segments);
+  return path.join(getDataRoot(), 'config', ...segments);
 }
