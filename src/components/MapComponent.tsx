@@ -20,15 +20,19 @@ const mapContainerStyle = {
   height: '100%',
 };
 
-// Base64-encoded circle SVGs for cluster icons (number is drawn by marker-clusterer on top)
-function createClusterCircleUrl(size: number, fill: string): string {
-  const r = size / 2 - 2;
-  const cx = size / 2;
-  const cy = size / 2;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="white" stroke-width="2"/></svg>`;
-  const base64 = btoa(svg);
-  return `data:image/svg+xml;base64,${base64}`;
-}
+// Pre-computed base64 circle SVGs for cluster icons (marker-clusterer draws the count on top)
+const CLUSTER_ICONS = {
+  teal: {
+    sm: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMTgiIGZpbGw9IiMwZDk0ODgiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==',
+    md: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCI+PGNpcmNsZSBjeD0iMjQiIGN5PSIyNCIgcj0iMjIiIGZpbGw9IiMwZDk0ODgiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==',
+    lg: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1NiIgaGVpZ2h0PSI1NiI+PGNpcmNsZSBjeD0iMjgiIGN5PSIyOCIgcj0iMjYiIGZpbGw9IiMwZDk0ODgiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==',
+  },
+  gray: {
+    sm: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMTgiIGZpbGw9IiM2NDc0OGIiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==',
+    md: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCI+PGNpcmNsZSBjeD0iMjQiIGN5PSIyNCIgcj0iMjIiIGZpbGw9IiM2NDc0OGIiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==',
+    lg: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1NiIgaGVpZ2h0PSI1NiI+PGNpcmNsZSBjeD0iMjgiIGN5PSIyOCIgcj0iMjYiIGZpbGw9IiM2NDc0OGIiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==',
+  },
+};
 
 function createMarkerIcon(spot: Spot, activities: Array<{ name: string; emoji: string; color: string }>): google.maps.Icon {
   const activityConfig = activities.find(a => a.name === spot.type);
@@ -516,9 +520,9 @@ export default function MapComponent({
           <MarkerClusterer
             options={{
               styles: [
-                { url: createClusterCircleUrl(40, '#0d9488'), height: 40, width: 40, textColor: '#fff', textSize: 14, fontWeight: 'bold', anchorText: [12, 0] },
-                { url: createClusterCircleUrl(48, '#0d9488'), height: 48, width: 48, textColor: '#fff', textSize: 16, fontWeight: 'bold', anchorText: [14, 0] },
-                { url: createClusterCircleUrl(56, '#0d9488'), height: 56, width: 56, textColor: '#fff', textSize: 18, fontWeight: 'bold', anchorText: [17, 0] },
+                { url: CLUSTER_ICONS.teal.sm, height: 40, width: 40, textColor: '#fff', textSize: 14, fontWeight: 'bold' },
+                { url: CLUSTER_ICONS.teal.md, height: 48, width: 48, textColor: '#fff', textSize: 16, fontWeight: 'bold' },
+                { url: CLUSTER_ICONS.teal.lg, height: 56, width: 56, textColor: '#fff', textSize: 18, fontWeight: 'bold' },
               ],
             }}
           >
@@ -544,9 +548,9 @@ export default function MapComponent({
           <MarkerClusterer
             options={{
               styles: [
-                { url: createClusterCircleUrl(40, '#64748b'), height: 40, width: 40, textColor: '#fff', textSize: 14, fontWeight: 'bold', anchorText: [12, 0] },
-                { url: createClusterCircleUrl(48, '#64748b'), height: 48, width: 48, textColor: '#fff', textSize: 16, fontWeight: 'bold', anchorText: [14, 0] },
-                { url: createClusterCircleUrl(56, '#64748b'), height: 56, width: 56, textColor: '#fff', textSize: 18, fontWeight: 'bold', anchorText: [17, 0] },
+                { url: CLUSTER_ICONS.gray.sm, height: 40, width: 40, textColor: '#fff', textSize: 14, fontWeight: 'bold' },
+                { url: CLUSTER_ICONS.gray.md, height: 48, width: 48, textColor: '#fff', textSize: 16, fontWeight: 'bold' },
+                { url: CLUSTER_ICONS.gray.lg, height: 56, width: 56, textColor: '#fff', textSize: 18, fontWeight: 'bold' },
               ],
             }}
           >
