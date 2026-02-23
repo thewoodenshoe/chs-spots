@@ -24,6 +24,6 @@ export async function GET(request: Request) {
     { name: 'Happy Hour', icon: 'Martini', emoji: '🍹', color: '#0d9488' },
     { name: 'Brunch', icon: 'Coffee', emoji: '🥞', color: '#d97706' },
     { name: 'Fishing Spots', icon: 'Fish', emoji: '🎣', color: '#0284c7', communityDriven: true },
-    { name: 'Local Gems', icon: 'Compass', emoji: '💎', color: '#8b5cf6', communityDriven: true },
+    { name: 'Must-See Spots', icon: 'Compass', emoji: '⭐', color: '#8b5cf6', communityDriven: true },
   ]);
 }

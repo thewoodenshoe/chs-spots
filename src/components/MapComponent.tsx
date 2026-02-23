@@ -502,14 +502,28 @@ export default function MapComponent({
       )}
 
       {/* Empty state (only after spots have loaded) */}
-      {!isSubmissionMode && !spotsLoading && filteredSpots.length === 0 && (
-        <div className="absolute top-2 left-1/2 z-[55] -translate-x-1/2 rounded-xl bg-white/90 px-5 py-3 shadow-lg backdrop-blur-sm">
-          <p className="text-sm font-medium text-gray-700">
-            No {selectedActivity} spots in {selectedArea}
-          </p>
-          <p className="text-xs text-gray-500 mt-0.5">Try a different area or activity</p>
-        </div>
-      )}
+      {!isSubmissionMode && !spotsLoading && filteredSpots.length === 0 && (() => {
+        const isCommunity = activities.find(a => a.name === selectedActivity)?.communityDriven;
+        return (
+          <div className="absolute top-2 left-1/2 z-[55] -translate-x-1/2 rounded-xl bg-white/90 px-5 py-3 shadow-lg backdrop-blur-sm max-w-[90vw]">
+            {isCommunity ? (
+              <>
+                <p className="text-sm font-medium text-gray-700">
+                  No {selectedActivity} in {selectedArea} yet
+                </p>
+                <p className="text-xs text-gray-500 mt-0.5">Be the first — tap &quot;Add Spot&quot; below!</p>
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-medium text-gray-700">
+                  No {selectedActivity} spots in {selectedArea}
+                </p>
+                <p className="text-xs text-gray-500 mt-0.5">Try a different area or activity</p>
+              </>
+            )}
+          </div>
+        );
+      })()}
       
       <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
         <GoogleMap

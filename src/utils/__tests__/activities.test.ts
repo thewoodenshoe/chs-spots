@@ -42,7 +42,7 @@ describe('Activities Utility', () => {
       expect(activities[0].color).toBe('#0d9488');
       expect(activities[2].name).toBe('Fishing Spots');
       expect(activities[2].communityDriven).toBe(true);
-      expect(activities[3].name).toBe('Local Gems');
+      expect(activities[3].name).toBe('Must-See Spots');
       expect(activities[3].communityDriven).toBe(true);
     });
 

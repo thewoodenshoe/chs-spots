@@ -77,6 +77,6 @@ describe('shouldShowBanner', () => {
   it('tracks dismissal per activity type', () => {
     dismissBanner('Fishing Spots');
     expect(shouldShowBanner('Fishing Spots')).toBe(false);
-    expect(shouldShowBanner('Local Gems')).toBe(true);
+    expect(shouldShowBanner('Must-See Spots')).toBe(true);
   });
 });
