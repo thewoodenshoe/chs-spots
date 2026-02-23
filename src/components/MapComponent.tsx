@@ -94,6 +94,7 @@ interface MapComponentProps {
   onMapClick?: (lat: number, lng: number) => void;
   mapCenter?: { lat: number; lng: number; zoom: number };
   onEditSpot?: (spot: Spot) => void;
+  onReportSpot?: (spot: Spot) => void;
   showAllVenues?: boolean;
   searchQuery?: string;
 }
@@ -106,6 +107,7 @@ export default function MapComponent({
   onMapClick,
   mapCenter,
   onEditSpot,
+  onReportSpot,
   showAllVenues = false,
   searchQuery = '',
 }: MapComponentProps) {
@@ -736,6 +738,17 @@ export default function MapComponent({
                   className="mt-3 w-full rounded-lg bg-teal-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-teal-700 touch-manipulation"
                 >
                   Edit Spot
+                </button>
+              )}
+              {onReportSpot && selectedSpot.source === 'automated' && (
+                <button
+                  onClick={() => {
+                    onReportSpot(selectedSpot);
+                    handleInfoWindowClose();
+                  }}
+                  className="mt-1.5 w-full rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800 transition-colors hover:bg-amber-100 touch-manipulation"
+                >
+                  Something wrong? Let us know
                 </button>
               )}
             </div>

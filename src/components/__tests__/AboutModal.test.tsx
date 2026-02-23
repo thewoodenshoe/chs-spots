@@ -15,12 +15,12 @@ describe('AboutModal', () => {
 
   it('renders when open', () => {
     render(<AboutModal {...defaultProps} />);
-    expect(screen.getByText('About CHS Finds')).toBeInTheDocument();
+    expect(screen.getByText('About Charleston Finds')).toBeInTheDocument();
   });
 
   it('does not render when closed', () => {
     render(<AboutModal {...defaultProps} isOpen={false} />);
-    expect(screen.queryByText('About CHS Finds')).not.toBeInTheDocument();
+    expect(screen.queryByText('About Charleston Finds')).not.toBeInTheDocument();
   });
 
   it('shows spot count', () => {
@@ -69,6 +69,6 @@ describe('AboutModal', () => {
     render(<AboutModal {...defaultProps} />);
     const dialog = screen.getByRole('dialog');
     expect(dialog).toHaveAttribute('aria-modal', 'true');
-    expect(dialog).toHaveAttribute('aria-label', 'About CHS Finds');
+    expect(dialog).toHaveAttribute('aria-label', 'About Charleston Finds');
   });
 });

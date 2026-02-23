@@ -368,9 +368,8 @@ function main() {
     return;
   }
   
-  // Load existing spots.json to preserve manual spots only (automated spots will be regenerated)
+  // Load existing spots.json to preserve manual spots and manually-overridden automated spots
   let existingSpots = [];
-  let manualSpotsCount = 0;
   if (fs.existsSync(SPOTS_PATH)) {
     try {
       const existingContent = fs.readFileSync(SPOTS_PATH, 'utf8');
@@ -378,23 +377,27 @@ function main() {
       if (!Array.isArray(existingSpots)) {
         existingSpots = [];
       }
-      // Only preserve manual spots - automated spots will be regenerated with new labeled fields
-      manualSpotsCount = existingSpots.filter(s => s.source === 'manual').length;
-      if (manualSpotsCount > 0) {
-        log(`📋 Found ${manualSpotsCount} manual spot(s) - will be preserved\n`);
-      }
     } catch (error) {
       log(`  ⚠️  Error reading existing spots.json: ${error.message}`);
       existingSpots = [];
     }
   }
   
-  // Extract manual spots (should never be removed)
+  // Preserve: (a) manual spots, (b) automated spots that a user has edited (manualOverride flag)
   const manualSpots = existingSpots.filter(s => s.source === 'manual');
+  const overriddenSpots = existingSpots.filter(s => s.source === 'automated' && s.manualOverride);
+  // Track venueId+type combos that have been manually overridden so ETL doesn't regenerate them
+  const overriddenKeys = new Set(overriddenSpots.map(s => `${s.venueId}::${s.type}`));
+
+  if (manualSpots.length > 0) {
+    log(`📋 Found ${manualSpots.length} manual spot(s) — will be preserved`);
+  }
+  if (overriddenSpots.length > 0) {
+    log(`✏️  Found ${overriddenSpots.length} user-edited automated spot(s) — will be preserved\n`);
+  }
   
-  // Process gold files and create spots
-  // Start with manual spots only - automated spots will be regenerated from gold
-  const spots = [...manualSpots]; // Start with manual spots only
+  // Start with preserved spots; new automated spots are appended below
+  const spots = [...manualSpots, ...overriddenSpots];
   let processed = 0;
   let skipped = 0;
   let missingVenue = 0;
@@ -456,9 +459,15 @@ function main() {
       
       if (newSpots.length > 0) {
         for (const spot of newSpots) {
-          // Skip if this venue+type combo already exists
+          // Skip if this venue+type combo already exists (from a previous gold file)
           if (existingTypes.has(spot.type)) {
             skipped++;
+            continue;
+          }
+          // Skip if a user manually edited this venue+type — preserve their changes
+          if (overriddenKeys.has(`${venueId}::${spot.type}`)) {
+            skipped++;
+            log(`  ⏭️  Skipping ${spot.title} [${spot.type}] — user-edited override preserved`);
             continue;
           }
           

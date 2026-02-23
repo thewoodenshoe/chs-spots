@@ -15,6 +15,7 @@ import FeedbackModal from '@/components/FeedbackModal';
 import AboutModal from '@/components/AboutModal';
 import SuggestActivityModal from '@/components/SuggestActivityModal';
 import SearchBar from '@/components/SearchBar';
+import ReportSpotModal from '@/components/ReportSpotModal';
 
 const MAX_UPLOAD_BYTES = 700 * 1024;
 const MAX_IMAGE_DIMENSION = 1600;
@@ -110,6 +111,8 @@ export default function Home() {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isSuggestActivityOpen, setIsSuggestActivityOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isReportOpen, setIsReportOpen] = useState(false);
+  const [reportingSpot, setReportingSpot] = useState<Spot | null>(null);
   // Default center for Daniel Island (will be updated when area centers load)
   const defaultCenter = { lat: 32.862, lng: -79.908, zoom: 14 };
   const [mapCenter, setMapCenter] = useState(defaultCenter);
@@ -119,7 +122,10 @@ export default function Home() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (isAboutOpen) {
+        if (isReportOpen) {
+          setIsReportOpen(false);
+          setReportingSpot(null);
+        } else if (isAboutOpen) {
           setIsAboutOpen(false);
         } else if (isSuggestActivityOpen) {
           setIsSuggestActivityOpen(false);
@@ -138,7 +144,7 @@ export default function Home() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isAboutOpen, isSuggestActivityOpen, isFeedbackOpen, isEditOpen, isSubmissionOpen, isFilterOpen]);
+  }, [isReportOpen, isAboutOpen, isSuggestActivityOpen, isFeedbackOpen, isEditOpen, isSubmissionOpen, isFilterOpen]);
 
   // Load area centers on mount
   useEffect(() => {
@@ -394,12 +400,12 @@ export default function Home() {
         {/* Title Row */}
         <div className="flex h-12 items-center justify-between px-4">
           <h1 className="text-xl font-bold text-white drop-shadow-lg tracking-tight">
-            CHS Finds
+            Charleston Finds
           </h1>
           <button
             onClick={() => setIsAboutOpen(true)}
             className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-all"
-            aria-label="About CHS Finds"
+            aria-label="About Charleston Finds"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -445,6 +451,10 @@ export default function Home() {
           onMapClick={handleMapClick}
           mapCenter={mapCenter}
           onEditSpot={handleEditSpot}
+          onReportSpot={(spot) => {
+            setReportingSpot(spot);
+            setIsReportOpen(true);
+          }}
           showAllVenues={showAllVenues}
           searchQuery={searchQuery}
         />
@@ -596,6 +606,18 @@ export default function Home() {
           setIsSuggestActivityOpen(false);
           showToast('Activity suggestion sent! Thank you.', 'success');
         }}
+      />
+
+      {/* Report Spot Issue Modal */}
+      <ReportSpotModal
+        isOpen={isReportOpen}
+        onClose={() => { setIsReportOpen(false); setReportingSpot(null); }}
+        onSuccess={() => {
+          setIsReportOpen(false);
+          setReportingSpot(null);
+          showToast('Report submitted — thank you for helping improve our data!', 'success');
+        }}
+        spot={reportingSpot}
       />
     </div>
   );

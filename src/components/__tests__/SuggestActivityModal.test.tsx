@@ -53,7 +53,7 @@ describe('SuggestActivityModal', () => {
       expect(defaultProps.onSuccess).toHaveBeenCalledTimes(1);
     });
 
-    expect(global.fetch).toHaveBeenCalledWith('/api/feedback', expect.objectContaining({
+    expect(global.fetch).toHaveBeenCalledWith('/api/activities/suggest', expect.objectContaining({
       method: 'POST',
     }));
   });

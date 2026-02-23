@@ -2,16 +2,16 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 
-interface SuggestActivityModalProps {
+interface ReportSpotModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  spot: { id: number; title: string; venueId?: string } | null;
 }
 
-export default function SuggestActivityModal({ isOpen, onClose, onSuccess }: SuggestActivityModalProps) {
+export default function ReportSpotModal({ isOpen, onClose, onSuccess, spot }: ReportSpotModalProps) {
   const [name, setName] = useState('');
-  const [activityName, setActivityName] = useState('');
-  const [description, setDescription] = useState('');
+  const [issue, setIssue] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -29,35 +29,36 @@ export default function SuggestActivityModal({ isOpen, onClose, onSuccess }: Sug
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !spot) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) { setError('Please enter your name.'); return; }
-    if (!activityName.trim()) { setError('Please enter an activity name.'); return; }
+    if (!issue.trim()) { setError('Please describe the issue.'); return; }
 
     setSubmitting(true);
     setError(null);
 
     try {
-      const res = await fetch('/api/activities/suggest', {
+      const res = await fetch('/api/spots/report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          spotId: spot.id,
+          spotTitle: spot.title,
+          venueId: spot.venueId,
           name: name.trim(),
-          activityName: activityName.trim(),
-          description: description.trim(),
+          issue: issue.trim(),
         }),
       });
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Failed to submit suggestion');
+        throw new Error(data.error || 'Failed to submit report');
       }
 
       setName('');
-      setActivityName('');
-      setDescription('');
+      setIssue('');
       onSuccess();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
@@ -67,7 +68,7 @@ export default function SuggestActivityModal({ isOpen, onClose, onSuccess }: Sug
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Suggest an activity">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Report an issue">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
       <div
@@ -75,7 +76,7 @@ export default function SuggestActivityModal({ isOpen, onClose, onSuccess }: Sug
         className="relative z-10 w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl"
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-gray-900">Suggest an Activity</h2>
+          <h2 className="text-lg font-bold text-gray-900">Report an Issue</h2>
           <button
             onClick={onClose}
             className="rounded-full p-1 text-gray-400 hover:text-gray-600 transition-colors"
@@ -87,8 +88,11 @@ export default function SuggestActivityModal({ isOpen, onClose, onSuccess }: Sug
           </button>
         </div>
 
+        <p className="text-sm text-gray-500 mb-1">
+          <span className="font-medium text-gray-700">{spot.title}</span>
+        </p>
         <p className="text-sm text-gray-500 mb-4">
-          What activity should we add? Think sunset tours, Christmas lights, paddleboard launches, brunch spots — anything Charleston!
+          Let us know what&apos;s wrong — incorrect hours, wrong category, closed venue, or anything else.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -101,22 +105,14 @@ export default function SuggestActivityModal({ isOpen, onClose, onSuccess }: Sug
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
             required
           />
-          <input
-            type="text"
-            placeholder="Activity name (e.g., Sunset Spots) *"
-            value={activityName}
-            onChange={(e) => setActivityName(e.target.value)}
-            onFocus={handleFocusInput}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-            required
-          />
           <textarea
-            placeholder="Brief description or examples (optional)"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            placeholder="What's incorrect? *"
+            value={issue}
+            onChange={(e) => setIssue(e.target.value)}
             onFocus={handleFocusInput}
-            rows={3}
+            rows={4}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 resize-none"
+            required
           />
 
           {error && <p className="text-sm text-red-600">{error}</p>}
@@ -124,9 +120,9 @@ export default function SuggestActivityModal({ isOpen, onClose, onSuccess }: Sug
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full rounded-lg bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {submitting ? 'Sending...' : 'Submit Suggestion'}
+            {submitting ? 'Sending...' : 'Submit Report'}
           </button>
         </form>
       </div>

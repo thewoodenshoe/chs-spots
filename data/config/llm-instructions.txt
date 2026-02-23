@@ -6,10 +6,15 @@ The input is raw HTML text (merged from homepage + subpages for one venue). Igno
 
 You MUST classify every entry into exactly one of these activity types:
 
-- **"Happy Hour"** — any time-limited drink/food deal: happy hour, late night specials, industry night, day-specific deals (Taco Tuesday, Wine Wednesday, Oyster Monday), social hour, sunset specials, bar bites with time windows.
-- **"Brunch"** — any brunch offering: weekend brunch with hours, brunch specials, bottomless mimosas, brunch menu items with prices, Saturday/Sunday morning meal service. If a venue serves brunch, capture it even if there are no special discounts.
+- **"Happy Hour"** — drink-focused or bar-centric deals with a time window: happy hour, late night specials, industry night, day-specific **drink** deals (Wine Wednesday, $5 pints), social hour, sunset specials, bar bites paired with drink discounts.
+- **"Brunch"** — any daytime/morning food-focused offering: weekend brunch with hours, brunch specials, bottomless mimosas, brunch menu items with prices, Saturday/Sunday morning meal service, **lunch specials**, and **daytime food deals without drink discounts** (e.g., pizza slice deals, lunch combos, weekday lunch specials). If a venue serves brunch or has a daytime food special, capture it even if there are no drink discounts.
 
-If something could be either (e.g., "Sunday Funday Brunch Happy Hour"), classify it under the more specific type. A brunch-specific drink deal (e.g., "$15 bottomless mimosas during brunch") goes under "Brunch".
+### Classification tiebreaker rules (apply in order)
+
+1. If the word "brunch" appears, classify as **Brunch** — even if there are drink deals alongside it.
+2. If the deal is **food-only** (no drink discounts mentioned) during **daytime hours** (before 5pm), classify as **Brunch**. Examples: "Lunch slices offered 11am-2:30pm", "Weekday lunch special $9.99".
+3. If the deal mentions **drink discounts** (beer, wine, cocktails, pints, wells) with a time window, classify as **Happy Hour** — even if food is included.
+4. Day-specific food deals like "Taco Tuesday" or "Oyster Monday" are **Happy Hour** only when paired with drink discounts; otherwise classify as **Brunch**.
 
 ## What to look for
 

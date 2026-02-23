@@ -145,19 +145,21 @@ export async function PUT(
       );
     }
     
-    // Apply the edit immediately — spot stays visible, no re-approval needed
+    const existing = spots[spotIndex];
     const updatedSpot = {
-      ...spots[spotIndex],
-      id: spotId, // Ensure ID is preserved
+      ...existing,
+      id: spotId,
       title: spotData.title,
       description: spotData.description || '',
       lat: spotData.lat,
       lng: spotData.lng,
-      activity: spotData.type || spotData.activity || spots[spotIndex].activity || 'Happy Hour',
-      type: spotData.type || spotData.activity || spots[spotIndex].type || 'Happy Hour',
-      photoUrl: spotData.photoUrl !== undefined ? spotData.photoUrl : spots[spotIndex].photoUrl,
-      area: spotData.area !== undefined ? spotData.area : spots[spotIndex].area,
+      activity: spotData.type || spotData.activity || existing.activity || 'Happy Hour',
+      type: spotData.type || spotData.activity || existing.type || 'Happy Hour',
+      photoUrl: spotData.photoUrl !== undefined ? spotData.photoUrl : existing.photoUrl,
+      area: spotData.area !== undefined ? spotData.area : existing.area,
       editedAt: new Date().toISOString(),
+      // Flag automated spots so the ETL preserves the manual edit
+      ...(existing.source === 'automated' ? { manualOverride: true } : {}),
     };
     
     spots[spotIndex] = updatedSpot;

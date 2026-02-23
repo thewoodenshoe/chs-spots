@@ -23,7 +23,7 @@ export default function AboutModal({ isOpen, onClose, lastUpdated, healthIndicat
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="About CHS Finds">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="About Charleston Finds">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
       <div
@@ -32,7 +32,7 @@ export default function AboutModal({ isOpen, onClose, lastUpdated, healthIndicat
       >
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between bg-white px-6 pt-5 pb-3 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-gray-900">About CHS Finds</h2>
+          <h2 className="text-xl font-bold text-gray-900">About Charleston Finds</h2>
           <button
             onClick={onClose}
             className="rounded-full p-1 text-gray-400 hover:text-gray-600 transition-colors"
@@ -86,7 +86,7 @@ export default function AboutModal({ isOpen, onClose, lastUpdated, healthIndicat
           {/* Legal disclaimer */}
           <div className="rounded-xl bg-gray-50 p-4">
             <p className="text-xs text-gray-400 leading-relaxed">
-              CHS Finds is a community project. Spot data is crowd-sourced and may not be accurate or up to date.
+              Charleston Finds is a community project. Spot data is crowd-sourced and may not be accurate or up to date.
               We are not affiliated with any business listed. Use at your own discretion.
               Happy hour times and promotions should be verified directly with the venue.
               By using this site you agree to these terms.

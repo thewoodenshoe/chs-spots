@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import { answerCallbackQuery, editMessage } from '@/lib/telegram';
 import { atomicWriteFileSync } from '@/lib/atomic-write';
-import { reportingPath } from '@/lib/data-dir';
+import { reportingPath, configPath } from '@/lib/data-dir';
 
 /**
  * Telegram Bot Webhook
@@ -36,61 +36,26 @@ export async function POST(request: Request) {
       const data = callbackQuery.data as string;
       const chatId = callbackQuery.message?.chat?.id;
       const messageId = callbackQuery.message?.message_id;
-      
-      // Parse callback data: "approve_123" or "deny_123"
-      const match = data.match(/^(approve|deny)_(\d+)$/);
-      if (!match) {
-        await answerCallbackQuery(callbackQuery.id, 'Invalid action');
-        return NextResponse.json({ ok: true });
+
+      // --- Spot approve/deny: "approve_123" or "deny_123" ---
+      const spotMatch = data.match(/^(approve|deny)_(\d+)$/);
+      if (spotMatch) {
+        return handleSpotCallback(spotMatch[1], parseInt(spotMatch[2], 10), callbackQuery, chatId, messageId);
       }
-      
-      const action = match[1]; // 'approve' or 'deny'
-      const spotId = parseInt(match[2], 10);
-      
-      // Update spot status in spots.json
-      const spotsPath = reportingPath('spots.json');
-      
-      let spots: any[] = [];
-      if (fs.existsSync(spotsPath)) {
-        try {
-          spots = JSON.parse(fs.readFileSync(spotsPath, 'utf8'));
-          if (!Array.isArray(spots)) spots = [];
-        } catch {
-          spots = [];
-        }
+
+      // --- Activity suggestion: "actadd_Name" or "actdeny_Name" ---
+      const actMatch = data.match(/^(actadd|actdeny)_(.+)$/);
+      if (actMatch) {
+        return handleActivityCallback(actMatch[1], actMatch[2], callbackQuery, chatId, messageId);
       }
-      
-      const spotIndex = spots.findIndex((s: any) => s.id === spotId);
-      
-      if (spotIndex === -1) {
-        await answerCallbackQuery(callbackQuery.id, 'Spot not found');
-        if (chatId && messageId) {
-          await editMessage(chatId, messageId, `❓ Spot #${spotId} not found (may have been deleted).`);
-        }
-        return NextResponse.json({ ok: true });
+
+      // --- Spot report: "rptexcl_123" or "rptkeep_123" ---
+      const rptMatch = data.match(/^(rptexcl|rptkeep)_(\d+)$/);
+      if (rptMatch) {
+        return handleReportCallback(rptMatch[1], parseInt(rptMatch[2], 10), callbackQuery, chatId, messageId);
       }
-      
-      const spot = spots[spotIndex];
-      
-      if (action === 'approve') {
-        spots[spotIndex] = { ...spot, status: 'approved' };
-        atomicWriteFileSync(spotsPath, JSON.stringify(spots, null, 2));
-        
-        await answerCallbackQuery(callbackQuery.id, `Approved: ${spot.title}`);
-        if (chatId && messageId) {
-          await editMessage(chatId, messageId, `✅ *Approved*: ${spot.title}\n\nSpot is now visible on the map.`);
-        }
-      } else {
-        // Deny — remove the spot entirely (soft delete)
-        spots[spotIndex] = { ...spot, status: 'denied' };
-        atomicWriteFileSync(spotsPath, JSON.stringify(spots, null, 2));
-        
-        await answerCallbackQuery(callbackQuery.id, `Denied: ${spot.title}`);
-        if (chatId && messageId) {
-          await editMessage(chatId, messageId, `❌ *Denied*: ${spot.title}\n\nSpot has been rejected.`);
-        }
-      }
-      
+
+      await answerCallbackQuery(callbackQuery.id, 'Unknown action');
       return NextResponse.json({ ok: true });
     }
     
@@ -104,7 +69,7 @@ export async function POST(request: Request) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             chat_id: chatId,
-            text: `👋 CHS Finds Admin Bot\n\nYour chat ID is: \`${chatId}\`\n\nAdd this as TELEGRAM_ADMIN_CHAT_ID in your .env.local file.`,
+            text: `👋 Charleston Finds Admin Bot\n\nYour chat ID is: \`${chatId}\`\n\nAdd this as TELEGRAM_ADMIN_CHAT_ID in your .env.local file.`,
             parse_mode: 'Markdown',
           }),
         });
@@ -116,6 +81,125 @@ export async function POST(request: Request) {
     console.error('Telegram webhook error:', error);
     return NextResponse.json({ ok: true }); // Always return 200 to Telegram
   }
+}
+
+// --- Handler: spot approve/deny ---
+async function handleSpotCallback(action: string, spotId: number, callbackQuery: any, chatId: any, messageId: any) {
+  const spotsPath = reportingPath('spots.json');
+  let spots: any[] = [];
+  if (fs.existsSync(spotsPath)) {
+    try { spots = JSON.parse(fs.readFileSync(spotsPath, 'utf8')); if (!Array.isArray(spots)) spots = []; } catch { spots = []; }
+  }
+
+  const spotIndex = spots.findIndex((s: any) => s.id === spotId);
+  if (spotIndex === -1) {
+    await answerCallbackQuery(callbackQuery.id, 'Spot not found');
+    if (chatId && messageId) await editMessage(chatId, messageId, `❓ Spot #${spotId} not found.`);
+    return NextResponse.json({ ok: true });
+  }
+
+  const spot = spots[spotIndex];
+  if (action === 'approve') {
+    spots[spotIndex] = { ...spot, status: 'approved' };
+    atomicWriteFileSync(spotsPath, JSON.stringify(spots, null, 2));
+    await answerCallbackQuery(callbackQuery.id, `Approved: ${spot.title}`);
+    if (chatId && messageId) await editMessage(chatId, messageId, `✅ *Approved*: ${spot.title}\n\nSpot is now visible on the map.`);
+  } else {
+    spots[spotIndex] = { ...spot, status: 'denied' };
+    atomicWriteFileSync(spotsPath, JSON.stringify(spots, null, 2));
+    await answerCallbackQuery(callbackQuery.id, `Denied: ${spot.title}`);
+    if (chatId && messageId) await editMessage(chatId, messageId, `❌ *Denied*: ${spot.title}\n\nSpot has been rejected.`);
+  }
+  return NextResponse.json({ ok: true });
+}
+
+// --- Handler: activity suggestion approve/deny ---
+async function handleActivityCallback(action: string, callbackId: string, callbackQuery: any, chatId: any, messageId: any) {
+  const activityName = callbackId.replace(/_/g, ' ');
+
+  if (action === 'actdeny') {
+    await answerCallbackQuery(callbackQuery.id, 'Dismissed');
+    if (chatId && messageId) await editMessage(chatId, messageId, `❌ *Dismissed* activity suggestion: ${activityName}`);
+    return NextResponse.json({ ok: true });
+  }
+
+  // Approve: add to activities.json
+  const activitiesPath = configPath('activities.json');
+  let activities: any[] = [];
+  if (fs.existsSync(activitiesPath)) {
+    try { activities = JSON.parse(fs.readFileSync(activitiesPath, 'utf8')); if (!Array.isArray(activities)) activities = []; } catch { activities = []; }
+  }
+
+  // Avoid duplicates
+  if (activities.some((a: any) => a.name.toLowerCase() === activityName.toLowerCase())) {
+    await answerCallbackQuery(callbackQuery.id, 'Already exists');
+    if (chatId && messageId) await editMessage(chatId, messageId, `⚠️ Activity "${activityName}" already exists.`);
+    return NextResponse.json({ ok: true });
+  }
+
+  activities.push({
+    name: activityName,
+    icon: 'Star',
+    emoji: '⭐',
+    color: '#6366f1',
+  });
+  atomicWriteFileSync(activitiesPath, JSON.stringify(activities, null, 2));
+
+  await answerCallbackQuery(callbackQuery.id, `Added: ${activityName}`);
+  if (chatId && messageId) await editMessage(chatId, messageId, `✅ *Added activity*: ${activityName}\n\nIt is now available in the filter menu.`);
+  return NextResponse.json({ ok: true });
+}
+
+// --- Handler: spot report exclude/keep ---
+async function handleReportCallback(action: string, spotId: number, callbackQuery: any, chatId: any, messageId: any) {
+  const spotsPath = reportingPath('spots.json');
+  let spots: any[] = [];
+  if (fs.existsSync(spotsPath)) {
+    try { spots = JSON.parse(fs.readFileSync(spotsPath, 'utf8')); if (!Array.isArray(spots)) spots = []; } catch { spots = []; }
+  }
+
+  const spotIndex = spots.findIndex((s: any) => s.id === spotId);
+  if (spotIndex === -1) {
+    await answerCallbackQuery(callbackQuery.id, 'Spot not found');
+    if (chatId && messageId) await editMessage(chatId, messageId, `❓ Spot #${spotId} not found.`);
+    return NextResponse.json({ ok: true });
+  }
+
+  const spot = spots[spotIndex];
+
+  if (action === 'rptkeep') {
+    await answerCallbackQuery(callbackQuery.id, 'Kept');
+    if (chatId && messageId) await editMessage(chatId, messageId, `✅ *Kept*: ${spot.title}\n\nReport dismissed.`);
+    return NextResponse.json({ ok: true });
+  }
+
+  // Exclude: add venueId to watchlist and remove the spot
+  if (spot.venueId) {
+    const watchlistPath = configPath('venue-watchlist.json');
+    let watchlist: any = { updatedAt: '', venues: {} };
+    if (fs.existsSync(watchlistPath)) {
+      try { watchlist = JSON.parse(fs.readFileSync(watchlistPath, 'utf8')); } catch { /* use default */ }
+    }
+    watchlist.updatedAt = new Date().toISOString().split('T')[0];
+    watchlist.venues[spot.venueId] = {
+      name: spot.title,
+      area: spot.area || 'Unknown',
+      status: 'excluded',
+      reason: `Excluded via user report (spot #${spotId})`,
+    };
+    atomicWriteFileSync(watchlistPath, JSON.stringify(watchlist, null, 2));
+  }
+
+  // Remove the spot
+  spots.splice(spotIndex, 1);
+  atomicWriteFileSync(spotsPath, JSON.stringify(spots, null, 2));
+
+  await answerCallbackQuery(callbackQuery.id, `Excluded: ${spot.title}`);
+  if (chatId && messageId) {
+    const venueNote = spot.venueId ? `\nVenue \`${spot.venueId}\` added to watchlist.` : '';
+    await editMessage(chatId, messageId, `🚫 *Excluded*: ${spot.title}${venueNote}`);
+  }
+  return NextResponse.json({ ok: true });
 }
 
 // GET endpoint for webhook verification

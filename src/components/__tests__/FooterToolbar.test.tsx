@@ -200,12 +200,12 @@ describe('Page Layout — Footer Toolbar', () => {
 describe('Page Layout — Header', () => {
   it('renders the title', () => {
     render(<Home />);
-    expect(screen.getByText('CHS Finds')).toBeInTheDocument();
+    expect(screen.getByText('Charleston Finds')).toBeInTheDocument();
   });
 
   it('renders the About button in the header', () => {
     render(<Home />);
-    expect(screen.getByLabelText('About CHS Finds')).toBeInTheDocument();
+    expect(screen.getByLabelText('About Charleston Finds')).toBeInTheDocument();
   });
 
   it('renders the search bar', () => {
@@ -221,7 +221,7 @@ describe('Page Layout — Header', () => {
 
   it('header is fixed to the top', () => {
     render(<Home />);
-    const header = screen.getByText('CHS Finds').closest('div.fixed');
+    const header = screen.getByText('Charleston Finds').closest('div.fixed');
     expect(header).toHaveClass('fixed', 'top-0', 'left-0', 'right-0');
   });
 });

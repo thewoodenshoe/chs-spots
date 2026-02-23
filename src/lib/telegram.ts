@@ -86,6 +86,112 @@ export async function sendApprovalRequest(spot: {
 }
 
 /**
+ * Send an activity suggestion to admin with Approve/Deny buttons
+ */
+export async function sendActivityApproval(suggestion: {
+  name: string;
+  activityName: string;
+  description?: string;
+}): Promise<boolean> {
+  try {
+    const token = getBotToken();
+    const chatId = getAdminChatId();
+
+    const safeActivity = suggestion.activityName.replace(/[^a-zA-Z0-9 ]/g, '').substring(0, 40);
+    const callbackId = safeActivity.replace(/\s+/g, '_');
+
+    const message = [
+      `💡 *Activity Suggestion*`,
+      ``,
+      `👤 From: ${escapeMarkdown(suggestion.name)}`,
+      `🏷 Activity: *${escapeMarkdown(suggestion.activityName)}*`,
+      suggestion.description ? `📝 ${escapeMarkdown(suggestion.description)}` : '',
+    ].filter(Boolean).join('\n');
+
+    const response = await fetch(`${TELEGRAM_API}${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: message,
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { text: '✅ Add Activity', callback_data: `actadd_${callbackId}` },
+              { text: '❌ Dismiss', callback_data: `actdeny_${callbackId}` },
+            ],
+          ],
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Telegram API error (activity suggestion):', errorData);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('Failed to send activity approval:', error);
+    return false;
+  }
+}
+
+/**
+ * Send a spot report to admin with Exclude/Dismiss buttons
+ */
+export async function sendSpotReport(report: {
+  spotId: number;
+  spotTitle: string;
+  venueId?: string;
+  reporterName: string;
+  issue: string;
+}): Promise<boolean> {
+  try {
+    const token = getBotToken();
+    const chatId = getAdminChatId();
+
+    const message = [
+      `🚩 *Spot Issue Report*`,
+      ``,
+      `📍 Spot: *${escapeMarkdown(report.spotTitle)}* (ID: \`${report.spotId}\`)`,
+      report.venueId ? `🔑 Venue: \`${report.venueId}\`` : '',
+      `👤 Reporter: ${escapeMarkdown(report.reporterName)}`,
+      `📝 Issue: ${escapeMarkdown(report.issue)}`,
+    ].filter(Boolean).join('\n');
+
+    const response = await fetch(`${TELEGRAM_API}${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: message,
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { text: '🚫 Exclude Venue', callback_data: `rptexcl_${report.spotId}` },
+              { text: '✅ Keep Spot', callback_data: `rptkeep_${report.spotId}` },
+            ],
+          ],
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Telegram API error (spot report):', errorData);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('Failed to send spot report:', error);
+    return false;
+  }
+}
+
+/**
  * Send a simple notification to admin
  */
 export async function sendNotification(text: string): Promise<boolean> {
