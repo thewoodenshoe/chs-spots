@@ -15,6 +15,14 @@
     "name": "Fishing Spots",
     "icon": "Fish",
     "emoji": "🎣",
-    "color": "#0284c7"
+    "color": "#0284c7",
+    "communityDriven": true
+  },
+  {
+    "name": "Local Gems",
+    "icon": "Compass",
+    "emoji": "💎",
+    "color": "#8b5cf6",
+    "communityDriven": true
   }
 ]

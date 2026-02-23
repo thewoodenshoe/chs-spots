@@ -35,11 +35,15 @@ describe('Activities Utility', () => {
 
       const activities = loadActivities();
 
-      expect(activities).toHaveLength(7);
+      expect(activities).toHaveLength(4);
       expect(activities[0].name).toBe('Happy Hour');
       expect(activities[0].icon).toBe('Martini');
       expect(activities[0].emoji).toBe('🍹');
       expect(activities[0].color).toBe('#0d9488');
+      expect(activities[2].name).toBe('Fishing Spots');
+      expect(activities[2].communityDriven).toBe(true);
+      expect(activities[3].name).toBe('Local Gems');
+      expect(activities[3].communityDriven).toBe(true);
     });
 
     it('should return fallback activities if file read fails', () => {
@@ -50,7 +54,7 @@ describe('Activities Utility', () => {
 
       const activities = loadActivities();
 
-      expect(activities).toHaveLength(7);
+      expect(activities).toHaveLength(4);
       expect(activities[0].name).toBe('Happy Hour');
     });
 

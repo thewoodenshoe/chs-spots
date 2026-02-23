@@ -16,6 +16,8 @@ import AboutModal from '@/components/AboutModal';
 import SuggestActivityModal from '@/components/SuggestActivityModal';
 import SearchBar from '@/components/SearchBar';
 import ReportSpotModal from '@/components/ReportSpotModal';
+import CommunityBanner, { shouldShowBanner } from '@/components/CommunityBanner';
+import { useActivities } from '@/contexts/ActivitiesContext';
 
 const MAX_UPLOAD_BYTES = 700 * 1024;
 const MAX_IMAGE_DIMENSION = 1600;
@@ -95,6 +97,7 @@ const MapComponent = dynamic(() => import('@/components/MapComponent'), {
 
 export default function Home() {
   const { spots, addSpot, updateSpot, deleteSpot } = useSpots();
+  const { activities } = useActivities();
   const { showToast } = useToast();
   const [healthStatus, setHealthStatus] = useState<'checking' | 'ok' | 'error'>('checking');
   const [isHydrated, setIsHydrated] = useState(false);
@@ -113,6 +116,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [reportingSpot, setReportingSpot] = useState<Spot | null>(null);
+  const [communityBannerActivity, setCommunityBannerActivity] = useState<string | null>(null);
   // Default center for Daniel Island (will be updated when area centers load)
   const defaultCenter = { lat: 32.862, lng: -79.908, zoom: 14 };
   const [mapCenter, setMapCenter] = useState(defaultCenter);
@@ -444,9 +448,15 @@ export default function Home() {
 
       {/* Full-screen Map */}
       <div 
-        className="h-full w-full"
+        className="relative h-full w-full"
         style={{ paddingTop: '165px', paddingBottom: '72px' }}
       >
+        {communityBannerActivity && (
+          <CommunityBanner
+            activityName={communityBannerActivity}
+            onDismiss={() => setCommunityBannerActivity(null)}
+          />
+        )}
         <MapComponent
           selectedArea={selectedArea}
           selectedActivity={selectedActivity}
@@ -541,6 +551,12 @@ export default function Home() {
         onActivityChange={(activity: SpotType) => {
           setSelectedActivity(activity);
           trackActivityFilter(activity);
+          const config = activities.find(a => a.name === activity);
+          if (config?.communityDriven && shouldShowBanner(activity)) {
+            setCommunityBannerActivity(activity);
+          } else {
+            setCommunityBannerActivity(null);
+          }
         }}
       />
 

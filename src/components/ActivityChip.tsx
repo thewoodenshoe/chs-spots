@@ -2,14 +2,13 @@
 
 import { SpotType } from './FilterModal';
 import { useActivities } from '@/contexts/ActivitiesContext';
-import { Martini, Fish, Sunset, Gift, Activity, Bike, Car } from 'lucide-react';
+import { Martini, Fish, Sunset, Gift, Activity, Bike, Car, Compass, Coffee, Star } from 'lucide-react';
 
 interface ActivityChipProps {
   activity: SpotType;
   onClick?: () => void;
 }
 
-// Icon mapping for lucide-react components
 const iconMap: Record<string, typeof Martini> = {
   'Martini': Martini,
   'Fish': Fish,
@@ -18,6 +17,9 @@ const iconMap: Record<string, typeof Martini> = {
   'Activity': Activity,
   'Bike': Bike,
   'Car': Car,
+  'Compass': Compass,
+  'Coffee': Coffee,
+  'Star': Star,
 };
 
 export default function ActivityChip({ activity, onClick }: ActivityChipProps) {
