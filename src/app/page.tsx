@@ -10,7 +10,7 @@ import ActivityChip from '@/components/ActivityChip';
 import { useSpots, Spot } from '@/contexts/SpotsContext';
 import VenuesToggle from '@/components/VenuesToggle';
 import { useToast } from '@/components/Toast';
-import { trackAreaView, trackSpotClick, trackSpotSubmit, trackActivityFilter, trackVenueToggle } from '@/lib/analytics';
+import { trackAreaView, trackSpotClick, trackSpotSubmit, trackActivityFilter, trackVenueToggle, trackFeedbackSubmit } from '@/lib/analytics';
 import FeedbackModal from '@/components/FeedbackModal';
 
 const MAX_UPLOAD_BYTES = 700 * 1024;
@@ -239,29 +239,27 @@ export default function Home() {
 
   const handleSubmissionSubmit = async (data: {
     title: string;
+    submitterName: string;
     description: string;
     type: SpotType;
     lat: number;
     lng: number;
     photo?: File;
   }) => {
-    console.log('Spot submission:', data);
-    
     try {
-      // Convert photo file to data URL if provided
       let photoUrl: string | undefined;
       if (data.photo) {
         photoUrl = await compressImageForUpload(data.photo);
       }
       
-      // Call API to add spot
       await addSpot({
         lat: data.lat,
         lng: data.lng,
         title: data.title,
+        submitterName: data.submitterName,
         description: data.description,
         type: data.type,
-        photoUrl, // Optional - will be undefined if no photo
+        photoUrl,
       });
       
       // Clear form and close modal, but keep marker on map (it's now in the spots array)
@@ -575,6 +573,7 @@ export default function Home() {
         onClose={() => setIsFeedbackOpen(false)}
         onSuccess={() => {
           setIsFeedbackOpen(false);
+          trackFeedbackSubmit();
           showToast('Feedback sent! Thank you.', 'success');
         }}
       />

@@ -67,3 +67,4 @@ data/**/*.json
 .ops/
 a.log
 dev.log
+ts-jest.log

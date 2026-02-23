@@ -79,3 +79,15 @@ export function trackActivityFilter(activity: string): void {
 export function trackVenueToggle(showAll: boolean): void {
   trackEvent('venue-toggle', { showAll });
 }
+
+export function trackFeedbackSubmit(): void {
+  trackEvent('feedback-submit');
+}
+
+export function trackSpotDetailsView(spotId: number, spotName: string, area: string): void {
+  trackEvent('spot-details-view', { spotId, spotName, area });
+}
+
+export function trackSearchFilter(query: string): void {
+  trackEvent('search-filter', { query });
+}

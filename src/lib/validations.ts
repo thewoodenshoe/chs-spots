@@ -3,6 +3,7 @@ import { z } from 'zod';
 /** Schema for creating a new spot (POST /api/spots) */
 export const createSpotSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
+  submitterName: z.string().min(1, 'Name is required').max(100, 'Name too long'),
   description: z.string().max(2000, 'Description too long').default(''),
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
@@ -26,7 +27,7 @@ export const updateSpotSchema = z.object({
 
 /** Schema for feedback submissions (POST /api/feedback) */
 export const feedbackSchema = z.object({
-  name: z.string().max(100, 'Name too long').default(''),
+  name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
   email: z.string().max(200, 'Email too long').email('Invalid email').or(z.literal('')).default(''),
   message: z.string().min(1, 'Message is required').max(1000, 'Message too long'),
 });

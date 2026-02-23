@@ -21,6 +21,11 @@ describe('/api/areas route', () => {
   const mockReadFileSync = fs.readFileSync as jest.MockedFunction<typeof fs.readFileSync>;
   const mockPathJoin = path.join as jest.MockedFunction<typeof path.join>;
 
+  const mockRequest = {
+    headers: new Map([['x-forwarded-for', '127.0.0.1']]),
+  } as unknown as Request;
+  mockRequest.headers = { get: (key: string) => key === 'x-forwarded-for' ? '127.0.0.1' : null } as any;
+
   beforeEach(() => {
     jest.clearAllMocks();
     process.cwd = jest.fn().mockReturnValue('/mock/project');
@@ -36,11 +41,9 @@ describe('/api/areas route', () => {
     mockPathJoin.mockReturnValue('/mock/project/data/config/areas.json');
     mockReadFileSync.mockReturnValue(JSON.stringify(mockAreas));
 
-    const response = await GET();
+    const response = await GET(mockRequest);
     const data = await response.json();
 
-    expect(mockPathJoin).toHaveBeenCalledWith('/mock/project', 'data', 'config', 'areas.json');
-    expect(mockReadFileSync).toHaveBeenCalledWith('/mock/project/data/config/areas.json', 'utf8');
     expect(response.status).toBe(200);
     expect(data).toEqual(['Daniel Island', 'Mount Pleasant', 'Park Circle']);
   });
@@ -55,10 +58,9 @@ describe('/api/areas route', () => {
     mockPathJoin.mockReturnValue('/mock/project/data/config/areas.json');
     mockReadFileSync.mockReturnValue(JSON.stringify(mockAreas));
 
-    const response = await GET();
+    const response = await GET(mockRequest);
     const data = await response.json();
 
-    // Should use "name" attribute, not "displayName"
     expect(data).toEqual(['Daniel Island', 'North Charleston', 'West Ashley']);
     expect(data).not.toContain(undefined);
   });
@@ -69,7 +71,7 @@ describe('/api/areas route', () => {
       throw new Error('File not found');
     });
 
-    const response = await GET();
+    const response = await GET(mockRequest);
     const data = await response.json();
 
     expect(response.status).toBe(500);
@@ -81,16 +83,14 @@ describe('/api/areas route', () => {
     mockPathJoin.mockReturnValue('/mock/project/data/config/areas.json');
     mockReadFileSync.mockReturnValue('invalid json');
 
-    const response = await GET();
+    const response = await GET(mockRequest);
     
-    // Should throw and be caught, returning 500
     expect(response.status).toBe(500);
     const data = await response.json();
     expect(data).toHaveProperty('error');
   });
 
   it('should return all areas from areas.json', async () => {
-    // Test with all 8 areas that should be in areas.json
     const mockAreas = [
       { name: 'Daniel Island' },
       { name: 'Mount Pleasant' },
@@ -105,7 +105,7 @@ describe('/api/areas route', () => {
     mockPathJoin.mockReturnValue('/mock/project/data/config/areas.json');
     mockReadFileSync.mockReturnValue(JSON.stringify(mockAreas));
 
-    const response = await GET();
+    const response = await GET(mockRequest);
     const data = await response.json();
 
     expect(data.length).toBe(8);

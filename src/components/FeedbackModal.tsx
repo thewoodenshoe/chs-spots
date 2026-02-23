@@ -36,6 +36,10 @@ export default function FeedbackModal({ isOpen, onClose, onSuccess }: FeedbackMo
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!name.trim()) {
+      setError('Please enter your name.');
+      return;
+    }
     if (!message.trim()) {
       setError('Please enter a message.');
       return;
@@ -92,11 +96,12 @@ export default function FeedbackModal({ isOpen, onClose, onSuccess }: FeedbackMo
         <form onSubmit={handleSubmit} className="space-y-3">
           <input
             type="text"
-            placeholder="Name (optional)"
+            placeholder="Your name *"
             value={name}
             onChange={(e) => setName(e.target.value)}
             onFocus={handleFocusInput}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+            required
           />
           <input
             type="email"

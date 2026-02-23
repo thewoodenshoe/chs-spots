@@ -127,7 +127,9 @@ describe('SubmissionModal', () => {
       const onSubmit = jest.fn();
       render(<SubmissionModal {...defaultProps} area="Mount Pleasant" onSubmit={onSubmit} />);
       
+      const nameInput = screen.getByPlaceholderText(/John D/i);
       const titleInput = screen.getByPlaceholderText(/Best Sunset View/i);
+      fireEvent.change(nameInput, { target: { value: 'Jane' } });
       fireEvent.change(titleInput, { target: { value: 'Test Spot' } });
       
       const submitButton = screen.getByRole('button', { name: /submit|save|add/i });
@@ -137,7 +139,6 @@ describe('SubmissionModal', () => {
 
       await waitFor(() => {
         expect(onSubmit).toHaveBeenCalled();
-        // Note: area is not directly passed in current implementation, but could be enhanced
       });
     });
   });
@@ -193,7 +194,9 @@ describe('SubmissionModal', () => {
       const onSubmit = jest.fn();
       render(<SubmissionModal {...defaultProps} onSubmit={onSubmit} />);
       
+      const nameInput = screen.getByPlaceholderText(/John D/i);
       const titleInput = screen.getByPlaceholderText(/Best Sunset View/i);
+      fireEvent.change(nameInput, { target: { value: 'Jane' } });
       fireEvent.change(titleInput, { target: { value: 'Test Spot' } });
       
       const photoInput = document.querySelector('input[type="file"]') as HTMLInputElement;
@@ -268,21 +271,34 @@ describe('SubmissionModal', () => {
       const onSubmit = jest.fn();
       render(<SubmissionModal {...defaultProps} onSubmit={onSubmit} />);
       
-      // The submit button should be disabled when title is empty (default state)
       const submitButton = screen.getByRole('button', { name: /submit|save|add/i });
       expect(submitButton).toBeDisabled();
       
-      // Since the button is disabled, onSubmit should not be called
       expect(onSubmit).not.toHaveBeenCalled();
     });
 
-    it('should submit with correct data', async () => {
+    it('should not submit if submitter name is empty', async () => {
+      const onSubmit = jest.fn();
+      render(<SubmissionModal {...defaultProps} onSubmit={onSubmit} />);
+      
+      const titleInput = screen.getByPlaceholderText(/Best Sunset View/i);
+      fireEvent.change(titleInput, { target: { value: 'Test Spot' } });
+      
+      const submitButton = screen.getByRole('button', { name: /submit|save|add/i });
+      expect(submitButton).toBeDisabled();
+      
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('should submit with correct data including submitterName', async () => {
       const onSubmit = jest.fn();
       render(<SubmissionModal {...defaultProps} defaultActivity="Fishing Spots" onSubmit={onSubmit} />);
       
+      const nameInput = screen.getByPlaceholderText(/John D/i);
       const titleInput = screen.getByPlaceholderText(/Best Sunset View/i);
       const descriptionInput = screen.getByPlaceholderText(/Tell us about this spot/i);
       
+      fireEvent.change(nameInput, { target: { value: 'Jane' } });
       fireEvent.change(titleInput, { target: { value: 'Test Spot' } });
       fireEvent.change(descriptionInput, { target: { value: 'Test description' } });
       
@@ -294,6 +310,7 @@ describe('SubmissionModal', () => {
       await waitFor(() => {
         expect(onSubmit).toHaveBeenCalledWith({
           title: 'Test Spot',
+          submitterName: 'Jane',
           description: 'Test description',
           type: 'Fishing Spots',
           lat: 32.7765,
@@ -303,13 +320,15 @@ describe('SubmissionModal', () => {
       });
     });
 
-    it('should trim title and description before submitting', async () => {
+    it('should trim title, name, and description before submitting', async () => {
       const onSubmit = jest.fn();
       render(<SubmissionModal {...defaultProps} onSubmit={onSubmit} />);
       
+      const nameInput = screen.getByPlaceholderText(/John D/i);
       const titleInput = screen.getByPlaceholderText(/Best Sunset View/i);
       const descriptionInput = screen.getByPlaceholderText(/Tell us about this spot/i);
       
+      fireEvent.change(nameInput, { target: { value: '  Jane  ' } });
       fireEvent.change(titleInput, { target: { value: '  Test Spot  ' } });
       fireEvent.change(descriptionInput, { target: { value: '  Test description  ' } });
       
@@ -322,6 +341,7 @@ describe('SubmissionModal', () => {
         expect(onSubmit).toHaveBeenCalledWith(
           expect.objectContaining({
             title: 'Test Spot',
+            submitterName: 'Jane',
             description: 'Test description',
           })
         );
@@ -332,7 +352,9 @@ describe('SubmissionModal', () => {
       const onSubmit = jest.fn().mockResolvedValue(undefined);
       const { rerender } = render(<SubmissionModal {...defaultProps} onSubmit={onSubmit} />);
       
+      const nameInput = screen.getByPlaceholderText(/John D/i) as HTMLInputElement;
       const titleInput = screen.getByPlaceholderText(/Best Sunset View/i) as HTMLInputElement;
+      fireEvent.change(nameInput, { target: { value: 'Jane' } });
       fireEvent.change(titleInput, { target: { value: 'Test Spot' } });
       
       const submitButton = screen.getByRole('button', { name: /submit|save|add/i });
@@ -344,7 +366,6 @@ describe('SubmissionModal', () => {
         expect(onSubmit).toHaveBeenCalled();
       });
 
-      // Modal should close (isOpen becomes false)
       expect(mockOnClose).toHaveBeenCalled();
     });
   });
@@ -378,7 +399,9 @@ describe('SubmissionModal', () => {
       const onSubmit = jest.fn().mockResolvedValue(undefined);
       render(<SubmissionModal {...defaultProps} onSubmit={onSubmit} />);
       
+      const nameInput = screen.getByPlaceholderText(/John D/i);
       const titleInput = screen.getByPlaceholderText(/Best Sunset View/i);
+      fireEvent.change(nameInput, { target: { value: 'Jane' } });
       fireEvent.change(titleInput, { target: { value: 'Test Spot' } });
       
       const submitButton = screen.getByRole('button', { name: /submit|save|add/i });
@@ -495,7 +518,9 @@ describe('SubmissionModal', () => {
       const onSubmit = jest.fn();
       render(<SubmissionModal {...defaultProps} onSubmit={onSubmit} />);
       
+      const nameInput = screen.getByPlaceholderText(/John D/i);
       const titleInput = screen.getByPlaceholderText(/Best Sunset View/i);
+      fireEvent.change(nameInput, { target: { value: 'Jane' } });
       fireEvent.change(titleInput, { target: { value: 'Test Spot' } });
       
       const submitButton = screen.getByRole('button', { name: /submit|save|add/i });
@@ -507,6 +532,7 @@ describe('SubmissionModal', () => {
         expect(onSubmit).toHaveBeenCalledWith(
           expect.objectContaining({
             title: 'Test Spot',
+            submitterName: 'Jane',
             description: '',
           })
         );
@@ -532,7 +558,9 @@ describe('SubmissionModal', () => {
       render(<SubmissionModal {...defaultProps} onSubmit={onSubmit} />);
       
       const longTitle = 'A'.repeat(1000);
+      const nameInput = screen.getByPlaceholderText(/John D/i);
       const titleInput = screen.getByPlaceholderText(/Best Sunset View/i);
+      fireEvent.change(nameInput, { target: { value: 'Jane' } });
       fireEvent.change(titleInput, { target: { value: longTitle } });
       
       const submitButton = screen.getByRole('button', { name: /submit|save|add/i });

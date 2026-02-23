@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import { reportingPath } from '@/lib/data-dir';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
+  const ip = getClientIp(request);
+  if (!checkRateLimit(`health-get:${ip}`, 30, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
   const checks: Record<string, { ok: boolean; detail?: string }> = {};
 
   // 1. App is running (always true if we get here)

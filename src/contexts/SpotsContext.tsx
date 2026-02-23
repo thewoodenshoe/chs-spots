@@ -6,7 +6,8 @@ export interface Spot {
   lat: number;
   lng: number;
   title: string;
-  description: string; // Keep for backwards compatibility
+  submitterName?: string;
+  description: string;
   type: string;
   photoUrl?: string;
   source?: 'manual' | 'automated';

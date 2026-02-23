@@ -159,6 +159,7 @@ export async function POST(request: Request) {
     const newSpot = {
       id: newId,
       title: spotData.title,
+      submitterName: spotData.submitterName,
       description: spotData.description || '',
       lat: spotData.lat,
       lng: spotData.lng,
@@ -167,7 +168,7 @@ export async function POST(request: Request) {
       photoUrl: spotData.photoUrl,
       area: spotData.area,
       source: 'manual',
-      status: 'pending', // Requires approval via Telegram
+      status: 'pending',
       submittedAt: new Date().toISOString(),
     };
     
@@ -193,7 +194,7 @@ export async function POST(request: Request) {
         type: newSpot.type,
         lat: newSpot.lat,
         lng: newSpot.lng,
-        description: newSpot.description,
+        description: `By: ${newSpot.submitterName}\n${newSpot.description}`,
       });
     } catch (telegramError) {
       console.warn('Telegram notification failed (spot still saved):', telegramError);
