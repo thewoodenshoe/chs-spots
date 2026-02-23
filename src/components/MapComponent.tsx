@@ -519,6 +519,7 @@ export default function MapComponent({
         {filteredSpots.length > 0 && (
           <MarkerClusterer
             options={{
+              enableRetinaIcons: true,
               styles: [
                 { url: CLUSTER_ICONS.teal.sm, height: 40, width: 40, textColor: '#fff', textSize: 14, fontWeight: 'bold' },
                 { url: CLUSTER_ICONS.teal.md, height: 48, width: 48, textColor: '#fff', textSize: 16, fontWeight: 'bold' },
@@ -547,6 +548,7 @@ export default function MapComponent({
         {showAllVenues && filteredVenues.length > 0 && (
           <MarkerClusterer
             options={{
+              enableRetinaIcons: true,
               styles: [
                 { url: CLUSTER_ICONS.gray.sm, height: 40, width: 40, textColor: '#fff', textSize: 14, fontWeight: 'bold' },
                 { url: CLUSTER_ICONS.gray.md, height: 48, width: 48, textColor: '#fff', textSize: 16, fontWeight: 'bold' },
