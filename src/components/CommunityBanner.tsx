@@ -19,7 +19,7 @@ function getDismissed(): Set<string> {
   }
 }
 
-function setDismissed(dismissed: Set<string>) {
+function setDismissedStore(dismissed: Set<string>) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([...dismissed]));
   } catch { /* localStorage unavailable */ }
@@ -32,7 +32,7 @@ export function shouldShowBanner(activityName: string): boolean {
 export function dismissBanner(activityName: string) {
   const d = getDismissed();
   d.add(activityName);
-  setDismissed(d);
+  setDismissedStore(d);
 }
 
 export default function CommunityBanner({ activityName, onDismiss }: CommunityBannerProps) {
@@ -49,8 +49,7 @@ export default function CommunityBanner({ activityName, onDismiss }: CommunityBa
 
   return (
     <div
-      className={`absolute left-3 right-3 z-30 transition-all duration-200 ${closing ? 'opacity-0 -translate-y-2' : 'animate-fade-in-down'}`}
-      style={{ top: '174px' }}
+      className={`absolute top-3 left-3 right-3 z-[55] transition-all duration-200 ${closing ? 'opacity-0 -translate-y-2' : 'animate-fade-in-down'}`}
       role="alert"
       data-testid="community-banner"
     >

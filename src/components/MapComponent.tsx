@@ -6,6 +6,7 @@ import { useSpots, Spot } from '@/contexts/SpotsContext';
 import { useVenues, Venue } from '@/contexts/VenuesContext';
 import { useActivities } from '@/contexts/ActivitiesContext';
 import { Area, SpotType } from './FilterModal';
+import CommunityBanner, { shouldShowBanner } from './CommunityBanner';
 
 // Google Maps API key - set in .env.local as NEXT_PUBLIC_GOOGLE_MAPS_KEY
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || '';
@@ -118,6 +119,7 @@ export default function MapComponent({
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
+  const [bannerDismissedFor, setBannerDismissedFor] = useState<Set<string>>(new Set());
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Lazy-initialized state for the *first* center/zoom only.
@@ -483,13 +485,25 @@ export default function MapComponent({
     );
   }
 
+  const activityConfig = activities.find(a => a.name === selectedActivity);
+  const isCommunityActivity = activityConfig?.communityDriven === true;
+  const showCommunityBanner = isCommunityActivity && shouldShowBanner(selectedActivity) && !bannerDismissedFor.has(selectedActivity);
+
   return (
-    <>
+    <div className="relative h-full w-full">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-20 left-1/2 z-[60] -translate-x-1/2 animate-slide-down rounded-lg bg-gray-900 px-4 py-3 text-sm font-medium text-white shadow-2xl safe-area-top">
           {toastMessage}
         </div>
+      )}
+
+      {/* Community banner — shown once per activity type */}
+      {showCommunityBanner && (
+        <CommunityBanner
+          activityName={selectedActivity}
+          onDismiss={() => setBannerDismissedFor(prev => new Set(prev).add(selectedActivity))}
+        />
       )}
 
       {/* Submission mode banner */}
@@ -502,28 +516,25 @@ export default function MapComponent({
       )}
 
       {/* Empty state (only after spots have loaded) */}
-      {!isSubmissionMode && !spotsLoading && filteredSpots.length === 0 && (() => {
-        const isCommunity = activities.find(a => a.name === selectedActivity)?.communityDriven;
-        return (
-          <div className="absolute top-2 left-1/2 z-[55] -translate-x-1/2 rounded-xl bg-white/90 px-5 py-3 shadow-lg backdrop-blur-sm max-w-[90vw]">
-            {isCommunity ? (
-              <>
-                <p className="text-sm font-medium text-gray-700">
-                  No {selectedActivity} in {selectedArea} yet
-                </p>
-                <p className="text-xs text-gray-500 mt-0.5">Be the first — tap &quot;Add Spot&quot; below!</p>
-              </>
-            ) : (
-              <>
-                <p className="text-sm font-medium text-gray-700">
-                  No {selectedActivity} spots in {selectedArea}
-                </p>
-                <p className="text-xs text-gray-500 mt-0.5">Try a different area or activity</p>
-              </>
-            )}
-          </div>
-        );
-      })()}
+      {!isSubmissionMode && !spotsLoading && filteredSpots.length === 0 && (
+        <div className="absolute top-2 left-1/2 z-[55] -translate-x-1/2 rounded-xl bg-white/90 px-5 py-3 shadow-lg backdrop-blur-sm max-w-[90vw]">
+          {isCommunityActivity ? (
+            <>
+              <p className="text-sm font-medium text-gray-700">
+                No {selectedActivity} in {selectedArea} yet
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5">Be the first — tap &quot;Add Spot&quot; below!</p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm font-medium text-gray-700">
+                No {selectedActivity} in {selectedArea}
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5">Try a different area or activity</p>
+            </>
+          )}
+        </div>
+      )}
       
       <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
         <GoogleMap
@@ -821,6 +832,6 @@ export default function MapComponent({
         )}
       </GoogleMap>
     </LoadScript>
-    </>
+    </div>
   );
 }
