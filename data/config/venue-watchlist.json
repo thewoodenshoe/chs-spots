@@ -892,25 +892,25 @@
     "ChIJlxxFERJ6_ogRyuFVYZioWlY": {
       "name": "Food For the Southern Soul",
       "area": "North Charleston",
-      "status": "flagged",
+      "status": "excluded",
       "reason": "Changed 9/9 days, no promos. Cloudflare CDN noise."
     },
     "ChIJs43LHhd5_ogRHgM-dMGmbro": {
       "name": "Campground at James Island County Park",
       "area": "West Ashley",
-      "status": "flagged",
+      "status": "excluded",
       "reason": "Changed 4/9 days, no promos. Not a restaurant."
     },
     "ChIJA1vVLY57_ogR8syPUAQNKJ4": {
       "name": "Locker Room Sports Cafe",
       "area": "North Charleston",
-      "status": "flagged",
+      "status": "excluded",
       "reason": "Changed 7/9 days, no promos found."
     },
     "ChIJG0Nz-jNv_ogRABdnmGiH3T0": {
       "name": "New Realm Brewing Co.",
       "area": "Daniel Island",
-      "status": "flagged",
+      "status": "excluded",
       "reason": "Changed 5/9 days, no promos. Brewery - may add events."
     }
   }

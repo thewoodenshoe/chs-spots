@@ -8,7 +8,7 @@ import EditSpotModal from '@/components/EditSpotModal';
 import AreaSelector, { getAreaCentersSync } from '@/components/AreaSelector';
 import ActivityChip from '@/components/ActivityChip';
 import { useSpots, Spot } from '@/contexts/SpotsContext';
-import VenuesToggle from '@/components/VenuesToggle';
+// VenuesToggle is now inlined in the footer toolbar
 import { useToast } from '@/components/Toast';
 import { trackAreaView, trackSpotClick, trackSpotSubmit, trackActivityFilter, trackVenueToggle, trackFeedbackSubmit, trackSearchFilter } from '@/lib/analytics';
 import FeedbackModal from '@/components/FeedbackModal';
@@ -434,10 +434,8 @@ export default function Home() {
 
       {/* Full-screen Map */}
       <div 
-        className="h-full w-full pb-24"
-        style={{ 
-          paddingTop: '165px'
-        }}
+        className="h-full w-full"
+        style={{ paddingTop: '165px', paddingBottom: '72px' }}
       >
         <MapComponent
           selectedArea={selectedArea}
@@ -452,95 +450,73 @@ export default function Home() {
         />
       </div>
 
-      {/* Bottom Left Button Group - left-24 leaves space for Google Maps logo (required by ToS) */}
-      <div className="fixed bottom-6 left-24 z-40 flex flex-col sm:flex-row gap-3 safe-area-bottom">
-        {/* Closest Nearby Button */}
-        <button
-          onClick={() => {
-            // This will be handled in MapComponent
-            const event = new CustomEvent('findClosestSpot');
-            window.dispatchEvent(event);
-          }}
-          className="flex min-h-[48px] min-w-[48px] items-center gap-2 rounded-full bg-teal-600 px-4 py-3 text-sm font-semibold text-white shadow-2xl transition-all hover:scale-105 active:scale-95 hover:bg-teal-700 touch-manipulation"
-          aria-label="Find closest spot"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2.5}
+      {/* Bottom Toolbar */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-black/70 backdrop-blur-md safe-area-bottom" data-testid="footer-toolbar">
+        <div className="flex h-[60px] items-stretch justify-around px-2">
+          {/* Nearby */}
+          <button
+            onClick={() => { window.dispatchEvent(new CustomEvent('findClosestSpot')); }}
+            className="flex flex-1 flex-col items-center justify-center gap-0.5 text-white/70 hover:text-white active:scale-95 transition-all touch-manipulation"
+            aria-label="Find closest spot"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-            />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-          </svg>
-          <span className="hidden sm:inline">Closest Nearby</span>
-        </button>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span className="text-[10px] font-medium leading-tight">Nearby</span>
+          </button>
 
-        {/* Venues Toggle Button */}
-        <VenuesToggle
-          showVenues={showAllVenues}
-          onToggle={() => {
-            const newVal = !showAllVenues;
-            setShowAllVenues(newVal);
-            trackVenueToggle(newVal);
-          }}
-        />
-      </div>
-
-      {/* Right-side button stack */}
-      <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3 safe-area-bottom">
-        {/* Suggest Activity button */}
-        <button
-          onClick={() => setIsSuggestActivityOpen(true)}
-          className="flex h-12 w-12 min-h-[48px] min-w-[48px] items-center justify-center rounded-full bg-gray-700 shadow-xl transition-all hover:scale-110 active:scale-95 hover:bg-gray-800 touch-manipulation"
-          aria-label="Suggest an activity"
-          title="Suggest an activity"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-          </svg>
-        </button>
-
-        {/* Feedback button */}
-        <button
-          onClick={() => setIsFeedbackOpen(true)}
-          className="flex h-12 w-12 min-h-[48px] min-w-[48px] items-center justify-center rounded-full bg-gray-700 shadow-xl transition-all hover:scale-110 active:scale-95 hover:bg-gray-800 touch-manipulation"
-          aria-label="Send feedback"
-          title="Send feedback"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
-        </button>
-
-        {/* Add Spot FAB */}
-        <button
-          onClick={handleAddSpot}
-          className="group flex h-14 w-14 min-h-[56px] min-w-[56px] items-center justify-center rounded-full bg-teal-500 shadow-2xl transition-all hover:scale-110 active:scale-95 hover:bg-teal-600 touch-manipulation"
-          aria-label="Add new spot"
-          title="Add new spot"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-7 w-7 text-white"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={3}
+          {/* Venues */}
+          <button
+            onClick={() => { const v = !showAllVenues; setShowAllVenues(v); trackVenueToggle(v); }}
+            className={`flex flex-1 flex-col items-center justify-center gap-0.5 transition-all active:scale-95 touch-manipulation ${showAllVenues ? 'text-red-400' : 'text-white/70 hover:text-white'}`}
+            aria-label={showAllVenues ? 'Hide venues' : 'Show venues'}
+            aria-pressed={showAllVenues}
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-        </button>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            <span className="text-[10px] font-medium leading-tight">Venues</span>
+          </button>
+
+          {/* Add Spot — center, primary */}
+          <button
+            onClick={handleAddSpot}
+            className="flex flex-col items-center justify-center px-4 active:scale-95 transition-all touch-manipulation"
+            aria-label="Add new spot"
+          >
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-500 shadow-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+            </span>
+            <span className="text-[10px] font-medium leading-tight text-teal-400 mt-0.5">Add Spot</span>
+          </button>
+
+          {/* Suggest */}
+          <button
+            onClick={() => setIsSuggestActivityOpen(true)}
+            className="flex flex-1 flex-col items-center justify-center gap-0.5 text-white/70 hover:text-white active:scale-95 transition-all touch-manipulation"
+            aria-label="Suggest an activity"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+            <span className="text-[10px] font-medium leading-tight">Suggest</span>
+          </button>
+
+          {/* Feedback */}
+          <button
+            onClick={() => setIsFeedbackOpen(true)}
+            className="flex flex-1 flex-col items-center justify-center gap-0.5 text-white/70 hover:text-white active:scale-95 transition-all touch-manipulation"
+            aria-label="Send feedback"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            <span className="text-[10px] font-medium leading-tight">Feedback</span>
+          </button>
+        </div>
       </div>
 
       {/* Filter Modal */}

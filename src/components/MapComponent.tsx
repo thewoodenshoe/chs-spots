@@ -210,30 +210,35 @@ export default function MapComponent({
     }
   }, [isSubmissionMode, onMapClick]);
 
-  // Check if a position is near the viewport edge and nudge the map if needed
+  // Pan so the marker + its InfoWindow (above) are comfortably visible between header and footer
   const smartPan = useCallback((position: { lat: number; lng: number }) => {
     if (!map) return;
-    const bounds = map.getBounds();
-    if (!bounds) return;
 
+    // Place the marker in the lower third of the visible area so the InfoWindow
+    // (which renders above) has plenty of room and isn't clipped by the header.
+    // The visible band is roughly between y=165px (header) and y-72px (footer).
+    const div = map.getDiv();
+    const mapH = div.offsetHeight;
+    const visibleTop = 165;
+    const visibleBottom = 72;
+    const usableH = mapH - visibleTop - visibleBottom;
+    // Target: place the marker at ~65% down the usable area
+    const targetScreenY = visibleTop + usableH * 0.65;
+    const targetFraction = targetScreenY / mapH;
+
+    const bounds = map.getBounds();
+    if (!bounds) {
+      map.panTo(position);
+      return;
+    }
     const ne = bounds.getNorthEast();
     const sw = bounds.getSouthWest();
     const latSpan = ne.lat() - sw.lat();
-    const lngSpan = ne.lng() - sw.lng();
 
-    // If marker is within 20% of any edge, nudge the map so the InfoWindow has room
-    const margin = 0.20;
-    let panLat = 0;
-    let panLng = 0;
+    // Desired center lat so that the marker sits at targetFraction from the top
+    const desiredCenterLat = position.lat + latSpan * (targetFraction - 0.5);
 
-    if (position.lat > ne.lat() - latSpan * margin) panLat = -latSpan * 0.25;
-    if (position.lat < sw.lat() + latSpan * margin) panLat = latSpan * 0.25;
-    if (position.lng > ne.lng() - lngSpan * margin) panLng = -lngSpan * 0.25;
-    if (position.lng < sw.lng() + lngSpan * margin) panLng = lngSpan * 0.25;
-
-    if (panLat !== 0 || panLng !== 0) {
-      map.panTo({ lat: position.lat + panLat, lng: position.lng + panLng });
-    }
+    map.panTo({ lat: desiredCenterLat, lng: position.lng });
   }, [map]);
 
   // Handle marker click
@@ -598,7 +603,10 @@ export default function MapComponent({
           <InfoWindow
             position={{ lat: selectedSpot.lat, lng: selectedSpot.lng }}
             onCloseClick={handleInfoWindowClose}
-            options={{ disableAutoPan: true }}
+            options={{
+              pixelOffset: new google.maps.Size(0, -8),
+              maxWidth: 320,
+            }}
           >
             <div className="text-sm min-w-[200px] max-w-[300px]">
               <div className="font-bold text-gray-900 mb-1 text-base">{selectedSpot.title}</div>
@@ -739,7 +747,10 @@ export default function MapComponent({
           <InfoWindow
             position={{ lat: selectedVenue.lat, lng: selectedVenue.lng }}
             onCloseClick={handleInfoWindowClose}
-            options={{ disableAutoPan: true }}
+            options={{
+              pixelOffset: new google.maps.Size(0, -8),
+              maxWidth: 320,
+            }}
           >
             <div className="text-sm min-w-[200px] max-w-[300px]">
               <div className="font-bold text-gray-900 mb-2 text-base">{selectedVenue.name}</div>
