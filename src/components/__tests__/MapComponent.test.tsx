@@ -3,7 +3,7 @@
 process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY = 'test-api-key';
 
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import MapComponent from '../MapComponent';
 import { SpotsProvider } from '@/contexts/SpotsContext';
 import { VenuesProvider } from '@/contexts/VenuesContext';
@@ -30,17 +30,19 @@ jest.mock('@react-google-maps/api', () => ({
     return <div data-testid="load-script">{children}</div>;
   },
   GoogleMap: ({ children, onLoad }: { children: React.ReactNode; onLoad?: (map: any) => void }) => {
+    const onLoadRef = React.useRef(onLoad);
+    onLoadRef.current = onLoad;
     React.useEffect(() => {
-      if (onLoad) {
+      if (onLoadRef.current) {
         const mockMap = {
           fitBounds: jest.fn(),
           setCenter: jest.fn(),
           setZoom: jest.fn(),
           getCenter: jest.fn(() => ({ lat: () => 32.845, lng: () => -79.908 })),
         } as unknown as google.maps.Map;
-        onLoad(mockMap);
+        onLoadRef.current(mockMap);
       }
-    }, [onLoad]);
+    }, []);
     return <div data-testid="google-map">{children}</div>;
   },
   Marker: ({ 
@@ -209,6 +211,112 @@ const originalEnv = process.env;
 
 afterAll(() => {
   process.env = originalEnv;
+});
+
+describe('MapComponent — empty state & banner overlay', () => {
+  const renderMap = (props: Partial<{
+    selectedArea: string;
+    selectedActivity: string;
+    isSubmissionMode: boolean;
+  }> = {}) => {
+    const merged = {
+      selectedArea: 'Daniel Island',
+      selectedActivity: 'Fishing Spots',
+      ...props,
+    };
+    return render(
+      <SpotsProvider>
+        <VenuesProvider>
+          <ActivitiesProvider>
+            <MapComponent
+              selectedArea={merged.selectedArea}
+              selectedActivity={merged.selectedActivity}
+              isSubmissionMode={merged.isSubmissionMode}
+            />
+          </ActivitiesProvider>
+        </VenuesProvider>
+      </SpotsProvider>
+    );
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers();
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => [] }) as jest.Mock;
+    useSpots.mockReturnValue({ spots: [], loading: false });
+    (global as any).__mockVenuesContextValue__ = { venues: [], loading: false, refreshVenues: jest.fn() };
+    (global as any).__mockActivitiesContextValue__ = {
+      activities: [
+        { name: 'Happy Hour', icon: 'Martini', emoji: '🍹', color: '#0d9488' },
+        { name: 'Fishing Spots', icon: 'Fish', emoji: '🎣', color: '#0284c7', communityDriven: true },
+        { name: 'Must-See Spots', icon: 'Star', emoji: '⭐', color: '#d97706', communityDriven: true },
+      ],
+      loading: false,
+      error: null,
+    };
+    window.localStorage.clear();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('shows the community banner for a community-driven activity with zero spots', () => {
+    renderMap({ selectedActivity: 'Fishing Spots' });
+    expect(screen.getByTestId('community-banner')).toBeInTheDocument();
+  });
+
+  it('hides empty state while the community banner is visible', () => {
+    renderMap({ selectedActivity: 'Fishing Spots' });
+    expect(screen.getByTestId('community-banner')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Dismiss')).not.toBeInTheDocument();
+  });
+
+  it('shows empty state with dismiss button after community banner is dismissed', async () => {
+    renderMap({ selectedActivity: 'Fishing Spots' });
+    fireEvent.click(screen.getByTestId('close-banner'));
+    act(() => { jest.advanceTimersByTime(300); });
+    await waitFor(() => {
+      expect(screen.queryByTestId('community-banner')).not.toBeInTheDocument();
+    });
+    expect(screen.getByLabelText('Dismiss')).toBeInTheDocument();
+    expect(screen.getByText(/No Fishing Spots in Daniel Island yet/)).toBeInTheDocument();
+    expect(screen.getByText(/Be the first/)).toBeInTheDocument();
+  });
+
+  it('hides empty state when X close button is clicked', async () => {
+    renderMap({ selectedActivity: 'Fishing Spots' });
+    fireEvent.click(screen.getByTestId('close-banner'));
+    act(() => { jest.advanceTimersByTime(300); });
+    await waitFor(() => {
+      expect(screen.getByLabelText('Dismiss')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByLabelText('Dismiss'));
+    expect(screen.queryByText(/No Fishing Spots in Daniel Island yet/)).not.toBeInTheDocument();
+  });
+
+  it('shows generic empty state for non-community activities (no banner)', () => {
+    renderMap({ selectedActivity: 'Happy Hour' });
+    expect(screen.queryByTestId('community-banner')).not.toBeInTheDocument();
+    expect(screen.getByText(/No Happy Hour in Daniel Island/)).toBeInTheDocument();
+    expect(screen.getByText(/Try a different area or activity/)).toBeInTheDocument();
+    expect(screen.getByLabelText('Dismiss')).toBeInTheDocument();
+  });
+
+  it('does not show empty state when spots are loading', () => {
+    useSpots.mockReturnValue({ spots: [], loading: true });
+    renderMap({ selectedActivity: 'Happy Hour' });
+    expect(screen.queryByText(/No Happy Hour/)).not.toBeInTheDocument();
+  });
+
+  it('does not show empty state when there are spots', () => {
+    useSpots.mockReturnValue({
+      spots: [{ id: 1, title: 'Test', lat: 32.845, lng: -79.908, description: 'x', type: 'Happy Hour' }],
+      loading: false,
+    });
+    renderMap({ selectedActivity: 'Happy Hour' });
+    expect(screen.queryByText(/No Happy Hour/)).not.toBeInTheDocument();
+  });
 });
 
 // Skip this test suite in CI due to memory constraints
