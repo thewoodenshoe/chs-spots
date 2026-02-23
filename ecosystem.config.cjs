@@ -2,8 +2,8 @@ module.exports = {
   apps: [{
     name: 'chs-spots',
     cwd: '/home/ubuntu/projects/chs-spots',
-    script: 'node_modules/.bin/next',
-    args: 'start',
+    script: './start.sh',
+    interpreter: '/bin/bash',
     max_restarts: 3,
     min_uptime: '10s',
     restart_delay: 5000,
