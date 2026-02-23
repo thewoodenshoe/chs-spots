@@ -10,8 +10,11 @@ import ActivityChip from '@/components/ActivityChip';
 import { useSpots, Spot } from '@/contexts/SpotsContext';
 import VenuesToggle from '@/components/VenuesToggle';
 import { useToast } from '@/components/Toast';
-import { trackAreaView, trackSpotClick, trackSpotSubmit, trackActivityFilter, trackVenueToggle, trackFeedbackSubmit } from '@/lib/analytics';
+import { trackAreaView, trackSpotClick, trackSpotSubmit, trackActivityFilter, trackVenueToggle, trackFeedbackSubmit, trackSearchFilter } from '@/lib/analytics';
 import FeedbackModal from '@/components/FeedbackModal';
+import AboutModal from '@/components/AboutModal';
+import SuggestActivityModal from '@/components/SuggestActivityModal';
+import SearchBar from '@/components/SearchBar';
 
 const MAX_UPLOAD_BYTES = 700 * 1024;
 const MAX_IMAGE_DIMENSION = 1600;
@@ -104,6 +107,9 @@ export default function Home() {
   const [editPinLocation, setEditPinLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [showAllVenues, setShowAllVenues] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isSuggestActivityOpen, setIsSuggestActivityOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   // Default center for Daniel Island (will be updated when area centers load)
   const defaultCenter = { lat: 32.862, lng: -79.908, zoom: 14 };
   const [mapCenter, setMapCenter] = useState(defaultCenter);
@@ -113,7 +119,11 @@ export default function Home() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (isFeedbackOpen) {
+        if (isAboutOpen) {
+          setIsAboutOpen(false);
+        } else if (isSuggestActivityOpen) {
+          setIsSuggestActivityOpen(false);
+        } else if (isFeedbackOpen) {
           setIsFeedbackOpen(false);
         } else if (isEditOpen) {
           setIsEditOpen(false);
@@ -128,7 +138,7 @@ export default function Home() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isFeedbackOpen, isEditOpen, isSubmissionOpen, isFilterOpen]);
+  }, [isAboutOpen, isSuggestActivityOpen, isFeedbackOpen, isEditOpen, isSubmissionOpen, isFilterOpen]);
 
   // Load area centers on mount
   useEffect(() => {
@@ -379,29 +389,45 @@ export default function Home() {
 
   return (
     <div className="relative h-screen w-screen overflow-hidden">
-      {/* Fixed Top Bar - Redesigned */}
+      {/* Fixed Top Bar */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-black/70 backdrop-blur-md safe-area-top">
         {/* Title Row */}
-        <div className="flex h-14 items-center justify-center px-4">
-          <h1 className="text-2xl font-bold text-white drop-shadow-lg tracking-tight">
+        <div className="flex h-12 items-center justify-between px-4">
+          <h1 className="text-xl font-bold text-white drop-shadow-lg tracking-tight">
             CHS Finds
           </h1>
+          <button
+            onClick={() => setIsAboutOpen(true)}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-all"
+            aria-label="About CHS Finds"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </button>
         </div>
-        
-        {/* Buttons Row - Same size, responsive */}
-        <div className="flex flex-col sm:flex-row items-stretch gap-3 px-4 pb-4">
-          {/* Area Selector - Equal width */}
-          <div className="flex-1 w-full">
-            <AreaSelector
-              selectedArea={selectedArea}
-              onAreaChange={handleAreaChange}
-              onMapRecenter={handleAreaChange}
-            />
-          </div>
-          
-          {/* Activity Chip - Equal width */}
-          <div className="flex-1 w-full">
-            <ActivityChip activity={selectedActivity} onClick={handleFilter} />
+
+        {/* Search + Filters Row */}
+        <div className="flex flex-col gap-2 px-4 pb-3">
+          <SearchBar
+            value={searchQuery}
+            onChange={(v) => {
+              setSearchQuery(v);
+              if (v.length >= 2) trackSearchFilter(v);
+            }}
+            placeholder="Search spots..."
+          />
+          <div className="flex flex-row items-stretch gap-2">
+            <div className="flex-1 min-w-0">
+              <AreaSelector
+                selectedArea={selectedArea}
+                onAreaChange={handleAreaChange}
+                onMapRecenter={handleAreaChange}
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <ActivityChip activity={selectedActivity} onClick={handleFilter} />
+            </div>
           </div>
         </div>
       </div>
@@ -410,7 +436,7 @@ export default function Home() {
       <div 
         className="h-full w-full pb-24"
         style={{ 
-          paddingTop: '140px' // Increased to accommodate two-row header
+          paddingTop: '165px'
         }}
       >
         <MapComponent
@@ -422,6 +448,7 @@ export default function Home() {
           mapCenter={mapCenter}
           onEditSpot={handleEditSpot}
           showAllVenues={showAllVenues}
+          searchQuery={searchQuery}
         />
       </div>
 
@@ -470,25 +497,26 @@ export default function Home() {
         />
       </div>
 
-      {/* Last updated timestamp (centered between venues toggle and add button) */}
-      <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2 rounded-full bg-black/70 px-4 py-2 text-xs font-medium text-white backdrop-blur-md safe-area-bottom">
-        {isHydrated ? (
-          <>
-            <span className="mr-2 inline-flex items-center">{healthIndicator}</span>
-            <span>last updated: {lastUpdatedEST}</span>
-          </>
-        ) : (
-          <span>last updated: --</span>
-        )}
-      </div>
-
       {/* Right-side button stack */}
       <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3 safe-area-bottom">
+        {/* Suggest Activity button */}
+        <button
+          onClick={() => setIsSuggestActivityOpen(true)}
+          className="flex h-12 w-12 min-h-[48px] min-w-[48px] items-center justify-center rounded-full bg-gray-700 shadow-xl transition-all hover:scale-110 active:scale-95 hover:bg-gray-800 touch-manipulation"
+          aria-label="Suggest an activity"
+          title="Suggest an activity"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          </svg>
+        </button>
+
         {/* Feedback button */}
         <button
           onClick={() => setIsFeedbackOpen(true)}
           className="flex h-12 w-12 min-h-[48px] min-w-[48px] items-center justify-center rounded-full bg-gray-700 shadow-xl transition-all hover:scale-110 active:scale-95 hover:bg-gray-800 touch-manipulation"
           aria-label="Send feedback"
+          title="Send feedback"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -498,22 +526,19 @@ export default function Home() {
         {/* Add Spot FAB */}
         <button
           onClick={handleAddSpot}
-          className="group flex h-16 w-16 min-h-[64px] min-w-[64px] items-center justify-center rounded-full bg-teal-500 shadow-2xl transition-all hover:scale-110 active:scale-95 hover:bg-teal-600 touch-manipulation"
+          className="group flex h-14 w-14 min-h-[56px] min-w-[56px] items-center justify-center rounded-full bg-teal-500 shadow-2xl transition-all hover:scale-110 active:scale-95 hover:bg-teal-600 touch-manipulation"
           aria-label="Add new spot"
+          title="Add new spot"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-8 w-8 text-white"
+            className="h-7 w-7 text-white"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
             strokeWidth={3}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 4v16m8-8H4"
-            />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
         </button>
       </div>
@@ -575,6 +600,25 @@ export default function Home() {
           setIsFeedbackOpen(false);
           trackFeedbackSubmit();
           showToast('Feedback sent! Thank you.', 'success');
+        }}
+      />
+
+      {/* About Modal */}
+      <AboutModal
+        isOpen={isAboutOpen}
+        onClose={() => setIsAboutOpen(false)}
+        lastUpdated={lastUpdatedEST}
+        healthIndicator={healthIndicator}
+        spotCount={spots.length}
+      />
+
+      {/* Suggest Activity Modal */}
+      <SuggestActivityModal
+        isOpen={isSuggestActivityOpen}
+        onClose={() => setIsSuggestActivityOpen(false)}
+        onSuccess={() => {
+          setIsSuggestActivityOpen(false);
+          showToast('Activity suggestion sent! Thank you.', 'success');
         }}
       />
     </div>

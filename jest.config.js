@@ -14,26 +14,13 @@ module.exports = {
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
       },
       transform: {
-        '^.+\\.tsx?$': ['ts-jest', {
-          tsconfig: {
-            jsx: 'react-jsx',
-            target: 'ES2017',
-            module: 'commonjs',
-            esModuleInterop: true,
-            allowSyntheticDefaultImports: true,
-            moduleResolution: 'node',
-            resolveJsonModule: true,
-            isolatedModules: true,
-            strict: true,
-            noEmit: true,
-            paths: { '@/*': ['./src/*'] },
+        '^.+\\.(ts|tsx)$': ['@swc/jest', {
+          jsc: {
+            parser: { syntax: 'typescript', tsx: true },
+            transform: { react: { runtime: 'automatic' } },
           },
         }],
-        '^.+\\.js$': ['ts-jest', {
-          tsconfig: {
-            allowJs: true,
-          },
-        }],
+        '^.+\\.js$': ['@swc/jest'],
       },
       moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
     },

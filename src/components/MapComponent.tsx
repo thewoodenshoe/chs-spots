@@ -95,6 +95,7 @@ interface MapComponentProps {
   mapCenter?: { lat: number; lng: number; zoom: number };
   onEditSpot?: (spot: Spot) => void;
   showAllVenues?: boolean;
+  searchQuery?: string;
 }
 
 export default function MapComponent({
@@ -106,6 +107,7 @@ export default function MapComponent({
   mapCenter,
   onEditSpot,
   showAllVenues = false,
+  searchQuery = '',
 }: MapComponentProps) {
   const { spots, loading: spotsLoading } = useSpots();
   const { venues } = useVenues();
@@ -174,17 +176,18 @@ export default function MapComponent({
     return map;
   }, [venues]);
 
-  // Prefer venue.area for filtering; fallback to coordinate heuristic for legacy/manual spots
   const filteredSpots = useMemo(() => {
+    const query = searchQuery.toLowerCase().trim();
     return spots.filter((spot) => {
       const spotArea = spot.venueId
         ? (venueAreaById.get(spot.venueId) || getAreaFromCoordinates(spot.lat, spot.lng))
         : getAreaFromCoordinates(spot.lat, spot.lng);
       const areaMatch = spotArea === selectedArea;
       const activityMatch = spot.type === selectedActivity;
-      return areaMatch && activityMatch;
+      const searchMatch = !query || spot.title.toLowerCase().includes(query) || (spot.description || '').toLowerCase().includes(query);
+      return areaMatch && activityMatch && searchMatch;
     });
-  }, [spots, selectedArea, selectedActivity, venueAreaById]);
+  }, [spots, selectedArea, selectedActivity, venueAreaById, searchQuery]);
 
   // Filter venues - when showAllVenues is true, show ALL venues regardless of area
   const filteredVenues = useMemo(() => {
