@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import fs from 'fs';
-import path from 'path';
 import { answerCallbackQuery, editMessage } from '@/lib/telegram';
 import { atomicWriteFileSync } from '@/lib/atomic-write';
+import { reportingPath } from '@/lib/data-dir';
 
 /**
  * Telegram Polling Endpoint
@@ -66,8 +66,7 @@ export async function GET(request: Request) {
         const spotId = parseInt(match[2], 10);
 
         // Update spot status
-        const reportingDir = path.join(process.cwd(), 'data', 'reporting');
-        const spotsPath = path.join(reportingDir, 'spots.json');
+        const spotsPath = reportingPath('spots.json');
 
         let spots: any[] = [];
         if (fs.existsSync(spotsPath)) {

@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
-import path from 'path';
+import { configPath } from '@/lib/data-dir';
 
 export async function GET() {
   try {
-    const areasPath = path.join(process.cwd(), 'data', 'config', 'areas.json');
+    const areasPath = configPath('areas.json');
     const areasContents = fs.readFileSync(areasPath, 'utf8');
     const areas = JSON.parse(areasContents);
     

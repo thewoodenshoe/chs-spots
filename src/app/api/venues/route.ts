@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
-import path from 'path';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import { reportingPath } from '@/lib/data-dir';
 
 export async function GET(request: Request) {
   const ip = getClientIp(request);
@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   }
 
   // Read from reporting folder (contains only found:true venues)
-  const venuesPath = path.join(process.cwd(), 'data', 'reporting', 'venues.json');
+  const venuesPath = reportingPath('venues.json');
   const { searchParams } = new URL(request.url);
   const areaFilter = searchParams.get('area');
   

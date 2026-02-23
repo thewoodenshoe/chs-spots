@@ -8,9 +8,9 @@
  */
 
 import fs from 'fs';
-import path from 'path';
 import { answerCallbackQuery, editMessage } from './telegram';
 import { atomicWriteFileSync } from './atomic-write';
+import { reportingPath } from './data-dir';
 
 let lastOffset = 0;
 let intervalId: ReturnType<typeof setInterval> | null = null;
@@ -93,7 +93,7 @@ async function handleCallback(callbackQuery: any, token: string): Promise<void> 
   const spotId = parseInt(match[2], 10);
 
   // Read spots from disk
-  const spotsPath = path.join(process.cwd(), 'data', 'reporting', 'spots.json');
+  const spotsPath = reportingPath('spots.json');
 
   let spots: any[] = [];
   if (fs.existsSync(spotsPath)) {

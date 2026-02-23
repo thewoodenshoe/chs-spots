@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { reportingPath } from '@/lib/data-dir';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +13,7 @@ export async function GET() {
 
   // 2. Data files readable
   try {
-    const spotsPath = path.join(process.cwd(), 'data', 'reporting', 'spots.json');
+    const spotsPath = reportingPath('spots.json');
     if (fs.existsSync(spotsPath)) {
       const spots = JSON.parse(fs.readFileSync(spotsPath, 'utf8'));
       checks.spots = { ok: true, detail: `${Array.isArray(spots) ? spots.length : 0} spots` };
@@ -25,7 +26,7 @@ export async function GET() {
 
   // 3. Venues file
   try {
-    const venuesPath = path.join(process.cwd(), 'data', 'reporting', 'venues.json');
+    const venuesPath = reportingPath('venues.json');
     if (fs.existsSync(venuesPath)) {
       const venues = JSON.parse(fs.readFileSync(venuesPath, 'utf8'));
       checks.venues = { ok: true, detail: `${Array.isArray(venues) ? venues.length : 0} venues` };

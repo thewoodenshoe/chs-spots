@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
-import path from 'path';
+import { configPath } from '@/lib/data-dir';
 
 export async function GET() {
-  const activitiesPath = path.join(process.cwd(), 'data', 'config', 'activities.json');
+  const activitiesPath = configPath('activities.json');
   
   try {
     if (fs.existsSync(activitiesPath)) {

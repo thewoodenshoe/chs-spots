@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import fs from 'fs';
-import path from 'path';
 import { sendApprovalRequest } from '@/lib/telegram';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import { atomicWriteFileSync } from '@/lib/atomic-write';
 import { isAdminRequest } from '@/lib/auth';
 import { createSpotSchema, parseOrError } from '@/lib/validations';
+import { reportingPath, dataPath } from '@/lib/data-dir';
 
 export async function GET(request: Request) {
   // Rate-limit reads (60 req/min per IP)
@@ -19,8 +19,8 @@ export async function GET(request: Request) {
   const isAdmin = isAdminRequest(request);
   
   // Read from reporting folder (contains only found:true spots)
-  const spotsPath = path.join(process.cwd(), 'data', 'reporting', 'spots.json');
-  const venuesPath = path.join(process.cwd(), 'data', 'reporting', 'venues.json');
+  const spotsPath = reportingPath('spots.json');
+  const venuesPath = reportingPath('venues.json');
   
   // Handle missing spots.json file gracefully - return empty array (no spots is valid, not an error)
   let spots: any[] = [];
@@ -118,9 +118,8 @@ export async function POST(request: Request) {
   }
 
   try {
-    const dataDir = path.join(process.cwd(), 'data');
-    const reportingDir = path.join(dataDir, 'reporting');
-    const spotsPath = path.join(reportingDir, 'spots.json');
+    const reportingDir = reportingPath();
+    const spotsPath = reportingPath('spots.json');
     
     // Ensure reporting directory exists
     if (!fs.existsSync(reportingDir)) {

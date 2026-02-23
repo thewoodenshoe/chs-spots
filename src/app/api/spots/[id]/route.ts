@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import fs from 'fs';
-import path from 'path';
 import { sendApprovalRequest } from '@/lib/telegram';
 import { atomicWriteFileSync } from '@/lib/atomic-write';
 import { isAdminRequest, unauthorizedResponse } from '@/lib/auth';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import { updateSpotSchema, parseOrError } from '@/lib/validations';
+import { reportingPath } from '@/lib/data-dir';
 
 export async function DELETE(
   request: Request,
@@ -20,10 +20,9 @@ export async function DELETE(
   }
 
   try {
-    const reportingDir = path.join(process.cwd(), 'data', 'reporting');
-    const spotsPath = path.join(reportingDir, 'spots.json');
+    const reportingDir = reportingPath();
+    const spotsPath = reportingPath('spots.json');
     
-    // Ensure reporting directory exists
     if (!fs.existsSync(reportingDir)) {
       fs.mkdirSync(reportingDir, { recursive: true });
     }
@@ -38,7 +37,6 @@ export async function DELETE(
       );
     }
     
-    // Load existing spots
     let spots: any[] = [];
     if (fs.existsSync(spotsPath)) {
       try {
@@ -53,7 +51,6 @@ export async function DELETE(
       }
     }
     
-    // Find and remove the spot
     const initialLength = spots.length;
     spots = spots.filter((spot: any) => (spot.id || 0) !== spotId);
     
@@ -98,10 +95,9 @@ export async function PUT(
   }
 
   try {
-    const reportingDir = path.join(process.cwd(), 'data', 'reporting');
-    const spotsPath = path.join(reportingDir, 'spots.json');
+    const reportingDir = reportingPath();
+    const spotsPath = reportingPath('spots.json');
     
-    // Ensure reporting directory exists
     if (!fs.existsSync(reportingDir)) {
       fs.mkdirSync(reportingDir, { recursive: true });
     }

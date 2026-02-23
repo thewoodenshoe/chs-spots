@@ -1,5 +1,5 @@
 import fs from 'fs';
-import path from 'path';
+import { configPath } from '@/lib/data-dir';
 
 export interface Activity {
   name: string;
@@ -19,7 +19,7 @@ export function loadActivities(): Activity[] {
     return cachedActivities;
   }
 
-  const activitiesPath = path.join(process.cwd(), 'data', 'config', 'activities.json');
+  const activitiesPath = configPath('activities.json');
   
   try {
     if (fs.existsSync(activitiesPath)) {
