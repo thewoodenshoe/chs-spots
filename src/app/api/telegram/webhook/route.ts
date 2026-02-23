@@ -55,6 +55,18 @@ export async function POST(request: Request) {
         return handleReportCallback(rptMatch[1], parseInt(rptMatch[2], 10), callbackQuery, chatId, messageId);
       }
 
+      // --- Edit approval: "edtappr_123" or "edtdeny_123" ---
+      const edtMatch = data.match(/^(edtappr|edtdeny)_(\d+)$/);
+      if (edtMatch) {
+        return handleEditApprovalCallback(edtMatch[1], parseInt(edtMatch[2], 10), callbackQuery, chatId, messageId);
+      }
+
+      // --- Delete approval: "delappr_123" or "deldeny_123" ---
+      const delMatch = data.match(/^(delappr|deldeny)_(\d+)$/);
+      if (delMatch) {
+        return handleDeleteApprovalCallback(delMatch[1], parseInt(delMatch[2], 10), callbackQuery, chatId, messageId);
+      }
+
       await answerCallbackQuery(callbackQuery.id, 'Unknown action');
       return NextResponse.json({ ok: true });
     }
@@ -199,6 +211,116 @@ async function handleReportCallback(action: string, spotId: number, callbackQuer
     const venueNote = spot.venueId ? `\nVenue \`${spot.venueId}\` added to watchlist.` : '';
     await editMessage(chatId, messageId, `🚫 *Excluded*: ${spot.title}${venueNote}`);
   }
+  return NextResponse.json({ ok: true });
+}
+
+// --- Handler: edit approval ---
+async function handleEditApprovalCallback(action: string, spotId: number, callbackQuery: any, chatId: any, messageId: any) {
+  const spotsPath = reportingPath('spots.json');
+  let spots: any[] = [];
+  if (fs.existsSync(spotsPath)) {
+    try { spots = JSON.parse(fs.readFileSync(spotsPath, 'utf8')); if (!Array.isArray(spots)) spots = []; } catch { spots = []; }
+  }
+
+  const spotIndex = spots.findIndex((s: any) => s.id === spotId);
+  if (spotIndex === -1) {
+    await answerCallbackQuery(callbackQuery.id, 'Spot not found');
+    if (chatId && messageId) await editMessage(chatId, messageId, `❓ Spot #${spotId} not found.`);
+    return NextResponse.json({ ok: true });
+  }
+
+  const spot = spots[spotIndex];
+
+  if (action === 'edtdeny') {
+    // Reject: clear the pending edit
+    const { pendingEdit: _removed, ...clean } = spot;
+    spots[spotIndex] = clean;
+    atomicWriteFileSync(spotsPath, JSON.stringify(spots, null, 2));
+    await answerCallbackQuery(callbackQuery.id, 'Edit rejected');
+    if (chatId && messageId) await editMessage(chatId, messageId, `❌ *Edit rejected* for: ${spot.title}`);
+    return NextResponse.json({ ok: true });
+  }
+
+  // Approve: apply the pending edit
+  if (!spot.pendingEdit) {
+    await answerCallbackQuery(callbackQuery.id, 'No pending edit');
+    if (chatId && messageId) await editMessage(chatId, messageId, `⚠️ No pending edit found for ${spot.title}.`);
+    return NextResponse.json({ ok: true });
+  }
+
+  const edit = spot.pendingEdit;
+  const { pendingEdit: _removed, ...base } = spot;
+  const updated = {
+    ...base,
+    title: edit.title,
+    description: edit.description,
+    lat: edit.lat,
+    lng: edit.lng,
+    type: edit.type,
+    activity: edit.type,
+    photoUrl: edit.photoUrl !== undefined ? edit.photoUrl : base.photoUrl,
+    area: edit.area !== undefined ? edit.area : base.area,
+    editedAt: new Date().toISOString(),
+    ...(base.source === 'automated' ? { manualOverride: true } : {}),
+  };
+  spots[spotIndex] = updated;
+  atomicWriteFileSync(spotsPath, JSON.stringify(spots, null, 2));
+
+  await answerCallbackQuery(callbackQuery.id, `Approved: ${updated.title}`);
+  if (chatId && messageId) await editMessage(chatId, messageId, `✅ *Edit approved*: ${updated.title}\n\nChanges are now live.`);
+  return NextResponse.json({ ok: true });
+}
+
+// --- Handler: delete approval ---
+async function handleDeleteApprovalCallback(action: string, spotId: number, callbackQuery: any, chatId: any, messageId: any) {
+  const spotsPath = reportingPath('spots.json');
+  let spots: any[] = [];
+  if (fs.existsSync(spotsPath)) {
+    try { spots = JSON.parse(fs.readFileSync(spotsPath, 'utf8')); if (!Array.isArray(spots)) spots = []; } catch { spots = []; }
+  }
+
+  const spotIndex = spots.findIndex((s: any) => s.id === spotId);
+  if (spotIndex === -1) {
+    await answerCallbackQuery(callbackQuery.id, 'Spot not found');
+    if (chatId && messageId) await editMessage(chatId, messageId, `❓ Spot #${spotId} not found.`);
+    return NextResponse.json({ ok: true });
+  }
+
+  const spot = spots[spotIndex];
+
+  if (action === 'deldeny') {
+    // Reject: clear pendingDelete flag
+    const { pendingDelete: _removed, ...clean } = spot;
+    spots[spotIndex] = clean;
+    atomicWriteFileSync(spotsPath, JSON.stringify(spots, null, 2));
+    await answerCallbackQuery(callbackQuery.id, 'Delete rejected');
+    if (chatId && messageId) await editMessage(chatId, messageId, `❌ *Delete rejected*: ${spot.title}\n\nSpot is kept.`);
+    return NextResponse.json({ ok: true });
+  }
+
+  // Approve: delete the spot; if automated, add to watchlist
+  if (spot.source === 'automated' && spot.venueId) {
+    const watchlistPath = configPath('venue-watchlist.json');
+    let watchlist: any = { updatedAt: '', venues: {} };
+    if (fs.existsSync(watchlistPath)) {
+      try { watchlist = JSON.parse(fs.readFileSync(watchlistPath, 'utf8')); } catch { /* use default */ }
+    }
+    watchlist.updatedAt = new Date().toISOString().split('T')[0];
+    watchlist.venues[spot.venueId] = {
+      name: spot.title,
+      area: spot.area || 'Unknown',
+      status: 'excluded',
+      reason: `Deleted via user request (spot #${spotId})`,
+    };
+    atomicWriteFileSync(watchlistPath, JSON.stringify(watchlist, null, 2));
+  }
+
+  spots.splice(spotIndex, 1);
+  atomicWriteFileSync(spotsPath, JSON.stringify(spots, null, 2));
+
+  await answerCallbackQuery(callbackQuery.id, `Deleted: ${spot.title}`);
+  const venueNote = (spot.source === 'automated' && spot.venueId) ? `\nVenue added to watchlist.` : '';
+  if (chatId && messageId) await editMessage(chatId, messageId, `🗑 *Deleted*: ${spot.title}${venueNote}`);
   return NextResponse.json({ ok: true });
 }
 

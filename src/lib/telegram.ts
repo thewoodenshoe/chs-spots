@@ -192,6 +192,115 @@ export async function sendSpotReport(report: {
 }
 
 /**
+ * Send an edit approval request to admin
+ */
+export async function sendEditApproval(edit: {
+  id: number;
+  title: string;
+  type: string;
+  changes: string[];
+  lat: number;
+  lng: number;
+}): Promise<boolean> {
+  try {
+    const token = getBotToken();
+    const chatId = getAdminChatId();
+    const mapLink = `https://www.google.com/maps?q=${edit.lat},${edit.lng}`;
+
+    const message = [
+      `✏️ *Edit Request*`,
+      ``,
+      `📍 *${escapeMarkdown(edit.title)}*`,
+      `🏷 New type: ${escapeMarkdown(edit.type)}`,
+      ``,
+      `*Changes:*`,
+      ...edit.changes.map(c => `• ${escapeMarkdown(c)}`),
+      ``,
+      `🗺 [View on Map](${mapLink})`,
+      `ID: \`${edit.id}\``,
+    ].join('\n');
+
+    const response = await fetch(`${TELEGRAM_API}${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: message,
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [[
+            { text: '✅ Approve Edit', callback_data: `edtappr_${edit.id}` },
+            { text: '❌ Reject', callback_data: `edtdeny_${edit.id}` },
+          ]],
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Telegram API error (edit approval):', errorData);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('Failed to send edit approval:', error);
+    return false;
+  }
+}
+
+/**
+ * Send a delete approval request to admin
+ */
+export async function sendDeleteApproval(spot: {
+  id: number;
+  title: string;
+  type: string;
+  source?: string;
+  venueId?: string;
+}): Promise<boolean> {
+  try {
+    const token = getBotToken();
+    const chatId = getAdminChatId();
+
+    const message = [
+      `🗑 *Delete Request*`,
+      ``,
+      `📍 *${escapeMarkdown(spot.title)}*`,
+      `🏷 Type: ${escapeMarkdown(spot.type)}`,
+      `📦 Source: ${spot.source || 'unknown'}`,
+      spot.venueId ? `🔑 Venue: \`${spot.venueId}\`` : '',
+      `ID: \`${spot.id}\``,
+    ].filter(Boolean).join('\n');
+
+    const response = await fetch(`${TELEGRAM_API}${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: message,
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [[
+            { text: '✅ Delete It', callback_data: `delappr_${spot.id}` },
+            { text: '❌ Keep It', callback_data: `deldeny_${spot.id}` },
+          ]],
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Telegram API error (delete approval):', errorData);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('Failed to send delete approval:', error);
+    return false;
+  }
+}
+
+/**
  * Send a simple notification to admin
  */
 export async function sendNotification(text: string): Promise<boolean> {

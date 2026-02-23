@@ -464,8 +464,8 @@ export default function EditSpotModal({
               ) : 'Update Spot'}
             </button>
 
-            {/* Delete Button — only for manual spots; automated spots use the Report flow */}
-            {onDelete && spot.source !== 'automated' && !showDeleteConfirm && (
+            {/* Delete Button */}
+            {onDelete && !showDeleteConfirm && (
               <button
                 type="button"
                 onClick={handleDelete}
@@ -474,7 +474,7 @@ export default function EditSpotModal({
                 Delete Spot
               </button>
             )}
-            {onDelete && spot.source !== 'automated' && showDeleteConfirm && (
+            {onDelete && showDeleteConfirm && (
               <div className="rounded-xl border-2 border-red-300 bg-red-50 p-4 mb-4">
                 <p className="text-sm text-red-800 mb-3 font-medium">
                   Delete &quot;{spot.title}&quot;? This cannot be undone.

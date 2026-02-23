@@ -310,21 +310,25 @@ export default function Home() {
       }
       
       // Call API to update spot
-      await updateSpot({
+      const result = await updateSpot({
         id: data.id,
         lat: data.lat,
         lng: data.lng,
         title: data.title,
         description: data.description,
         type: data.type,
-        photoUrl, // Optional - will be undefined if no photo
+        photoUrl,
       });
       
       // Clear form and close modal
       setEditPinLocation(null);
       setEditingSpot(null);
       setIsEditOpen(false);
-      showToast('Spot updated!', 'success');
+      if (result?.pending) {
+        showToast('Edit submitted for approval!', 'info');
+      } else {
+        showToast('Spot updated!', 'success');
+      }
     } catch (error) {
       console.error('Error updating spot:', error);
       const message = error instanceof Error ? error.message : 'Failed to update spot. Please try again.';
@@ -567,10 +571,13 @@ export default function Home() {
         onSubmit={handleEditSubmit}
         onDelete={async (id: number) => {
           try {
-            await deleteSpot(id);
+            const result = await deleteSpot(id);
             setEditingSpot(null);
             setEditPinLocation(null);
             setIsEditOpen(false);
+            if (result?.pending) {
+              showToast('Delete request submitted for approval!', 'info');
+            }
           } catch (error) {
             console.error('Error deleting spot:', error);
             throw error;

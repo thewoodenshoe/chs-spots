@@ -494,16 +494,7 @@ describe('SpotsContext', () => {
   });
 
   describe('updateSpot', () => {
-    it('should update spot successfully', async () => {
-      const updatedSpot: Spot = {
-        id: 1,
-        lat: 32.7765,
-        lng: -79.9311,
-        title: 'Updated Spot',
-        description: 'Updated Description',
-        type: 'Happy Hour',
-      };
-
+    it('should update spot successfully (pending approval)', async () => {
       (global.fetch as jest.Mock)
         .mockResolvedValueOnce({
           ok: true,
@@ -511,11 +502,7 @@ describe('SpotsContext', () => {
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => [],
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => [updatedSpot],
+          json: async () => ({ pending: true, message: 'Edit submitted for approval' }),
         });
 
       render(
@@ -533,7 +520,7 @@ describe('SpotsContext', () => {
       });
 
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledTimes(3); // Load + PUT + refresh
+        expect(global.fetch).toHaveBeenCalledTimes(2); // Load + PUT (no refresh for pending)
       });
 
       expect(consoleErrorSpy).not.toHaveBeenCalled();
@@ -581,7 +568,7 @@ describe('SpotsContext', () => {
   });
 
   describe('deleteSpot', () => {
-    it('should delete spot successfully', async () => {
+    it('should delete spot successfully (pending approval)', async () => {
       (global.fetch as jest.Mock)
         .mockResolvedValueOnce({
           ok: true,
@@ -589,10 +576,7 @@ describe('SpotsContext', () => {
         })
         .mockResolvedValueOnce({
           ok: true,
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => [],
+          json: async () => ({ pending: true, message: 'Delete request submitted for approval' }),
         });
 
       render(
@@ -610,7 +594,7 @@ describe('SpotsContext', () => {
       });
 
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledTimes(3); // Load + DELETE + refresh
+        expect(global.fetch).toHaveBeenCalledTimes(2); // Load + DELETE (no refresh for pending)
       });
 
       expect(consoleErrorSpy).not.toHaveBeenCalled();
@@ -644,11 +628,7 @@ describe('SpotsContext', () => {
       });
 
       await act(async () => {
-        try {
-          screen.getByTestId('delete-spot').click();
-        } catch (error) {
-          // Error is expected to be thrown
-        }
+        screen.getByTestId('delete-spot').click();
       });
 
       await waitFor(() => {

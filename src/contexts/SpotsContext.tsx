@@ -27,8 +27,8 @@ export interface Spot {
 interface SpotsContextType {
   spots: Spot[];
   addSpot: (spot: Omit<Spot, 'id'>) => Promise<void>;
-  updateSpot: (spot: Spot) => Promise<void>;
-  deleteSpot: (id: number) => Promise<void>;
+  updateSpot: (spot: Spot) => Promise<{ pending: boolean }>;
+  deleteSpot: (id: number) => Promise<{ pending: boolean }>;
   refreshSpots: () => Promise<void>;
   loading: boolean;
   isAdmin: boolean;
@@ -162,7 +162,7 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateSpot = async (spotData: Spot) => {
+  const updateSpot = async (spotData: Spot): Promise<{ pending: boolean }> => {
     try {
       const response = await fetch(`/api/spots/${spotData.id}`, {
         method: 'PUT',
@@ -171,8 +171,12 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
       });
 
       if (response.ok) {
+        const data = await response.json().catch(() => ({}));
+        if (data.pending) {
+          return { pending: true };
+        }
         await refreshSpots();
-        return;
+        return { pending: false };
       } else {
         let errorMessage = 'Failed to update spot';
         try {
@@ -194,7 +198,7 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const deleteSpot = async (id: number) => {
+  const deleteSpot = async (id: number): Promise<{ pending: boolean }> => {
     try {
       const response = await fetch(`/api/spots/${id}`, {
         method: 'DELETE',
@@ -202,8 +206,12 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
       });
 
       if (response.ok) {
+        const data = await response.json().catch(() => ({}));
+        if (data.pending) {
+          return { pending: true };
+        }
         await refreshSpots();
-        return;
+        return { pending: false };
       } else {
         let errorMessage = 'Failed to delete spot';
         try {
