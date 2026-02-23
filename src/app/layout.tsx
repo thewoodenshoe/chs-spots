@@ -30,11 +30,21 @@ export const metadata: Metadata = {
     siteName: "CHS Finds",
     type: "website",
     locale: "en_US",
+    images: [
+      {
+        url: "/api/og-image",
+        width: 960,
+        height: 960,
+        alt: "CHS Finds — Discover the best of Charleston",
+        type: "image/jpeg",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "CHS Finds",
     description: "Discover the best of Charleston — happy hours, brunch, fishing, and more.",
+    images: ["/api/og-image"],
   },
   icons: {
     icon: [
