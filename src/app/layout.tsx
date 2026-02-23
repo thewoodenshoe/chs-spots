@@ -36,6 +36,12 @@ export const metadata: Metadata = {
     title: "CHS Finds",
     description: "Discover the best of Charleston — happy hours, brunch, fishing, and more.",
   },
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/favicon.svg",
+  },
   robots: {
     index: true,
     follow: true,
