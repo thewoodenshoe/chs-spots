@@ -120,6 +120,10 @@ export default function MapComponent({
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [bannerDismissedFor, setBannerDismissedFor] = useState<Set<string>>(new Set());
+  const [emptyDismissedKey, setEmptyDismissedKey] = useState('');
+
+  const currentKey = `${selectedActivity}::${selectedArea}`;
+  const emptyStateDismissed = emptyDismissedKey === currentKey;
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Lazy-initialized state for the *first* center/zoom only.
@@ -515,24 +519,39 @@ export default function MapComponent({
         </div>
       )}
 
-      {/* Empty state (only after spots have loaded) */}
-      {!isSubmissionMode && !spotsLoading && filteredSpots.length === 0 && (
-        <div className="absolute top-2 left-1/2 z-[55] -translate-x-1/2 rounded-xl bg-white/90 px-5 py-3 shadow-lg backdrop-blur-sm max-w-[90vw]">
-          {isCommunityActivity ? (
-            <>
-              <p className="text-sm font-medium text-gray-700">
-                No {selectedActivity} in {selectedArea} yet
-              </p>
-              <p className="text-xs text-gray-500 mt-0.5">Be the first — tap &quot;Add Spot&quot; below!</p>
-            </>
-          ) : (
-            <>
-              <p className="text-sm font-medium text-gray-700">
-                No {selectedActivity} in {selectedArea}
-              </p>
-              <p className="text-xs text-gray-500 mt-0.5">Try a different area or activity</p>
-            </>
-          )}
+      {/* Empty state — hidden while community banner is visible to prevent overlap */}
+      {!isSubmissionMode && !spotsLoading && filteredSpots.length === 0 && !showCommunityBanner && !emptyStateDismissed && (
+        <div className="absolute top-3 left-3 right-3 z-[55] animate-fade-in-down">
+          <div className="rounded-xl bg-white/95 px-4 py-3 shadow-lg backdrop-blur-sm border border-gray-200">
+            <div className="flex items-start gap-2">
+              <div className="flex-1 min-w-0">
+                {isCommunityActivity ? (
+                  <>
+                    <p className="text-sm font-medium text-gray-700">
+                      No {selectedActivity} in {selectedArea} yet
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5">Be the first — tap &quot;Add Spot&quot; below!</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-medium text-gray-700">
+                      No {selectedActivity} in {selectedArea}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5">Try a different area or activity</p>
+                  </>
+                )}
+              </div>
+              <button
+                onClick={() => setEmptyDismissedKey(currentKey)}
+                className="flex-shrink-0 p-1 text-gray-400 hover:text-gray-600 transition-colors rounded-full hover:bg-gray-100"
+                aria-label="Dismiss"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       )}
       
