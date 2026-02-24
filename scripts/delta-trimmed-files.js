@@ -19,6 +19,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { normalizeText } = require('./utils/normalize');
 const { loadConfig, getRunDate, loadWatchlist } = require('./utils/config');
+const { dataPath, reportingPath } = require('./utils/data-dir');
 
 // Logging setup
 const logDir = path.join(__dirname, '..', 'logs');
@@ -35,10 +36,10 @@ function log(message) {
   fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
 }
 
-// Paths
-const SILVER_TRIMMED_TODAY_DIR = path.join(__dirname, '../data/silver_trimmed/today');
-const SILVER_TRIMMED_PREVIOUS_DIR = path.join(__dirname, '../data/silver_trimmed/previous');
-const SILVER_TRIMMED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_trimmed/incremental');
+// Paths - Respect DATA_DIR
+const SILVER_TRIMMED_TODAY_DIR = dataPath('silver_trimmed', 'today');
+const SILVER_TRIMMED_PREVIOUS_DIR = dataPath('silver_trimmed', 'previous');
+const SILVER_TRIMMED_INCREMENTAL_DIR = dataPath('silver_trimmed', 'incremental');
 
 // Ensure directories exist
 if (!fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
@@ -339,9 +340,9 @@ function generateDifferenceReports(newVenues, changedVenues) {
     log(`\n📝 Generating difference reports in: ${path.resolve(DIFF_REPORTS_DIR)}`);
     
     // Load venues.json to get venue metadata
-    const VENUES_PATH = fs.existsSync(path.join(__dirname, '../data/venues.json'))
-      ? path.join(__dirname, '../data/venues.json')
-      : path.join(__dirname, '../data/reporting/venues.json');
+    const REPORTING_VENUES = reportingPath('venues.json');
+    const LEGACY_VENUES = dataPath('venues.json');
+    const VENUES_PATH = fs.existsSync(REPORTING_VENUES) ? REPORTING_VENUES : LEGACY_VENUES;
     
     let venuesMap = {};
     if (fs.existsSync(VENUES_PATH)) {

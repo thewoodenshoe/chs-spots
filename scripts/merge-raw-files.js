@@ -27,6 +27,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { dataPath, reportingPath } = require('./utils/data-dir');
 
 // Logging setup
 const logDir = path.join(__dirname, '..', 'logs');
@@ -43,17 +44,16 @@ function log(message) {
   fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
 }
 
-// Paths - New structure: raw/today/ and silver_merged/today/
-const RAW_TODAY_DIR = path.join(__dirname, '../data/raw/today');
-const RAW_PREVIOUS_DIR = path.join(__dirname, '../data/raw/previous');
-const SILVER_MERGED_DIR = path.join(__dirname, '../data/silver_merged');
-const SILVER_MERGED_TODAY_DIR = path.join(__dirname, '../data/silver_merged/today');
-const SILVER_MERGED_PREVIOUS_DIR = path.join(__dirname, '../data/silver_merged/previous');
-const SILVER_MERGED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_merged/incremental');
+// Paths - Respect DATA_DIR
+const RAW_TODAY_DIR = dataPath('raw', 'today');
+const RAW_PREVIOUS_DIR = dataPath('raw', 'previous');
+const SILVER_MERGED_DIR = dataPath('silver_merged');
+const SILVER_MERGED_TODAY_DIR = dataPath('silver_merged', 'today');
+const SILVER_MERGED_PREVIOUS_DIR = dataPath('silver_merged', 'previous');
+const SILVER_MERGED_INCREMENTAL_DIR = dataPath('silver_merged', 'incremental');
 const { loadConfig, updateConfigField, getRunDate } = require('./utils/config');
-// Try reporting/venues.json first (primary), fallback to data/venues.json (backwards compatibility)
-const REPORTING_VENUES_PATH = path.join(__dirname, '../data/reporting/venues.json');
-const VENUES_PATH = path.join(__dirname, '../data/venues.json');
+const REPORTING_VENUES_PATH = reportingPath('venues.json');
+const LEGACY_VENUES_PATH = dataPath('venues.json');
 
 // Ensure directories exist
 if (!fs.existsSync(SILVER_MERGED_DIR)) {
@@ -275,7 +275,7 @@ function main() {
   }
   
   // Load venues - try reporting/venues.json first, fallback to data/venues.json
-  let venuesPath = VENUES_PATH;
+  let venuesPath = LEGACY_VENUES_PATH;
   if (fs.existsSync(REPORTING_VENUES_PATH)) {
     // Try to parse reporting/venues.json, fallback to data/venues.json if invalid
     try {
@@ -283,20 +283,20 @@ function main() {
       venuesPath = REPORTING_VENUES_PATH;
     } catch (error) {
       log(`⚠️  Warning: ${REPORTING_VENUES_PATH} has JSON errors: ${error.message}`);
-      log(`   Falling back to ${VENUES_PATH}\n`);
-      if (!fs.existsSync(VENUES_PATH)) {
+      log(`   Falling back to ${LEGACY_VENUES_PATH}\n`);
+      if (!fs.existsSync(LEGACY_VENUES_PATH)) {
         log(`❌ Venues file not found in either location:`);
         log(`   ${REPORTING_VENUES_PATH} (has errors)`);
-        log(`   ${VENUES_PATH} (not found)`);
+        log(`   ${LEGACY_VENUES_PATH} (not found)`);
         log(`\n   Please fix venues.json or run 'node scripts/seed-venues.js' first.`);
         process.exit(1);
       }
-      venuesPath = VENUES_PATH;
+      venuesPath = LEGACY_VENUES_PATH;
     }
-  } else if (!fs.existsSync(VENUES_PATH)) {
+  } else if (!fs.existsSync(LEGACY_VENUES_PATH)) {
     log(`❌ Venues file not found in either location:`);
     log(`   ${REPORTING_VENUES_PATH}`);
-    log(`   ${VENUES_PATH}`);
+    log(`   ${LEGACY_VENUES_PATH}`);
     log(`\n   Please run 'node scripts/seed-venues.js' first.`);
     process.exit(1);
   }

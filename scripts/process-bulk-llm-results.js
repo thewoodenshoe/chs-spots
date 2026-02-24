@@ -24,6 +24,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { dataPath } = require('./utils/data-dir');
 
 // Logging setup
 const logDir = path.join(__dirname, '..', 'logs');
@@ -40,9 +41,9 @@ function log(message) {
   fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
 }
 
-// Paths - Now reading from silver_merged/all/ instead of silver_matched/
-const GOLD_DIR = path.join(__dirname, '../data/gold');
-const SILVER_MERGED_ALL_DIR = path.join(__dirname, '../data/silver_merged/all');
+// Paths - Respect DATA_DIR
+const GOLD_DIR = dataPath('gold');
+const SILVER_MERGED_ALL_DIR = dataPath('silver_merged', 'all');
 const BULK_RESULTS_PATH = path.join(GOLD_DIR, 'bulk-results.json');
 const BULK_COMPLETE_PATH = path.join(GOLD_DIR, '.bulk-complete');
 

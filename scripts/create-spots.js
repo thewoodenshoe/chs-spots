@@ -17,6 +17,7 @@
 const fs = require('fs');
 const path = require('path');
 const { loadConfig, loadWatchlist } = require('./utils/config');
+const { dataPath, reportingPath, configPath, getDataRoot } = require('./utils/data-dir');
 
 // Logging setup
 const logDir = path.join(__dirname, '..', 'logs');
@@ -33,30 +34,25 @@ function log(message) {
   fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
 }
 
-// Paths
-const GOLD_DIR = path.join(__dirname, '../data/gold');
-// Check both locations for venues.json
-const VENUES_PATH = fs.existsSync(path.join(__dirname, '../data/venues.json')) 
-  ? path.join(__dirname, '../data/venues.json')
-  : path.join(__dirname, '../data/reporting/venues.json');
-const AREAS_PATH = path.join(__dirname, '../data/config/areas.json');
-const REPORTING_DIR = path.join(__dirname, '../data/reporting');
-const SPOTS_PATH = path.join(REPORTING_DIR, 'spots.json');
-const REPORTING_VENUES_PATH = path.join(REPORTING_DIR, 'venues.json');
-const REPORTING_AREAS_PATH = path.join(REPORTING_DIR, 'areas.json');
-const REPORTING_INDEXES_DIR = path.join(REPORTING_DIR, 'indexes');
-const REPORTING_AREA_INDEXES_DIR = path.join(REPORTING_INDEXES_DIR, 'by-area');
+// Paths - Respect DATA_DIR
+const GOLD_DIR = dataPath('gold');
+const REPORTING_VENUES_PATH = reportingPath('venues.json');
+const LEGACY_VENUES_PATH = dataPath('venues.json');
+const VENUES_PATH = require('fs').existsSync(REPORTING_VENUES_PATH) ? REPORTING_VENUES_PATH : LEGACY_VENUES_PATH;
+const AREAS_PATH = configPath('areas.json');
+const REPORTING_DIR = path.join(getDataRoot(), 'reporting');
+const SPOTS_PATH = reportingPath('spots.json');
+const REPORTING_AREAS_PATH = reportingPath('areas.json');
+const REPORTING_INDEXES_DIR = reportingPath('indexes');
+const REPORTING_AREA_INDEXES_DIR = reportingPath('indexes', 'by-area');
 
-// Pipeline directory paths
-const RAW_PREVIOUS_DIR = path.join(__dirname, '../data/raw/previous');
-const RAW_TODAY_DIR = path.join(__dirname, '../data/raw/today');
-// Note: raw/incremental/ and silver_merged/incremental/ are no longer used
-// Comparison now happens at silver_trimmed layer only
-const SILVER_MERGED_PREVIOUS_DIR = path.join(__dirname, '../data/silver_merged/previous');
-const SILVER_MERGED_TODAY_DIR = path.join(__dirname, '../data/silver_merged/today');
-const SILVER_TRIMMED_PREVIOUS_DIR = path.join(__dirname, '../data/silver_trimmed/previous');
-const SILVER_TRIMMED_TODAY_DIR = path.join(__dirname, '../data/silver_trimmed/today');
-const SILVER_TRIMMED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_trimmed/incremental');
+const RAW_PREVIOUS_DIR = dataPath('raw', 'previous');
+const RAW_TODAY_DIR = dataPath('raw', 'today');
+const SILVER_MERGED_PREVIOUS_DIR = dataPath('silver_merged', 'previous');
+const SILVER_MERGED_TODAY_DIR = dataPath('silver_merged', 'today');
+const SILVER_TRIMMED_PREVIOUS_DIR = dataPath('silver_trimmed', 'previous');
+const SILVER_TRIMMED_TODAY_DIR = dataPath('silver_trimmed', 'today');
+const SILVER_TRIMMED_INCREMENTAL_DIR = dataPath('silver_trimmed', 'incremental');
 
 /**
  * Format happy hour description from gold data

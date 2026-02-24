@@ -18,6 +18,7 @@ const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const { loadConfig, saveConfig, updateConfigField, getRunDate } = require('./utils/config');
+const { dataPath } = require('./utils/data-dir');
 
 // Parse optional run_date parameter (YYYYMMDD format) - defaults to today if not provided
 // Flags like --confirm, --force etc. are NOT area filters
@@ -386,15 +387,14 @@ async function main() {
       }
     }
     
-    // Archive paths
-    const RAW_ARCHIVE_BASE = path.join(__dirname, '../data/raw/archive');
-    const SILVER_TRIMMED_ARCHIVE_BASE = path.join(__dirname, '../data/silver_trimmed/archive');
-    const SILVER_TRIMMED_INCR_ARCHIVE_BASE = path.join(__dirname, '../data/silver_trimmed/archive-incremental');
-    const GOLD_ARCHIVE_BASE = path.join(__dirname, '../data/gold/archive');
+    // Archive paths - Respect DATA_DIR
+    const RAW_ARCHIVE_BASE = dataPath('raw', 'archive');
+    const SILVER_TRIMMED_ARCHIVE_BASE = dataPath('silver_trimmed', 'archive');
+    const SILVER_TRIMMED_INCR_ARCHIVE_BASE = dataPath('silver_trimmed', 'archive-incremental');
+    const GOLD_ARCHIVE_BASE = dataPath('gold', 'archive');
     
-    // RAW STEPS
-    const RAW_TODAY_DIR = path.join(__dirname, '../data/raw/today');
-    const RAW_PREVIOUS_DIR = path.join(__dirname, '../data/raw/previous');
+    const RAW_TODAY_DIR = dataPath('raw', 'today');
+    const RAW_PREVIOUS_DIR = dataPath('raw', 'previous');
     const rawTodayEmpty = isDirectoryEmpty(RAW_TODAY_DIR);
     const lastRawDate = config.last_raw_processed_date;
     
@@ -571,7 +571,7 @@ async function main() {
     }
     
     // Archive incremental files for analysis (before LLM possibly modifies state)
-    const SILVER_TRIMMED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_trimmed/incremental');
+    const SILVER_TRIMMED_INCREMENTAL_DIR = dataPath('silver_trimmed', 'incremental');
     try {
       if (fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
         const incrFiles = fs.readdirSync(SILVER_TRIMMED_INCREMENTAL_DIR).filter(f => f.endsWith('.json'));
@@ -625,7 +625,7 @@ async function main() {
         
         // Still archive gold files even though LLM was skipped
         try {
-          const GOLD_DIR_SKIP = path.join(__dirname, '../data/gold');
+          const GOLD_DIR_SKIP = dataPath('gold');
           if (fs.existsSync(GOLD_DIR_SKIP)) {
             const goldFiles = fs.readdirSync(GOLD_DIR_SKIP).filter(f => f.endsWith('.json'));
             if (goldFiles.length > 0) {
@@ -692,7 +692,7 @@ async function main() {
     
     // Archive gold files daily for rolling analysis
     try {
-      const GOLD_DIR = path.join(__dirname, '../data/gold');
+      const GOLD_DIR = dataPath('gold');
       if (fs.existsSync(GOLD_DIR)) {
         const goldFiles = fs.readdirSync(GOLD_DIR).filter(f => f.endsWith('.json'));
         if (goldFiles.length > 0) {

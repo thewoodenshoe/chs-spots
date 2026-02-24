@@ -15,6 +15,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { URL } = require('url');
 const { loadConfig, updateConfigField, getRunDate, loadWatchlist } = require('./utils/config');
+const { dataPath, reportingPath, configPath } = require('./utils/data-dir');
 
 // Logging setup
 const logDir = path.join(__dirname, '..', 'logs');
@@ -31,15 +32,14 @@ function log(message) {
   fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
 }
 
-// Paths - New structure: raw/today/ and raw/previous/
-// Try reporting/venues.json first (primary), fallback to data/venues.json (backwards compatibility)
-const REPORTING_VENUES_PATH = path.join(__dirname, '../data/reporting/venues.json');
-const VENUES_PATH = path.join(__dirname, '../data/venues.json');
-const RAW_DIR = path.join(__dirname, '../data/raw');
-const RAW_TODAY_DIR = path.join(__dirname, '../data/raw/today');
-const RAW_PREVIOUS_DIR = path.join(__dirname, '../data/raw/previous');
-const RAW_INCREMENTAL_DIR = path.join(__dirname, '../data/raw/incremental');
-const LAST_DOWNLOAD_PATH = path.join(__dirname, '../data/raw/.last-download');
+// Paths - Respect DATA_DIR (e.g. /home/ubuntu/data on server)
+const REPORTING_VENUES_PATH = reportingPath('venues.json');
+const LEGACY_VENUES_PATH = dataPath('venues.json');
+const RAW_DIR = dataPath('raw');
+const RAW_TODAY_DIR = dataPath('raw', 'today');
+const RAW_PREVIOUS_DIR = dataPath('raw', 'previous');
+const RAW_INCREMENTAL_DIR = dataPath('raw', 'incremental');
+const LAST_DOWNLOAD_PATH = dataPath('raw', '.last-download');
 
 // Ensure raw directories exist
 if (!fs.existsSync(RAW_DIR)) {
@@ -61,7 +61,7 @@ const MAX_SUBPAGES = 10;
 // 40 concurrent connections is the sweet spot — keeps the pipe full without
 // overwhelming DNS or triggering upstream rate-limits.
 const PARALLEL_WORKERS = parseInt(process.env.PIPELINE_WORKERS || '40', 10);
-const SUBMENU_KEYWORDS_PATH = path.join(__dirname, '../data/config/submenu-keywords.json');
+const SUBMENU_KEYWORDS_PATH = configPath('submenu-keywords.json');
 
 // Load submenu keywords from config file
 let SUBPAGE_KEYWORDS;
@@ -692,14 +692,14 @@ async function main() {
   }
   
   // Load venues - try reporting/venues.json first, fallback to data/venues.json
-  let venuesPath = VENUES_PATH;
+  let venuesPath = LEGACY_VENUES_PATH;
   if (fs.existsSync(REPORTING_VENUES_PATH)) {
     venuesPath = REPORTING_VENUES_PATH;
     log(`📖 Loading venues from: ${path.relative(process.cwd(), venuesPath)}\n`);
-  } else if (!fs.existsSync(VENUES_PATH)) {
+  } else if (!fs.existsSync(LEGACY_VENUES_PATH)) {
     log(`❌ Venues file not found in either location:`);
     log(`   ${REPORTING_VENUES_PATH}`);
-    log(`   ${VENUES_PATH}`);
+    log(`   ${LEGACY_VENUES_PATH}`);
     log(`\n   Please run 'node scripts/seed-venues.js' first.`);
     process.exit(1);
   }

@@ -6,15 +6,16 @@ const fetchModule = require('node-fetch');
 const fetch = typeof fetchModule === 'function' ? fetchModule : fetchModule.default;
 const crypto = require('crypto');
 const { normalizeText } = require('./utils/normalize');
+const { dataPath, reportingPath, configPath } = require('./utils/data-dir');
 
-const SILVER_TRIMMED_DIR = path.join(__dirname, '../data/silver_trimmed/today');
-const SILVER_TRIMMED_INCREMENTAL_DIR = path.join(__dirname, '../data/silver_trimmed/incremental');
-const GOLD_DIR = path.join(__dirname, '../data/gold');
+const SILVER_TRIMMED_DIR = dataPath('silver_trimmed', 'today');
+const SILVER_TRIMMED_INCREMENTAL_DIR = dataPath('silver_trimmed', 'incremental');
+const GOLD_DIR = dataPath('gold');
 const BULK_COMPLETE_FLAG = path.join(GOLD_DIR, '.bulk-complete');
 const INCREMENTAL_HISTORY_DIR = path.join(GOLD_DIR, 'incremental-history');
-const LLM_INSTRUCTIONS_PATH = path.join(__dirname, '../data/config/llm-instructions.txt');
-const CONFIG_PATH = path.join(__dirname, '../data/config/config.json');
-const VENUES_JSON_PATH = path.join(__dirname, '../data/reporting/venues.json');
+const LLM_INSTRUCTIONS_PATH = configPath('llm-instructions.txt');
+const CONFIG_PATH = configPath('config.json');
+const VENUES_JSON_PATH = reportingPath('venues.json');
 const LLM_CANDIDATES_HISTORY_PATH = path.join(__dirname, '../logs/llm-candidates-history.txt');
 const { updateConfigField, loadWatchlist } = require('./utils/config');
 

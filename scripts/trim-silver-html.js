@@ -38,6 +38,7 @@ const fs = require('fs');
 const path = require('path');
 const cheerio = require('cheerio');
 const crypto = require('crypto');
+const { dataPath, configPath } = require('./utils/data-dir');
 
 // Logging setup
 const logDir = path.join(__dirname, '..', 'logs');
@@ -54,14 +55,12 @@ function log(message) {
   fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
 }
 
-// Paths
-const SILVER_MERGED_TODAY_DIR = path.join(__dirname, '../data/silver_merged/today');
-// Note: silver_merged/incremental/ is no longer used - comparison happens at trimmed layer
-const SILVER_TRIMMED_DIR = path.join(__dirname, '../data/silver_trimmed');
-const SILVER_TRIMMED_TODAY_DIR = path.join(SILVER_TRIMMED_DIR, 'today');
-const SILVER_TRIMMED_PREVIOUS_DIR = path.join(SILVER_TRIMMED_DIR, 'previous');
-const SILVER_TRIMMED_INCREMENTAL_DIR = path.join(SILVER_TRIMMED_DIR, 'incremental');
-const VENUES_PATH = path.join(__dirname, '../data/venues.json');
+// Paths - Respect DATA_DIR
+const SILVER_MERGED_TODAY_DIR = dataPath('silver_merged', 'today');
+const SILVER_TRIMMED_DIR = dataPath('silver_trimmed');
+const SILVER_TRIMMED_TODAY_DIR = dataPath('silver_trimmed', 'today');
+const SILVER_TRIMMED_PREVIOUS_DIR = dataPath('silver_trimmed', 'previous');
+const SILVER_TRIMMED_INCREMENTAL_DIR = dataPath('silver_trimmed', 'incremental');
 const { loadConfig, updateConfigField, getRunDate } = require('./utils/config');
 const { normalizeText, normalizeUrl } = require('./utils/normalize');
 
@@ -480,7 +479,7 @@ function archiveTodayToPrevious() {
       // Use the run_date from config to label the archive
       let dateLabel = 'unknown';
       try {
-        const cfg = JSON.parse(fs.readFileSync(path.join(__dirname, '../data/config/config.json'), 'utf8'));
+        const cfg = JSON.parse(fs.readFileSync(configPath('config.json'), 'utf8'));
         dateLabel = cfg.last_trimmed_processed_date || cfg.run_date || 'unknown';
       } catch { /* use default */ }
       

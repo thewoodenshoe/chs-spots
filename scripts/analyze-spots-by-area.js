@@ -6,9 +6,10 @@
 
 const fs = require('fs');
 const path = require('path');
+const { reportingPath } = require('./utils/data-dir');
 
-const SPOTS_PATH = path.join(__dirname, '../data/reporting/spots.json');
-const VENUES_PATH = path.join(__dirname, '../data/reporting/venues.json');
+const SPOTS_PATH = reportingPath('spots.json');
+const VENUES_PATH = reportingPath('venues.json');
 
 function main() {
   const spots = JSON.parse(fs.readFileSync(SPOTS_PATH, 'utf8'));

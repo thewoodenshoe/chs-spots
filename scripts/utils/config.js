@@ -6,8 +6,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const { configPath } = require('./data-dir');
 
-const CONFIG_PATH = path.join(__dirname, '../../data/config/config.json');
+const CONFIG_PATH = configPath('config.json');
 const CONFIG_DIR = path.dirname(CONFIG_PATH);
 
 // Ensure config directory exists
@@ -119,7 +120,7 @@ function getRunDate(runDateParam = null) {
 }
 
 // ── Venue Watchlist ─────────────────────────────────────────────
-const WATCHLIST_PATH = path.join(__dirname, '../../data/config/venue-watchlist.json');
+const WATCHLIST_PATH = configPath('venue-watchlist.json');
 
 let _watchlistCache = null;
 

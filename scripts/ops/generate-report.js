@@ -26,6 +26,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { dataPath, reportingPath, configPath } = require('../utils/data-dir');
 
 // ── CLI args ────────────────────────────────────────────────────
 const args = process.argv.slice(2);
@@ -135,7 +136,7 @@ function getPipelineData() {
 
   // Read spots
   try {
-    const spotsPath = path.join(appDir, 'data/reporting/spots.json');
+    const spotsPath = reportingPath('spots.json');
     if (fs.existsSync(spotsPath)) {
       const spots = JSON.parse(fs.readFileSync(spotsPath, 'utf8'));
       result.totalSpots = spots.length;
@@ -189,9 +190,9 @@ function getPipelineData() {
   result.archiveSizeMB = null;
   // Read pipeline config status
   try {
-    const configPath = path.join(appDir, 'data/config/config.json');
-    if (fs.existsSync(configPath)) {
-      const cfg = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const configFilePath = configPath('config.json');
+    if (fs.existsSync(configFilePath)) {
+      const cfg = JSON.parse(fs.readFileSync(configFilePath, 'utf8'));
       result.configStatus = cfg.last_run_status || 'unknown';
       if (cfg.pipeline?.maxIncrementalFiles && !result.maxIncrementalFiles) {
         result.maxIncrementalFiles = cfg.pipeline.maxIncrementalFiles;
@@ -341,7 +342,7 @@ function getPipelineData() {
   result.watchlistFlaggedVenues = [];
   result.watchlistExcludedByArea = {};
   try {
-    const watchlistPath = path.join(appDir, 'data/config/venue-watchlist.json');
+    const watchlistPath = configPath('venue-watchlist.json');
     if (fs.existsSync(watchlistPath)) {
       const wl = JSON.parse(fs.readFileSync(watchlistPath, 'utf8'));
       const venues = wl.venues || {};
@@ -354,7 +355,7 @@ function getPipelineData() {
           result.watchlistFlagged++;
           let goldStatus = 'unknown';
           try {
-            const gp = path.join(appDir, 'data/gold', id + '.json');
+            const gp = dataPath('gold', id + '.json');
             if (fs.existsSync(gp)) {
               const g = JSON.parse(fs.readFileSync(gp, 'utf8'));
               const promo = g.promotions || g.happyHour || {};
@@ -375,8 +376,8 @@ function getPipelineData() {
   // Archive stats
   try {
     const archiveDirs = [
-      path.join(appDir, 'data/silver_trimmed/archive'),
-      path.join(appDir, 'data/raw/archive'),
+      dataPath('silver_trimmed', 'archive'),
+      dataPath('raw', 'archive'),
     ];
     let maxDays = 0;
     for (const ad of archiveDirs) {
@@ -390,7 +391,7 @@ function getPipelineData() {
 
   // LLM found vs not found from gold files
   try {
-    const goldDir = path.join(appDir, 'data/gold');
+    const goldDir = dataPath('gold');
     if (fs.existsSync(goldDir)) {
       const goldFiles = fs.readdirSync(goldDir).filter(f => f.endsWith('.json'));
       let found = 0, notFound = 0;

@@ -10,24 +10,27 @@ LOG_FILE="$LOG_DIR/nightly-pipeline-$TIMESTAMP.log"
 
 cd "$APP_DIR"
 
-# Ensure nightly LLM cap before run
-node - <<"NODE"
-const fs = require("fs");
-const path = require("path");
-const configPath = path.join(process.cwd(), "data/config/config.json");
-const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
-if (!config.pipeline) config.pipeline = {};
-config.pipeline.maxIncrementalFiles = 80;
-fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n");
-console.log("Set pipeline.maxIncrementalFiles=80");
-NODE
-
-# Load env vars FIRST (needed by both pipeline and report)
+# Load env vars FIRST (needed by config path, pipeline, and report)
 # Use || true so a missing/broken .env.local doesn't kill the script
 set -a
 # shellcheck disable=SC1091
 source "$APP_DIR/.env.local" 2>/dev/null || true
 set +a
+
+# Ensure nightly LLM cap before run (uses DATA_DIR for config path)
+node -e "
+const fs = require('fs');
+const path = require('path');
+const dataRoot = process.env.DATA_DIR || path.join(process.cwd(), 'data');
+const configPath = path.join(dataRoot, 'config/config.json');
+if (fs.existsSync(configPath)) {
+  const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  if (!config.pipeline) config.pipeline = {};
+  config.pipeline.maxIncrementalFiles = 80;
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
+  console.log('Set pipeline.maxIncrementalFiles=80');
+}
+"
 
 export UMAMI_WEBSITE_ID="${NEXT_PUBLIC_UMAMI_WEBSITE_ID:-}"
 export SERVER_PUBLIC_URL="${SERVER_PUBLIC_URL:-https://chsfinds.com}"
