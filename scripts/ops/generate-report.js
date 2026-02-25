@@ -125,6 +125,7 @@ function getPipelineData() {
     llmCallCount: null,
     newSpots: [],
     updatedSpots: [],
+    updateStreaks: {},
   };
 
   // Read LLM model
@@ -408,32 +409,35 @@ function getPipelineData() {
     }
   } catch { /* ignore */ }
 
-  // Find new/updated spots from create-spots log
+  // Find updated spots from create-spots log
   try {
     const logPath = path.join(appDir, 'logs/create-spots.log');
     if (fs.existsSync(logPath)) {
       const logContent = fs.readFileSync(logPath, 'utf8');
-      // Extract new spots
-      const newMatch = logContent.match(/New automated spots created: (\d+)/);
-      const newCount = newMatch ? parseInt(newMatch[1]) : 0;
 
-      // Extract individual spot names — match "Created spot: Title [Type]" pattern
-      const createdLines = logContent.match(/Created spot:\s*.+/g) || [];
-      for (const line of createdLines.slice(0, 20)) {
-        const clean = line.replace(/^Created spot:\s*/, '').trim();
-        if (clean) result.newSpots.push(clean);
-      }
-
-      // Updated spots — match "Updated spot:" or "🔄" lines
+      // "Updated spot:" lines (content changes detected by create-spots)
       const updatedLines = logContent.match(/Updated spot:\s*.+/g) || [];
-      for (const line of updatedLines.slice(0, 20)) {
+      for (const line of updatedLines.slice(0, 40)) {
         const clean = line.replace(/^Updated spot:\s*/, '').trim();
         if (clean) result.updatedSpots.push(clean);
       }
 
-      if (result.newSpots.length === 0 && newCount > 0) {
-        result.newSpots.push(`${newCount} new spots (details not available)`);
+      // Fall back to "Created spot:" lines if no "Updated" lines found
+      if (result.updatedSpots.length === 0) {
+        const createdLines = logContent.match(/Created spot:\s*.+/g) || [];
+        for (const line of createdLines.slice(0, 20)) {
+          const clean = line.replace(/^Created spot:\s*/, '').trim();
+          if (clean) result.newSpots.push(clean);
+        }
       }
+    }
+  } catch { /* ignore */ }
+
+  // Read update streaks
+  try {
+    const streaksPath = reportingPath('update-streaks.json');
+    if (fs.existsSync(streaksPath)) {
+      result.updateStreaks = JSON.parse(fs.readFileSync(streaksPath, 'utf8'));
     }
   } catch { /* ignore */ }
 
@@ -601,12 +605,22 @@ function buildHtml(data) {
     ? `<div class="skip-reasons"><strong>Skip reasons:</strong><ul>${pipeline.pipelineSkipReasons.map(r => `<li>${r}</li>`).join('')}</ul></div>`
     : '';
 
-  const newSpotsHtml = pipeline.newSpots.length > 0
-    ? `<ol class="spot-list">${pipeline.newSpots.map(s => `<li>${s}</li>`).join('')}</ol>`
-    : '<p class="muted">No new spots in last run.</p>';
+  // Build updated-spots table with streak column, sorted by streak desc
+  const streakMap = pipeline.updateStreaks || {};
+  const streakByName = {};
+  for (const [, v] of Object.entries(streakMap)) {
+    if (v && v.name) streakByName[v.name] = v.streak || 1;
+  }
+  const updatedList = pipeline.updatedSpots.length > 0 ? pipeline.updatedSpots : pipeline.newSpots;
+  const sortedUpdated = [...updatedList].sort((a, b) => (streakByName[b] || 1) - (streakByName[a] || 1));
 
-  const updatedSpotsHtml = pipeline.updatedSpots.length > 0
-    ? `<ol class="spot-list">${pipeline.updatedSpots.map(s => `<li>${s}</li>`).join('')}</ol>`
+  const updatedSpotsHtml = sortedUpdated.length > 0
+    ? `<table><tr><th>#</th><th>Spot</th><th>Streak (days)</th></tr>
+       ${sortedUpdated.slice(0, 30).map((s, i) => {
+         const streak = streakByName[s] || 1;
+         const streakIcon = streak >= 5 ? '🔥' : streak >= 3 ? '📈' : '';
+         return `<tr><td>${i + 1}</td><td>${s}</td><td>${streakIcon} ${streak}d</td></tr>`;
+       }).join('')}</table>`
     : '<p class="muted">No updated spots in last run.</p>';
 
   return `<!DOCTYPE html>
@@ -763,26 +777,23 @@ ${(pipeline.topFailedVenues || []).length > 0 ? `<p style="font-size:0.8rem;colo
   </div>
 </div>
 
-<h3>Venue Watchlist</h3>
+<h3>Venue Watchlist${pipeline.watchlistFlagged > 0 ? ' <span class="badge badge-fail" style="font-size:0.75rem;vertical-align:middle;">ACTION NEEDED</span>' : ''}</h3>
 <div class="stats-grid">
   <div class="stat-card">
     <div class="stat-value">${pipeline.watchlistExcluded}</div>
     <div class="stat-label">Excluded</div>
   </div>
-  <div class="stat-card">
-    <div class="stat-value">${pipeline.watchlistFlagged}</div>
+  <div class="stat-card"${pipeline.watchlistFlagged > 0 ? ' style="border:2px solid #dc2626;background:#fef2f2;"' : ''}>
+    <div class="stat-value" ${pipeline.watchlistFlagged > 0 ? 'style="color:#dc2626;"' : ''}>${pipeline.watchlistFlagged > 0 ? '⚠️ ' : ''}${pipeline.watchlistFlagged}</div>
     <div class="stat-label">Flagged for Review</div>
   </div>
 </div>
-${pipeline.watchlistFlagged > 0 ? `<table><tr><th>Venue</th><th>Area</th><th>Reason</th><th>Gold Status</th></tr>${(pipeline.watchlistFlaggedVenues || []).map(v => `<tr><td>${v.name}</td><td>${v.area}</td><td style="font-size:0.75rem;">${v.reason}</td><td><span class="badge ${v.goldStatus === 'Has promotions' ? 'badge-ok' : 'badge-fail'}">${v.goldStatus}</span></td></tr>`).join('')}</table>` : ''}
+${pipeline.watchlistFlagged > 0 ? `<table><tr><th></th><th>Venue</th><th>Area</th><th>Reason</th><th>Gold Status</th></tr>${(pipeline.watchlistFlaggedVenues || []).map(v => `<tr><td style="font-size:1.1rem;text-align:center;">⚠️</td><td><strong>${v.name}</strong></td><td>${v.area}</td><td style="font-size:0.75rem;">${v.reason}</td><td><span class="badge ${v.goldStatus === 'Has promotions' ? 'badge-ok' : 'badge-fail'}">${v.goldStatus}</span></td></tr>`).join('')}</table>` : ''}
 ${Object.keys(pipeline.watchlistExcludedByArea || {}).length > 0 ? `<p style="font-size:0.78rem;color:#64748b;margin-top:6px;">Excluded by area: ${Object.entries(pipeline.watchlistExcludedByArea).sort(([,a],[,b]) => b - a).map(([area, count]) => `${area} (${count})`).join(', ')}</p>` : ''}
 
 ${stepsHtml ? `<h3>Pipeline Steps</h3><table><tr><th>Step</th><th>Status</th><th>Duration</th><th>Started (EST)</th></tr>${stepsHtml}</table>` : ''}
 
-<h3>New Spots (Top 20)</h3>
-${newSpotsHtml}
-
-<h3>Updated Spots (Top 20)</h3>
+<h3>Updated Spots</h3>
 ${updatedSpotsHtml}
 
 <footer>Auto-generated by CHS Finds analytics &bull; ${new Date().toISOString()}</footer>
@@ -957,8 +968,7 @@ async function main() {
         dlErrorLine,
         deltaLine,
         llmLine,
-        pipeline.newSpots.length > 0 ? `✨ New spots: ${pipeline.newSpots.length}` : null,
-        pipeline.updatedSpots.length > 0 ? `🔄 Updated: ${pipeline.updatedSpots.length}` : null,
+        pipeline.updatedSpots.length > 0 ? `🔄 Updated spots: ${pipeline.updatedSpots.length}` : (pipeline.newSpots.length > 0 ? `🔄 Updated spots: ${pipeline.newSpots.length}` : null),
         (pipeline.watchlistExcluded > 0 || pipeline.watchlistFlagged > 0) ? `🚫 Watchlist: ${pipeline.watchlistExcluded} excluded, ${pipeline.watchlistFlagged} flagged` : null,
         pipeline.pipelineSkipReasons.length > 0 ? `⚠️ ${pipeline.pipelineSkipReasons[0]}` : null,
         '',

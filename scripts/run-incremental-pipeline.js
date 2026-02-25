@@ -794,21 +794,27 @@ async function main() {
       console.error(error.stack);
     }
     
-    // Update status to failed_at_{step} based on current status
+    // Update status to failed_at_{step} based on current status.
+    // Step-level catches already set failed_at_* before re-throwing,
+    // so only map running_* states here; leave failed_at_* as-is.
     const currentConfig = loadConfig();
-    const statusMap = {
-      'running_raw': 'failed_at_raw',
-      'running_merged': 'failed_at_merged',
-      'running_trimmed': 'failed_at_trimmed',
-      'running_extract': 'failed_at_extract',
-      'running_spots': 'failed_at_spots'
-    };
-    const failedStatus = statusMap[currentConfig.last_run_status];
-    if (failedStatus) {
-      updateConfigField('last_run_status', failedStatus);
-    } else if (currentConfig.last_run_status !== 'completed_successfully') {
-      // Catch-all: if status is unexpected, mark as failed
-      updateConfigField('last_run_status', 'failed_unknown');
+    const curStatus = currentConfig.last_run_status || '';
+    if (curStatus.startsWith('failed_at_')) {
+      // Already set by step-level catch — don't overwrite
+    } else {
+      const statusMap = {
+        'running_raw': 'failed_at_raw',
+        'running_merged': 'failed_at_merged',
+        'running_trimmed': 'failed_at_trimmed',
+        'running_extract': 'failed_at_extract',
+        'running_spots': 'failed_at_spots'
+      };
+      const failedStatus = statusMap[curStatus];
+      if (failedStatus) {
+        updateConfigField('last_run_status', failedStatus);
+      } else if (curStatus !== 'completed_successfully') {
+        updateConfigField('last_run_status', 'failed_unknown');
+      }
     }
     
     // Log final config state on error

@@ -489,6 +489,55 @@ function main() {
     }
   }
   
+  // Detect content changes vs previous spots for update tracking
+  const oldSpotMap = new Map();
+  for (const s of existingSpots) {
+    if (s.source === 'automated' && s.venueId) {
+      oldSpotMap.set(`${s.venueId}::${s.type}`, s);
+    }
+  }
+
+  const STREAKS_PATH = reportingPath('update-streaks.json');
+  let streaks = {};
+  try {
+    if (fs.existsSync(STREAKS_PATH)) {
+      streaks = JSON.parse(fs.readFileSync(STREAKS_PATH, 'utf8'));
+    }
+  } catch { /* start fresh */ }
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const updatedSpotNames = [];
+
+  for (const spot of spots) {
+    if (spot.source !== 'automated' || !spot.venueId) continue;
+    const key = `${spot.venueId}::${spot.type}`;
+    const old = oldSpotMap.get(key);
+    const isContentChange = !old
+      || spot.promotionTime !== old.promotionTime
+      || JSON.stringify(spot.promotionList) !== JSON.stringify(old.promotionList);
+
+    if (isContentChange) {
+      const prev = streaks[key];
+      if (prev && prev.lastDate) {
+        const prevDate = new Date(prev.lastDate);
+        const today = new Date(todayStr);
+        const diffDays = Math.round((today - prevDate) / 86400000);
+        streaks[key] = {
+          name: `${spot.title} [${spot.type}]`,
+          lastDate: todayStr,
+          streak: diffDays <= 1 ? (prev.streak || 0) + 1 : 1
+        };
+      } else {
+        streaks[key] = { name: `${spot.title} [${spot.type}]`, lastDate: todayStr, streak: 1 };
+      }
+      updatedSpotNames.push(`${spot.title} [${spot.type}]`);
+      log(`  🔄 Updated spot: ${spot.title} [${spot.type}]`);
+    }
+  }
+
+  fs.writeFileSync(STREAKS_PATH, JSON.stringify(streaks, null, 2), 'utf8');
+  log(`\n📈 Content changes this run: ${updatedSpotNames.length}`);
+
   // Write spots.json to reporting folder
   fs.writeFileSync(SPOTS_PATH, JSON.stringify(spots, null, 2), 'utf8');
   log(`\n✅ Created ${SPOTS_PATH}`);
@@ -618,15 +667,15 @@ function main() {
   log(`\n📊 Summary:`);
   log(`   ✅ New automated spots created: ${processed}`);
   log(`   📋 Existing automated spots preserved: ${existingAutomatedCount}`);
-  log(`   👤 Manual spots preserved: ${manualSpotsCount}`);
+  log(`   👤 Manual spots preserved: ${manualSpots.length}`);
   log(`   ⚠️  Skipped (already exists): ${skipped}`);
   if (excludedCount > 0) log(`   🚫 Excluded (watchlist): ${excludedCount}`);
   log(`   ❌ Missing venue data: ${missingVenue}`);
   log(`   ℹ️  No happy hour: ${noHappyHour}`);
   log(`   📋 Incomplete data: ${incompleteData} (time only, no days/specials)`);
-  log(`   📄 Total spots in spots.json: ${spots.length} (${manualSpotsCount} manual + ${totalAutomatedCount} automated)`);
+  log(`   📄 Total spots in spots.json: ${spots.length} (${manualSpots.length} manual + ${totalAutomatedCount} automated)`);
   log(`\n✨ Done! Updated reporting folder with spots.json, venues.json, and areas.json`);
-  log(`   Total spots: ${spots.length} (${manualSpotsCount} manual + ${totalAutomatedCount} automated)`);
+  log(`   Total spots: ${spots.length} (${manualSpots.length} manual + ${totalAutomatedCount} automated)`);
 }
 
 try {
