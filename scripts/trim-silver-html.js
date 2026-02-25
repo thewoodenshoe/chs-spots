@@ -38,7 +38,7 @@ const fs = require('fs');
 const path = require('path');
 const cheerio = require('cheerio');
 const crypto = require('crypto');
-const { dataPath, configPath } = require('./utils/data-dir');
+const { dataPath } = require('./utils/data-dir');
 
 // Logging setup
 const logDir = path.join(__dirname, '..', 'logs');
@@ -479,7 +479,7 @@ function archiveTodayToPrevious() {
       // Use the run_date from config to label the archive
       let dateLabel = 'unknown';
       try {
-        const cfg = JSON.parse(fs.readFileSync(configPath('config.json'), 'utf8'));
+        const cfg = loadConfig();
         dateLabel = cfg.last_trimmed_processed_date || cfg.run_date || 'unknown';
       } catch { /* use default */ }
       

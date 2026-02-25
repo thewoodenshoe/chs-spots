@@ -13,6 +13,9 @@ jest.mock('../scripts/utils/db', () => ({
         get: jest.fn(),
         upsert: jest.fn(),
     },
+    venues: {
+        getAll: jest.fn(() => []),
+    },
     config: {
         loadConfig: jest.fn(() => ({
             run_date: '20260120',
@@ -614,18 +617,14 @@ describe('extractHappyHours', () => {
             const mockFiles = ['ChIJabc123.json', 'ChIJxyz789.json'];
             fs.readdirSync.mockReturnValue(mockFiles);
 
-            // Mock venues.json
-            const mockVenues = [
+            db.venues.getAll.mockReturnValue([
                 { id: 'ChIJabc123', name: 'Some Cool Bar', area: 'Downtown Charleston' },
                 { id: 'ChIJxyz789', name: 'Another Hip Spot', area: 'Mount Pleasant' }
-            ];
+            ]);
 
             fs.readFileSync.mockImplementation((filePath) => {
                 if (filePath && filePath.includes('config.json')) {
                     return JSON.stringify({ pipeline: { maxIncrementalFiles: 15 } });
-                }
-                if (filePath && filePath.includes('venues.json')) {
-                    return JSON.stringify(mockVenues);
                 }
                 if (filePath && filePath.includes('llm-instructions.txt')) {
                     return 'Mock LLM instructions';
@@ -682,18 +681,13 @@ describe('extractHappyHours', () => {
             const mockFiles = ['ChIJabc123.json', 'ChIJunknown.json'];
             fs.readdirSync.mockReturnValue(mockFiles);
 
-            // Mock venues.json with only one venue
-            const mockVenues = [
+            db.venues.getAll.mockReturnValue([
                 { id: 'ChIJabc123', name: 'Some Cool Bar', area: 'Downtown Charleston' }
-                // ChIJunknown is missing
-            ];
+            ]);
 
             fs.readFileSync.mockImplementation((filePath) => {
                 if (filePath && filePath.includes('config.json')) {
                     return JSON.stringify({ pipeline: { maxIncrementalFiles: 15 } });
-                }
-                if (filePath && filePath.includes('venues.json')) {
-                    return JSON.stringify(mockVenues);
                 }
                 if (filePath && filePath.includes('llm-instructions.txt')) {
                     return 'Mock LLM instructions';

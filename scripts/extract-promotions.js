@@ -6,7 +6,7 @@ const fetchModule = require('node-fetch');
 const fetch = typeof fetchModule === 'function' ? fetchModule : fetchModule.default;
 const crypto = require('crypto');
 const { normalizeText } = require('./utils/normalize');
-const { dataPath, reportingPath, configPath } = require('./utils/data-dir');
+const { dataPath, configPath } = require('./utils/data-dir');
 
 const SILVER_TRIMMED_DIR = dataPath('silver_trimmed', 'today');
 const SILVER_TRIMMED_INCREMENTAL_DIR = dataPath('silver_trimmed', 'incremental');
@@ -15,7 +15,6 @@ const BULK_COMPLETE_FLAG = path.join(GOLD_DIR, '.bulk-complete');
 const INCREMENTAL_HISTORY_DIR = path.join(GOLD_DIR, 'incremental-history');
 const LLM_INSTRUCTIONS_PATH = configPath('llm-instructions.txt');
 const CONFIG_PATH = configPath('config.json');
-const VENUES_JSON_PATH = reportingPath('venues.json');
 const LLM_CANDIDATES_HISTORY_PATH = path.join(__dirname, '../logs/llm-candidates-history.txt');
 const { updateConfigField, loadWatchlist } = require('./utils/config');
 const db = require('./utils/db');
@@ -163,23 +162,10 @@ async function extractHappyHours(isIncremental = false) {
             // Get today's date in YYYY-MM-DD format
             const today = new Date().toISOString().split('T')[0];
 
-            // Load venues.json to get venue names and areas
-            let venues = [];
-            if (fs.existsSync(VENUES_JSON_PATH)) {
-                try {
-                    const venuesContent = fs.readFileSync(VENUES_JSON_PATH, 'utf8');
-                    venues = JSON.parse(venuesContent);
-                    if (!Array.isArray(venues)) {
-                        venues = [];
-                    }
-                } catch (error) {
-                    console.warn(`Warning: Could not read venues.json: ${error.message}`);
-                }
-            }
-
-            // Build venue lookup map by id
+            // Load venues from database
+            const allVenues = db.venues.getAll();
             const venueMap = new Map();
-            venues.forEach(venue => {
+            allVenues.forEach(venue => {
                 if (venue.id) {
                     venueMap.set(venue.id, {
                         name: venue.name || 'Unknown',
@@ -229,21 +215,11 @@ async function extractHappyHours(isIncremental = false) {
     }
 
     // Build venue area lookup for area filter
-    let venueAreaMap = new Map();
-    if (fs.existsSync(VENUES_JSON_PATH)) {
-        try {
-            const venues = JSON.parse(fs.readFileSync(VENUES_JSON_PATH, 'utf8'));
-            if (Array.isArray(venues)) {
-                venueAreaMap = new Map(
-                    venues
-                        .filter(v => v.id)
-                        .map(v => [v.id, (v.area || '').toLowerCase()])
-                );
-            }
-        } catch {
-            // Non-fatal: fallback to venueData.venueArea only
-        }
-    }
+    const venueAreaMap = new Map(
+        db.venues.getAll()
+            .filter(v => v.id)
+            .map(v => [v.id, (v.area || '').toLowerCase()])
+    );
 
     const watchlist = loadWatchlist();
     let watchlistSkipped = 0;

@@ -750,7 +750,7 @@ async function main() {
   if (!isNewDay && !rawTodayEmpty) {
     log(`⏭️  Same day as last download (${today}) - checking for new and removed venues`);
     
-    // Get all venue IDs from venues.json
+    // Get all venue IDs from database
     const venuesInJson = new Set();
     venues.forEach(v => {
       const venueId = v.id || v.place_id;
@@ -767,7 +767,7 @@ async function main() {
       dirs.forEach(dir => existingVenueDirs.add(dir));
     }
     
-    // Check for removed venues (venues with raw files but not in venues.json)
+    // Check for removed venues (venues with raw files but not in database)
     const removedVenues = [];
     existingVenueDirs.forEach(venueId => {
       if (!venuesInJson.has(venueId)) {
@@ -776,14 +776,14 @@ async function main() {
     });
     
     if (removedVenues.length > 0) {
-      log(`   ⚠️  Found ${removedVenues.length} removed venue(s) (have raw files but not in venues.json):`);
+      log(`   ⚠️  Found ${removedVenues.length} removed venue(s) (have raw files but not in database):`);
       removedVenues.slice(0, 10).forEach(venueId => {
         log(`      - ${venueId}`);
       });
       if (removedVenues.length > 10) {
         log(`      ... and ${removedVenues.length - 10} more`);
       }
-      log(`   💡 These venues were removed from venues.json but still have raw files.`);
+      log(`   💡 These venues were removed from the database but still have raw files.`);
       log(`   💡 Raw files are preserved but won't be processed in the pipeline.\n`);
     }
     
@@ -805,7 +805,7 @@ async function main() {
     
     if (newVenues.length === 0) {
       if (removedVenues.length > 0) {
-        log(`   No new venues found. All venues in venues.json already have raw files.`);
+        log(`   No new venues found. All venues in database already have raw files.`);
         log(`\n✨ Skipped download (incremental mode - no new venues, ${removedVenues.length} removed venue(s) detected)`);
       } else {
         log(`   No new venues found. All venues already have raw files.`);

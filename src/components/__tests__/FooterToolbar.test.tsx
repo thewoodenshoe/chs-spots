@@ -20,6 +20,24 @@ jest.mock('@/components/Toast', () => ({
   useToast: () => ({ showToast: jest.fn() }),
 }));
 
+jest.mock('@/contexts/VenuesContext', () => ({
+  useVenues: () => ({
+    venues: [],
+    loading: false,
+    showVenues: false,
+    setShowVenues: jest.fn(),
+  }),
+}));
+
+jest.mock('@/contexts/ActivitiesContext', () => ({
+  useActivities: () => ({
+    activities: [
+      { name: 'Happy Hour', icon: 'Martini', emoji: '🍹', color: '#0d9488' },
+    ],
+    loading: false,
+  }),
+}));
+
 jest.mock('@/lib/analytics', () => ({
   trackAreaView: jest.fn(),
   trackSpotClick: jest.fn(),
