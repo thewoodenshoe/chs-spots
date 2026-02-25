@@ -6,6 +6,11 @@ import { isAdminRequest } from '@/lib/auth';
 import { createSpotSchema, parseOrError } from '@/lib/validations';
 import { spots, venues, type SpotRow, type VenueRow } from '@/lib/db';
 
+function safeJsonParse(value: string): unknown {
+  try { return JSON.parse(value); }
+  catch { return undefined; }
+}
+
 function transformSpot(spot: SpotRow, venueMap: Map<string, VenueRow>) {
   const venue = spot.venue_id ? venueMap.get(spot.venue_id) : undefined;
   const transformed: any = {
@@ -19,7 +24,7 @@ function transformSpot(spot: SpotRow, venueMap: Map<string, VenueRow>) {
     source: spot.source || 'automated',
     status: spot.status || 'approved',
     happyHourTime: spot.promotion_time || undefined,
-    happyHourList: spot.promotion_list ? JSON.parse(spot.promotion_list) : undefined,
+    happyHourList: spot.promotion_list ? safeJsonParse(spot.promotion_list) : undefined,
     sourceUrl: spot.source_url || undefined,
     lastUpdateDate: spot.last_update_date || undefined,
     venueId: spot.venue_id || undefined,

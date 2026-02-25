@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { answerCallbackQuery, editMessage } from '@/lib/telegram';
 import { spots, activitiesDb, venues, getDb } from '@/lib/db';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 /**
  * Telegram Bot Webhook
@@ -15,6 +16,11 @@ import { spots, activitiesDb, venues, getDb } from '@/lib/db';
  * For local development, use polling mode instead (see /api/telegram/poll).
  */
 export async function POST(request: Request) {
+  const ip = getClientIp(request);
+  if (!checkRateLimit(`tg-webhook:${ip}`, 60, 60_000)) {
+    return NextResponse.json({ ok: true }, { status: 429 });
+  }
+
   const webhookSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
   if (webhookSecret) {
     const headerSecret = request.headers.get('x-telegram-bot-api-secret-token');

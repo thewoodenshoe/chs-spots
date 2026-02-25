@@ -21,7 +21,8 @@ export async function GET(request: Request) {
     const count = spots.count();
     checks.spots = { ok: true, detail: `${count} spots` };
   } catch (err) {
-    checks.spots = { ok: false, detail: String(err) };
+    console.error('Health check — spots failed:', err);
+    checks.spots = { ok: false };
   }
 
   // 3. Venues table
@@ -29,7 +30,8 @@ export async function GET(request: Request) {
     const count = venues.getAll().length;
     checks.venues = { ok: true, detail: `${count} venues` };
   } catch (err) {
-    checks.venues = { ok: false, detail: String(err) };
+    console.error('Health check — venues failed:', err);
+    checks.venues = { ok: false };
   }
 
   // 4. Disk writable (logs dir)
@@ -41,15 +43,17 @@ export async function GET(request: Request) {
     fs.unlinkSync(testFile);
     checks.disk = { ok: true };
   } catch (err) {
-    checks.disk = { ok: false, detail: String(err) };
+    console.error('Health check — disk failed:', err);
+    checks.disk = { ok: false };
   }
 
   // 5. Environment keys present
   const requiredEnvKeys = ['NEXT_PUBLIC_GOOGLE_MAPS_KEY', 'TELEGRAM_BOT_TOKEN', 'TELEGRAM_ADMIN_CHAT_ID'];
   const missingKeys = requiredEnvKeys.filter(k => !process.env[k]);
-  checks.env = missingKeys.length === 0
-    ? { ok: true, detail: `${requiredEnvKeys.length} keys present` }
-    : { ok: false, detail: `missing: ${missingKeys.join(', ')}` };
+  if (missingKeys.length > 0) {
+    console.error('Health check — missing env keys:', missingKeys.join(', '));
+  }
+  checks.env = { ok: missingKeys.length === 0 };
 
   const allOk = Object.values(checks).every(c => c.ok);
 

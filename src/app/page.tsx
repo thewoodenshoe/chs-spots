@@ -118,9 +118,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [reportingSpot, setReportingSpot] = useState<Spot | null>(null);
-  const [viewMode, setViewMode] = useState<'map' | 'list'>(() =>
-    typeof window !== 'undefined' && !hasSeenWelcome() ? 'list' : 'map'
-  );
+  const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   const [listSortMode, setListSortMode] = useState<SortMode>('alpha');
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   // Default center for Daniel Island (will be updated when area centers load)
@@ -187,6 +185,9 @@ export default function Home() {
 
   useEffect(() => {
     setIsHydrated(true);
+    if (!hasSeenWelcome()) {
+      setViewMode('list');
+    }
   }, []);
 
   // Lightweight health polling for a visible uptime indicator
@@ -251,6 +252,7 @@ export default function Home() {
   const filteredSpots = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
     return spots.filter((spot) => {
+      if (spot.lat === 0 && spot.lng === 0) return false;
       const spotArea = spot.venueId
         ? (venueAreaById.get(spot.venueId) || getAreaFromCoordinates(spot.lat, spot.lng))
         : getAreaFromCoordinates(spot.lat, spot.lng);
@@ -354,8 +356,6 @@ export default function Home() {
     photoUrl?: string;
     photo?: File;
   }) => {
-    console.log('Spot update:', data);
-    
     try {
       // Convert photo file to data URL if provided
       let photoUrl: string | undefined = data.photoUrl;

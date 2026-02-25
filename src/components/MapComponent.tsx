@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import { GoogleMap, LoadScript, Marker, InfoWindow, MarkerClusterer } from '@react-google-maps/api';
+import { GoogleMap, Marker, InfoWindow, MarkerClusterer, useJsApiLoader } from '@react-google-maps/api';
 import { useSpots, Spot } from '@/contexts/SpotsContext';
 import { useVenues, Venue } from '@/contexts/VenuesContext';
 import { useActivities } from '@/contexts/ActivitiesContext';
@@ -112,6 +112,9 @@ export default function MapComponent({
   showAllVenues = false,
   searchQuery = '',
 }: MapComponentProps) {
+  const { isLoaded, loadError } = useJsApiLoader({
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+  });
   const { spots, loading: spotsLoading } = useSpots();
   const { venues } = useVenues();
   const { activities } = useActivities();
@@ -187,6 +190,7 @@ export default function MapComponent({
   const filteredSpots = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
     return spots.filter((spot) => {
+      if (spot.lat === 0 && spot.lng === 0) return false;
       const spotArea = spot.venueId
         ? (venueAreaById.get(spot.venueId) || getAreaFromCoordinates(spot.lat, spot.lng))
         : getAreaFromCoordinates(spot.lat, spot.lng);
@@ -489,6 +493,25 @@ export default function MapComponent({
     );
   }
 
+  if (loadError) {
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <p className="text-lg font-semibold text-gray-800 mb-2">Map failed to load</p>
+          <p className="text-sm text-gray-600">Please check your connection and try again.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isLoaded) {
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-gray-50">
+        <div className="text-lg text-gray-600">Loading map...</div>
+      </div>
+    );
+  }
+
   const activityConfig = activities.find(a => a.name === selectedActivity);
   const isCommunityActivity = activityConfig?.communityDriven === true;
   const showCommunityBanner = isCommunityActivity && shouldShowBanner(selectedActivity) && !bannerDismissedFor.has(selectedActivity);
@@ -555,8 +578,7 @@ export default function MapComponent({
         </div>
       )}
       
-      <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
-        <GoogleMap
+      <GoogleMap
           mapContainerStyle={mapContainerStyle}
           center={initialCenter}
           zoom={initialZoom}
@@ -870,7 +892,6 @@ export default function MapComponent({
           />
         )}
       </GoogleMap>
-    </LoadScript>
     </div>
   );
 }

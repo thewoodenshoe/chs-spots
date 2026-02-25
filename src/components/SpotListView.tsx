@@ -6,7 +6,69 @@ import { Spot } from '@/contexts/SpotsContext';
 import { Activity } from '@/utils/activities';
 import { calculateDistanceMiles } from '@/utils/distance';
 
-export type SortMode = 'alpha' | 'recent' | 'nearest';
+export type SortMode = 'alpha' | 'recent' | 'nearest' | 'time';
+
+function stripLabel(s: string): string {
+  return /^\d/.test(s) ? s : s.replace(/^[a-zA-Z][a-zA-Z\s]*:\s*/, '');
+}
+
+function cleanNum(n: string): string {
+  return n.replace(/:00$/, '').replace(/^0+(\d)/, '$1');
+}
+
+const TIME_RANGE_RE =
+  /(\d{1,2}(?::\d{2})?)\s*(am|pm)?\s*[-–]\s*(\d{1,2}(?::\d{2})?)\s*(am|pm)/i;
+
+function getSpotStartMinutes(spot: Spot): number | null {
+  const raw = spot.promotionTime || spot.happyHourTime;
+  if (!raw) return null;
+
+  const cleaned = stripLabel(raw.split(',')[0].split('•')[0].trim());
+  if (/all\s*day/i.test(cleaned)) return 0;
+
+  const rm = cleaned.match(TIME_RANGE_RE);
+  if (rm) {
+    let h = parseInt(rm[1]);
+    const min = rm[1].includes(':') ? parseInt(rm[1].split(':')[1]) : 0;
+    const ampm = (rm[2] || rm[4]).toLowerCase();
+    if (ampm === 'pm' && h !== 12) h += 12;
+    if (ampm === 'am' && h === 12) h = 0;
+    return h * 60 + min;
+  }
+
+  const sm = cleaned.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i);
+  if (sm) {
+    let h = parseInt(sm[1]);
+    const min = sm[2] ? parseInt(sm[2]) : 0;
+    if (sm[3].toLowerCase() === 'pm' && h !== 12) h += 12;
+    if (sm[3].toLowerCase() === 'am' && h === 12) h = 0;
+    return h * 60 + min;
+  }
+  return null;
+}
+
+function extractCompactTime(spot: Spot): string | null {
+  const raw = spot.promotionTime || spot.happyHourTime;
+  if (!raw) return null;
+
+  const cleaned = stripLabel(raw.split(',')[0].split('•')[0].trim());
+  if (/all\s*day/i.test(cleaned)) return 'All day';
+
+  const rm = cleaned.match(TIME_RANGE_RE);
+  if (rm) {
+    const sn = cleanNum(rm[1]);
+    const sa = rm[2]?.toLowerCase() || '';
+    const en = cleanNum(rm[3]);
+    const ea = rm[4].toLowerCase();
+    if (sa && sa !== ea) return `${sn}${sa}-${en}${ea}`;
+    return `${sn}-${en}${ea}`;
+  }
+
+  const sm = cleaned.match(/(\d{1,2}(?::\d{2})?)\s*(am|pm)/i);
+  if (sm) return `${cleanNum(sm[1])}${sm[2].toLowerCase()}`;
+
+  return null;
+}
 
 interface SpotListViewProps {
   spots: Spot[];
@@ -36,28 +98,37 @@ export default function SpotListView({
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const sortedSpots = useMemo(() => {
-    const withDistance = spots.map((spot) => ({
+    const withMeta = spots.map((spot) => ({
       spot,
       distance: userLocation
         ? calculateDistanceMiles(userLocation.lat, userLocation.lng, spot.lat, spot.lng)
         : null,
+      timeDisplay: extractCompactTime(spot),
+      startMinutes: getSpotStartMinutes(spot),
     }));
 
     switch (sortMode) {
       case 'nearest':
-        return withDistance.sort((a, b) => {
+        return withMeta.sort((a, b) => {
           if (a.distance === null || b.distance === null) return 0;
           return a.distance - b.distance;
         });
       case 'recent':
-        return withDistance.sort((a, b) => {
+        return withMeta.sort((a, b) => {
           const da = a.spot.lastUpdateDate ? new Date(a.spot.lastUpdateDate).getTime() : 0;
           const db = b.spot.lastUpdateDate ? new Date(b.spot.lastUpdateDate).getTime() : 0;
           return db - da;
         });
+      case 'time':
+        return withMeta.sort((a, b) => {
+          if (a.startMinutes === null && b.startMinutes === null) return 0;
+          if (a.startMinutes === null) return 1;
+          if (b.startMinutes === null) return -1;
+          return a.startMinutes - b.startMinutes;
+        });
       case 'alpha':
       default:
-        return withDistance.sort((a, b) => a.spot.title.localeCompare(b.spot.title));
+        return withMeta.sort((a, b) => a.spot.title.localeCompare(b.spot.title));
     }
   }, [spots, sortMode, userLocation]);
 
@@ -109,6 +180,7 @@ export default function SpotListView({
             className="rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 focus:border-teal-400 focus:outline-none"
           >
             <option value="alpha">A &ndash; Z</option>
+            <option value="time">Time</option>
             <option value="recent">Recently Updated</option>
             {userLocation && <option value="nearest">Nearest</option>}
           </select>
@@ -117,7 +189,7 @@ export default function SpotListView({
 
       {/* Scrollable card list */}
       <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
-        {sortedSpots.map(({ spot, distance }) => {
+        {sortedSpots.map(({ spot, distance, timeDisplay }) => {
           const cfg = getActivityConfig(spot.type);
           const emoji = cfg?.emoji || '📍';
           const color = cfg?.color || '#0d9488';
@@ -170,10 +242,15 @@ export default function SpotListView({
                   )}
                 </div>
 
-                {/* Right side: distance + chevron */}
+                {/* Right side: time, distance, chevron */}
                 <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                  {timeDisplay && (
+                    <span className="rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-semibold text-teal-700 whitespace-nowrap">
+                      {timeDisplay}
+                    </span>
+                  )}
                   {distance !== null && (
-                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-600">
+                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-600 whitespace-nowrap">
                       {distance < 0.1
                         ? '<0.1 mi'
                         : distance < 10

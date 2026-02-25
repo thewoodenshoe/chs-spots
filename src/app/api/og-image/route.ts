@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
-export async function GET() {
+export async function GET(request: Request) {
+  const ip = getClientIp(request);
+  if (!checkRateLimit(`og-image:${ip}`, 30, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
   const imagePath = path.join(process.cwd(), 'public', 'og-image.jpg');
   
   if (!fs.existsSync(imagePath)) {

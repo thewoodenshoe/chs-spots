@@ -34,6 +34,7 @@ export function hasSeenWelcome(): boolean {
 export default function WelcomeOverlay({ onComplete }: WelcomeOverlayProps) {
   const [step, setStep] = useState(0);
   const [dismissed, setDismissed] = useState(() => hasSeenWelcome());
+  const [dontShowAgain, setDontShowAgain] = useState(true);
 
   if (dismissed) return null;
 
@@ -41,7 +42,9 @@ export default function WelcomeOverlay({ onComplete }: WelcomeOverlayProps) {
   const current = steps[step];
 
   const dismiss = () => {
-    localStorage.setItem(STORAGE_KEY, '1');
+    if (dontShowAgain) {
+      localStorage.setItem(STORAGE_KEY, '1');
+    }
     setDismissed(true);
     onComplete();
   };
@@ -68,6 +71,19 @@ export default function WelcomeOverlay({ onComplete }: WelcomeOverlayProps) {
           <div className="text-4xl mb-3">{current.emoji}</div>
           <h2 className="text-lg font-bold text-gray-900 mb-2">{current.title}</h2>
           <p className="text-sm text-gray-600 leading-relaxed">{current.body}</p>
+        </div>
+
+        {/* Don't show again */}
+        <div className="flex items-center justify-center px-6 pb-2">
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={dontShowAgain}
+              onChange={(e) => setDontShowAgain(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-teal-500 focus:ring-teal-500"
+            />
+            <span className="text-xs text-gray-400">Don&apos;t show again</span>
+          </label>
         </div>
 
         {/* Actions */}

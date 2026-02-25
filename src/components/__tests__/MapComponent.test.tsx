@@ -23,12 +23,7 @@ global.google = {
 
 // Mock @react-google-maps/api
 jest.mock('@react-google-maps/api', () => ({
-  LoadScript: ({ children, googleMapsApiKey }: { children: React.ReactNode; googleMapsApiKey?: string }) => {
-    if (!googleMapsApiKey) {
-      return <div>No API Key</div>;
-    }
-    return <div data-testid="load-script">{children}</div>;
-  },
+  useJsApiLoader: () => ({ isLoaded: true, loadError: undefined }),
   GoogleMap: ({ children, onLoad }: { children: React.ReactNode; onLoad?: (map: any) => void }) => {
     const onLoadRef = React.useRef(onLoad);
     onLoadRef.current = onLoad;
@@ -249,7 +244,7 @@ describe('MapComponent — empty state & banner overlay', () => {
       activities: [
         { name: 'Happy Hour', icon: 'Martini', emoji: '🍹', color: '#0d9488' },
         { name: 'Fishing Spots', icon: 'Fish', emoji: '🎣', color: '#0284c7', communityDriven: true },
-        { name: 'Must-See Spots', icon: 'Star', emoji: '⭐', color: '#d97706', communityDriven: true },
+        { name: 'Must-Do Spots', icon: 'Star', emoji: '⭐', color: '#d97706', communityDriven: true },
       ],
       loading: false,
       error: null,
