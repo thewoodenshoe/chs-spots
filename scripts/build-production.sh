@@ -1,11 +1,18 @@
 #!/bin/bash
 #
-# Production build script that handles Next.js 15 race condition.
+# Production build script for the Ubuntu server.
 #
-# On this server, the first build always fails at "Collecting page data"
-# due to a timing issue, but it populates the webpack cache. The second
-# build uses the cache, compiles much faster (~70s vs ~2.5min), and
-# consistently succeeds.
+# Due to a Next.js 15 race condition on this server, `next build` fails
+# intermittently at the "Collecting page data" step. The workaround is
+# to build locally (macOS) where it works reliably, then rsync the
+# .next directory to the server.
+#
+# DEPLOYMENT:
+#   1. On local machine: npm run build
+#   2. rsync -avz --delete .next/ ubuntu:~/projects/chs-spots/.next/
+#   3. On server: pm2 restart chs-spots
+#
+# This script attempts a server-side build with retries as a fallback.
 #
 
 cd "$(dirname "$0")/.."
@@ -16,65 +23,38 @@ kill_build_processes() {
   sleep 2
 }
 
-echo "[build] Cleaning previous build..."
-kill_build_processes
-rm -rf .next
+echo "[build] Starting production build..."
 
-echo "[build] === Attempt 1: Populate webpack cache ==="
-node_modules/.bin/next build 2>&1 || true
-kill_build_processes
+MAX_RETRIES=3
+for attempt in $(seq 1 $MAX_RETRIES); do
+  echo "[build] Attempt $attempt of $MAX_RETRIES..."
 
-# Check if first attempt succeeded (unlikely but possible)
-if [ -s ".next/BUILD_ID" ] && [ -f ".next/routes-manifest.json" ]; then
-  echo "[build] First attempt succeeded!"
-  echo "[build] BUILD_ID: $(cat .next/BUILD_ID)"
-  exit 0
-fi
+  kill_build_processes
 
-echo "[build] First attempt failed (expected). Cleaning output, keeping cache..."
-# Preserve the webpack cache, remove everything else
-find .next -maxdepth 1 -not -name cache -not -name .next -exec rm -rf {} + 2>/dev/null
+  # Preserve cache, remove everything else
+  if [ $attempt -gt 1 ]; then
+    find .next -maxdepth 1 -not -name cache -not -name .next -exec rm -rf {} + 2>/dev/null
+  fi
 
-echo "[build] === Attempt 2: Build with cached compilation ==="
-node_modules/.bin/next build 2>&1 || true
-kill_build_processes
+  node_modules/.bin/next build 2>&1 || true
+  kill_build_processes
 
-# Check for a complete build
-if [ -s ".next/BUILD_ID" ] && [ -f ".next/routes-manifest.json" ] && \
-   [ -f ".next/server/pages-manifest.json" ] && [ -d ".next/static" ]; then
-  echo "[build] Second attempt succeeded!"
-  echo "[build] BUILD_ID: $(cat .next/BUILD_ID)"
-  exit 0
-fi
+  sleep 2
 
-# If still missing BUILD_ID but have other artifacts, create it
-if [ -f ".next/server/pages-manifest.json" ] && [ -d ".next/static" ] && \
-   [ -f ".next/routes-manifest.json" ]; then
-  BUILD_HASH=$(ls .next/static/ 2>/dev/null | grep -E '^[a-zA-Z0-9_-]{15,}$' | head -1)
-  if [ -n "$BUILD_HASH" ]; then
-    echo -n "$BUILD_HASH" > .next/BUILD_ID
-    echo "[build] Created BUILD_ID: $BUILD_HASH"
-    echo "[build] Artifacts verified."
+  # Check for complete build
+  if [ -s ".next/BUILD_ID" ] && [ -f ".next/routes-manifest.json" ] && \
+     [ -f ".next/server/pages-manifest.json" ] && [ -d ".next/static" ]; then
+    echo "[build] Build succeeded on attempt $attempt."
+    echo "[build] BUILD_ID: $(cat .next/BUILD_ID)"
     exit 0
   fi
-fi
 
-echo "[build] Second attempt incomplete. Cleaning and trying once more..."
-find .next -maxdepth 1 -not -name cache -not -name .next -exec rm -rf {} + 2>/dev/null
+  echo "[build] Attempt $attempt incomplete."
+done
 
-echo "[build] === Attempt 3: Final try ==="
-node_modules/.bin/next build 2>&1 || true
-kill_build_processes
-
-if [ -s ".next/BUILD_ID" ] && [ -f ".next/routes-manifest.json" ]; then
-  echo "[build] Third attempt succeeded!"
-  echo "[build] BUILD_ID: $(cat .next/BUILD_ID)"
-  exit 0
-fi
-
-echo "[build] ERROR: Build failed after 3 attempts."
-echo "  BUILD_ID: $([ -s '.next/BUILD_ID' ] && cat .next/BUILD_ID || echo 'MISSING')"
-echo "  routes-manifest: $([ -f '.next/routes-manifest.json' ] && echo 'OK' || echo 'MISSING')"
-echo "  pages-manifest: $([ -f '.next/server/pages-manifest.json' ] && echo 'OK' || echo 'MISSING')"
-echo "  static dir: $([ -d '.next/static' ] && echo 'OK' || echo 'MISSING')"
+echo "[build] Server build failed after $MAX_RETRIES attempts."
+echo "[build] Use the rsync deployment method instead:"
+echo "[build]   Local:  npm run build"
+echo "[build]   Sync:   rsync -avz --delete .next/ ubuntu:~/projects/chs-spots/.next/"
+echo "[build]   Server: pm2 restart chs-spots"
 exit 1
