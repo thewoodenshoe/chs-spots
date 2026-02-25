@@ -8,8 +8,6 @@
 # the issue by continuously backing up build artifacts while the build
 # runs, then restoring them if the build fails.
 #
-set -e
-
 cd "$(dirname "$0")/.."
 PROJECT_DIR=$(pwd)
 BACKUP_DIR="${PROJECT_DIR}/.next-backup"
