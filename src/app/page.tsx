@@ -18,6 +18,7 @@ import SearchBar from '@/components/SearchBar';
 import ReportSpotModal from '@/components/ReportSpotModal';
 import ViewToggle from '@/components/ViewToggle';
 import SpotListView, { SortMode } from '@/components/SpotListView';
+import WelcomeOverlay, { hasSeenWelcome } from '@/components/WelcomeOverlay';
 import { useVenues } from '@/contexts/VenuesContext';
 import { useActivities } from '@/contexts/ActivitiesContext';
 
@@ -117,7 +118,9 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [reportingSpot, setReportingSpot] = useState<Spot | null>(null);
-  const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
+  const [viewMode, setViewMode] = useState<'map' | 'list'>(() =>
+    typeof window !== 'undefined' && !hasSeenWelcome() ? 'list' : 'map'
+  );
   const [listSortMode, setListSortMode] = useState<SortMode>('alpha');
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   // Default center for Daniel Island (will be updated when area centers load)
@@ -454,9 +457,12 @@ export default function Home() {
       <div className="fixed top-0 left-0 right-0 z-50 bg-black/70 backdrop-blur-md safe-area-top">
         {/* Title Row */}
         <div className="flex h-12 items-center justify-between px-4">
-          <h1 className="text-xl font-bold text-white drop-shadow-lg tracking-tight">
-            Charleston Finds
-          </h1>
+          <div>
+            <h1 className="text-xl font-bold text-white drop-shadow-lg tracking-tight leading-none">
+              Charleston Finds
+            </h1>
+            <p className="text-[10px] text-white/50 leading-tight mt-0.5">Happy hours, brunch & more — updated daily</p>
+          </div>
           <div className="flex items-center gap-2">
             <ViewToggle viewMode={viewMode} onChange={setViewMode} />
             <button
@@ -490,7 +496,7 @@ export default function Home() {
               />
             </div>
             <div className="flex-1 min-w-0">
-              <ActivityChip activity={selectedActivity} onClick={handleFilter} />
+              <ActivityChip activity={selectedActivity} spotCount={filteredSpots.length} onClick={handleFilter} />
             </div>
           </div>
         </div>
@@ -531,6 +537,7 @@ export default function Home() {
               setViewMode('map');
             }}
             onEditSpot={handleEditSpot}
+            onAddSpot={() => { setViewMode('map'); handleAddSpot(); }}
           />
         )}
       </div>
@@ -711,6 +718,9 @@ export default function Home() {
         }}
         spot={reportingSpot}
       />
+
+      {/* First-time visitor welcome overlay */}
+      <WelcomeOverlay onComplete={() => setViewMode('list')} />
     </div>
   );
 }

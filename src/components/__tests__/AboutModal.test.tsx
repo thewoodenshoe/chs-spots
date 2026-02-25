@@ -39,10 +39,11 @@ describe('AboutModal', () => {
     expect(screen.getByTestId('health')).toBeInTheDocument();
   });
 
-  it('contains legal disclaimer text', () => {
+  it('contains privacy & terms section', () => {
     render(<AboutModal {...defaultProps} />);
-    expect(screen.getByText(/community project/i)).toBeInTheDocument();
-    expect(screen.getByText(/use at your own discretion/i)).toBeInTheDocument();
+    expect(screen.getByText(/free community project/i)).toBeInTheDocument();
+    expect(screen.getByText(/your own discretion/i)).toBeInTheDocument();
+    expect(screen.getByText(/Privacy & Terms/i)).toBeInTheDocument();
   });
 
   it('contains how-it-works steps', () => {

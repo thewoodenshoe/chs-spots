@@ -773,17 +773,37 @@ export default function MapComponent({
                   className="mt-2 h-32 w-full rounded-lg object-cover"
                 />
               )}
-              {onEditSpot && (
+              {/* Action buttons */}
+              <div className="mt-3 flex gap-2">
+                {onEditSpot && (
+                  <button
+                    onClick={() => {
+                      onEditSpot(selectedSpot);
+                      handleInfoWindowClose();
+                    }}
+                    className="flex-1 rounded-lg bg-teal-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-teal-700 touch-manipulation"
+                  >
+                    Edit
+                  </button>
+                )}
                 <button
                   onClick={() => {
-                    onEditSpot(selectedSpot);
-                    handleInfoWindowClose();
+                    const url = `${window.location.origin}?spot=${selectedSpot.id}`;
+                    if (navigator.share) {
+                      navigator.share({ title: selectedSpot.title, text: `Check out ${selectedSpot.title} on Charleston Finds`, url });
+                    } else {
+                      navigator.clipboard.writeText(url);
+                      alert('Link copied!');
+                    }
                   }}
-                  className="mt-3 w-full rounded-lg bg-teal-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-teal-700 touch-manipulation"
+                  className="rounded-lg bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-200 touch-manipulation"
+                  title="Share this spot"
                 >
-                  Edit Spot
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                  </svg>
                 </button>
-              )}
+              </div>
               {onReportSpot && selectedSpot.source === 'automated' && (
                 <button
                   onClick={() => {

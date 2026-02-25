@@ -18,6 +18,7 @@ interface SpotListViewProps {
   onSortChange: (mode: SortMode) => void;
   onSpotSelect: (spot: Spot) => void;
   onEditSpot?: (spot: Spot) => void;
+  onAddSpot?: () => void;
 }
 
 export default function SpotListView({
@@ -30,6 +31,7 @@ export default function SpotListView({
   onSortChange,
   onSpotSelect,
   onEditSpot,
+  onAddSpot,
 }: SpotListViewProps) {
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
@@ -65,11 +67,25 @@ export default function SpotListView({
   if (spots.length === 0) {
     return (
       <div className="flex h-full items-center justify-center px-6">
-        <div className="text-center">
-          <p className="text-base font-medium text-gray-700">
-            No {selectedActivity} spots in {selectedArea}
+        <div className="text-center max-w-xs">
+          <div className="text-4xl mb-3">🔍</div>
+          <p className="text-base font-semibold text-gray-800">
+            No {selectedActivity} spots yet
           </p>
-          <p className="mt-1 text-sm text-gray-500">Try a different area or activity</p>
+          <p className="mt-1 text-sm text-gray-500">
+            {selectedArea} is waiting for its first {selectedActivity.toLowerCase()} spot.
+          </p>
+          {onAddSpot && (
+            <button
+              onClick={onAddSpot}
+              className="mt-4 inline-flex items-center gap-2 rounded-full bg-teal-500 px-5 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-teal-600 transition-colors active:scale-95"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              Be the first to add one
+            </button>
+          )}
         </div>
       </div>
     );
@@ -265,6 +281,24 @@ export default function SpotListView({
                         Website
                       </a>
                     )}
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const url = `${window.location.origin}?spot=${spot.id}`;
+                        if (navigator.share) {
+                          navigator.share({ title: spot.title, text: `Check out ${spot.title} on Charleston Finds`, url });
+                        } else {
+                          navigator.clipboard.writeText(url);
+                        }
+                      }}
+                      className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-200 transition-colors"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                      </svg>
+                      Share
+                    </button>
 
                     {onEditSpot && (
                       <button

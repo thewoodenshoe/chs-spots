@@ -83,14 +83,35 @@ export default function AboutModal({ isOpen, onClose, lastUpdated, healthIndicat
             </div>
           </div>
 
-          {/* Legal disclaimer */}
-          <div className="rounded-xl bg-gray-50 p-4">
-            <p className="text-xs text-gray-400 leading-relaxed">
-              Charleston Finds is a community project. Spot data is crowd-sourced and may not be accurate or up to date.
-              We are not affiliated with any business listed. Use at your own discretion.
-              Happy hour times and promotions should be verified directly with the venue.
-              By using this site you agree to these terms.
-            </p>
+          {/* Privacy & Terms */}
+          <div>
+            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-2">Privacy &amp; Terms</h3>
+            <div className="rounded-xl bg-gray-50 p-4 space-y-3">
+              <div>
+                <h4 className="text-xs font-semibold text-gray-700 mb-1">What we collect</h4>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  When you submit a spot, we store the name you provide, location, description, and optional photo.
+                  We use privacy-friendly analytics (Umami) that collects no personal data and sets no cookies.
+                  We do not sell or share your information with third parties.
+                </p>
+              </div>
+              <div>
+                <h4 className="text-xs font-semibold text-gray-700 mb-1">Data accuracy</h4>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  Spot data is gathered automatically from restaurant websites and supplemented by community submissions.
+                  Happy hour times, specials, and promotions should always be verified directly with the venue.
+                  We are not affiliated with any business listed.
+                </p>
+              </div>
+              <div>
+                <h4 className="text-xs font-semibold text-gray-700 mb-1">Terms of use</h4>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  Charleston Finds is a free community project provided as-is. By using this site you agree that
+                  information may not be accurate or up to date, and you use it at your own discretion.
+                  We reserve the right to moderate, edit, or remove user-submitted content.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

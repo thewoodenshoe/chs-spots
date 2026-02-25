@@ -90,6 +90,12 @@ jest.mock('@/components/SuggestActivityModal', () => {
   return MockSuggestActivityModal;
 });
 
+jest.mock('@/components/WelcomeOverlay', () => {
+  const MockWelcome = () => null;
+  MockWelcome.displayName = 'WelcomeOverlay';
+  return { __esModule: true, default: MockWelcome, hasSeenWelcome: () => true };
+});
+
 jest.mock('@/components/AreaSelector', () => {
   const MockAreaSelector = () => <div data-testid="area-selector">Area</div>;
   MockAreaSelector.displayName = 'AreaSelector';
