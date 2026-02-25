@@ -33,7 +33,7 @@ function log(message) {
   fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
 }
 
-// Paths - Respect DATA_DIR (e.g. /home/ubuntu/data on server)
+// Paths — resolved via data-dir utility (defaults to project data/)
 const RAW_DIR = dataPath('raw');
 const RAW_TODAY_DIR = dataPath('raw', 'today');
 const RAW_PREVIOUS_DIR = dataPath('raw', 'previous');

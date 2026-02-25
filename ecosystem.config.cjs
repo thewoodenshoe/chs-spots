@@ -9,8 +9,6 @@ module.exports = {
     restart_delay: 5000,
     env: {
       NODE_ENV: 'production',
-      DATA_DIR: '/home/ubuntu/data',
-      DB_PATH: '/home/ubuntu/data/chs-spots.db',
     },
   }],
 };

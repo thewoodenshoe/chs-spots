@@ -1,7 +1,6 @@
 /**
  * Data directory resolver for ETL scripts.
- * Respects DATA_DIR env var (e.g. /home/ubuntu/data on server).
- * Falls back to project data/ when unset (local dev).
+ * Defaults to project data/. Override with DATA_DIR env var if needed.
  */
 const path = require('path');
 

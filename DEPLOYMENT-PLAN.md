@@ -100,7 +100,7 @@ no, # Continuous Deployment (CD) Architecture Plan
 **On Ubuntu Server (`.env` file):**
 - `NEXT_PUBLIC_GOOGLE_MAPS_KEY` - Google Maps API key
 - `GROK_API_KEY` - Grok API key for LLM extraction
-- `DB_PATH=/home/ubuntu/data/chs-spots.db` - SQLite database path
+- `DB_PATH` - SQLite database path (defaults to `<project>/data/chs-spots.db`)
 - `NODE_ENV=production`
 - `PORT=3000` (optional, Next.js default)
 

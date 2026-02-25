@@ -5,9 +5,7 @@
  * and Next.js API routes need. Uses better-sqlite3 (synchronous,
  * WAL-mode, prepared statements).
  *
- * DB_PATH env var controls the file location:
- *   - default: <project>/data/chs-spots.db
- *   - server:  /home/ubuntu/data/chs-spots.db
+ * DB location: <project>/data/chs-spots.db (override with DB_PATH env var).
  */
 
 const Database = require('better-sqlite3');
