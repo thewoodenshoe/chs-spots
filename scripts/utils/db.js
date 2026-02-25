@@ -104,6 +104,11 @@ const venues = {
     logAudit('venues', v.id, existing ? 'UPDATE' : 'INSERT', existing, v);
   },
 
+  updatePhotoUrl(id, photoUrl) {
+    getDb().prepare('UPDATE venues SET photo_url = ?, updated_at = datetime(?) WHERE id = ?')
+      .run(photoUrl, new Date().toISOString(), id);
+  },
+
   count() {
     return getDb().prepare('SELECT COUNT(*) as cnt FROM venues').get().cnt;
   },
