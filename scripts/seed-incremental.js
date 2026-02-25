@@ -518,21 +518,29 @@ async function fetchAllPages(areaName, venueType, lat, lng, radius, maxPages = 1
   }
 }
 
+// Build a Google Places Photo URL from a photo_reference
+function buildPhotoUrl(photoReference) {
+  if (!photoReference) return null;
+  return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${photoReference}&key=${GOOGLE_MAPS_API_KEY}`;
+}
+
 // Fetch place details from Google Places Details API (with address_components)
 async function fetchPlaceDetails(placeId) {
-  const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,website,formatted_address,address_components&key=${GOOGLE_MAPS_API_KEY}`;
+  const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,website,formatted_address,address_components,photos&key=${GOOGLE_MAPS_API_KEY}`;
   
   try {
     const response = await makeRequest(url);
     
     if (response.status === 'OK' && response.result) {
+      const photoRef = response.result.photos?.[0]?.photo_reference || null;
       return {
         website: response.result.website || null,
         formatted_address: response.result.formatted_address || null,
         address_components: response.result.address_components || null,
+        photo_url: buildPhotoUrl(photoRef),
       };
     } else if (response.status === 'NOT_FOUND') {
-      return { website: null, formatted_address: null, address_components: null };
+      return { website: null, formatted_address: null, address_components: null, photo_url: null };
     } else {
       throw new Error(`API returned status: ${response.status} - ${response.error_message || ''}`);
     }
@@ -545,6 +553,7 @@ async function fetchPlaceDetails(placeId) {
 function extractVenueData(result, areaName) {
   const addressComponents = result.address_components || null;
   const address = result.vicinity || result.formatted_address || 'Address not available';
+  const photoRef = result.photos?.[0]?.photo_reference || null;
   
   return {
     id: result.place_id,
@@ -554,8 +563,9 @@ function extractVenueData(result, areaName) {
     lat: result.geometry?.location?.lat || null,
     lng: result.geometry?.location?.lng || null,
     website: result.website || null,
+    photo_url: buildPhotoUrl(photoRef),
     types: result.types || [],
-    area: areaName, // Will be reassigned using findAreaForVenue
+    area: areaName,
   };
 }
 
@@ -676,6 +686,9 @@ async function seedIncremental() {
             if (details.website && !venue.website) {
               venue.website = details.website;
             }
+            if (details.photo_url && !venue.photo_url) {
+              venue.photo_url = details.photo_url;
+            }
             
             // Use accurate area assignment logic
             const actualArea = findAreaForVenue(
@@ -752,6 +765,9 @@ async function seedIncremental() {
       
       try {
         const details = await fetchPlaceDetails(venue.id);
+        if (details.photo_url && !venue.photo_url) {
+          venue.photo_url = details.photo_url;
+        }
         if (details.website) {
           venue.website = details.website;
           websitesEnriched++;

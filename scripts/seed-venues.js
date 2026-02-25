@@ -633,6 +633,12 @@ function findAreaForVenue(lat, lng, address, addressComponents, areasConfig) {
   return null;
 }
 
+// Build a Google Places Photo URL from a photo_reference
+function buildPhotoUrl(photoReference) {
+  if (!photoReference) return null;
+  return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${photoReference}&key=${GOOGLE_MAPS_API_KEY}`;
+}
+
 // Extract venue data from Google Places result
 function extractVenueData(result, areaName) {
   // Extract address_components if available
@@ -640,37 +646,41 @@ function extractVenueData(result, areaName) {
   
   // Build address string (for backward compatibility)
   const address = result.vicinity || result.formatted_address || 'Address not available';
+
+  const photoRef = result.photos?.[0]?.photo_reference || null;
   
   return {
     id: result.place_id,
     name: result.name || 'Unknown',
     address: address,
-    addressComponents: addressComponents, // Store address_components for area detection
+    addressComponents: addressComponents,
     lat: result.geometry?.location?.lat || null,
     lng: result.geometry?.location?.lng || null,
     website: result.website || null,
+    photo_url: buildPhotoUrl(photoRef),
     types: result.types || [],
-    area: areaName, // Will be reassigned based on Google's sublocality or zip code
+    area: areaName,
   };
 }
 
 // Fetch place details from Google Places Details API
 async function fetchPlaceDetails(placeId, retries = MAX_RETRIES) {
-  // Request address_components in the fields to get sublocality data
-  const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,website,formatted_address,address_components&key=${GOOGLE_MAPS_API_KEY}`;
+  const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,website,formatted_address,address_components,photos&key=${GOOGLE_MAPS_API_KEY}`;
   
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       const response = await makeRequest(url);
       
       if (response.status === 'OK' && response.result) {
+        const photoRef = response.result.photos?.[0]?.photo_reference || null;
         return {
           website: response.result.website || null,
           formatted_address: response.result.formatted_address || null,
           address_components: response.result.address_components || null,
+          photo_url: buildPhotoUrl(photoRef),
         };
       } else if (response.status === 'NOT_FOUND') {
-        return { website: null, formatted_address: null, address_components: null };
+        return { website: null, formatted_address: null, address_components: null, photo_url: null };
       } else {
         throw new Error(`API returned status: ${response.status} - ${response.error_message || ''}`);
       }
@@ -1266,9 +1276,11 @@ async function fetchKnownVenuesByName(areaName, knownVenueNames) {
                 venue.address = details.formatted_address;
               }
               
-              // Terminal: Simple message
+              if (details.photo_url && !venue.photo_url) {
+                venue.photo_url = details.photo_url;
+              }
+
               log(`${progress} ✅ ${venue.name}: Found website (Places API)`);
-              // File: Detailed message
               logVerbose(`  -> Website found: ${details.website} | Updated address: ${venue.address} | Area: ${venue.area} | Coordinates: (${venue.lat}, ${venue.lng})`);
               return;
             }

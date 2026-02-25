@@ -17,12 +17,17 @@ const steps = [
   {
     emoji: '🗺️',
     title: 'Pick Your Area & Vibe',
-    body: 'Choose a neighborhood from the dropdown and select an activity. Switch between Map and List view to browse your way.',
+    body: 'Choose a neighborhood from the dropdown and select an activity.',
   },
   {
     emoji: '📌',
     title: 'Share What You Know',
-    body: 'Found a hidden gem? Tap the + button to add a spot, or suggest an entirely new activity category. Charleston Finds is built by locals like you.',
+    body: 'This is a community page. Found a hidden gem? Is something incorrect? Tap the + button or edit a spot. Or, suggest an entirely new activity category. Charleston Finds is built by locals like you.',
+  },
+  {
+    emoji: '🗺️',
+    title: 'Switch to Map View',
+    body: 'Tap the map icon in the top right to see all spots on an interactive map. Zoom in, tap markers for details, and explore Charleston visually.',
   },
 ];
 

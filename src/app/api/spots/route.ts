@@ -20,7 +20,7 @@ function transformSpot(spot: SpotRow, venueMap: Map<string, VenueRow>) {
     title: spot.title,
     description: spot.description || '',
     type: spot.type || 'Happy Hour',
-    photoUrl: spot.photo_url || undefined,
+    photoUrl: spot.photo_url || venue?.photo_url || undefined,
     source: spot.source || 'automated',
     status: spot.status || 'approved',
     happyHourTime: spot.promotion_time || undefined,

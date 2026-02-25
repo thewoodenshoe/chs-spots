@@ -7,6 +7,7 @@ import { useVenues, Venue } from '@/contexts/VenuesContext';
 import { useActivities } from '@/contexts/ActivitiesContext';
 import { Area, SpotType } from './FilterModal';
 import CommunityBanner, { shouldShowBanner } from './CommunityBanner';
+import { isSpotActiveNow } from '@/utils/time-utils';
 
 // Google Maps API key - set in .env.local as NEXT_PUBLIC_GOOGLE_MAPS_KEY
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || '';
@@ -681,6 +682,11 @@ export default function MapComponent({
               
               {/* Status badges */}
               <div className="mb-2 flex flex-wrap gap-1">
+                {isSpotActiveNow(selectedSpot) && (
+                  <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">
+                    Active Now
+                  </span>
+                )}
                 {selectedSpot.status === 'pending' && (
                   <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
                     Pending Approval
@@ -808,6 +814,18 @@ export default function MapComponent({
                     Edit
                   </button>
                 )}
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${selectedSpot.lat},${selectedSpot.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-lg bg-indigo-100 px-3 py-2 text-xs font-semibold text-indigo-700 transition-colors hover:bg-indigo-200 touch-manipulation"
+                  title="Get directions"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </a>
                 <button
                   onClick={() => {
                     const url = `${window.location.origin}?spot=${selectedSpot.id}`;
