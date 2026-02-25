@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:server": "bash scripts/build-production.sh",
     "start": "next start",
     "lint": "eslint",
     "test": "NODE_OPTIONS=--max-old-space-size=4096 jest",

@@ -27,10 +27,6 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
 
-  outputFileTracingExcludes: {
-    '/*': ['./data/**'],
-  },
-
   async headers() {
     return [
       {
