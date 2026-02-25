@@ -27,10 +27,6 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
 
-  turbopack: {
-    root: process.cwd(),
-  },
-
   outputFileTracingExcludes: {
     '/*': ['./data/**'],
   },
