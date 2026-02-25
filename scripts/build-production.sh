@@ -2,112 +2,69 @@
 #
 # Production build script that handles Next.js 15 race condition.
 #
-# On this server, "Collecting page data" fails and Next.js cleans up
-# all build output. We prevent this by injecting a small Node.js
-# module that blocks deletion of .next/server/ and .next/static/.
+# On this server, "Collecting page data" fails with a race condition.
+# Next.js cleans up build output on failure but preserves the webpack
+# cache. We retry the build up to 3 times, each subsequent attempt
+# benefiting from the cached compilation.
 #
 
 cd "$(dirname "$0")/.."
 
-echo "[build] Cleaning previous build..."
-rm -rf .next
+echo "[build] Starting production build..."
 
-# Create a require-hook that prevents Next.js from deleting build output
-cat > /tmp/protect-build-output.js << 'HOOK'
-const fs = require('fs');
-const path = require('path');
+MAX_RETRIES=3
+for attempt in $(seq 1 $MAX_RETRIES); do
+  echo "[build] Attempt $attempt of $MAX_RETRIES..."
 
-const dotNextServer = path.join(process.cwd(), '.next', 'server');
-const dotNextStatic = path.join(process.cwd(), '.next', 'static');
+  # Clean output but keep cache for faster rebuilds
+  rm -rf .next/server .next/static .next/BUILD_ID .next/build-manifest.json \
+         .next/app-build-manifest.json .next/react-loadable-manifest.json \
+         .next/package.json .next/diagnostics .next/types 2>/dev/null
 
-function isProtected(p) {
-  const resolved = path.resolve(p);
-  return resolved.startsWith(dotNextServer) || resolved.startsWith(dotNextStatic) ||
-         resolved === dotNextServer || resolved === dotNextStatic;
-}
+  npx next build 2>&1
+  BUILD_EXIT=$?
 
-['rmSync', 'unlinkSync', 'rmdirSync'].forEach(method => {
-  const orig = fs[method];
-  if (orig) {
-    fs[method] = function(p, ...args) {
-      if (isProtected(p)) return;
-      return orig.call(this, p, ...args);
-    };
-  }
-});
+  # Give filesystem a moment to settle
+  sleep 2
 
-const origRm = fs.rm;
-if (origRm) {
-  fs.rm = function(p, ...args) {
-    if (isProtected(path.resolve(p))) {
-      const cb = args[args.length - 1];
-      if (typeof cb === 'function') return cb(null);
-      return;
-    }
-    return origRm.call(this, p, ...args);
-  };
-}
-
-const origRmdir = fs.rmdir;
-if (origRmdir) {
-  fs.rmdir = function(p, ...args) {
-    if (isProtected(path.resolve(p))) {
-      const cb = args[args.length - 1];
-      if (typeof cb === 'function') return cb(null);
-      return;
-    }
-    return origRmdir.call(this, p, ...args);
-  };
-}
-
-const origUnlink = fs.unlink;
-if (origUnlink) {
-  fs.unlink = function(p, ...args) {
-    if (isProtected(path.resolve(p))) {
-      const cb = args[args.length - 1];
-      if (typeof cb === 'function') return cb(null);
-      return;
-    }
-    return origUnlink.call(this, p, ...args);
-  };
-}
-HOOK
-
-echo "[build] Running Next.js build with output protection..."
-NODE_OPTIONS="--require /tmp/protect-build-output.js" npx next build 2>&1 || true
-
-echo "[build] Build exited. Checking artifacts..."
-
-# Verify essential files
-MANIFEST=".next/server/pages-manifest.json"
-APP_MANIFEST=".next/server/app-paths-manifest.json"
-WEBPACK_RUNTIME=".next/server/webpack-runtime.js"
-
-if [ ! -f "$MANIFEST" ] || [ ! -f "$APP_MANIFEST" ] || [ ! -f "$WEBPACK_RUNTIME" ]; then
-  echo "[build] ERROR: Essential build artifacts missing."
-  echo "  pages-manifest: $([ -f "$MANIFEST" ] && echo 'OK' || echo 'MISSING')"
-  echo "  app-paths-manifest: $([ -f "$APP_MANIFEST" ] && echo 'OK' || echo 'MISSING')"
-  echo "  webpack-runtime: $([ -f "$WEBPACK_RUNTIME" ] && echo 'OK' || echo 'MISSING')"
-  exit 1
-fi
-
-if [ ! -d ".next/static" ]; then
-  echo "[build] ERROR: .next/static/ directory missing."
-  exit 1
-fi
-
-# Create BUILD_ID from static hash if missing
-if [ ! -s ".next/BUILD_ID" ]; then
-  BUILD_HASH=$(ls .next/static/ 2>/dev/null | grep -E '^[a-zA-Z0-9_-]{15,}$' | head -1)
-  if [ -n "$BUILD_HASH" ]; then
-    echo -n "$BUILD_HASH" > .next/BUILD_ID
-    echo "[build] Created BUILD_ID: $BUILD_HASH"
-  else
-    echo "[build] ERROR: Could not determine BUILD_ID"
-    exit 1
+  # Check if essential artifacts exist
+  if [ -f ".next/server/pages-manifest.json" ] && \
+     [ -f ".next/server/webpack-runtime.js" ] && \
+     [ -f ".next/server/app-paths-manifest.json" ] && \
+     [ -d ".next/static" ] && \
+     [ -s ".next/BUILD_ID" ]; then
+    echo "[build] Build succeeded on attempt $attempt."
+    echo "[build] BUILD_ID: $(cat .next/BUILD_ID)"
+    exit 0
   fi
-fi
 
-rm -f /tmp/protect-build-output.js
-echo "[build] Build complete. BUILD_ID: $(cat .next/BUILD_ID)"
-echo "[build] Artifacts verified successfully."
+  # Check if we have artifacts but missing BUILD_ID (partial success)
+  if [ -f ".next/server/pages-manifest.json" ] && \
+     [ -f ".next/server/webpack-runtime.js" ] && \
+     [ -d ".next/static" ]; then
+
+    if [ ! -s ".next/BUILD_ID" ]; then
+      BUILD_HASH=$(ls .next/static/ 2>/dev/null | grep -E '^[a-zA-Z0-9_-]{15,}$' | head -1)
+      if [ -n "$BUILD_HASH" ]; then
+        echo -n "$BUILD_HASH" > .next/BUILD_ID
+        echo "[build] Created BUILD_ID: $BUILD_HASH (attempt $attempt)"
+        echo "[build] Artifacts verified successfully."
+        exit 0
+      fi
+    fi
+  fi
+
+  echo "[build] Attempt $attempt failed. Artifacts incomplete."
+  if [ $attempt -lt $MAX_RETRIES ]; then
+    echo "[build] Retrying with webpack cache..."
+    sleep 3
+  fi
+done
+
+echo "[build] ERROR: Build failed after $MAX_RETRIES attempts."
+echo "  pages-manifest: $([ -f '.next/server/pages-manifest.json' ] && echo 'OK' || echo 'MISSING')"
+echo "  webpack-runtime: $([ -f '.next/server/webpack-runtime.js' ] && echo 'OK' || echo 'MISSING')"
+echo "  app-paths-manifest: $([ -f '.next/server/app-paths-manifest.json' ] && echo 'OK' || echo 'MISSING')"
+echo "  static dir: $([ -d '.next/static' ] && echo 'OK' || echo 'MISSING')"
+echo "  BUILD_ID: $([ -s '.next/BUILD_ID' ] && echo 'OK' || echo 'MISSING')"
+exit 1
