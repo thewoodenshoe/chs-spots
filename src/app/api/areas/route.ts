@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
-import { configPath } from '@/lib/data-dir';
+import { areasDb } from '@/lib/db';
 
 export async function GET(request: Request) {
   const ip = getClientIp(request);
@@ -10,16 +9,10 @@ export async function GET(request: Request) {
   }
 
   try {
-    const areasPath = configPath('areas.json');
-    const areasContents = fs.readFileSync(areasPath, 'utf8');
-    const areas = JSON.parse(areasContents);
-    
-    // Return array of area names from the config
-    const areaNames = areas.map((area: any) => area.name);
-    
+    const areaNames = areasDb.getNames();
     return NextResponse.json(areaNames);
   } catch (error) {
-    console.error('Error reading areas.json:', error);
+    console.error('Error reading areas from database:', error);
     return NextResponse.json({ error: 'Failed to load areas' }, { status: 500 });
   }
 }

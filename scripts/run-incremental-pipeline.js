@@ -19,6 +19,7 @@ const path = require('path');
 const fs = require('fs');
 const { loadConfig, saveConfig, updateConfigField, getRunDate } = require('./utils/config');
 const { dataPath } = require('./utils/data-dir');
+const db = require('./utils/db');
 
 // Parse optional run_date parameter (YYYYMMDD format) - defaults to today if not provided
 // Flags like --confirm, --force etc. are NOT area filters
@@ -161,6 +162,7 @@ function runScript(scriptPath, args = []) {
           PIPELINE_RUN_DATE: currentRunContext.runDate,
           PIPELINE_RUN_ID: currentRunContext.runId,
           PIPELINE_MANIFEST_PATH: currentRunContext.manifestPath,
+          PIPELINE_DB_RUN_ID: String(currentRunContext.dbRunId || ''),
           AREA_FILTER: currentRunContext.areaFilter || ''
         } : {})
       }
@@ -194,6 +196,14 @@ function createRunManifest(runDate, areaFilter, logPath) {
   const now = new Date();
   const runId = `${runDate}-${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
   const manifestPath = path.join(manifestsDir, `run-${runId}.json`);
+  const steps = {
+    raw: { status: 'pending', startedAt: null, finishedAt: null },
+    merged: { status: 'pending', startedAt: null, finishedAt: null },
+    trimmed: { status: 'pending', startedAt: null, finishedAt: null },
+    delta: { status: 'pending', startedAt: null, finishedAt: null },
+    extract: { status: 'pending', startedAt: null, finishedAt: null },
+    spots: { status: 'pending', startedAt: null, finishedAt: null }
+  };
   const manifest = {
     runId,
     runDate,
@@ -202,18 +212,25 @@ function createRunManifest(runDate, areaFilter, logPath) {
     finishedAt: null,
     status: 'running',
     logPath,
-    steps: {
-      raw: { status: 'pending', startedAt: null, finishedAt: null },
-      merged: { status: 'pending', startedAt: null, finishedAt: null },
-      trimmed: { status: 'pending', startedAt: null, finishedAt: null },
-      delta: { status: 'pending', startedAt: null, finishedAt: null },
-      extract: { status: 'pending', startedAt: null, finishedAt: null },
-      spots: { status: 'pending', startedAt: null, finishedAt: null }
-    }
+    steps
   };
 
   fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
-  return { runId, manifestPath };
+
+  let dbRunId = null;
+  try {
+    dbRunId = db.pipelineRuns.create({
+      startedAt: now.toISOString(),
+      status: 'running',
+      areaFilter: areaFilter || null,
+      runDate,
+      steps,
+    });
+  } catch (err) {
+    console.warn(`⚠️  Could not create pipeline run in DB: ${err.message}`);
+  }
+
+  return { runId, manifestPath, dbRunId };
 }
 
 function updateManifestStep(manifestPath, stepName, status) {
@@ -235,6 +252,14 @@ function updateManifestStep(manifestPath, stepName, status) {
       manifest.steps[stepName].finishedAt = now;
     }
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
+
+    if (currentRunContext?.dbRunId) {
+      try {
+        db.pipelineRuns.update(currentRunContext.dbRunId, { steps: manifest.steps });
+      } catch (err) {
+        console.warn(`⚠️  Could not update pipeline run step in DB: ${err.message}`);
+      }
+    }
   } catch (error) {
     console.warn(`⚠️  Could not update manifest step ${stepName}: ${error.message}`);
   }
@@ -247,6 +272,18 @@ function finalizeManifest(manifestPath, status) {
     manifest.status = status;
     manifest.finishedAt = new Date().toISOString();
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
+
+    if (currentRunContext?.dbRunId) {
+      try {
+        db.pipelineRuns.update(currentRunContext.dbRunId, {
+          finishedAt: manifest.finishedAt,
+          status,
+          steps: manifest.steps,
+        });
+      } catch (err) {
+        console.warn(`⚠️  Could not finalize pipeline run in DB: ${err.message}`);
+      }
+    }
   } catch (error) {
     console.warn(`⚠️  Could not finalize manifest: ${error.message}`);
   }
@@ -308,7 +345,8 @@ async function main() {
       runId: manifestInfo.runId,
       runDate,
       areaFilter: AREA_FILTER || null,
-      manifestPath: manifestInfo.manifestPath
+      manifestPath: manifestInfo.manifestPath,
+      dbRunId: manifestInfo.dbRunId
     };
     console.log(`🧾 Run manifest: ${manifestInfo.manifestPath}`);
     

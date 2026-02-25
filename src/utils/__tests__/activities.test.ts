@@ -1,17 +1,18 @@
 import { loadActivities, getActivityNames, getActivityByName, clearActivitiesCache } from '../activities';
-import fs from 'fs';
-import path from 'path';
 
-// Mock fs module
-jest.mock('fs');
-const mockedFs = fs as jest.Mocked<typeof fs>;
+const mockGetAll = jest.fn();
+
+jest.mock('@/lib/db', () => ({
+  activitiesDb: {
+    getAll: (...args: unknown[]) => mockGetAll(...args),
+  },
+}));
 
 describe('Activities Utility', () => {
-  const mockActivitiesPath = path.join(process.cwd(), 'data', 'config', 'activities.json');
   const mockActivities = [
-    { name: 'Happy Hour', icon: 'Martini', emoji: '🍹', color: '#0d9488' },
-    { name: 'Fishing Spots', icon: 'Fish', emoji: '🎣', color: '#0284c7' },
-    { name: 'Sunset Spots', icon: 'Sunset', emoji: '🌅', color: '#f59e0b' },
+    { name: 'Happy Hour', icon: 'Martini', emoji: '🍹', color: '#0d9488', community_driven: 0 },
+    { name: 'Fishing Spots', icon: 'Fish', emoji: '🎣', color: '#0284c7', community_driven: 0 },
+    { name: 'Sunset Spots', icon: 'Sunset', emoji: '🌅', color: '#f59e0b', community_driven: 0 },
   ];
 
   beforeEach(() => {
@@ -20,18 +21,19 @@ describe('Activities Utility', () => {
   });
 
   describe('loadActivities', () => {
-    it('should load activities from config file', () => {
-      mockedFs.existsSync.mockReturnValue(true);
-      mockedFs.readFileSync.mockReturnValue(JSON.stringify(mockActivities));
+    it('should load activities from database', () => {
+      mockGetAll.mockReturnValue(mockActivities);
 
       const activities = loadActivities();
 
-      expect(activities).toEqual(mockActivities);
-      expect(mockedFs.readFileSync).toHaveBeenCalledWith(mockActivitiesPath, 'utf8');
+      expect(activities).toHaveLength(3);
+      expect(activities[0].name).toBe('Happy Hour');
+      expect(activities[0].icon).toBe('Martini');
+      expect(mockGetAll).toHaveBeenCalledTimes(1);
     });
 
-    it('should return fallback activities if file does not exist', () => {
-      mockedFs.existsSync.mockReturnValue(false);
+    it('should return fallback activities if database is empty', () => {
+      mockGetAll.mockReturnValue([]);
 
       const activities = loadActivities();
 
@@ -46,11 +48,8 @@ describe('Activities Utility', () => {
       expect(activities[3].communityDriven).toBe(true);
     });
 
-    it('should return fallback activities if file read fails', () => {
-      mockedFs.existsSync.mockReturnValue(true);
-      mockedFs.readFileSync.mockImplementation(() => {
-        throw new Error('File read error');
-      });
+    it('should return fallback activities if database throws', () => {
+      mockGetAll.mockImplementation(() => { throw new Error('DB error'); });
 
       const activities = loadActivities();
 
@@ -59,21 +58,19 @@ describe('Activities Utility', () => {
     });
 
     it('should cache activities after first load', () => {
-      mockedFs.existsSync.mockReturnValue(true);
-      mockedFs.readFileSync.mockReturnValue(JSON.stringify(mockActivities));
+      mockGetAll.mockReturnValue(mockActivities);
 
       const activities1 = loadActivities();
       const activities2 = loadActivities();
 
-      expect(activities1).toBe(activities2); // Same reference (cached)
-      expect(mockedFs.readFileSync).toHaveBeenCalledTimes(1);
+      expect(activities1).toBe(activities2);
+      expect(mockGetAll).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('getActivityNames', () => {
     it('should return array of activity names', () => {
-      mockedFs.existsSync.mockReturnValue(true);
-      mockedFs.readFileSync.mockReturnValue(JSON.stringify(mockActivities));
+      mockGetAll.mockReturnValue(mockActivities);
 
       const names = getActivityNames();
 
@@ -83,17 +80,17 @@ describe('Activities Utility', () => {
 
   describe('getActivityByName', () => {
     it('should return activity by name', () => {
-      mockedFs.existsSync.mockReturnValue(true);
-      mockedFs.readFileSync.mockReturnValue(JSON.stringify(mockActivities));
+      mockGetAll.mockReturnValue(mockActivities);
 
       const activity = getActivityByName('Happy Hour');
 
-      expect(activity).toEqual({ name: 'Happy Hour', icon: 'Martini', emoji: '🍹', color: '#0d9488' });
+      expect(activity).toBeDefined();
+      expect(activity!.name).toBe('Happy Hour');
+      expect(activity!.icon).toBe('Martini');
     });
 
     it('should return undefined if activity not found', () => {
-      mockedFs.existsSync.mockReturnValue(true);
-      mockedFs.readFileSync.mockReturnValue(JSON.stringify(mockActivities));
+      mockGetAll.mockReturnValue(mockActivities);
 
       const activity = getActivityByName('Non-existent Activity');
 
@@ -103,15 +100,14 @@ describe('Activities Utility', () => {
 
   describe('clearActivitiesCache', () => {
     it('should clear the cache', () => {
-      mockedFs.existsSync.mockReturnValue(true);
-      mockedFs.readFileSync.mockReturnValue(JSON.stringify(mockActivities));
+      mockGetAll.mockReturnValue(mockActivities);
 
       const activities1 = loadActivities();
       clearActivitiesCache();
       const activities2 = loadActivities();
 
-      expect(activities1).not.toBe(activities2); // Different references
-      expect(mockedFs.readFileSync).toHaveBeenCalledTimes(2);
+      expect(activities1).not.toBe(activities2);
+      expect(mockGetAll).toHaveBeenCalledTimes(2);
     });
   });
 });

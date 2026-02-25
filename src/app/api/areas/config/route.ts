@@ -1,22 +1,27 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
-import { configPath } from '@/lib/data-dir';
+import { areasDb } from '@/lib/db';
 
 export async function GET(request: Request) {
   const ip = getClientIp(request);
   if (!checkRateLimit(`areas-config-get:${ip}`, 60, 60_000)) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
+
   try {
-    const areasPath = configPath('areas.json');
-    const areasContents = fs.readFileSync(areasPath, 'utf8');
-    const areas = JSON.parse(areasContents);
-    
-    // Return full area configuration objects
+    const rows = areasDb.getAll();
+    const areas = rows.map(r => ({
+      name: r.name,
+      displayName: r.display_name,
+      description: r.description,
+      center: r.center_lat != null ? { lat: r.center_lat, lng: r.center_lng } : undefined,
+      radiusMeters: r.radius_meters,
+      bounds: r.bounds ? JSON.parse(r.bounds) : undefined,
+      zipCodes: r.zip_codes ? JSON.parse(r.zip_codes) : undefined,
+    }));
     return NextResponse.json(areas);
   } catch (error) {
-    console.error('Error reading areas.json:', error);
+    console.error('Error reading areas config from database:', error);
     return NextResponse.json({ error: 'Failed to load areas configuration' }, { status: 500 });
   }
 }

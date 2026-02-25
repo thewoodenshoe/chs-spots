@@ -63,6 +63,11 @@ data/url-patterns.json
 data/**/*.json
 !data/config/*.json
 
+# SQLite database files
+*.db
+*.db-wal
+*.db-shm
+
 # Server-only runtime state
 .ops/
 a.log

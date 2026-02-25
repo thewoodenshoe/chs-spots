@@ -8,10 +8,25 @@ const path = require('path');
 jest.mock('fs');
 jest.mock('path');
 
+// Venues are now loaded from SQLite via db.venues.getAll()
+jest.mock('../utils/db', () => ({
+  venues: {
+    getAll: jest.fn(() => [
+      { id: 'ChIJTest123', name: 'Test Venue', website: 'https://example.com', area: 'Test Area', lat: 32.7765, lng: -79.9311, raw_google_data: null },
+    ]),
+  },
+  ensureSchema: jest.fn(),
+  config: {
+    get: jest.fn(),
+    set: jest.fn(),
+    loadConfig: jest.fn(() => ({ run_date: '20260225', last_run_status: 'idle' })),
+    saveConfig: jest.fn(),
+  },
+}));
+
 describe('merge-raw-files.js', () => {
   const RAW_DIR = path.join(__dirname, '../../data/raw');
   const SILVER_MERGED_DIR = path.join(__dirname, '../../data/silver_merged');
-  const VENUES_PATH = path.join(__dirname, '../../data/venues.json');
   
   beforeEach(() => {
     jest.clearAllMocks();

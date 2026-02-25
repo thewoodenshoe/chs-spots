@@ -7,13 +7,37 @@
 const fs = require('fs');
 const path = require('path');
 const { reportingPath } = require('./utils/data-dir');
+const db = require('./utils/db');
 
 const SPOTS_PATH = reportingPath('spots.json');
 const VENUES_PATH = reportingPath('venues.json');
 
 function main() {
-  const spots = JSON.parse(fs.readFileSync(SPOTS_PATH, 'utf8'));
-  const venues = JSON.parse(fs.readFileSync(VENUES_PATH, 'utf8'));
+  let spots, venues;
+  try {
+    db.ensureSchema();
+    const dbSpots = db.spots.getAll();
+    const dbVenues = db.venues.getAll();
+    if (dbSpots.length > 0 && dbVenues.length > 0) {
+      spots = dbSpots.map(s => ({
+        ...s,
+        venueId: s.venue_id,
+        activity: s.type,
+        promotionList: s.promotion_list ? JSON.parse(s.promotion_list) : null,
+      }));
+      venues = dbVenues.map(v => ({
+        ...v,
+        types: v.types ? JSON.parse(v.types) : [],
+      }));
+      console.log(`(Using SQLite: ${spots.length} spots, ${venues.length} venues)`);
+    } else {
+      throw new Error('DB empty, falling back to JSON');
+    }
+  } catch (e) {
+    spots = JSON.parse(fs.readFileSync(SPOTS_PATH, 'utf8'));
+    venues = JSON.parse(fs.readFileSync(VENUES_PATH, 'utf8'));
+    console.log(`(Using JSON files: ${spots.length} spots, ${venues.length} venues)`);
+  }
 
   const venueById = new Map(venues.map((v) => [v.id, v]));
 

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
-import { reportingPath } from '@/lib/data-dir';
+import { spots, venues } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,28 +16,18 @@ export async function GET(request: Request) {
   // 1. App is running (always true if we get here)
   checks.app = { ok: true };
 
-  // 2. Data files readable
+  // 2. Spots table
   try {
-    const spotsPath = reportingPath('spots.json');
-    if (fs.existsSync(spotsPath)) {
-      const spots = JSON.parse(fs.readFileSync(spotsPath, 'utf8'));
-      checks.spots = { ok: true, detail: `${Array.isArray(spots) ? spots.length : 0} spots` };
-    } else {
-      checks.spots = { ok: false, detail: 'spots.json not found' };
-    }
+    const count = spots.count();
+    checks.spots = { ok: true, detail: `${count} spots` };
   } catch (err) {
     checks.spots = { ok: false, detail: String(err) };
   }
 
-  // 3. Venues file
+  // 3. Venues table
   try {
-    const venuesPath = reportingPath('venues.json');
-    if (fs.existsSync(venuesPath)) {
-      const venues = JSON.parse(fs.readFileSync(venuesPath, 'utf8'));
-      checks.venues = { ok: true, detail: `${Array.isArray(venues) ? venues.length : 0} venues` };
-    } else {
-      checks.venues = { ok: false, detail: 'venues.json not found' };
-    }
+    const count = venues.getAll().length;
+    checks.venues = { ok: true, detail: `${count} venues` };
   } catch (err) {
     checks.venues = { ok: false, detail: String(err) };
   }

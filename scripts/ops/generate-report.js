@@ -27,6 +27,7 @@
 const fs = require('fs');
 const path = require('path');
 const { dataPath, reportingPath, configPath } = require('../utils/data-dir');
+const db = require('../utils/db');
 
 // ── CLI args ────────────────────────────────────────────────────
 const args = process.argv.slice(2);
@@ -135,34 +136,31 @@ function getPipelineData() {
     if (m) result.llmModel = m[1];
   } catch { /* ignore */ }
 
-  // Read spots
+  // Read spots from database
   try {
-    const spotsPath = reportingPath('spots.json');
-    if (fs.existsSync(spotsPath)) {
-      const spots = JSON.parse(fs.readFileSync(spotsPath, 'utf8'));
-      result.totalSpots = spots.length;
-      for (const spot of spots) {
-        const area = spot.area || 'Unknown';
-        const activity = spot.type || spot.activityType || 'Unknown';
-        result.spotsByArea[area] = (result.spotsByArea[area] || 0) + 1;
-        result.spotsByActivity[activity] = (result.spotsByActivity[activity] || 0) + 1;
-      }
+    const allSpots = db.spots.getAll();
+    const venueMap = {};
+    for (const v of db.venues.getAll()) venueMap[v.id] = v;
+
+    result.totalSpots = allSpots.length;
+    for (const spot of allSpots) {
+      const venue = venueMap[spot.venue_id];
+      const area = venue?.area || 'Unknown';
+      const activity = spot.type || 'Unknown';
+      result.spotsByArea[area] = (result.spotsByArea[area] || 0) + 1;
+      result.spotsByActivity[activity] = (result.spotsByActivity[activity] || 0) + 1;
     }
   } catch { /* ignore */ }
 
-  // Read latest pipeline manifest
+  // Read latest pipeline run from database
   try {
-    const manifestDir = path.join(appDir, 'logs/pipeline-manifests');
-    if (fs.existsSync(manifestDir)) {
-      const files = fs.readdirSync(manifestDir).filter(f => f.endsWith('.json')).sort().reverse();
-      if (files.length > 0) {
-        const manifest = JSON.parse(fs.readFileSync(path.join(manifestDir, files[0]), 'utf8'));
-        result.lastPipelineRun = manifest.startedAt || files[0].replace('.json', '');
-        result.pipelineSteps = manifest.steps || null;
-        result.pipelineAreaFilter = manifest.areaFilter || null;
-        if (manifest.startedAt && manifest.finishedAt) {
-          result.pipelineDuration = new Date(manifest.finishedAt).getTime() - new Date(manifest.startedAt).getTime();
-        }
+    const run = db.pipelineRuns.latest();
+    if (run) {
+      result.lastPipelineRun = run.started_at;
+      result.pipelineSteps = run.steps ? JSON.parse(run.steps) : null;
+      result.pipelineAreaFilter = run.area_filter || null;
+      if (run.started_at && run.finished_at) {
+        result.pipelineDuration = new Date(run.finished_at).getTime() - new Date(run.started_at).getTime();
       }
     }
   } catch { /* ignore */ }
@@ -189,15 +187,12 @@ function getPipelineData() {
   // Archive info
   result.archiveDays = null;
   result.archiveSizeMB = null;
-  // Read pipeline config status
+  // Read pipeline config status from database
   try {
-    const configFilePath = configPath('config.json');
-    if (fs.existsSync(configFilePath)) {
-      const cfg = JSON.parse(fs.readFileSync(configFilePath, 'utf8'));
-      result.configStatus = cfg.last_run_status || 'unknown';
-      if (cfg.pipeline?.maxIncrementalFiles && !result.maxIncrementalFiles) {
-        result.maxIncrementalFiles = cfg.pipeline.maxIncrementalFiles;
-      }
+    const cfg = db.config.loadConfig();
+    result.configStatus = cfg.last_run_status || 'unknown';
+    if (cfg.pipeline?.maxIncrementalFiles && !result.maxIncrementalFiles) {
+      result.maxIncrementalFiles = cfg.pipeline.maxIncrementalFiles;
     }
   } catch { /* ignore */ }
 
@@ -337,40 +332,37 @@ function getPipelineData() {
     }
   } catch { /* ignore */ }
 
-  // Venue watchlist stats
+  // Venue watchlist stats from database
   result.watchlistExcluded = 0;
   result.watchlistFlagged = 0;
   result.watchlistFlaggedVenues = [];
   result.watchlistExcludedByArea = {};
   try {
-    const watchlistPath = configPath('venue-watchlist.json');
-    if (fs.existsSync(watchlistPath)) {
-      const wl = JSON.parse(fs.readFileSync(watchlistPath, 'utf8'));
-      const venues = wl.venues || {};
-      for (const [id, entry] of Object.entries(venues)) {
-        if (entry.status === 'excluded') {
-          result.watchlistExcluded++;
-          const area = entry.area || 'Unknown';
-          result.watchlistExcludedByArea[area] = (result.watchlistExcludedByArea[area] || 0) + 1;
-        } else if (entry.status === 'flagged') {
-          result.watchlistFlagged++;
-          let goldStatus = 'unknown';
-          try {
-            const gp = dataPath('gold', id + '.json');
-            if (fs.existsSync(gp)) {
-              const g = JSON.parse(fs.readFileSync(gp, 'utf8'));
-              const promo = g.promotions || g.happyHour || {};
-              goldStatus = promo.found ? 'Has promotions' : 'No promotions';
-            }
-          } catch { /* ignore */ }
-          result.watchlistFlaggedVenues.push({
-            name: entry.name || id,
-            area: entry.area || 'Unknown',
-            reason: entry.reason || '',
-            goldStatus
-          });
+    const excluded = db.watchlist.getExcluded();
+    const flagged = db.watchlist.getFlagged();
+
+    result.watchlistExcluded = excluded.length;
+    for (const entry of excluded) {
+      const area = entry.area || 'Unknown';
+      result.watchlistExcludedByArea[area] = (result.watchlistExcludedByArea[area] || 0) + 1;
+    }
+
+    result.watchlistFlagged = flagged.length;
+    for (const entry of flagged) {
+      let goldStatus = 'unknown';
+      try {
+        const g = db.gold.get(entry.venue_id);
+        if (g) {
+          const promo = typeof g.promotions === 'string' ? JSON.parse(g.promotions) : (g.promotions || {});
+          goldStatus = promo.found ? 'Has promotions' : 'No promotions';
         }
-      }
+      } catch { /* ignore */ }
+      result.watchlistFlaggedVenues.push({
+        name: entry.name || entry.venue_id,
+        area: entry.area || 'Unknown',
+        reason: entry.reason || '',
+        goldStatus
+      });
     }
   } catch { /* ignore */ }
 
@@ -390,23 +382,17 @@ function getPipelineData() {
     result.archiveDays = maxDays;
   } catch { /* ignore */ }
 
-  // LLM found vs not found from gold files
+  // LLM found vs not found from gold extractions in database
   try {
-    const goldDir = dataPath('gold');
-    if (fs.existsSync(goldDir)) {
-      const goldFiles = fs.readdirSync(goldDir).filter(f => f.endsWith('.json'));
-      let found = 0, notFound = 0;
-      for (const gf of goldFiles) {
-        try {
-          const g = JSON.parse(fs.readFileSync(path.join(goldDir, gf), 'utf8'));
-          const promo = g.promotions || g.happyHour || {};
-          if (promo.found === true || (promo.entries && promo.entries.length > 0)) found++;
-          else notFound++;
-        } catch { /* skip corrupt files */ }
-      }
-      result.llmFoundPromotions = found;
-      result.llmNoPromotions = notFound;
+    const goldRows = db.gold.getAll();
+    let found = 0, notFound = 0;
+    for (const g of goldRows) {
+      const promo = typeof g.promotions === 'string' ? JSON.parse(g.promotions) : (g.promotions || {});
+      if (promo.found === true || (promo.entries && promo.entries.length > 0)) found++;
+      else notFound++;
     }
+    result.llmFoundPromotions = found;
+    result.llmNoPromotions = notFound;
   } catch { /* ignore */ }
 
   // Find updated spots from create-spots log
@@ -433,12 +419,14 @@ function getPipelineData() {
     }
   } catch { /* ignore */ }
 
-  // Read update streaks
+  // Read update streaks from database
   try {
-    const streaksPath = reportingPath('update-streaks.json');
-    if (fs.existsSync(streaksPath)) {
-      result.updateStreaks = JSON.parse(fs.readFileSync(streaksPath, 'utf8'));
+    const streakRows = db.streaks.getAll();
+    const streakObj = {};
+    for (const s of streakRows) {
+      streakObj[s.venue_id + ':' + s.type] = { name: s.name, streak: s.streak, lastDate: s.last_date };
     }
+    result.updateStreaks = streakObj;
   } catch { /* ignore */ }
 
   return result;

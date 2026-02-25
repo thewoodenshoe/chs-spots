@@ -9,6 +9,7 @@ git clone https://github.com/thewoodenshoe/chs-spots.git
 cd chs-spots
 npm install
 cp .env.example .env.local  # Then fill in your API keys
+node scripts/migrate-to-sqlite.js  # Initialize the database from existing data
 npm run dev
 ```
 
@@ -26,19 +27,22 @@ Create `.env.local` with these keys:
 | `ADMIN_API_KEY` | Production | Strong random string for admin auth (edit/delete spots). No default. |
 | `TELEGRAM_WEBHOOK_SECRET` | Optional | Secret token for webhook verification; set in Telegram `setWebhook` and this env. |
 | `SERVER_PUBLIC_URL` | Ops | e.g. `https://chsfinds.com` for report links and Telegram messages. |
+| `DB_PATH` | Optional | Path to SQLite database file. Default: `data/chs-spots.db` |
+
 ## Production / Security
 
 - **Admin auth**: Set `ADMIN_API_KEY` in `.env.local` to a strong random string. Visit `https://yoursite.com?admin=YOUR_KEY` once to enable admin mode in the browser; the same key is used for API auth.
 - **Google Maps API key**: In [Google Cloud Console](https://console.cloud.google.com/apis/credentials), restrict the Maps JavaScript API key to **HTTP referrers**: `https://chsfinds.com/*`, `https://www.chsfinds.com/*` (and `http://localhost:*` for dev). This prevents key theft.
 - **Telegram webhook**: If using the webhook (not polling), set `TELEGRAM_WEBHOOK_SECRET` and pass the same value when calling Telegram’s `setWebhook` so only Telegram can trigger approve/deny.
 
-## Configuration
+## Data Storage
 
-All config lives in `data/config/`:
+All structured data lives in a SQLite database (`data/chs-spots.db`), including venues, spots, gold extractions, pipeline state, areas, activities, watchlist, and audit logs. The database is created and populated by the migration script.
 
-- **`config.json`** — Pipeline state (run dates, status, `maxIncrementalFiles` threshold)
-- **`areas.json`** — Geographic area definitions
-- **`activities.json`** — Activity types (Happy Hour, Fishing, etc.) with icons/colors
+Transient pipeline files (raw HTML, silver layers) remain on disk in `data/raw/`, `data/silver_merged/`, and `data/silver_trimmed/`.
+
+Static config files that rarely change stay in `data/config/`:
+
 - **`llm-instructions.txt`** — LLM prompt template
 - **`submenu-keywords.json`** — Keywords for discovering venue subpages
 
@@ -51,7 +55,10 @@ node scripts/create-areas.js
 # 2. Seed venues from Google Places (costs money — use carefully)
 GOOGLE_PLACES_ENABLED=true node scripts/seed-venues.js --confirm
 
-# 3. Run the full pipeline
+# 3. Initialize the SQLite database from JSON files
+node scripts/migrate-to-sqlite.js
+
+# 4. Run the full pipeline
 node scripts/run-incremental-pipeline.js
 ```
 
@@ -87,7 +94,7 @@ The pipeline automatically:
 
 ### Pipeline Recovery
 
-`last_run_status` in config.json tracks progress. If the pipeline fails:
+`last_run_status` in the database's `pipeline_state` table tracks progress. If the pipeline fails:
 - It saves `failed_at_raw`, `failed_at_merged`, `failed_at_trimmed`, or `failed_at_extract`
 - Next run automatically resumes from the failed step
 
@@ -124,6 +131,7 @@ Visit your app with `?admin=amsterdam` to enable admin mode (persists in localSt
 - **Grok API (xAI)** — AI happy hour extraction
 - **Telegram Bot API** — spot approval workflow
 - **Tailwind CSS** — styling
+- **SQLite** (`better-sqlite3`) — embedded database for all structured data
 - **Jest** + **Playwright** — testing
 
 ## Testing
@@ -143,34 +151,41 @@ GitHub Actions runs on push/PR to `main` or `feature/**`: build, lint, Jest test
 ```
 chs-spots/
 ├── data/
-│   ├── config/              # Config files (areas, activities, pipeline state)
-│   ├── reporting/           # Frontend data (spots.json, venues.json, areas.json)
+│   ├── chs-spots.db         # SQLite database (all structured data)
+│   ├── config/              # Static config files (llm-instructions, submenu-keywords)
 │   ├── raw/                 # Raw HTML (today/, previous/)
 │   ├── silver_merged/       # Merged JSON per venue (today/)
 │   ├── silver_trimmed/      # Trimmed text (today/, previous/, incremental/)
-│   └── gold/                # LLM-extracted happy hour data
+│   └── gold/                # LLM-extracted data (transition dual-write)
 ├── scripts/
 │   ├── run-incremental-pipeline.js   # Master pipeline script
 │   ├── download-raw-html.js          # Step 1: Download
 │   ├── merge-raw-files.js            # Step 2: Merge
 │   ├── trim-silver-html.js           # Step 3: Trim
 │   ├── delta-trimmed-files.js        # Step 3.5: Delta comparison
-│   ├── extract-promotions.js          # Step 4: LLM extraction (happy hours + brunch)
-│   ├── create-spots.js               # Step 5: Generate spots
-│   └── utils/                        # Shared utilities (config, normalize)
+│   ├── extract-promotions.js         # Step 4: LLM extraction (happy hours + brunch)
+│   ├── create-spots.js              # Step 5: Generate spots
+│   ├── migrate-to-sqlite.js         # JSON → SQLite data migration
+│   ├── db/schema.sql                # Database schema definition
+│   └── utils/
+│       ├── db.js                    # Data Access Layer (DAL) for ETL scripts
+│       └── config.js                # Pipeline config helpers (DB-backed)
 ├── src/
 │   ├── app/                 # Next.js app router (pages + API routes)
 │   ├── components/          # React components (Map, Modals, Toast, ErrorBoundary)
 │   ├── contexts/            # React contexts (Spots, Venues, Activities)
-│   └── lib/                 # Server utilities (Telegram)
+│   └── lib/
+│       ├── db.ts            # Data Access Layer (DAL) for Next.js routes
+│       └── telegram.ts      # Telegram bot integration
 ├── logs/                    # Pipeline run logs (gitignored)
 └── e2e/                     # Playwright E2E tests
 ```
 
 ## Troubleshooting
 
-- **Pipeline stuck**: Check `data/config/config.json` — reset `last_run_status` to `idle`
-- **Too many LLM calls**: Increase `maxIncrementalFiles` in config or check normalization
+- **Pipeline stuck**: Run `sqlite3 data/chs-spots.db "UPDATE pipeline_state SET value='idle' WHERE key='last_run_status'"` to reset
+- **Too many LLM calls**: Run `sqlite3 data/chs-spots.db "UPDATE pipeline_state SET value='500' WHERE key='pipeline.maxIncrementalFiles'"` or check normalization
+- **Database issues**: Re-run `node scripts/migrate-to-sqlite.js` to rebuild from JSON files (idempotent)
 - **Maps not loading**: Verify `NEXT_PUBLIC_GOOGLE_MAPS_KEY` in `.env.local`
 - **"For development purposes only" or no Google logo**: Google shows this when Maps API isn't fully configured for production. Fix in [Google Cloud Console](https://console.cloud.google.com/):
   1. **Enable billing** — Maps requires billing to be enabled (you get $200/month free credit)

@@ -27,7 +27,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const { dataPath, reportingPath } = require('./utils/data-dir');
+const { dataPath } = require('./utils/data-dir');
+const db = require('./utils/db');
 
 // Logging setup
 const logDir = path.join(__dirname, '..', 'logs');
@@ -52,8 +53,6 @@ const SILVER_MERGED_TODAY_DIR = dataPath('silver_merged', 'today');
 const SILVER_MERGED_PREVIOUS_DIR = dataPath('silver_merged', 'previous');
 const SILVER_MERGED_INCREMENTAL_DIR = dataPath('silver_merged', 'incremental');
 const { loadConfig, updateConfigField, getRunDate } = require('./utils/config');
-const REPORTING_VENUES_PATH = reportingPath('venues.json');
-const LEGACY_VENUES_PATH = dataPath('venues.json');
 
 // Ensure directories exist
 if (!fs.existsSync(SILVER_MERGED_DIR)) {
@@ -121,7 +120,7 @@ function loadMetadata(venueId) {
 function processVenue(venueId, venues) {
   const venue = venues.find(v => (v.id || v.place_id) === venueId);
   if (!venue) {
-    log(`  ⚠️  Venue not found in venues.json: ${venueId}`);
+    log(`  ⚠️  Venue not found in database: ${venueId}`);
     return null;
   }
   
@@ -274,42 +273,23 @@ function main() {
     log(`📍 Filtering by area: ${areaFilter}\n`);
   }
   
-  // Load venues - try reporting/venues.json first, fallback to data/venues.json
-  let venuesPath = LEGACY_VENUES_PATH;
-  if (fs.existsSync(REPORTING_VENUES_PATH)) {
-    // Try to parse reporting/venues.json, fallback to data/venues.json if invalid
-    try {
-      const testData = JSON.parse(fs.readFileSync(REPORTING_VENUES_PATH, 'utf8'));
-      venuesPath = REPORTING_VENUES_PATH;
-    } catch (error) {
-      log(`⚠️  Warning: ${REPORTING_VENUES_PATH} has JSON errors: ${error.message}`);
-      log(`   Falling back to ${LEGACY_VENUES_PATH}\n`);
-      if (!fs.existsSync(LEGACY_VENUES_PATH)) {
-        log(`❌ Venues file not found in either location:`);
-        log(`   ${REPORTING_VENUES_PATH} (has errors)`);
-        log(`   ${LEGACY_VENUES_PATH} (not found)`);
-        log(`\n   Please fix venues.json or run 'node scripts/seed-venues.js' first.`);
-        process.exit(1);
-      }
-      venuesPath = LEGACY_VENUES_PATH;
-    }
-  } else if (!fs.existsSync(LEGACY_VENUES_PATH)) {
-    log(`❌ Venues file not found in either location:`);
-    log(`   ${REPORTING_VENUES_PATH}`);
-    log(`   ${LEGACY_VENUES_PATH}`);
-    log(`\n   Please run 'node scripts/seed-venues.js' first.`);
+  // Load venues from SQLite database
+  const venueRows = db.venues.getAll();
+  if (venueRows.length === 0) {
+    log(`❌ No venues found in database. Please run 'node scripts/seed-venues.js' first.`);
     process.exit(1);
   }
-  
-  let venues;
-  try {
-    venues = JSON.parse(fs.readFileSync(venuesPath, 'utf8'));
-  } catch (error) {
-    log(`❌ Error parsing venues file ${venuesPath}: ${error.message}`);
-    log(`   Please fix the JSON syntax in the venues file.`);
-    process.exit(1);
-  }
-  log(`📖 Loaded ${venues.length} venue(s) from venues.json\n`);
+  const venues = venueRows.map(row => {
+    const parsed = row.raw_google_data ? JSON.parse(row.raw_google_data) : {};
+    return {
+      id: row.id,
+      name: row.name,
+      area: row.area,
+      website: row.website,
+      addressComponents: parsed.addressComponents || [],
+    };
+  });
+  log(`📖 Loaded ${venues.length} venue(s) from database\n`);
   
   // FULL MODE: Get ALL venue directories from raw/today/
   let venueDirs = [];

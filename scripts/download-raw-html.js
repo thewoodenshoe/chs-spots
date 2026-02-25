@@ -14,8 +14,9 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { URL } = require('url');
-const { loadConfig, updateConfigField, getRunDate, loadWatchlist } = require('./utils/config');
-const { dataPath, reportingPath, configPath } = require('./utils/data-dir');
+const { loadConfig, updateConfigField, getRunDate } = require('./utils/config');
+const { dataPath, configPath } = require('./utils/data-dir');
+const db = require('./utils/db');
 
 // Logging setup
 const logDir = path.join(__dirname, '..', 'logs');
@@ -33,8 +34,6 @@ function log(message) {
 }
 
 // Paths - Respect DATA_DIR (e.g. /home/ubuntu/data on server)
-const REPORTING_VENUES_PATH = reportingPath('venues.json');
-const LEGACY_VENUES_PATH = dataPath('venues.json');
 const RAW_DIR = dataPath('raw');
 const RAW_TODAY_DIR = dataPath('raw', 'today');
 const RAW_PREVIOUS_DIR = dataPath('raw', 'previous');
@@ -691,28 +690,24 @@ async function main() {
     log(`📍 Filtering by area: ${areaFilter}\n`);
   }
   
-  // Load venues - try reporting/venues.json first, fallback to data/venues.json
-  let venuesPath = LEGACY_VENUES_PATH;
-  if (fs.existsSync(REPORTING_VENUES_PATH)) {
-    venuesPath = REPORTING_VENUES_PATH;
-    log(`📖 Loading venues from: ${path.relative(process.cwd(), venuesPath)}\n`);
-  } else if (!fs.existsSync(LEGACY_VENUES_PATH)) {
-    log(`❌ Venues file not found in either location:`);
-    log(`   ${REPORTING_VENUES_PATH}`);
-    log(`   ${LEGACY_VENUES_PATH}`);
-    log(`\n   Please run 'node scripts/seed-venues.js' first.`);
-    process.exit(1);
-  }
-  
-  let venues = JSON.parse(fs.readFileSync(venuesPath, 'utf8'));
-  log(`📖 Loaded ${venues.length} venue(s) from venues.json`);
+  // Load venues from database
+  log(`📖 Loading venues from database`);
+  let venues = db.venues.getAll().map(v => ({
+    id: v.id,
+    name: v.name,
+    website: v.website,
+    area: v.area,
+    lat: v.lat,
+    lng: v.lng,
+  }));
+  log(`📖 Loaded ${venues.length} venue(s) from database`);
 
   // Filter out excluded venues from watchlist
-  const watchlist = loadWatchlist();
-  if (watchlist.excluded.size > 0) {
+  const excludedIds = db.watchlist.getExcludedIds();
+  if (excludedIds.size > 0) {
     const before = venues.length;
-    venues = venues.filter(v => !watchlist.excluded.has(v.id || v.place_id));
-    log(`🚫 Excluded ${before - venues.length} venue(s) from watchlist (${watchlist.excluded.size} total in list)\n`);
+    venues = venues.filter(v => !excludedIds.has(v.id));
+    log(`🚫 Excluded ${before - venues.length} venue(s) from watchlist (${excludedIds.size} total in list)\n`);
   } else {
     log('');
   }

@@ -51,6 +51,7 @@ no, # Continuous Deployment (CD) Architecture Plan
 │  │  Data Directory             │   │
 │  │  /opt/chs-spots/data/       │   │
 │  │  (persistent)               │   │
+│  │  + SQLite DB (chs-spots.db) │   │
 │  └─────────────────────────────┘   │
 │                                     │
 │  ┌─────────────────────────────┐   │
@@ -75,12 +76,11 @@ no, # Continuous Deployment (CD) Architecture Plan
 │   └── package-lock.json
 │
 ├── data/                     # Persistent data (gitignored)
+│   ├── chs-spots.db         # SQLite database (all structured data)
 │   ├── raw/
 │   ├── silver_merged/
 │   ├── silver_trimmed/
-│   ├── gold/
-│   ├── reporting/
-│   └── logs/
+│   └── gold/
 │
 ├── backups/                  # Deployment backups
 │   └── 2026-01-20_14-30-00/
@@ -100,6 +100,7 @@ no, # Continuous Deployment (CD) Architecture Plan
 **On Ubuntu Server (`.env` file):**
 - `NEXT_PUBLIC_GOOGLE_MAPS_KEY` - Google Maps API key
 - `GROK_API_KEY` - Grok API key for LLM extraction
+- `DB_PATH=/home/ubuntu/data/chs-spots.db` - SQLite database path
 - `NODE_ENV=production`
 - `PORT=3000` (optional, Next.js default)
 
@@ -303,7 +304,7 @@ pm2 restart chs-spots
 - [ ] Set up staging environment (optional)
 - [ ] Implement blue-green deployments (advanced)
 - [ ] Set up monitoring and alerting (e.g., UptimeRobot, Sentry)
-- [ ] Implement database migrations (if adding database later)
+- [x] ~~Implement database migrations~~ (SQLite migration implemented)
 - [ ] Set up CDN for static assets (optional)
 - [ ] Implement deployment notifications (Slack, email)
 e

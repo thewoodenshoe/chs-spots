@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
-import { reportingPath } from '@/lib/data-dir';
+import { venues } from '@/lib/db';
 
 export async function GET(request: Request) {
   const ip = getClientIp(request);
@@ -9,52 +8,27 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
 
-  // Read from reporting folder (contains only found:true venues)
-  const venuesPath = reportingPath('venues.json');
   const { searchParams } = new URL(request.url);
   const areaFilter = searchParams.get('area');
-  
-  // Handle missing venues.json file gracefully - return empty array
-  let venues: any[] = [];
+
   try {
-    if (fs.existsSync(venuesPath)) {
-      const venuesContents = fs.readFileSync(venuesPath, 'utf8');
-      venues = JSON.parse(venuesContents);
-      
-      // Ensure venues is an array
-      if (!Array.isArray(venues)) {
-        console.warn('venues.json does not contain an array, defaulting to empty array');
-        venues = [];
-      }
-    } else {
-      // File doesn't exist - this is fine, just return empty array
-      return NextResponse.json([]);
-    }
+    const allVenues = areaFilter
+      ? venues.getByArea(areaFilter)
+      : venues.getAll();
+
+    const transformed = allVenues.map(v => ({
+      id: v.id,
+      name: v.name,
+      lat: v.lat,
+      lng: v.lng,
+      area: v.area || null,
+      address: v.address || null,
+      website: v.website || null,
+    }));
+
+    return NextResponse.json(transformed);
   } catch (error) {
-    // If there's an error reading/parsing the file, log it but return empty array
-    console.error('Error reading venues.json:', error);
+    console.error('Error reading venues from database:', error);
     return NextResponse.json([]);
   }
-  
-  // Filter by area if area query param is provided
-  if (areaFilter) {
-    const filterLower = areaFilter.toLowerCase();
-    venues = venues.filter((venue: any) => {
-      const venueArea = (venue.area || '').toLowerCase();
-      return venueArea.includes(filterLower);
-    });
-  }
-  
-  // Transform to include only necessary fields for map display
-  const transformedVenues = venues.map((venue: any) => ({
-    id: venue.id || venue.place_id,
-    name: venue.name,
-    lat: venue.lat,
-    lng: venue.lng,
-    area: venue.area || null,
-    address: venue.address || null,
-    website: venue.website || null,
-  }));
-  
-  return NextResponse.json(transformedVenues);
 }

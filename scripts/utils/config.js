@@ -1,20 +1,23 @@
 /**
  * Config Utility - Load and Save Pipeline Configuration
- * 
- * Manages pipeline state in data/config/config.json
+ *
+ * Reads/writes pipeline state via the SQLite DAL (db.js).
  */
 
-const fs = require('fs');
-const path = require('path');
-const { configPath } = require('./data-dir');
+const db = require('./db');
 
-const CONFIG_PATH = configPath('config.json');
-const CONFIG_DIR = path.dirname(CONFIG_PATH);
+let _schemaReady = false;
 
-// Ensure config directory exists
-if (!fs.existsSync(CONFIG_DIR)) {
-  fs.mkdirSync(CONFIG_DIR, { recursive: true });
+function ensureReady() {
+  if (!_schemaReady) {
+    db.ensureSchema();
+    _schemaReady = true;
+  }
 }
+
+// Backward-compat exports (no longer used for I/O)
+const CONFIG_PATH = '';
+const WATCHLIST_PATH = '';
 
 /**
  * Get today's date in YYYYMMDD format
@@ -28,81 +31,37 @@ function getTodayDateString() {
 }
 
 /**
- * Load config from config.json
- * Returns default config if file doesn't exist
+ * Load config from pipeline_state table.
+ * Returns the same shape as the old JSON config.
  */
 function loadConfig() {
-  const defaultConfig = {
-    run_date: getTodayDateString(),
-    last_raw_processed_date: null,
-    last_merged_processed_date: null,
-    last_trimmed_processed_date: null,
-    last_run_status: 'idle',
-    pipeline: {
-      maxIncrementalFiles: 15
-    }
-  };
-
-  if (!fs.existsSync(CONFIG_PATH)) {
-    return defaultConfig;
-  }
-
-  try {
-    const content = fs.readFileSync(CONFIG_PATH, 'utf8');
-    const config = JSON.parse(content);
-    
-    // Merge with defaults to ensure all fields exist
-    return {
-      ...defaultConfig,
-      ...config,
-      pipeline: {
-        ...defaultConfig.pipeline,
-        ...(config.pipeline || {})
-      }
-    };
-  } catch (error) {
-    console.warn(`⚠️  Warning: Could not load config from ${CONFIG_PATH}: ${error.message}`);
-    console.warn(`   Using default config.`);
-    return defaultConfig;
-  }
+  ensureReady();
+  return db.config.loadConfig();
 }
 
 /**
- * Save config to config.json
+ * Save config to pipeline_state table.
  */
 function saveConfig(config) {
+  ensureReady();
   try {
-    // Ensure config directory exists
-    if (!fs.existsSync(CONFIG_DIR)) {
-      fs.mkdirSync(CONFIG_DIR, { recursive: true });
-    }
-    
-    fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2) + '\n', 'utf8');
+    db.config.saveConfig(config);
     return true;
   } catch (error) {
-    console.error(`❌ Error saving config to ${CONFIG_PATH}: ${error.message}`);
+    console.error(`❌ Error saving config: ${error.message}`);
     return false;
   }
 }
 
 /**
- * Update a specific field in config
+ * Update a specific field in config.
+ * Dot-notation keys like 'pipeline.maxIncrementalFiles' are stored as-is.
  */
 function updateConfigField(field, value) {
-  const config = loadConfig();
-  const keys = field.split('.');
-  let target = config;
-  
-  for (let i = 0; i < keys.length - 1; i++) {
-    if (!target[keys[i]]) {
-      target[keys[i]] = {};
-    }
-    target = target[keys[i]];
-  }
-  
-  target[keys[keys.length - 1]] = value;
-  saveConfig(config);
-  return config;
+  ensureReady();
+  db.config.set(field, value);
+
+  return loadConfig();
 }
 
 /**
@@ -110,7 +69,6 @@ function updateConfigField(field, value) {
  */
 function getRunDate(runDateParam = null) {
   if (runDateParam) {
-    // Validate format YYYYMMDD
     if (!/^\d{8}$/.test(runDateParam)) {
       throw new Error(`Invalid run_date format: ${runDateParam}. Expected YYYYMMDD`);
     }
@@ -120,7 +78,6 @@ function getRunDate(runDateParam = null) {
 }
 
 // ── Venue Watchlist ─────────────────────────────────────────────
-const WATCHLIST_PATH = configPath('venue-watchlist.json');
 
 let _watchlistCache = null;
 
@@ -132,17 +89,17 @@ let _watchlistCache = null;
 function loadWatchlist() {
   if (_watchlistCache) return _watchlistCache;
 
+  ensureReady();
+
   const result = { excluded: new Set(), flagged: new Set(), all: new Map() };
 
-  if (!fs.existsSync(WATCHLIST_PATH)) return result;
-
   try {
-    const data = JSON.parse(fs.readFileSync(WATCHLIST_PATH, 'utf8'));
-    const venues = data.venues || {};
-    for (const [id, entry] of Object.entries(venues)) {
-      result.all.set(id, entry);
-      if (entry.status === 'excluded') result.excluded.add(id);
-      else if (entry.status === 'flagged') result.flagged.add(id);
+    const rows = db.watchlist.getAll();
+    for (const row of rows) {
+      const id = row.venue_id;
+      result.all.set(id, row);
+      if (row.status === 'excluded') result.excluded.add(id);
+      else if (row.status === 'flagged') result.flagged.add(id);
     }
   } catch (err) {
     console.warn(`⚠️  Could not load watchlist: ${err.message}`);

@@ -14,7 +14,6 @@ const RAW_BASE_DIR = path.join(__dirname, '../..', 'data', 'raw');
 const RAW_TODAY_DIR = path.join(RAW_BASE_DIR, 'today');
 const RAW_PREVIOUS_DIR = path.join(RAW_BASE_DIR, 'previous');
 const RAW_INCREMENTAL_DIR = path.join(RAW_BASE_DIR, 'incremental');
-const TEST_CONFIG_PATH = path.join(__dirname, '../..', 'data', 'config', 'config.test.json');
 
 /**
  * Clean test directory
@@ -116,11 +115,6 @@ describe('Pipeline State Scenarios', () => {
         fs.mkdirSync(dir, { recursive: true });
       }
     });
-    
-    // Clean test config
-    if (fs.existsSync(TEST_CONFIG_PATH)) {
-      fs.unlinkSync(TEST_CONFIG_PATH);
-    }
   });
 
   afterEach(() => {
@@ -128,11 +122,6 @@ describe('Pipeline State Scenarios', () => {
     cleanTestDir(RAW_TODAY_DIR);
     cleanTestDir(RAW_PREVIOUS_DIR);
     cleanTestDir(RAW_INCREMENTAL_DIR);
-    
-    // Clean test config
-    if (fs.existsSync(TEST_CONFIG_PATH)) {
-      fs.unlinkSync(TEST_CONFIG_PATH);
-    }
   });
 
   test('First run (all empty) → today populated, incremental gets all', () => {

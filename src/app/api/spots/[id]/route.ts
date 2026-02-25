@@ -1,27 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
-import fs from 'fs';
 import { sendEditApproval, sendDeleteApproval } from '@/lib/telegram';
-import { atomicWriteFileSync } from '@/lib/atomic-write';
 import { isAdminRequest } from '@/lib/auth';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import { updateSpotSchema, parseOrError } from '@/lib/validations';
-import { reportingPath } from '@/lib/data-dir';
-
-function loadSpots(): { spots: any[]; spotsPath: string } {
-  const spotsPath = reportingPath('spots.json');
-  const reportingDir = reportingPath();
-  if (!fs.existsSync(reportingDir)) fs.mkdirSync(reportingDir, { recursive: true });
-
-  let spots: any[] = [];
-  if (fs.existsSync(spotsPath)) {
-    try {
-      spots = JSON.parse(fs.readFileSync(spotsPath, 'utf8'));
-      if (!Array.isArray(spots)) spots = [];
-    } catch { spots = []; }
-  }
-  return { spots, spotsPath };
-}
+import { spots } from '@/lib/db';
 
 export async function DELETE(
   request: Request,
@@ -39,23 +22,17 @@ export async function DELETE(
       return NextResponse.json({ error: 'Invalid spot ID' }, { status: 400 });
     }
 
-    const { spots, spotsPath } = loadSpots();
-    const spotIndex = spots.findIndex((s: any) => (s.id || 0) === spotId);
-    if (spotIndex === -1) {
+    const spot = spots.getById(spotId);
+    if (!spot) {
       return NextResponse.json({ error: 'Spot not found' }, { status: 404 });
     }
 
-    // Admin: delete immediately
     if (isAdminRequest(request)) {
-      spots.splice(spotIndex, 1);
-      atomicWriteFileSync(spotsPath, JSON.stringify(spots, null, 2));
+      spots.delete(spotId);
       return NextResponse.json({ success: true }, { status: 200 });
     }
 
-    // Regular user: mark pending and send Telegram approval
-    const spot = spots[spotIndex];
-    spots[spotIndex] = { ...spot, pendingDelete: true };
-    atomicWriteFileSync(spotsPath, JSON.stringify(spots, null, 2));
+    spots.update(spotId, { pendingDelete: 1 });
 
     try {
       await sendDeleteApproval({
@@ -63,7 +40,7 @@ export async function DELETE(
         title: spot.title,
         type: spot.type,
         source: spot.source,
-        venueId: spot.venueId,
+        venueId: spot.venue_id || undefined,
       });
     } catch (e) {
       console.warn('Telegram notification failed:', e);
@@ -99,56 +76,42 @@ export async function PUT(
     }
     const spotData = parsed.data;
 
-    const { spots, spotsPath } = loadSpots();
-    const spotIndex = spots.findIndex((s: any) => (s.id || 0) === spotId);
-    if (spotIndex === -1) {
+    const existing = spots.getById(spotId);
+    if (!existing) {
       return NextResponse.json({ error: 'Spot not found' }, { status: 404 });
     }
 
-    const existing = spots[spotIndex];
-
-    // Admin: apply immediately
     if (isAdminRequest(request)) {
-      const updatedSpot = {
-        ...existing,
-        id: spotId,
+      spots.update(spotId, {
         title: spotData.title,
         description: spotData.description || '',
-        lat: spotData.lat,
-        lng: spotData.lng,
-        activity: spotData.type || spotData.activity || existing.activity || 'Happy Hour',
         type: spotData.type || spotData.activity || existing.type || 'Happy Hour',
-        photoUrl: spotData.photoUrl !== undefined ? spotData.photoUrl : existing.photoUrl,
-        area: spotData.area !== undefined ? spotData.area : existing.area,
+        photoUrl: spotData.photoUrl !== undefined ? spotData.photoUrl : existing.photo_url,
         editedAt: new Date().toISOString(),
-        ...(existing.source === 'automated' ? { manualOverride: true } : {}),
-      };
-      spots[spotIndex] = updatedSpot;
-      atomicWriteFileSync(spotsPath, JSON.stringify(spots, null, 2));
-      return NextResponse.json(updatedSpot, { status: 200 });
+        ...(existing.source === 'automated' ? { manualOverride: 1 } : {}),
+      });
+
+      const updated = spots.getById(spotId);
+      return NextResponse.json(updated, { status: 200 });
     }
 
-    // Regular user: store proposed changes, send for approval
     const pendingEdit = {
       title: spotData.title,
       description: spotData.description || '',
       lat: spotData.lat,
       lng: spotData.lng,
       type: spotData.type || spotData.activity || existing.type || 'Happy Hour',
-      photoUrl: spotData.photoUrl !== undefined ? spotData.photoUrl : existing.photoUrl,
-      area: spotData.area !== undefined ? spotData.area : existing.area,
+      photoUrl: spotData.photoUrl !== undefined ? spotData.photoUrl : existing.photo_url,
+      area: spotData.area !== undefined ? spotData.area : null,
       submittedAt: new Date().toISOString(),
     };
 
-    spots[spotIndex] = { ...existing, pendingEdit };
-    atomicWriteFileSync(spotsPath, JSON.stringify(spots, null, 2));
+    spots.update(spotId, { pendingEdit });
 
-    // Build a diff summary for the Telegram message
     const changes: string[] = [];
     if (pendingEdit.title !== existing.title) changes.push(`Title: ${existing.title} → ${pendingEdit.title}`);
     if (pendingEdit.type !== existing.type) changes.push(`Type: ${existing.type} → ${pendingEdit.type}`);
     if (pendingEdit.description !== (existing.description || '')) changes.push('Description changed');
-    if (pendingEdit.lat !== existing.lat || pendingEdit.lng !== existing.lng) changes.push('Location moved');
     if (changes.length === 0) changes.push('(minor changes)');
 
     try {

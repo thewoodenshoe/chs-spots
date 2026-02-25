@@ -7,10 +7,8 @@
  * (Approve / Deny button presses) and processes them.
  */
 
-import fs from 'fs';
 import { answerCallbackQuery, editMessage } from './telegram';
-import { atomicWriteFileSync } from './atomic-write';
-import { reportingPath, configPath } from './data-dir';
+import { spots, activitiesDb, venues, getDb } from './db';
 
 let lastOffset = 0;
 let intervalId: ReturnType<typeof setInterval> | null = null;
@@ -43,18 +41,15 @@ async function pollOnce(): Promise<void> {
     const data = await response.json();
     const updates = data.result || [];
 
-    // Reset error counter on success
     consecutiveErrors = 0;
 
     for (const update of updates) {
       lastOffset = Math.max(lastOffset, update.update_id);
 
-      // Handle callback query (inline keyboard button press)
       if (update.callback_query) {
         await handleCallback(update.callback_query, token);
       }
 
-      // Handle /start command
       if (update.message?.text === '/start') {
         const chatId = update.message.chat.id;
         await fetchWithTimeout(`https://api.telegram.org/bot${token}/sendMessage`, {
@@ -70,7 +65,6 @@ async function pollOnce(): Promise<void> {
     }
   } catch (error: any) {
     consecutiveErrors++;
-    // Only log every few failures to avoid spamming the console
     if (consecutiveErrors <= 3 || consecutiveErrors % 10 === 0) {
       const reason = error?.cause?.code || error?.code || error?.message || 'unknown';
       console.warn(`[Telegram] Poll failed (${reason}) — attempt ${consecutiveErrors}`);
@@ -83,31 +77,26 @@ async function handleCallback(callbackQuery: any, _token: string): Promise<void>
   const chatId = callbackQuery.message?.chat?.id;
   const messageId = callbackQuery.message?.message_id;
 
-  // --- Spot approve/deny ---
   const spotMatch = data.match(/^(approve|deny)_(\d+)$/);
   if (spotMatch) {
     return handleSpotAction(spotMatch[1], parseInt(spotMatch[2], 10), callbackQuery, chatId, messageId);
   }
 
-  // --- Activity suggestion ---
   const actMatch = data.match(/^(actadd|actdeny)_(.+)$/);
   if (actMatch) {
     return handleActivityAction(actMatch[1], actMatch[2], callbackQuery, chatId, messageId);
   }
 
-  // --- Spot report ---
   const rptMatch = data.match(/^(rptexcl|rptkeep)_(\d+)$/);
   if (rptMatch) {
     return handleReportAction(rptMatch[1], parseInt(rptMatch[2], 10), callbackQuery, chatId, messageId);
   }
 
-  // --- Edit approval ---
   const edtMatch = data.match(/^(edtappr|edtdeny)_(\d+)$/);
   if (edtMatch) {
     return handleEditAction(edtMatch[1], parseInt(edtMatch[2], 10), callbackQuery, chatId, messageId);
   }
 
-  // --- Delete approval ---
   const delMatch = data.match(/^(delappr|deldeny)_(\d+)$/);
   if (delMatch) {
     return handleDeleteAction(delMatch[1], parseInt(delMatch[2], 10), callbackQuery, chatId, messageId);
@@ -116,27 +105,15 @@ async function handleCallback(callbackQuery: any, _token: string): Promise<void>
   await answerCallbackQuery(callbackQuery.id, 'Unknown action');
 }
 
-function readSpots(): { spots: any[]; path: string } {
-  const spotsPath = reportingPath('spots.json');
-  let spots: any[] = [];
-  if (fs.existsSync(spotsPath)) {
-    try { spots = JSON.parse(fs.readFileSync(spotsPath, 'utf8')); if (!Array.isArray(spots)) spots = []; }
-    catch { spots = []; }
-  }
-  return { spots, path: spotsPath };
-}
-
 async function handleSpotAction(action: string, spotId: number, cq: any, chatId: any, messageId: any) {
-  const { spots, path } = readSpots();
-  const idx = spots.findIndex((s: any) => s.id == spotId);
-  if (idx === -1) {
+  const spot = spots.getById(spotId);
+  if (!spot) {
     await answerCallbackQuery(cq.id, 'Spot not found');
     if (chatId && messageId) await editMessage(chatId, messageId, `❓ Spot #${spotId} not found.`);
     return;
   }
-  const spot = spots[idx];
-  spots[idx] = { ...spot, status: action === 'approve' ? 'approved' : 'denied' };
-  atomicWriteFileSync(path, JSON.stringify(spots, null, 2));
+  const newStatus = action === 'approve' ? 'approved' : 'denied';
+  spots.update(spotId, { status: newStatus });
   if (action === 'approve') {
     await answerCallbackQuery(cq.id, `Approved: ${spot.title}`);
     if (chatId && messageId) await editMessage(chatId, messageId, `✅ *Approved*: ${spot.title}\n\nSpot is now visible on the map.`);
@@ -154,120 +131,109 @@ async function handleActivityAction(action: string, callbackId: string, cq: any,
     if (chatId && messageId) await editMessage(chatId, messageId, `❌ *Dismissed* activity suggestion: ${activityName}`);
     return;
   }
-  const activitiesPath = configPath('activities.json');
-  let activities: any[] = [];
-  if (fs.existsSync(activitiesPath)) {
-    try { activities = JSON.parse(fs.readFileSync(activitiesPath, 'utf8')); if (!Array.isArray(activities)) activities = []; } catch { activities = []; }
-  }
-  if (activities.some((a: any) => a.name.toLowerCase() === activityName.toLowerCase())) {
+  const activities = activitiesDb.getAll();
+  if (activities.some(a => a.name.toLowerCase() === activityName.toLowerCase())) {
     await answerCallbackQuery(cq.id, 'Already exists');
     if (chatId && messageId) await editMessage(chatId, messageId, `⚠️ Activity "${activityName}" already exists.`);
     return;
   }
-  activities.push({ name: activityName, icon: 'Star', emoji: '⭐', color: '#6366f1' });
-  atomicWriteFileSync(activitiesPath, JSON.stringify(activities, null, 2));
+  getDb().prepare(
+    'INSERT INTO activities (name, icon, emoji, color, community_driven) VALUES (?, ?, ?, ?, 1)'
+  ).run(activityName, 'Star', '⭐', '#6366f1');
   await answerCallbackQuery(cq.id, `Added: ${activityName}`);
   if (chatId && messageId) await editMessage(chatId, messageId, `✅ *Added activity*: ${activityName}\n\nIt is now available in the filter menu.`);
 }
 
 async function handleReportAction(action: string, spotId: number, cq: any, chatId: any, messageId: any) {
-  const { spots, path } = readSpots();
-  const idx = spots.findIndex((s: any) => s.id == spotId);
-  if (idx === -1) {
+  const spot = spots.getById(spotId);
+  if (!spot) {
     await answerCallbackQuery(cq.id, 'Spot not found');
     if (chatId && messageId) await editMessage(chatId, messageId, `❓ Spot #${spotId} not found.`);
     return;
   }
-  const spot = spots[idx];
   if (action === 'rptkeep') {
     await answerCallbackQuery(cq.id, 'Kept');
     if (chatId && messageId) await editMessage(chatId, messageId, `✅ *Kept*: ${spot.title}\n\nReport dismissed.`);
     return;
   }
-  if (spot.venueId) {
-    const watchlistPath = configPath('venue-watchlist.json');
-    let watchlist: any = { updatedAt: '', venues: {} };
-    if (fs.existsSync(watchlistPath)) { try { watchlist = JSON.parse(fs.readFileSync(watchlistPath, 'utf8')); } catch { /* use default */ } }
-    watchlist.updatedAt = new Date().toISOString().split('T')[0];
-    watchlist.venues[spot.venueId] = { name: spot.title, area: spot.area || 'Unknown', status: 'excluded', reason: `Excluded via user report (spot #${spotId})` };
-    atomicWriteFileSync(watchlistPath, JSON.stringify(watchlist, null, 2));
+  if (spot.venue_id) {
+    const venue = venues.getById(spot.venue_id);
+    getDb().prepare(
+      `INSERT INTO watchlist (venue_id, name, area, status, reason)
+       VALUES (?, ?, ?, 'excluded', ?)
+       ON CONFLICT(venue_id) DO UPDATE SET
+         name = excluded.name, area = excluded.area,
+         status = excluded.status, reason = excluded.reason,
+         updated_at = datetime('now')`
+    ).run(spot.venue_id, spot.title, venue?.area || 'Unknown', `Excluded via user report (spot #${spotId})`);
   }
-  spots.splice(idx, 1);
-  atomicWriteFileSync(path, JSON.stringify(spots, null, 2));
+  spots.delete(spotId);
   await answerCallbackQuery(cq.id, `Excluded: ${spot.title}`);
-  const venueNote = spot.venueId ? `\nVenue \`${spot.venueId}\` added to watchlist.` : '';
+  const venueNote = spot.venue_id ? `\nVenue \`${spot.venue_id}\` added to watchlist.` : '';
   if (chatId && messageId) await editMessage(chatId, messageId, `🚫 *Excluded*: ${spot.title}${venueNote}`);
 }
 
 async function handleEditAction(action: string, spotId: number, cq: any, chatId: any, messageId: any) {
-  const { spots, path } = readSpots();
-  const idx = spots.findIndex((s: any) => s.id == spotId);
-  if (idx === -1) {
+  const spot = spots.getById(spotId);
+  if (!spot) {
     await answerCallbackQuery(cq.id, 'Spot not found');
     if (chatId && messageId) await editMessage(chatId, messageId, `❓ Spot #${spotId} not found.`);
     return;
   }
-  const spot = spots[idx];
   if (action === 'edtdeny') {
-    const { pendingEdit: _, ...clean } = spot;
-    spots[idx] = clean;
-    atomicWriteFileSync(path, JSON.stringify(spots, null, 2));
+    spots.update(spotId, { pendingEdit: null });
     await answerCallbackQuery(cq.id, 'Edit rejected');
     if (chatId && messageId) await editMessage(chatId, messageId, `❌ *Edit rejected* for: ${spot.title}`);
     return;
   }
-  if (!spot.pendingEdit) {
+  if (!spot.pending_edit) {
     await answerCallbackQuery(cq.id, 'No pending edit');
     if (chatId && messageId) await editMessage(chatId, messageId, `⚠️ No pending edit found for ${spot.title}.`);
     return;
   }
-  const edit = spot.pendingEdit;
-  const { pendingEdit: _, ...base } = spot;
-  const updated = {
-    ...base,
-    title: edit.title, description: edit.description,
-    lat: edit.lat, lng: edit.lng, type: edit.type, activity: edit.type,
-    photoUrl: edit.photoUrl !== undefined ? edit.photoUrl : base.photoUrl,
-    area: edit.area !== undefined ? edit.area : base.area,
+  const edit = JSON.parse(spot.pending_edit);
+  spots.update(spotId, {
+    title: edit.title,
+    description: edit.description,
+    type: edit.type,
+    photoUrl: edit.photoUrl !== undefined ? edit.photoUrl : spot.photo_url,
     editedAt: new Date().toISOString(),
-    ...(base.source === 'automated' ? { manualOverride: true } : {}),
-  };
-  spots[idx] = updated;
-  atomicWriteFileSync(path, JSON.stringify(spots, null, 2));
-  await answerCallbackQuery(cq.id, `Approved: ${updated.title}`);
-  if (chatId && messageId) await editMessage(chatId, messageId, `✅ *Edit approved*: ${updated.title}\n\nChanges are now live.`);
-  console.log(`[Telegram] ✏️ Edit approved: ${updated.title} (ID: ${spotId})`);
+    pendingEdit: null,
+    ...(spot.source === 'automated' ? { manualOverride: 1 } : {}),
+  });
+  const updatedTitle = edit.title || spot.title;
+  await answerCallbackQuery(cq.id, `Approved: ${updatedTitle}`);
+  if (chatId && messageId) await editMessage(chatId, messageId, `✅ *Edit approved*: ${updatedTitle}\n\nChanges are now live.`);
+  console.log(`[Telegram] ✏️ Edit approved: ${updatedTitle} (ID: ${spotId})`);
 }
 
 async function handleDeleteAction(action: string, spotId: number, cq: any, chatId: any, messageId: any) {
-  const { spots, path } = readSpots();
-  const idx = spots.findIndex((s: any) => s.id == spotId);
-  if (idx === -1) {
+  const spot = spots.getById(spotId);
+  if (!spot) {
     await answerCallbackQuery(cq.id, 'Spot not found');
     if (chatId && messageId) await editMessage(chatId, messageId, `❓ Spot #${spotId} not found.`);
     return;
   }
-  const spot = spots[idx];
   if (action === 'deldeny') {
-    const { pendingDelete: _, ...clean } = spot;
-    spots[idx] = clean;
-    atomicWriteFileSync(path, JSON.stringify(spots, null, 2));
+    spots.update(spotId, { pendingDelete: 0 });
     await answerCallbackQuery(cq.id, 'Delete rejected');
     if (chatId && messageId) await editMessage(chatId, messageId, `❌ *Delete rejected*: ${spot.title}\n\nSpot is kept.`);
     return;
   }
-  if (spot.source === 'automated' && spot.venueId) {
-    const watchlistPath = configPath('venue-watchlist.json');
-    let watchlist: any = { updatedAt: '', venues: {} };
-    if (fs.existsSync(watchlistPath)) { try { watchlist = JSON.parse(fs.readFileSync(watchlistPath, 'utf8')); } catch { /* use default */ } }
-    watchlist.updatedAt = new Date().toISOString().split('T')[0];
-    watchlist.venues[spot.venueId] = { name: spot.title, area: spot.area || 'Unknown', status: 'excluded', reason: `Deleted via user request (spot #${spotId})` };
-    atomicWriteFileSync(watchlistPath, JSON.stringify(watchlist, null, 2));
+  if (spot.source === 'automated' && spot.venue_id) {
+    const venue = venues.getById(spot.venue_id);
+    getDb().prepare(
+      `INSERT INTO watchlist (venue_id, name, area, status, reason)
+       VALUES (?, ?, ?, 'excluded', ?)
+       ON CONFLICT(venue_id) DO UPDATE SET
+         name = excluded.name, area = excluded.area,
+         status = excluded.status, reason = excluded.reason,
+         updated_at = datetime('now')`
+    ).run(spot.venue_id, spot.title, venue?.area || 'Unknown', `Deleted via user request (spot #${spotId})`);
   }
-  spots.splice(idx, 1);
-  atomicWriteFileSync(path, JSON.stringify(spots, null, 2));
+  spots.delete(spotId);
   await answerCallbackQuery(cq.id, `Deleted: ${spot.title}`);
-  const venueNote = (spot.source === 'automated' && spot.venueId) ? `\nVenue added to watchlist.` : '';
+  const venueNote = (spot.source === 'automated' && spot.venue_id) ? `\nVenue added to watchlist.` : '';
   if (chatId && messageId) await editMessage(chatId, messageId, `🗑 *Deleted*: ${spot.title}${venueNote}`);
   console.log(`[Telegram] 🗑 Deleted: ${spot.title} (ID: ${spotId})`);
 }

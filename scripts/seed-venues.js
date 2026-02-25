@@ -17,6 +17,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const db = require('./utils/db');
 
 // Logging setup
 const logDir = path.join(__dirname, '..', 'logs');
@@ -1355,6 +1356,19 @@ async function fetchKnownVenuesByName(areaName, knownVenueNames) {
     // Also write to data/venues.json for backwards compatibility with other scripts
     fs.writeFileSync(dataVenuesFile, JSON.stringify(allVenues, null, 2), 'utf8');
     log(`   📋 Also wrote to ${path.resolve(dataVenuesFile)} for backwards compatibility`);
+    
+    // Dual-write to SQLite
+    try {
+      db.ensureSchema();
+      let dbUpserted = 0;
+      for (const venue of allVenues) {
+        db.venues.upsert(venue);
+        dbUpserted++;
+      }
+      log(`   🗃️  Upserted ${dbUpserted} venues to SQLite`);
+    } catch (dbErr) {
+      log(`   ⚠️  DB write failed: ${dbErr.message}`);
+    }
     
     log(`   ✨ Added ${newVenues.length} new venues across ${areasToProcess.length} area(s)`);
     for (const areaConfig of areasToProcess) {

@@ -1,5 +1,4 @@
-import fs from 'fs';
-import { configPath } from '@/lib/data-dir';
+import { activitiesDb } from '@/lib/db';
 
 export interface Activity {
   name: string;
@@ -9,57 +8,46 @@ export interface Activity {
   communityDriven?: boolean;
 }
 
+const DEFAULT_ACTIVITIES: Activity[] = [
+  { name: 'Happy Hour', icon: 'Martini', emoji: '🍹', color: '#0d9488' },
+  { name: 'Brunch', icon: 'Coffee', emoji: '🥞', color: '#d97706' },
+  { name: 'Fishing Spots', icon: 'Fish', emoji: '🎣', color: '#0284c7', communityDriven: true },
+  { name: 'Must-See Spots', icon: 'Compass', emoji: '⭐', color: '#8b5cf6', communityDriven: true },
+];
+
 let cachedActivities: Activity[] | null = null;
 
-/**
- * Load activities from config file
- * Caches the result for performance
- */
 export function loadActivities(): Activity[] {
-  if (cachedActivities) {
-    return cachedActivities;
-  }
+  if (cachedActivities) return cachedActivities;
 
-  const activitiesPath = configPath('activities.json');
-  
   try {
-    if (fs.existsSync(activitiesPath)) {
-      const content = fs.readFileSync(activitiesPath, 'utf8');
-      cachedActivities = JSON.parse(content) as Activity[];
-      return cachedActivities!
+    const rows = activitiesDb.getAll();
+    if (rows.length > 0) {
+      cachedActivities = rows.map(r => ({
+        name: r.name,
+        icon: r.icon || 'Star',
+        emoji: r.emoji || '⭐',
+        color: r.color || '#6366f1',
+        ...(r.community_driven ? { communityDriven: true } : {}),
+      }));
+      return cachedActivities;
     }
   } catch (error) {
-    console.error('Error loading activities.json:', error);
+    console.error('Error loading activities from database:', error);
   }
 
-  // Fallback to default activities if file doesn't exist
-  cachedActivities = [
-    { name: 'Happy Hour', icon: 'Martini', emoji: '🍹', color: '#0d9488' },
-    { name: 'Brunch', icon: 'Coffee', emoji: '🥞', color: '#d97706' },
-    { name: 'Fishing Spots', icon: 'Fish', emoji: '🎣', color: '#0284c7', communityDriven: true },
-    { name: 'Must-See Spots', icon: 'Compass', emoji: '⭐', color: '#8b5cf6', communityDriven: true },
-  ];
-  
+  cachedActivities = DEFAULT_ACTIVITIES;
   return cachedActivities;
 }
 
-/**
- * Get activity names as array (for SpotType)
- */
 export function getActivityNames(): string[] {
   return loadActivities().map(a => a.name);
 }
 
-/**
- * Get activity by name
- */
 export function getActivityByName(name: string): Activity | undefined {
   return loadActivities().find(a => a.name === name);
 }
 
-/**
- * Clear cache (useful for testing or hot reloading)
- */
 export function clearActivitiesCache(): void {
   cachedActivities = null;
 }

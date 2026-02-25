@@ -19,7 +19,8 @@ const path = require('path');
 const crypto = require('crypto');
 const { normalizeText } = require('./utils/normalize');
 const { loadConfig, getRunDate, loadWatchlist } = require('./utils/config');
-const { dataPath, reportingPath } = require('./utils/data-dir');
+const { dataPath } = require('./utils/data-dir');
+const db = require('./utils/db');
 
 // Logging setup
 const logDir = path.join(__dirname, '..', 'logs');
@@ -339,30 +340,20 @@ function generateDifferenceReports(newVenues, changedVenues) {
     
     log(`\n📝 Generating difference reports in: ${path.resolve(DIFF_REPORTS_DIR)}`);
     
-    // Load venues.json to get venue metadata
-    const REPORTING_VENUES = reportingPath('venues.json');
-    const LEGACY_VENUES = dataPath('venues.json');
-    const VENUES_PATH = fs.existsSync(REPORTING_VENUES) ? REPORTING_VENUES : LEGACY_VENUES;
-    
     let venuesMap = {};
-    if (fs.existsSync(VENUES_PATH)) {
-      try {
-        const venuesData = JSON.parse(fs.readFileSync(VENUES_PATH, 'utf8'));
-        if (Array.isArray(venuesData)) {
-          venuesData.forEach(venue => {
-            const venueId = venue.id || venue.place_id || venue.venueId;
-            if (venueId) {
-              venuesMap[venueId] = {
-                name: venue.name || venue.venueName || 'Unknown',
-                area: venue.area || 'Unknown',
-                website: venue.website || ''
-              };
-            }
-          });
+    try {
+      const allVenues = db.venues.getAll();
+      for (const venue of allVenues) {
+        if (venue.id) {
+          venuesMap[venue.id] = {
+            name: venue.name || 'Unknown',
+            area: venue.area || 'Unknown',
+            website: venue.website || ''
+          };
         }
-      } catch (error) {
-        log(`  ⚠️  Could not load venues.json: ${error.message}`);
       }
+    } catch (error) {
+      log(`  ⚠️  Could not load venues from DB: ${error.message}`);
     }
     
     // Process each incremental file

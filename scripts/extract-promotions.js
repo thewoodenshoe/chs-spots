@@ -18,6 +18,7 @@ const CONFIG_PATH = configPath('config.json');
 const VENUES_JSON_PATH = reportingPath('venues.json');
 const LLM_CANDIDATES_HISTORY_PATH = path.join(__dirname, '../logs/llm-candidates-history.txt');
 const { updateConfigField, loadWatchlist } = require('./utils/config');
+const db = require('./utils/db');
 
 // Ensure gold and incremental history directories exist
 if (!fs.existsSync(GOLD_DIR)) fs.mkdirSync(GOLD_DIR, { recursive: true });
@@ -284,14 +285,17 @@ async function extractHappyHours(isIncremental = false) {
 
         // Check if already processed and no meaningful changes
         // Uses normalizedSourceHash first (strips noise), falls back to raw sourceHash
-        if (fs.existsSync(goldFilePath)) {
+        const existingGoldRow = db.gold.get(venueId);
+        if (existingGoldRow) {
             try {
-                const existingGoldData = JSON.parse(fs.readFileSync(goldFilePath, 'utf8'));
-                const missingActivityType = hasEntriesMissingActivityType(existingGoldData);
+                const existingPromotions = typeof existingGoldRow.promotions === 'string'
+                    ? JSON.parse(existingGoldRow.promotions)
+                    : (existingGoldRow.promotions || {});
+                const missingActivityType = hasEntriesMissingActivityType({ promotions: existingPromotions });
                 const shouldForce = reprocessMissingActivityType && missingActivityType;
                 
                 // Primary check: normalized hash (ignores dates, tracking IDs, etc.)
-                if (existingGoldData.normalizedSourceHash && existingGoldData.normalizedSourceHash === normalizedSourceHash) {
+                if (existingGoldRow.normalized_source_hash && existingGoldRow.normalized_source_hash === normalizedSourceHash) {
                     if (!shouldForce) {
                         console.log(`Skipping ${venueData.venueName} (${venueId}): No meaningful changes (normalized hash match).`);
                         continue;
@@ -299,8 +303,8 @@ async function extractHappyHours(isIncremental = false) {
                     console.log(`  🔄 Reprocessing ${venueData.venueName} (${venueId}) despite hash match: missing activityType in existing gold.`);
                 }
                 
-                // Fallback: raw hash (for gold files that don't have normalizedSourceHash yet)
-                if (!existingGoldData.normalizedSourceHash && existingGoldData.sourceHash === sourceHash) {
+                // Fallback: raw hash (for gold rows that don't have normalized_source_hash yet)
+                if (!existingGoldRow.normalized_source_hash && existingGoldRow.source_hash === sourceHash) {
                     if (!shouldForce) {
                         console.log(`Skipping ${venueData.venueName} (${venueId}): No changes detected (raw hash match).`);
                         continue;
@@ -311,7 +315,7 @@ async function extractHappyHours(isIncremental = false) {
                 // Content actually changed — proceed with LLM
                 console.log(`  🔄 Content changed for ${venueData.venueName} (${venueId}) — sending to LLM`);
             } catch (error) {
-                console.warn(`Could not read existing gold file for ${venueId}, re-processing.`);
+                console.warn(`Could not read existing gold data for ${venueId}, re-processing.`);
             }
         }
         
@@ -470,8 +474,22 @@ async function extractHappyHours(isIncremental = false) {
         };
 
         try {
+            db.gold.upsert({
+                venue_id: venueId,
+                venue_name: venueData.venueName,
+                promotions: result,
+                source_hash: sourceHash,
+                normalized_source_hash: normalizedSourceHash,
+                processed_at: goldRecord.processedAt,
+            });
+        } catch (error) {
+            console.error(`Error writing gold to DB for ${venueData.venueName}: ${error.message}`);
+        }
+
+        // Dual-write to disk during transition
+        try {
             fs.writeFileSync(goldFilePath, JSON.stringify(goldRecord, null, 2), 'utf8');
-            console.log(`Successfully processed ${venueData.venueName} and saved to ${goldFilePath}`);
+            console.log(`Successfully processed ${venueData.venueName} and saved to DB + ${goldFilePath}`);
         } catch (error) {
             console.error(`Error writing gold file for ${venueData.venueName}: ${error.message}`);
         }

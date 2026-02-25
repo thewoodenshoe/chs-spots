@@ -16,6 +16,10 @@ import AboutModal from '@/components/AboutModal';
 import SuggestActivityModal from '@/components/SuggestActivityModal';
 import SearchBar from '@/components/SearchBar';
 import ReportSpotModal from '@/components/ReportSpotModal';
+import ViewToggle from '@/components/ViewToggle';
+import SpotListView, { SortMode } from '@/components/SpotListView';
+import { useVenues } from '@/contexts/VenuesContext';
+import { useActivities } from '@/contexts/ActivitiesContext';
 
 const MAX_UPLOAD_BYTES = 700 * 1024;
 const MAX_IMAGE_DIMENSION = 1600;
@@ -113,10 +117,15 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [reportingSpot, setReportingSpot] = useState<Spot | null>(null);
+  const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
+  const [listSortMode, setListSortMode] = useState<SortMode>('alpha');
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   // Default center for Daniel Island (will be updated when area centers load)
   const defaultCenter = { lat: 32.862, lng: -79.908, zoom: 14 };
   const [mapCenter, setMapCenter] = useState(defaultCenter);
   const [areaCenters, setAreaCenters] = useState<Record<string, { lat: number; lng: number; zoom: number }>>({});
+  const { venues } = useVenues();
+  const { activities } = useActivities();
 
   // Escape key closes modals
   useEffect(() => {
@@ -206,6 +215,48 @@ export default function Home() {
       window.clearInterval(intervalId);
     };
   }, []);
+
+  // Request user geolocation (for list view distance badges)
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => { /* denied or error — distance will be unavailable */ }
+      );
+    }
+  }, []);
+
+  // Build venue-area lookup for filtering (mirrors MapComponent logic)
+  const venueAreaById = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const v of venues) {
+      if (v.id && v.area) m.set(v.id, v.area);
+    }
+    return m;
+  }, [venues]);
+
+  // Area from coordinates — same bounds as MapComponent
+  function getAreaFromCoordinates(lat: number, lng: number): string {
+    if (lat >= 32.83 && lat <= 32.86 && lng >= -79.92 && lng <= -79.89) return 'Daniel Island';
+    if (lat >= 32.78 && lat <= 32.82 && lng >= -79.88 && lng <= -79.82) return 'Mount Pleasant';
+    if (lat >= 32.70 && lat <= 32.75 && lng >= -79.96 && lng <= -79.90) return 'James Island';
+    if (lat >= 32.76 && lat <= 32.80 && lng >= -79.95 && lng <= -79.92) return 'Downtown Charleston';
+    if (lat >= 32.75 && lat <= 32.78 && lng >= -79.85 && lng <= -79.82) return "Sullivan's Island";
+    return 'Daniel Island';
+  }
+
+  const filteredSpots = useMemo(() => {
+    const query = searchQuery.toLowerCase().trim();
+    return spots.filter((spot) => {
+      const spotArea = spot.venueId
+        ? (venueAreaById.get(spot.venueId) || getAreaFromCoordinates(spot.lat, spot.lng))
+        : getAreaFromCoordinates(spot.lat, spot.lng);
+      const areaMatch = spotArea === selectedArea;
+      const activityMatch = spot.type === selectedActivity;
+      const searchMatch = !query || spot.title.toLowerCase().includes(query) || (spot.description || '').toLowerCase().includes(query);
+      return areaMatch && activityMatch && searchMatch;
+    });
+  }, [spots, selectedArea, selectedActivity, venueAreaById, searchQuery]);
 
   // Update map center when selectedArea changes
   useEffect(() => {
@@ -406,15 +457,18 @@ export default function Home() {
           <h1 className="text-xl font-bold text-white drop-shadow-lg tracking-tight">
             Charleston Finds
           </h1>
-          <button
-            onClick={() => setIsAboutOpen(true)}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-all"
-            aria-label="About Charleston Finds"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-2">
+            <ViewToggle viewMode={viewMode} onChange={setViewMode} />
+            <button
+              onClick={() => setIsAboutOpen(true)}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-all"
+              aria-label="About Charleston Finds"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Search + Filters Row */}
@@ -442,26 +496,43 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Full-screen Map */}
+      {/* Content area: Map or List */}
       <div 
         className="h-full w-full"
         style={{ paddingTop: '165px', paddingBottom: '72px' }}
       >
-        <MapComponent
-          selectedArea={selectedArea}
-          selectedActivity={selectedActivity}
-          isSubmissionMode={isSubmissionOpen || isEditOpen}
-          pinLocation={isEditOpen ? editPinLocation : pinLocation}
-          onMapClick={handleMapClick}
-          mapCenter={mapCenter}
-          onEditSpot={handleEditSpot}
-          onReportSpot={(spot) => {
-            setReportingSpot(spot);
-            setIsReportOpen(true);
-          }}
-          showAllVenues={showAllVenues}
-          searchQuery={searchQuery}
-        />
+        {viewMode === 'map' ? (
+          <MapComponent
+            selectedArea={selectedArea}
+            selectedActivity={selectedActivity}
+            isSubmissionMode={isSubmissionOpen || isEditOpen}
+            pinLocation={isEditOpen ? editPinLocation : pinLocation}
+            onMapClick={handleMapClick}
+            mapCenter={mapCenter}
+            onEditSpot={handleEditSpot}
+            onReportSpot={(spot) => {
+              setReportingSpot(spot);
+              setIsReportOpen(true);
+            }}
+            showAllVenues={showAllVenues}
+            searchQuery={searchQuery}
+          />
+        ) : (
+          <SpotListView
+            spots={filteredSpots}
+            activities={activities}
+            userLocation={userLocation}
+            selectedArea={selectedArea}
+            selectedActivity={selectedActivity}
+            sortMode={listSortMode}
+            onSortChange={setListSortMode}
+            onSpotSelect={(spot) => {
+              setMapCenter({ lat: spot.lat, lng: spot.lng, zoom: 16 });
+              setViewMode('map');
+            }}
+            onEditSpot={handleEditSpot}
+          />
+        )}
       </div>
 
       {/* Bottom Toolbar */}
@@ -469,8 +540,18 @@ export default function Home() {
         <div className="flex h-[60px] items-stretch justify-around px-2">
           {/* Nearby */}
           <button
-            onClick={() => { window.dispatchEvent(new CustomEvent('findClosestSpot')); }}
-            className="flex flex-1 flex-col items-center justify-center gap-0.5 text-white/70 hover:text-white active:scale-95 transition-all touch-manipulation"
+            onClick={() => {
+              if (viewMode === 'list') {
+                setListSortMode('nearest');
+              } else {
+                window.dispatchEvent(new CustomEvent('findClosestSpot'));
+              }
+            }}
+            className={`flex flex-1 flex-col items-center justify-center gap-0.5 transition-all active:scale-95 touch-manipulation ${
+              viewMode === 'list' && listSortMode === 'nearest'
+                ? 'text-teal-400'
+                : 'text-white/70 hover:text-white'
+            }`}
             aria-label="Find closest spot"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -480,22 +561,26 @@ export default function Home() {
             <span className="text-[10px] font-medium leading-tight">Nearby</span>
           </button>
 
-          {/* Venues */}
-          <button
-            onClick={() => { const v = !showAllVenues; setShowAllVenues(v); trackVenueToggle(v); }}
-            className={`flex flex-1 flex-col items-center justify-center gap-0.5 transition-all active:scale-95 touch-manipulation ${showAllVenues ? 'text-red-400' : 'text-white/70 hover:text-white'}`}
-            aria-label={showAllVenues ? 'Hide venues' : 'Show venues'}
-            aria-pressed={showAllVenues}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
-            <span className="text-[10px] font-medium leading-tight">Venues</span>
-          </button>
+          {/* Venues — only in map mode */}
+          {viewMode === 'map' ? (
+            <button
+              onClick={() => { const v = !showAllVenues; setShowAllVenues(v); trackVenueToggle(v); }}
+              className={`flex flex-1 flex-col items-center justify-center gap-0.5 transition-all active:scale-95 touch-manipulation ${showAllVenues ? 'text-red-400' : 'text-white/70 hover:text-white'}`}
+              aria-label={showAllVenues ? 'Hide venues' : 'Show venues'}
+              aria-pressed={showAllVenues}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              <span className="text-[10px] font-medium leading-tight">Venues</span>
+            </button>
+          ) : (
+            <div className="flex-1" />
+          )}
 
           {/* Add Spot — center, primary */}
           <button
-            onClick={handleAddSpot}
+            onClick={() => { if (viewMode === 'list') setViewMode('map'); handleAddSpot(); }}
             className="flex flex-col items-center justify-center px-4 active:scale-95 transition-all touch-manipulation"
             aria-label="Add new spot"
           >

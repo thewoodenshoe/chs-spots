@@ -25,6 +25,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { dataPath } = require('./utils/data-dir');
+const db = require('./utils/db');
 
 // Logging setup
 const logDir = path.join(__dirname, '..', 'logs');
@@ -127,6 +128,20 @@ function processVenueResult(venueResult) {
   // Save gold file
   const goldPath = path.join(GOLD_DIR, `${venueId}.json`);
   fs.writeFileSync(goldPath, JSON.stringify(goldData, null, 2), 'utf8');
+  
+  // Dual-write to SQLite
+  try {
+    db.gold.upsert({
+      venue_id: venueId,
+      venue_name: venueName,
+      promotions: goldData.happyHour,
+      source_hash: goldData.sourceHash || null,
+      normalized_source_hash: goldData.sourceHash || null,
+      processed_at: goldData.extractedAt,
+    });
+  } catch (dbErr) {
+    log(`  ⚠️  DB write failed for ${venueId}: ${dbErr.message}`);
+  }
   
   return {
     venueId,

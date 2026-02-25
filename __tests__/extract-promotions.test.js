@@ -6,7 +6,29 @@ const crypto = require('crypto');
 const mockFetch = jest.fn();
 jest.mock('node-fetch', () => mockFetch);
 
+// Mock database module
+jest.mock('../scripts/utils/db', () => ({
+    ensureSchema: jest.fn(),
+    gold: {
+        get: jest.fn(),
+        upsert: jest.fn(),
+    },
+    config: {
+        loadConfig: jest.fn(() => ({
+            run_date: '20260120',
+            last_run_status: 'idle',
+            pipeline: { maxIncrementalFiles: 15 },
+        })),
+        set: jest.fn(),
+        saveConfig: jest.fn(),
+    },
+    watchlist: {
+        getAll: jest.fn(() => []),
+    },
+}));
+
 const extractHappyHours = require('../scripts/extract-promotions');
+const db = require('../scripts/utils/db');
 
 // Helper function to create mock fetch responses
 function createMockFetchResponse(prompt) {
@@ -87,30 +109,35 @@ describe('extractHappyHours', () => {
     const MOCK_SILVER_TRIMMED_DIR = path.join(__dirname, '../data/silver_trimmed/all');
     const MOCK_GOLD_DIR = path.join(__dirname, '../data/gold');
     const MOCK_BULK_COMPLETE_FLAG = path.join(MOCK_GOLD_DIR, '.bulk-complete');
-
-    beforeEach(() => {
-        jest.clearAllMocks();
-        process.env.GROK_API_KEY = 'mock-api-key'; // Ensure API key is set
-        fs.existsSync.mockReturnValue(true); // Default to directories existing
-        fs.mkdirSync.mockReturnValue(undefined); // Mock mkdirSync
-        
-        // Mock fetch to return successful responses
-        mockFetch.mockImplementation((url, options) => {
-            const body = JSON.parse(options.body);
-            const prompt = body.messages[0].content;
-            return createMockFetchResponse(prompt);
-        });
-        
-        // Mock LLM instructions file read
-        const mockLLMInstructions = `You are an expert analyst...
+    const mockLLMInstructions = `You are an expert analyst...
 {VENUE_ID}
 {VENUE_NAME}
 {CONTENT_PLACEHOLDER}`;
-        fs.readFileSync.mockImplementation((filePath, encoding) => {
+    let testFileMocks;
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        process.env.GROK_API_KEY = 'mock-api-key';
+        fs.existsSync.mockReturnValue(true);
+        fs.mkdirSync.mockReturnValue(undefined);
+        fs.readdirSync.mockReturnValue([]);
+        db.gold.get.mockReturnValue(null);
+        db.gold.upsert.mockReturnValue(undefined);
+        testFileMocks = {};
+
+        mockFetch.mockImplementation((url, options) => {
+            const body = JSON.parse(options.body);
+            const prompt = body.messages.map(m => m.content).join('\n');
+            return createMockFetchResponse(prompt);
+        });
+
+        fs.readFileSync.mockImplementation((filePath) => {
             if (filePath && filePath.includes('llm-instructions.txt')) {
                 return mockLLMInstructions;
             }
-            // For other files, use the actual implementation or return empty
+            for (const [key, value] of Object.entries(testFileMocks)) {
+                if (filePath && filePath.includes(key)) return value;
+            }
             return '';
         });
     });
@@ -132,10 +159,9 @@ describe('extractHappyHours', () => {
         const mockSilverFilePath = path.join(MOCK_SILVER_TRIMMED_DIR, `${venueId}.json`);
 
         fs.readdirSync.mockReturnValueOnce([`${venueId}.json`]);
-        fs.readFileSync.mockReturnValueOnce(JSON.stringify(mockSilverContent)); // For silver file
-        fs.existsSync.mockReturnValue(false); // No existing gold file
+        testFileMocks[`${venueId}.json`] = JSON.stringify(mockSilverContent);
 
-        await extractHappyHours(false); // Run in bulk mode for simplicity here
+        await extractHappyHours(false);
 
         expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
         const writtenGoldContent = JSON.parse(fs.writeFileSync.mock.calls[0][1]);
@@ -166,8 +192,7 @@ describe('extractHappyHours', () => {
         };
 
         fs.readdirSync.mockReturnValueOnce([`${venueId}.json`]);
-        fs.readFileSync.mockReturnValueOnce(JSON.stringify(mockSilverContent));
-        fs.existsSync.mockReturnValue(false); // No existing gold file
+        testFileMocks[`${venueId}.json`] = JSON.stringify(mockSilverContent);
 
         await extractHappyHours(false);
 
@@ -190,8 +215,7 @@ describe('extractHappyHours', () => {
         };
 
         fs.readdirSync.mockReturnValueOnce([`${venueId}.json`]);
-        fs.readFileSync.mockReturnValueOnce(JSON.stringify(mockSilverContent));
-        fs.existsSync.mockReturnValue(false); // No existing gold file
+        testFileMocks[`${venueId}.json`] = JSON.stringify(mockSilverContent);
 
         await extractHappyHours(false);
 
@@ -216,8 +240,7 @@ describe('extractHappyHours', () => {
         };
 
         fs.readdirSync.mockReturnValueOnce([`${venueId}.json`]);
-        fs.readFileSync.mockReturnValueOnce(JSON.stringify(mockSilverContent));
-        fs.existsSync.mockReturnValue(false);
+        testFileMocks[`${venueId}.json`] = JSON.stringify(mockSilverContent);
 
         await extractHappyHours(false);
 
@@ -253,52 +276,26 @@ describe('extractHappyHours', () => {
             venueName: venueName,
             pages: [{ url: 'https://incremental.com', text: 'No happy hour.' }]
         };
-        // Hash should match script's calculation: pages.map(p => p.text || p.html || '').join('\n')
         const mockSourceHash = crypto.createHash('md5').update(mockSilverContent.pages.map(p => p.text || p.html || '').join('\n')).digest('hex');
 
-        const mockGoldContent = {
-            venueId: venueId,
-            venueName: venueName,
-            happyHour: { found: false, confidence: 80 },
-            sourceHash: mockSourceHash,
-            processedAt: new Date().toISOString()
-        };
-
-        // Simulate:
-        // 1. Silver file exists
-        // 2. Gold file exists with matching hash
-        // 3. Bulk complete flag exists
         fs.readdirSync.mockReturnValueOnce([`${venueId}.json`]);
-        let readCallIndex = 0;
-        fs.readFileSync.mockImplementation((filePath) => {
-            if (filePath && filePath.includes('config.json')) {
-                return JSON.stringify({ pipeline: { maxIncrementalFiles: 15 } });
-            }
-            if (filePath && filePath.includes('llm-instructions.txt')) {
-                return 'Mock LLM instructions';
-            }
-            if (filePath && filePath.includes(`${venueId}.json`)) {
-                readCallIndex++;
-                // First call is silver file, second is gold file
-                if (readCallIndex === 1) {
-                    return JSON.stringify(mockSilverContent);
-                } else {
-                    return JSON.stringify(mockGoldContent);
-                }
-            }
-            return '';
-        });
-        fs.existsSync.mockImplementation((p) => {
-            if (p === MOCK_BULK_COMPLETE_FLAG || p.includes('gold/venue5.json')) return true;
-            if (p && p.includes('config.json')) return true;
-            return jest.requireActual('fs').existsSync(p);
+        testFileMocks[`${venueId}.json`] = JSON.stringify(mockSilverContent);
+        testFileMocks['config.json'] = JSON.stringify({ pipeline: { maxIncrementalFiles: 15 } });
+
+        db.gold.get.mockReturnValue({
+            venue_id: venueId,
+            venue_name: venueName,
+            promotions: JSON.stringify({ found: false, confidence: 80 }),
+            source_hash: mockSourceHash,
+            normalized_source_hash: null,
+            processed_at: new Date().toISOString(),
         });
 
         const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
-        await extractHappyHours(true); // Run in incremental mode
+        await extractHappyHours(true);
 
-        expect(consoleLogSpy).toHaveBeenCalledWith(`Skipping ${venueName} (${venueId}): No changes detected.`);
+        expect(consoleLogSpy).toHaveBeenCalledWith(`Skipping ${venueName} (${venueId}): No changes detected (raw hash match).`);
         expect(fs.writeFileSync).not.toHaveBeenCalledWith(path.join(MOCK_GOLD_DIR, `${venueId}.json`), expect.any(String), 'utf8');
         consoleLogSpy.mockRestore();
     });
@@ -310,54 +307,27 @@ describe('extractHappyHours', () => {
             venueName: venueName,
             pages: [{ url: 'https://changed.com', text: 'No happy hour.' }]
         };
-        // Hash should match script's calculation: pages.map(p => p.text || p.html || '').join('\n')
         const oldSourceHash = crypto.createHash('md5').update(oldSilverContent.pages.map(p => p.text || p.html || '').join('\n')).digest('hex');
 
         const newSilverContent = {
             venueName: venueName,
-            pages: [{ url: 'https://changed.com', text: 'Happy Hour: 5-7pm!' }] // Content changed
+            pages: [{ url: 'https://changed.com', text: 'Happy Hour: 5-7pm!' }]
         };
-        // Hash should match script's calculation: pages.map(p => p.text || p.html || '').join('\n')
         const newSourceHash = crypto.createHash('md5').update(newSilverContent.pages.map(p => p.text || p.html || '').join('\n')).digest('hex');
 
-        const mockGoldContent = {
-            venueId: venueId,
-            venueName: venueName,
-            happyHour: { found: false, confidence: 80 },
-            sourceHash: oldSourceHash, // Old hash
-            processedAt: new Date().toISOString()
-        };
-
-        // Simulate:
-        // 1. Silver file exists (with new content)
-        // 2. Gold file exists (with old hash)
-        // 3. Bulk complete flag exists
         fs.readdirSync.mockReturnValueOnce([`${venueId}.json`]);
-        let readCallCount = 0;
-        fs.readFileSync.mockImplementation((filePath) => {
-            if (filePath && filePath.includes('config.json')) {
-                return JSON.stringify({ pipeline: { maxIncrementalFiles: 15 } });
-            }
-            if (filePath && filePath.includes('llm-instructions.txt')) {
-                return 'Mock LLM instructions';
-            }
-            if (filePath && filePath.includes(`${venueId}.json`)) {
-                readCallCount++;
-                if (readCallCount === 1) {
-                    return JSON.stringify(newSilverContent); // Read current silver file
-                } else {
-                    return JSON.stringify(mockGoldContent); // Read existing gold file
-                }
-            }
-            return '';
+        testFileMocks[`${venueId}.json`] = JSON.stringify(newSilverContent);
+        testFileMocks['config.json'] = JSON.stringify({ pipeline: { maxIncrementalFiles: 15 } });
+
+        db.gold.get.mockReturnValue({
+            venue_id: venueId,
+            venue_name: venueName,
+            promotions: JSON.stringify({ found: false, confidence: 80 }),
+            source_hash: oldSourceHash,
+            normalized_source_hash: null,
+            processed_at: new Date().toISOString(),
         });
-        fs.existsSync.mockImplementation((p) => {
-            if (p === MOCK_BULK_COMPLETE_FLAG || p.includes('gold/venue6.json')) return true;
-            if (p && p.includes('config.json')) return true;
-            return jest.requireActual('fs').existsSync(p);
-        });
-        
-        // Mock successful API response for changed content
+
         mockFetch.mockResolvedValue({
             ok: true,
             json: async () => ({
@@ -369,21 +339,18 @@ describe('extractHappyHours', () => {
             })
         });
 
-        await extractHappyHours(true); // Run in incremental mode
+        await extractHappyHours(true);
 
         expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
         const writtenGoldContent = JSON.parse(fs.writeFileSync.mock.calls[0][1]);
-        expect(writtenGoldContent.happyHour.found).toBe(true); // Expect new content to be processed
-        expect(writtenGoldContent.sourceHash).toBe(newSourceHash); // Expect new hash
+        expect(writtenGoldContent.happyHour.found).toBe(true);
+        expect(writtenGoldContent.sourceHash).toBe(newSourceHash);
     });
 
     test('should log warning and exit if bulk complete flag is missing in incremental mode', async () => {
-        // Ensure API key is set (checked first)
         process.env.GROK_API_KEY = 'mock-api-key';
-        
-        // Mock readdirSync to return at least one file so the script doesn't return early
-        // The bulk flag check happens AFTER reading files but before processing
-        fs.readdirSync.mockReturnValue(['venue1.json']);
+
+        fs.readdirSync.mockReturnValueOnce(['venue1.json']);
         
         // Mock existsSync to return false for the bulk complete flag
         fs.existsSync.mockImplementation((p) => {
