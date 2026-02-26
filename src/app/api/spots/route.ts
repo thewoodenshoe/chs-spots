@@ -29,6 +29,7 @@ function transformSpot(spot: SpotRow, venueMap: Map<string, VenueRow>) {
     lastUpdateDate: spot.last_update_date || undefined,
     venueId: spot.venue_id || undefined,
     area: venue?.area || spot.area || undefined,
+    submitterName: spot.submitter_name || undefined,
   };
   return transformed;
 }

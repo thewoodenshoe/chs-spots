@@ -59,7 +59,7 @@ if (!API_KEY) {
 const PHOTO_DIR = path.join(__dirname, '..', 'public', 'spots');
 const DELAY_MS = 300;
 const MAX_WIDTH = 800;
-const SUBMITTER = 'Orion';
+const SUBMITTER = 'John';
 
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));

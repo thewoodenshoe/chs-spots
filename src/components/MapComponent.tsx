@@ -696,9 +696,9 @@ export default function MapComponent({
                     Pending Approval
                   </span>
                 )}
-                {selectedSpot.source === 'manual' && (
+                {selectedSpot.source === 'manual' && selectedSpot.submitterName && (
                   <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
-                    Added by user
+                    Added by {selectedSpot.submitterName}
                   </span>
                 )}
               </div>
