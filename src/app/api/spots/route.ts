@@ -15,8 +15,8 @@ function transformSpot(spot: SpotRow, venueMap: Map<string, VenueRow>) {
   const venue = spot.venue_id ? venueMap.get(spot.venue_id) : undefined;
   const transformed: any = {
     id: spot.id,
-    lat: venue?.lat ?? 0,
-    lng: venue?.lng ?? 0,
+    lat: venue?.lat ?? spot.lat ?? 0,
+    lng: venue?.lng ?? spot.lng ?? 0,
     title: spot.title,
     description: spot.description || '',
     type: spot.type || 'Happy Hour',
@@ -28,7 +28,7 @@ function transformSpot(spot: SpotRow, venueMap: Map<string, VenueRow>) {
     sourceUrl: spot.source_url || undefined,
     lastUpdateDate: spot.last_update_date || undefined,
     venueId: spot.venue_id || undefined,
-    area: venue?.area || undefined,
+    area: venue?.area || spot.area || undefined,
   };
   return transformed;
 }
@@ -84,6 +84,9 @@ export async function POST(request: Request) {
       source: 'manual',
       status: 'pending',
       submittedAt: new Date().toISOString(),
+      lat: spotData.lat,
+      lng: spotData.lng,
+      area: spotData.area || null,
     });
 
     const newSpot = {

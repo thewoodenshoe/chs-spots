@@ -51,10 +51,13 @@ body {
   animation: fadeInDown 0.2s ease-out forwards;
 }
 
-/* Prevent iOS overscroll / bounce */
+/* Prevent iOS overscroll / bounce and Safari layout shift */
 html, body {
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
   overscroll-behavior: none;
-  -webkit-overflow-scrolling: touch;
 }
 
 /* Prevent text-size adjustment on orientation change (iOS) */

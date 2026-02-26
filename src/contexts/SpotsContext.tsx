@@ -21,6 +21,7 @@ export interface Spot {
   sourceUrl?: string;
   lastUpdateDate?: string;
   venueId?: string;
+  area?: string;
   manualOverride?: boolean;
 }
 

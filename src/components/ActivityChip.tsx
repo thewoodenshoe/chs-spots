@@ -39,10 +39,9 @@ export default function ActivityChip({ activity, spotCount, onClick }: ActivityC
       onClick={onClick}
       className={`${baseClasses} ${clickableClasses}`}
     >
-      <Icon className="h-5 w-5" />
-      <span>{activity}</span>
+      <span className="truncate">{activity}</span>
       {spotCount !== undefined && (
-        <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[10px] font-bold leading-none">
+        <span className="flex-shrink-0 rounded-full bg-white/20 px-1.5 py-0.5 text-[10px] font-bold leading-none">
           {spotCount}
         </span>
       )}

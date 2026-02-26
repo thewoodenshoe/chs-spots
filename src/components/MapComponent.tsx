@@ -8,6 +8,7 @@ import { useActivities } from '@/contexts/ActivitiesContext';
 import { Area, SpotType } from './FilterModal';
 import CommunityBanner, { shouldShowBanner } from './CommunityBanner';
 import { isSpotActiveNow } from '@/utils/time-utils';
+import { shareSpot } from '@/utils/share';
 
 // Google Maps API key - set in .env.local as NEXT_PUBLIC_GOOGLE_MAPS_KEY
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || '';
@@ -82,7 +83,7 @@ function getAreaFromCoordinates(lat: number, lng: number): Area {
     return 'James Island';
   } else if (lat >= 32.76 && lat <= 32.80 && lng >= -79.95 && lng <= -79.92) {
     return 'Downtown Charleston';
-  } else if (lat >= 32.75 && lat <= 32.78 && lng >= -79.85 && lng <= -79.82) {
+  } else if (lat >= 32.75 && lat <= 32.78 && lng >= -79.87 && lng <= -79.81) {
     return 'Sullivan\'s Island';
   }
   return 'Daniel Island'; // Default
@@ -100,6 +101,8 @@ interface MapComponentProps {
   showAllVenues?: boolean;
   searchQuery?: string;
 }
+
+let geolocatedOnce = false;
 
 export default function MapComponent({
   selectedArea,
@@ -124,6 +127,7 @@ export default function MapComponent({
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [bannerDismissedFor, setBannerDismissedFor] = useState<Set<string>>(new Set());
+  const [shareCopied, setShareCopied] = useState(false);
   const [emptyDismissedKey, setEmptyDismissedKey] = useState('');
 
   const currentKey = `${selectedActivity}::${selectedArea}`;
@@ -141,31 +145,30 @@ export default function MapComponent({
   // Track the last area we centered on so we only recenter on *actual* area changes
   const lastCenteredArea = useRef(selectedArea);
 
-  // Request user geolocation on load
+  // Request user geolocation once on the first map load only.
+  // Subsequent remounts (e.g. toggling list→map) should respect the selected area.
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const userPos = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          };
-          setUserLocation(userPos);
-          // Only center on user if they're in the Charleston area (rough bounds)
-          if (
-            map &&
-            userPos.lat >= 32.6 && userPos.lat <= 32.9 &&
-            userPos.lng >= -80.0 && userPos.lng <= -79.7
-          ) {
-            map.panTo(userPos);
-          }
-        },
-        (error) => {
-          console.log('Geolocation denied or error:', error);
-          // Fallback to default center (Daniel Island)
+    if (geolocatedOnce || !navigator.geolocation) return;
+    geolocatedOnce = true;
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const userPos = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        setUserLocation(userPos);
+        if (
+          map &&
+          userPos.lat >= 32.6 && userPos.lat <= 32.9 &&
+          userPos.lng >= -80.0 && userPos.lng <= -79.7
+        ) {
+          map.panTo(userPos);
         }
-      );
-    }
+      },
+      (error) => {
+        console.log('Geolocation denied or error:', error);
+      }
+    );
   }, [map]);
 
   // Recenter map ONLY when the user picks a different area
@@ -192,9 +195,9 @@ export default function MapComponent({
     const query = searchQuery.toLowerCase().trim();
     return spots.filter((spot) => {
       if (spot.lat === 0 && spot.lng === 0) return false;
-      const spotArea = spot.venueId
-        ? (venueAreaById.get(spot.venueId) || getAreaFromCoordinates(spot.lat, spot.lng))
-        : getAreaFromCoordinates(spot.lat, spot.lng);
+      const spotArea = spot.area
+        || (spot.venueId ? venueAreaById.get(spot.venueId) : undefined)
+        || getAreaFromCoordinates(spot.lat, spot.lng);
       const areaMatch = spotArea === selectedArea;
       const activityMatch = spot.type === selectedActivity;
       const searchMatch = !query || spot.title.toLowerCase().includes(query) || (spot.description || '').toLowerCase().includes(query);
@@ -272,6 +275,7 @@ export default function MapComponent({
   const handleInfoWindowClose = useCallback(() => {
     setSelectedSpot(null);
     setSelectedVenue(null);
+    setShareCopied(false);
   }, []);
 
   // Format description with proper line breaks and bullet points
@@ -827,21 +831,23 @@ export default function MapComponent({
                   </svg>
                 </a>
                 <button
-                  onClick={() => {
-                    const url = `${window.location.origin}?spot=${selectedSpot.id}`;
-                    if (navigator.share) {
-                      navigator.share({ title: selectedSpot.title, text: `Check out ${selectedSpot.title} on Charleston Finds`, url });
-                    } else {
-                      navigator.clipboard.writeText(url);
-                      alert('Link copied!');
+                  onClick={async () => {
+                    const result = await shareSpot(selectedSpot.title, selectedSpot.id);
+                    if (result === 'copied') {
+                      setShareCopied(true);
+                      setTimeout(() => setShareCopied(false), 2000);
                     }
                   }}
                   className="rounded-lg bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-200 touch-manipulation"
                   title="Share this spot"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                  </svg>
+                  {shareCopied ? (
+                    <span className="text-xs font-semibold text-teal-600">Copied!</span>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                  )}
                 </button>
               </div>
               {onReportSpot && selectedSpot.source === 'automated' && (

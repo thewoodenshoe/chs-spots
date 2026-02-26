@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import { NextResponse } from 'next/server';
 import { sendEditApproval, sendDeleteApproval } from '@/lib/telegram';
 import { isAdminRequest } from '@/lib/auth';
@@ -88,6 +88,9 @@ export async function PUT(
         type: spotData.type || spotData.activity || existing.type || 'Happy Hour',
         photoUrl: spotData.photoUrl !== undefined ? spotData.photoUrl : existing.photo_url,
         editedAt: new Date().toISOString(),
+        lat: spotData.lat,
+        lng: spotData.lng,
+        area: spotData.area ?? existing.area,
         ...(existing.source === 'automated' ? { manualOverride: 1 } : {}),
       });
 
@@ -112,6 +115,11 @@ export async function PUT(
     if (pendingEdit.title !== existing.title) changes.push(`Title: ${existing.title} → ${pendingEdit.title}`);
     if (pendingEdit.type !== existing.type) changes.push(`Type: ${existing.type} → ${pendingEdit.type}`);
     if (pendingEdit.description !== (existing.description || '')) changes.push('Description changed');
+    const oldLat = existing.lat ?? 0;
+    const oldLng = existing.lng ?? 0;
+    if (pendingEdit.lat !== oldLat || pendingEdit.lng !== oldLng) {
+      changes.push(`Location: ${oldLat.toFixed(4)},${oldLng.toFixed(4)} → ${pendingEdit.lat.toFixed(4)},${pendingEdit.lng.toFixed(4)}`);
+    }
     if (changes.length === 0) changes.push('(minor changes)');
 
     try {

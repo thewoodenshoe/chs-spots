@@ -29,7 +29,28 @@ function getDb(): Database.Database {
   _db = new Database(dbPath);
   _db.pragma('journal_mode = WAL');
   _db.pragma('foreign_keys = ON');
+  runMigrations(_db);
   return _db;
+}
+
+function runMigrations(db: Database.Database) {
+  const spotCols = db.prepare("PRAGMA table_info(spots)").all() as { name: string }[];
+  const spotColNames = new Set(spotCols.map(c => c.name));
+  if (!spotColNames.has('lat')) {
+    db.prepare("ALTER TABLE spots ADD COLUMN lat REAL").run();
+  }
+  if (!spotColNames.has('lng')) {
+    db.prepare("ALTER TABLE spots ADD COLUMN lng REAL").run();
+  }
+  if (!spotColNames.has('area')) {
+    db.prepare("ALTER TABLE spots ADD COLUMN area TEXT").run();
+  }
+
+  const actCols = db.prepare("PRAGMA table_info(activities)").all() as { name: string }[];
+  const actColNames = new Set(actCols.map(c => c.name));
+  if (!actColNames.has('hidden')) {
+    db.prepare("ALTER TABLE activities ADD COLUMN hidden INTEGER DEFAULT 0").run();
+  }
 }
 
 // ── Spot type for API responses ─────────────────────────────────
@@ -54,6 +75,9 @@ export interface SpotRow {
   edited_at: string | null;
   created_at: string;
   updated_at: string;
+  lat: number | null;
+  lng: number | null;
+  area: string | null;
 }
 
 export interface VenueRow {
@@ -89,6 +113,7 @@ export interface ActivityRow {
   emoji: string | null;
   color: string | null;
   community_driven: number;
+  hidden: number;
 }
 
 // ── Venues ──────────────────────────────────────────────────────
@@ -131,11 +156,11 @@ export const spots = {
       INSERT INTO spots (venue_id, title, type, source, status, description,
         promotion_time, promotion_list, source_url, submitter_name,
         manual_override, photo_url, last_update_date, pending_edit,
-        pending_delete, submitted_at, edited_at, updated_at)
+        pending_delete, submitted_at, edited_at, lat, lng, area, updated_at)
       VALUES (@venue_id, @title, @type, @source, @status, @description,
         @promotion_time, @promotion_list, @source_url, @submitter_name,
         @manual_override, @photo_url, @last_update_date, @pending_edit,
-        @pending_delete, @submitted_at, @edited_at, datetime('now'))
+        @pending_delete, @submitted_at, @edited_at, @lat, @lng, @area, datetime('now'))
     `).run({
       venue_id: s.venueId || s.venue_id || null,
       title: s.title,
@@ -154,6 +179,9 @@ export const spots = {
       pending_delete: 0,
       submitted_at: s.submittedAt || new Date().toISOString(),
       edited_at: null,
+      lat: s.lat ?? null,
+      lng: s.lng ?? null,
+      area: s.area ?? null,
     });
     logAudit('spots', Number(info.lastInsertRowid), 'INSERT', null, s);
     return Number(info.lastInsertRowid);

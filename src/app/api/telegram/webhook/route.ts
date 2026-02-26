@@ -215,6 +215,9 @@ async function handleEditApprovalCallback(action: string, spotId: number, callba
     pending_edit: null,
   };
   if (edit.photoUrl !== undefined) updates.photo_url = edit.photoUrl;
+  if (edit.lat != null) updates.lat = edit.lat;
+  if (edit.lng != null) updates.lng = edit.lng;
+  if (edit.area != null) updates.area = edit.area;
   if (spot.source === 'automated') updates.manual_override = 1;
 
   spots.update(spotId, updates);

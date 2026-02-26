@@ -51,7 +51,7 @@ export default function EditSpotModal({
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [pinLocation, setPinLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [sheetHeight, setSheetHeight] = useState(400);
+  const [sheetHeight, setSheetHeight] = useState(220);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [startY, setStartY] = useState(0);
@@ -91,12 +91,12 @@ export default function EditSpotModal({
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging && handleRef.current) {
         const deltaY = startY - e.clientY;
-        const newHeight = Math.min(Math.max(300, startHeight + deltaY), window.innerHeight * 0.9);
+        const newHeight = Math.min(Math.max(160, startHeight + deltaY), window.innerHeight * 0.85);
         setSheetHeight(newHeight);
       }
       if (isResizing && resizeHandleRef.current) {
         const deltaY = startY - e.clientY;
-        const newHeight = Math.min(Math.max(300, startHeight + deltaY), window.innerHeight * 0.9);
+        const newHeight = Math.min(Math.max(160, startHeight + deltaY), window.innerHeight * 0.85);
         setSheetHeight(newHeight);
       }
     };
@@ -123,12 +123,12 @@ export default function EditSpotModal({
     const handleTouchMove = (e: TouchEvent) => {
       if (isDragging && handleRef.current && e.touches[0]) {
         const deltaY = startY - e.touches[0].clientY;
-        const newHeight = Math.min(Math.max(300, startHeight + deltaY), window.innerHeight * 0.9);
+        const newHeight = Math.min(Math.max(160, startHeight + deltaY), window.innerHeight * 0.85);
         setSheetHeight(newHeight);
       }
       if (isResizing && resizeHandleRef.current && e.touches[0]) {
         const deltaY = startY - e.touches[0].clientY;
-        const newHeight = Math.min(Math.max(300, startHeight + deltaY), window.innerHeight * 0.9);
+        const newHeight = Math.min(Math.max(160, startHeight + deltaY), window.innerHeight * 0.85);
         setSheetHeight(newHeight);
       }
     };
@@ -252,7 +252,7 @@ export default function EditSpotModal({
         className="fixed bottom-0 left-0 right-0 z-50 bg-white shadow-2xl safe-area-bottom transition-transform duration-300 ease-out"
         style={{
           height: `${sheetHeight}px`,
-          maxHeight: '90vh',
+          maxHeight: '85vh',
         }}
       >
         {/* Draggable Handle */}
@@ -260,9 +260,9 @@ export default function EditSpotModal({
           ref={handleRef}
           onMouseDown={startDrag}
           onTouchStart={startDrag}
-          className="flex cursor-grab active:cursor-grabbing justify-center pt-3 pb-2 touch-none"
+          className="flex cursor-grab active:cursor-grabbing justify-center pt-2 pb-1 touch-none"
         >
-          <div className="h-1.5 w-16 rounded-full bg-gray-300" />
+          <div className="h-1 w-12 rounded-full bg-gray-300" />
         </div>
 
         {/* Resize Handle (desktop only) */}
@@ -274,11 +274,11 @@ export default function EditSpotModal({
 
         <div className="flex flex-col h-full overflow-hidden">
           {/* Header with instruction */}
-          <div className="flex-shrink-0 px-6 pb-4 border-b border-gray-200">
-            <div className="flex items-center justify-between mb-3">
+          <div className="flex-shrink-0 px-4 pb-2 border-b border-gray-200">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <Pencil className="h-5 w-5 text-teal-600" />
-                <h2 className="text-xl font-bold text-gray-800">Edit Spot</h2>
+                <Pencil className="h-4 w-4 text-teal-600" />
+                <h2 className="text-lg font-bold text-gray-800">Edit Spot</h2>
               </div>
               <button
                 type="button"
@@ -303,7 +303,7 @@ export default function EditSpotModal({
               </button>
             </div>
             {/* Pin Location Status */}
-            <div className="rounded-xl bg-teal-50 p-3">
+            <div className="rounded-lg bg-teal-50 p-2">
               <div className="flex items-center gap-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -326,12 +326,12 @@ export default function EditSpotModal({
                 </svg>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-semibold text-teal-800 truncate">
-                    {pinLocation ? 'Location updated' : 'Location not set'}
+                    {pinLocation
+                      ? `📍 ${pinLocation.lat.toFixed(5)}, ${pinLocation.lng.toFixed(5)}`
+                      : 'Location not set'}
                   </p>
-                  <p className="text-xs text-teal-600 truncate">
-                    {pinLocation 
-                      ? `${pinLocation.lat.toFixed(5)}, ${pinLocation.lng.toFixed(5)}`
-                      : 'Tap on the map to change location'}
+                  <p className="text-xs text-teal-600">
+                    Tap anywhere on the map to move the pin
                   </p>
                 </div>
               </div>

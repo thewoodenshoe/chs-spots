@@ -18,13 +18,15 @@ export async function GET(request: Request) {
   try {
     const rows = activitiesDb.getAll();
     if (rows.length > 0) {
-      const activities = rows.map(r => ({
-        name: r.name,
-        icon: r.icon,
-        emoji: r.emoji,
-        color: r.color,
-        ...(r.community_driven ? { communityDriven: true } : {}),
-      }));
+      const activities = rows
+        .filter(r => !r.hidden)
+        .map(r => ({
+          name: r.name,
+          icon: r.icon,
+          emoji: r.emoji,
+          color: r.color,
+          ...(r.community_driven ? { communityDriven: true } : {}),
+        }));
       return NextResponse.json(activities);
     }
   } catch (error) {

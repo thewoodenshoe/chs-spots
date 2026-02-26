@@ -99,7 +99,7 @@ const MapComponent = dynamic(() => import('@/components/MapComponent'), {
 });
 
 export default function Home() {
-  const { spots, addSpot, updateSpot, deleteSpot } = useSpots();
+  const { spots, addSpot, updateSpot, deleteSpot, loading: spotsLoading } = useSpots();
   const { showToast } = useToast();
   const [healthStatus, setHealthStatus] = useState<'checking' | 'ok' | 'error'>('checking');
   const [isHydrated, setIsHydrated] = useState(false);
@@ -190,6 +190,28 @@ export default function Home() {
     }
   }, []);
 
+  // Deep-link: ?spot=123 — navigate to a shared spot
+  useEffect(() => {
+    if (spotsLoading || spots.length === 0) return;
+    const params = new URLSearchParams(window.location.search);
+    const spotId = params.get('spot');
+    if (!spotId) return;
+
+    const spot = spots.find(s => s.id === Number(spotId));
+    if (!spot) return;
+
+    const area = spot.area
+      || (spot.venueId ? venueAreaById.get(spot.venueId) : undefined)
+      || getAreaFromCoordinates(spot.lat, spot.lng);
+    setSelectedArea(area as Area);
+    setSelectedActivity(spot.type as SpotType);
+    setMapCenter({ lat: spot.lat, lng: spot.lng, zoom: 16 });
+    setViewMode('map');
+
+    window.history.replaceState({}, '', window.location.pathname);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spotsLoading, spots]);
+
   // Lightweight health polling for a visible uptime indicator
   useEffect(() => {
     let isMounted = true;
@@ -245,7 +267,7 @@ export default function Home() {
     if (lat >= 32.78 && lat <= 32.82 && lng >= -79.88 && lng <= -79.82) return 'Mount Pleasant';
     if (lat >= 32.70 && lat <= 32.75 && lng >= -79.96 && lng <= -79.90) return 'James Island';
     if (lat >= 32.76 && lat <= 32.80 && lng >= -79.95 && lng <= -79.92) return 'Downtown Charleston';
-    if (lat >= 32.75 && lat <= 32.78 && lng >= -79.85 && lng <= -79.82) return "Sullivan's Island";
+    if (lat >= 32.75 && lat <= 32.78 && lng >= -79.87 && lng <= -79.81) return "Sullivan's Island";
     return 'Daniel Island';
   }
 
@@ -253,9 +275,9 @@ export default function Home() {
     const query = searchQuery.toLowerCase().trim();
     return spots.filter((spot) => {
       if (spot.lat === 0 && spot.lng === 0) return false;
-      const spotArea = spot.venueId
-        ? (venueAreaById.get(spot.venueId) || getAreaFromCoordinates(spot.lat, spot.lng))
-        : getAreaFromCoordinates(spot.lat, spot.lng);
+      const spotArea = spot.area
+        || (spot.venueId ? venueAreaById.get(spot.venueId) : undefined)
+        || getAreaFromCoordinates(spot.lat, spot.lng);
       const areaMatch = spotArea === selectedArea;
       const activityMatch = spot.type === selectedActivity;
       const searchMatch = !query || spot.title.toLowerCase().includes(query) || (spot.description || '').toLowerCase().includes(query);
@@ -306,6 +328,8 @@ export default function Home() {
     trackSpotClick(spot.id, spot.title, selectedArea);
     setEditingSpot(spot);
     setEditPinLocation({ lat: spot.lat, lng: spot.lng });
+    setMapCenter({ lat: spot.lat, lng: spot.lng, zoom: 16 });
+    setViewMode('map');
     setIsEditOpen(true);
   };
 
@@ -452,7 +476,7 @@ export default function Home() {
   }, [healthStatus]);
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden">
+    <div className="relative h-dvh w-screen overflow-hidden">
       {/* Fixed Top Bar */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-black/70 backdrop-blur-md safe-area-top">
         {/* Title Row */}
@@ -507,7 +531,12 @@ export default function Home() {
         className="h-full w-full"
         style={{ paddingTop: '165px', paddingBottom: '72px' }}
       >
-        {viewMode === 'map' ? (
+        {spotsLoading ? (
+          <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-gray-50">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-teal-500" />
+            <p className="text-sm font-medium text-gray-500">Loading spots...</p>
+          </div>
+        ) : viewMode === 'map' ? (
           <MapComponent
             selectedArea={selectedArea}
             selectedActivity={selectedActivity}
