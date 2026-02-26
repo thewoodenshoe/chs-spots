@@ -142,5 +142,41 @@
     "description": "North Morrison Drive cafe pairing specialty coffee with fresh-baked pastries and creative breakfast options. A bright, airy space with a local neighborhood feel.",
     "area": "Downtown Charleston",
     "searchHint": "Harbinger Cafe Bakery Morrison Dr Charleston SC"
+  },
+  {
+    "title": "Starbucks - Daniel Island",
+    "description": "Reliable coffee stop on Daniel Island with the full Starbucks menu. Drive-through and indoor seating, convenient for morning commuters and island residents.",
+    "area": "Daniel Island",
+    "searchHint": "Starbucks Daniel Island Charleston SC"
+  },
+  {
+    "title": "The Dime",
+    "description": "Daniel Island gourmet market and eatery with quality coffee, lattes, cold brew, and fresh pastries. Also serves breakfast, sandwiches, and pizza. A true island gathering spot.",
+    "area": "Daniel Island",
+    "searchHint": "The Dime 30 River Landing Dr Daniel Island SC"
+  },
+  {
+    "title": "Blondies Bagels & Cafe",
+    "description": "Locally owned Daniel Island cafe with handcrafted bagels and coffee drinks. Fresh bagels, creative cream cheese flavors, and solid lattes — a 10-year island staple.",
+    "area": "Daniel Island",
+    "searchHint": "Blondies Bagels Cafe 245 Seven Farms Dr Daniel Island SC"
+  },
+  {
+    "title": "Cafe Paname",
+    "description": "Isle of Palms cafe with locally-roasted espresso, fresh croissants, and pastries. Known for seasonal specialty drinks and an outstanding almond croissant.",
+    "area": "Isle of Palms",
+    "searchHint": "Cafe Paname 1202 Palm Blvd Isle of Palms SC"
+  },
+  {
+    "title": "The Co-Op Isle of Palms",
+    "description": "Casual island cafe with $1 coffee, breakfast, gourmet sandwiches, and the famous frosé. A laid-back beach vibe with outdoor seating.",
+    "area": "Isle of Palms",
+    "searchHint": "The Co-Op Isle of Palms SC"
+  },
+  {
+    "title": "Sea Biscuit Cafe",
+    "description": "Isle of Palms institution since 1986. Classic American breakfast, fresh coffee, and charming outdoor seating. A beach morning tradition.",
+    "area": "Isle of Palms",
+    "searchHint": "Sea Biscuit Cafe Isle of Palms SC"
   }
 ]
