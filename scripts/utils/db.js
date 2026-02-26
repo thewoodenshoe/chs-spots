@@ -148,11 +148,11 @@ const spots = {
       INSERT INTO spots (venue_id, title, type, source, status, description,
         promotion_time, promotion_list, source_url, submitter_name,
         manual_override, photo_url, last_update_date, pending_edit,
-        pending_delete, submitted_at, edited_at, updated_at)
+        pending_delete, submitted_at, edited_at, lat, lng, area, updated_at)
       VALUES (@venue_id, @title, @type, @source, @status, @description,
         @promotion_time, @promotion_list, @source_url, @submitter_name,
         @manual_override, @photo_url, @last_update_date, @pending_edit,
-        @pending_delete, @submitted_at, @edited_at, datetime('now'))
+        @pending_delete, @submitted_at, @edited_at, @lat, @lng, @area, datetime('now'))
     `).run({
       venue_id: s.venue_id || s.venueId || null,
       title: s.title,
@@ -171,6 +171,9 @@ const spots = {
       pending_delete: s.pending_delete || s.pendingDelete ? 1 : 0,
       submitted_at: s.submitted_at || s.submittedAt || null,
       edited_at: s.edited_at || s.editedAt || null,
+      lat: s.lat ?? null,
+      lng: s.lng ?? null,
+      area: s.area || null,
     });
     const newId = info.lastInsertRowid;
     logAudit('spots', newId, 'INSERT', null, { ...s, id: newId });

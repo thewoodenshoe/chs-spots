@@ -304,7 +304,7 @@ export default function SpotListView({
                   {promoList.length > 0 && (
                     <div>
                       <div className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-0.5">
-                        {spot.type === 'Brunch' ? 'Brunch Specials' : 'Specials'}
+                        Specials
                       </div>
                       <div className="space-y-0.5">
                         {promoList.map((item, i) => {

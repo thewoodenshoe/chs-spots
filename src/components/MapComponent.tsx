@@ -739,7 +739,7 @@ export default function MapComponent({
                 return (
                   <div className="mb-2">
                     <div className="font-semibold text-gray-700 mb-1 text-xs uppercase tracking-wide">
-                      {selectedSpot.type === 'Brunch' ? 'Brunch Specials' : 'Specials'}
+                      Specials
                     </div>
                     <div className="space-y-1.5">
                       {groups.map((g, gIdx) => (
