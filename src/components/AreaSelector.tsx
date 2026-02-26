@@ -160,10 +160,13 @@ export function getAreaCentersSync(): Record<string, { lat: number; lng: number;
   // Return default if not loaded yet
   return {
     'Daniel Island': { lat: 32.862, lng: -79.908, zoom: 14 },
-    'Mount Pleasant': { lat: 32.800, lng: -79.860, zoom: 14 },
-    'James Island': { lat: 32.720, lng: -79.950, zoom: 14 },
     'Downtown Charleston': { lat: 32.776, lng: -79.931, zoom: 15 },
+    'Isle of Palms': { lat: 32.786, lng: -79.795, zoom: 14 },
+    'James Island': { lat: 32.737, lng: -79.965, zoom: 14 },
+    'Mount Pleasant': { lat: 32.795, lng: -79.875, zoom: 14 },
+    'North Charleston': { lat: 32.888, lng: -80.006, zoom: 14 },
     'Sullivan\'s Island': { lat: 32.760, lng: -79.840, zoom: 14 },
+    'West Ashley': { lat: 32.785, lng: -80.040, zoom: 14 },
   };
 }
 
@@ -171,7 +174,7 @@ export function getAreaCentersSync(): Record<string, { lat: number; lng: number;
 export const areaCenters = new Proxy({} as Record<string, { lat: number; lng: number; zoom: number }>, {
   get(target, prop) {
     const sync = getAreaCentersSync();
-    return sync[prop as string] || sync['Daniel Island'];
+    return sync[prop as string] || sync['Downtown Charleston'];
   },
 });
 

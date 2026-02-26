@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import FilterModal, { Area, SpotType } from '@/components/FilterModal';
 import SubmissionModal from '@/components/SubmissionModal';
 import EditSpotModal from '@/components/EditSpotModal';
@@ -106,7 +106,9 @@ export default function Home() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [selectedArea, setSelectedArea] = useState<Area>('Daniel Island');
+  const FALLBACK_AREA = 'Downtown Charleston';
+  const FALLBACK_CENTER = { lat: 32.776, lng: -79.931, zoom: 15 };
+  const [selectedArea, setSelectedArea] = useState<Area>(FALLBACK_AREA);
   const [selectedActivity, setSelectedActivity] = useState<SpotType>('Happy Hour');
   const [pinLocation, setPinLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [editingSpot, setEditingSpot] = useState<Spot | null>(null);
@@ -121,9 +123,7 @@ export default function Home() {
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   const [listSortMode, setListSortMode] = useState<SortMode>('alpha');
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  // Default center for Daniel Island (will be updated when area centers load)
-  const defaultCenter = { lat: 32.862, lng: -79.908, zoom: 14 };
-  const [mapCenter, setMapCenter] = useState(defaultCenter);
+  const [mapCenter, setMapCenter] = useState(FALLBACK_CENTER);
   const [areaCenters, setAreaCenters] = useState<Record<string, { lat: number; lng: number; zoom: number }>>({});
   const { venues } = useVenues();
   const { activities } = useActivities();
@@ -242,15 +242,28 @@ export default function Home() {
     };
   }, []);
 
-  // Request user geolocation (for list view distance badges)
+  // Request user geolocation: set closest area + distance badges
+  const geoResolved = useRef(false);
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => { /* denied or error — distance will be unavailable */ }
-      );
-    }
-  }, []);
+    if (geoResolved.current || !navigator.geolocation) return;
+    geoResolved.current = true;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setUserLocation(userPos);
+        const centers = Object.keys(areaCenters).length > 0 ? areaCenters : getAreaCentersSync();
+        let closest = FALLBACK_AREA;
+        let minDist = Infinity;
+        for (const [name, c] of Object.entries(centers)) {
+          const d = (userPos.lat - c.lat) ** 2 + (userPos.lng - c.lng) ** 2;
+          if (d < minDist) { minDist = d; closest = name; }
+        }
+        setSelectedArea(closest as Area);
+        if (centers[closest]) setMapCenter(centers[closest]);
+      },
+      () => { /* denied — stays on Downtown Charleston */ }
+    );
+  }, [areaCenters]);
 
   // Build venue-area lookup for filtering (mirrors MapComponent logic)
   const venueAreaById = useMemo(() => {
@@ -268,7 +281,7 @@ export default function Home() {
     if (lat >= 32.70 && lat <= 32.75 && lng >= -79.96 && lng <= -79.90) return 'James Island';
     if (lat >= 32.76 && lat <= 32.80 && lng >= -79.95 && lng <= -79.92) return 'Downtown Charleston';
     if (lat >= 32.75 && lat <= 32.78 && lng >= -79.87 && lng <= -79.81) return "Sullivan's Island";
-    return 'Daniel Island';
+    return FALLBACK_AREA;
   }
 
   const filteredSpots = useMemo(() => {
@@ -312,7 +325,7 @@ export default function Home() {
       setMapCenter(centers[area]);
     } else {
       // Fallback to default
-      setMapCenter(defaultCenter);
+      setMapCenter(FALLBACK_CENTER);
     }
   };
 
