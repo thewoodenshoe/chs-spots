@@ -11,6 +11,32 @@ import { shareSpot } from '@/utils/share';
 
 export type SortMode = 'alpha' | 'recent' | 'nearest' | 'time' | 'active';
 
+const SUB_TAG_RULES: [RegExp, string][] = [
+  [/\bDog Park\b/i, 'Dog Park'],
+  [/\bBeach\b/i, 'Beach'],
+  [/\bBrewing|Brewery\b/i, 'Brewery'],
+  [/\bBiergarten|Taproom|Ice House\b/i, 'Bar'],
+  [/\bPub\b/i, 'Pub'],
+  [/\bTavern\b/i, 'Tavern'],
+  [/\bCaf[eé]|Coffee\b/i, 'Cafe'],
+  [/\bDeli\b/i, 'Deli'],
+  [/\bBBQ\b/i, 'BBQ'],
+  [/\bHistoric Site\b/i, 'Historic'],
+  [/\bCounty Park\b/i, 'Park'],
+  [/\bPark\b/i, 'Park'],
+  [/\bRestaurant\b/i, 'Restaurant'],
+  [/\bBar\b/i, 'Bar'],
+];
+
+function getSubTag(title: string): string | null {
+  for (const [re, tag] of SUB_TAG_RULES) {
+    if (re.test(title)) return tag;
+  }
+  return null;
+}
+
+const MIXED_ACTIVITIES = new Set(['Dog-Friendly', 'Must-See Spots']);
+
 interface SpotListViewProps {
   spots: Spot[];
   activities: Activity[];
@@ -214,6 +240,14 @@ export default function SpotListView({
                     <span className="font-semibold text-gray-900 text-sm truncate">
                       {spot.title}
                     </span>
+                    {MIXED_ACTIVITIES.has(spot.type) && (() => {
+                      const tag = getSubTag(spot.title);
+                      return tag ? (
+                        <span className="flex-shrink-0 rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500">
+                          {tag}
+                        </span>
+                      ) : null;
+                    })()}
                     {spot.status === 'pending' && (
                       <span className="flex-shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">
                         Pending
