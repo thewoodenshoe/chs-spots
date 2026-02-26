@@ -1,6 +1,30 @@
-# CHS Finds
+# Charleston Finds
 
-A crowdsourced map for discovering local hotspots in Charleston, SC — happy hours, fishing spots, sunset views, and more. Built with Next.js, Google Maps, and AI-powered venue extraction.
+> **Built entirely by Claude Opus 4.6 (Orion).** Zero lines of human-written code. Architecture, frontend, backend, ETL pipeline, deployment — all AI-generated from natural language instructions.
+
+A live map for discovering Charleston, SC — happy hours, rooftop bars, coffee shops, dog-friendly spots, must-see attractions, and more. Auto-updates nightly via AI-powered venue extraction.
+
+**Live at [chsfinds.com](https://chsfinds.com)**
+
+## What It Does
+
+- **Interactive map + list view** with 8 Charleston neighborhoods and 7 activity categories
+- **Auto-detects your location** and defaults to the nearest area
+- **Nightly ETL pipeline** scrapes ~990 venue websites, diffs content, and uses Grok (xAI) to extract happy hour specials — only processing venues that actually changed
+- **Community submissions** — anyone can add spots; admin approves via Telegram
+- **Google Places integration** for accurate coordinates and photos
+- **Share any spot** via deep link
+
+## Tech Stack
+
+| Layer | Tech |
+|-------|------|
+| Frontend | Next.js 15, React 19, TypeScript, Tailwind CSS |
+| Map | Google Maps JavaScript API |
+| Database | SQLite (better-sqlite3) |
+| AI extraction | Grok API (xAI) |
+| Admin | Telegram Bot API |
+| Hosting | Ubuntu server, PM2, rsync deploys |
 
 ## Quick Start
 
@@ -8,189 +32,72 @@ A crowdsourced map for discovering local hotspots in Charleston, SC — happy ho
 git clone https://github.com/thewoodenshoe/chs-spots.git
 cd chs-spots
 npm install
-cp .env.example .env.local  # Then fill in your API keys
-node scripts/migrate-to-sqlite.js  # Initialize the database from existing data
+cp .env.example .env.local   # fill in API keys
+node scripts/migrate-to-sqlite.js
 npm run dev
 ```
 
 ## Environment Variables
 
-Create `.env.local` with these keys:
-
-| Key | Required | Description |
-|-----|----------|-------------|
-| `NEXT_PUBLIC_GOOGLE_MAPS_KEY` | Yes | Google Maps JavaScript API key |
-| `GOOGLE_PLACES_SERVER_KEY` | Yes | Google Places API key (for venue seeding) |
-| `GROK_API_KEY` | Yes | Grok API key for LLM happy hour extraction |
-| `TELEGRAM_BOT_TOKEN` | Yes | Telegram bot token (from BotFather) for spot approval |
-| `TELEGRAM_ADMIN_CHAT_ID` | Yes | Your Telegram chat ID (send `/start` to your bot to get it) |
-| `ADMIN_API_KEY` | Production | Strong random string for admin auth (edit/delete spots). No default. |
-| `TELEGRAM_WEBHOOK_SECRET` | Optional | Secret token for webhook verification; set in Telegram `setWebhook` and this env. |
-| `SERVER_PUBLIC_URL` | Ops | e.g. `https://chsfinds.com` for report links and Telegram messages. |
-| `DB_PATH` | Optional | Path to SQLite database file. Default: `data/chs-spots.db` |
-
-## Production / Security
-
-- **Admin auth**: Set `ADMIN_API_KEY` in `.env.local` to a strong random string. Visit `https://yoursite.com?admin=YOUR_KEY` once to enable admin mode in the browser; the same key is used for API auth.
-- **Google Maps API key**: In [Google Cloud Console](https://console.cloud.google.com/apis/credentials), restrict the Maps JavaScript API key to **HTTP referrers**: `https://chsfinds.com/*`, `https://www.chsfinds.com/*` (and `http://localhost:*` for dev). This prevents key theft.
-- **Telegram webhook**: If using the webhook (not polling), set `TELEGRAM_WEBHOOK_SECRET` and pass the same value when calling Telegram’s `setWebhook` so only Telegram can trigger approve/deny.
-
-## Data Storage
-
-All structured data lives in a SQLite database (`data/chs-spots.db`), including venues, spots, gold extractions, pipeline state, areas, activities, watchlist, and audit logs. The database is created and populated by the migration script.
-
-Transient pipeline files (raw HTML, silver layers) remain on disk in `data/raw/`, `data/silver_merged/`, and `data/silver_trimmed/`.
-
-Static config files that rarely change stay in `data/config/`:
-
-- **`llm-instructions.txt`** — LLM prompt template
-- **`submenu-keywords.json`** — Keywords for discovering venue subpages
-
-## Initial Setup
-
-```bash
-# 1. Create area definitions
-node scripts/create-areas.js
-
-# 2. Seed venues from Google Places (costs money — use carefully)
-GOOGLE_PLACES_ENABLED=true node scripts/seed-venues.js --confirm
-
-# 3. Initialize the SQLite database from JSON files
-node scripts/migrate-to-sqlite.js
-
-# 4. Run the full pipeline
-node scripts/run-incremental-pipeline.js
-```
-
-## Nightly Pipeline
-
-```bash
-node scripts/run-incremental-pipeline.js [run_date] [area-filter]
-```
-
-The pipeline automatically:
-1. **Downloads** raw HTML from all venue websites
-2. **Merges** HTML files per venue into single JSON
-3. **Trims** HTML to visible text only (80-90% size reduction)
-4. **Compares** trimmed content against previous run (normalized hashing strips dates, tracking IDs, dynamic noise)
-5. **Extracts** happy hours via Grok API — only for venues with real content changes
-6. **Creates** spots.json for the frontend
-
-### How Multi-Day Runs Work
-
-| Scenario | What happens |
-|----------|-------------|
-| **Day 1 (first run)** | Downloads all ~989 venues, processes everything, bulk LLM extraction |
-| **Day 2** | Archives yesterday's data to `previous/`, downloads fresh, delta finds ~10-20 real changes |
-| **Same-day rerun** | Skips download, delta finds ~0 changes |
-| **Manual re-run** | Edit `config.json`: set `last_raw_processed_date` to yesterday to force a new-day workflow |
-
-### Cost Control
-
-- **Normalized hashing** at the `silver_trimmed` layer strips dates, GTM IDs, tracking params, copyright footers — prevents false positives
-- **Normalized source hash in gold files** means even if delta flags a venue as "changed", the LLM step skips it if the meaningful content hasn't changed
-- **`maxIncrementalFiles`** in config.json (default: 15) — if more files are flagged, pipeline gracefully shuts down without calling LLM
-- Typical daily LLM calls: **5-15 venues** (vs 200+ without normalization)
-
-### Pipeline Recovery
-
-`last_run_status` in the database's `pipeline_state` table tracks progress. If the pipeline fails:
-- It saves `failed_at_raw`, `failed_at_merged`, `failed_at_trimmed`, or `failed_at_extract`
-- Next run automatically resumes from the failed step
-
-## Spot Approval (Telegram)
-
-When a user submits a new spot:
-1. Spot is saved with `status: 'pending'` (hidden from regular users)
-2. Admin receives a Telegram message with **Approve** / **Deny** buttons
-3. Admin taps a button — spot becomes visible or gets rejected
-
-### Setup
-
-1. Create a bot via [@BotFather](https://t.me/BotFather)
-2. Send `/start` to your bot — it replies with your chat ID
-3. Add both to `.env.local`:
-   ```
-   TELEGRAM_BOT_TOKEN=your_token
-   TELEGRAM_ADMIN_CHAT_ID=your_chat_id
-   ```
-4. **Webhook mode** (if server is publicly accessible):
-   ```bash
-   curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://your-domain/api/telegram/webhook"
-   ```
-5. **Polling mode** (if no public URL): Call `GET /api/telegram/poll` periodically (e.g., via cron every 5s)
-
-### Admin Access
-
-Visit your app with `?admin=amsterdam` to enable admin mode (persists in localStorage). Admin users see pending spots on the map with a "Pending Approval" badge.
-
-## Tech Stack
-
-- **Next.js 16** + React 19 + TypeScript
-- **Google Maps API** — markers, clustering, geolocation
-- **Grok API (xAI)** — AI happy hour extraction
-- **Telegram Bot API** — spot approval workflow
-- **Tailwind CSS** — styling
-- **SQLite** (`better-sqlite3`) — embedded database for all structured data
-- **Jest** + **Playwright** — testing
-
-## Testing
-
-```bash
-npm test                    # Unit tests (Jest)
-npm run test:pipeline       # Pipeline validation
-npm run test:e2e            # E2E tests (Playwright)
-```
-
-## CI
-
-GitHub Actions runs on push/PR to `main` or `feature/**`: build, lint, Jest tests, pipeline validation, security audit, and Playwright E2E tests across Node.js 18.x and 20.x.
+| Key | Description |
+|-----|-------------|
+| `NEXT_PUBLIC_GOOGLE_MAPS_KEY` | Google Maps JavaScript API key |
+| `GOOGLE_PLACES_SERVER_KEY` | Google Places API (venue seeding, photos) |
+| `GROK_API_KEY` | xAI Grok API (happy hour extraction) |
+| `TELEGRAM_BOT_TOKEN` | Telegram bot token for spot approval |
+| `TELEGRAM_ADMIN_CHAT_ID` | Your Telegram chat ID |
+| `ADMIN_API_KEY` | Admin auth key for edit/delete |
 
 ## Project Structure
 
 ```
 chs-spots/
-├── data/
-│   ├── chs-spots.db         # SQLite database (all structured data)
-│   ├── config/              # Static config files (llm-instructions, submenu-keywords)
-│   ├── raw/                 # Raw HTML (today/, previous/)
-│   ├── silver_merged/       # Merged JSON per venue (today/)
-│   ├── silver_trimmed/      # Trimmed text (today/, previous/, incremental/)
-│   └── gold/                # LLM-extracted data (transition dual-write)
-├── scripts/
-│   ├── run-incremental-pipeline.js   # Master pipeline script
-│   ├── download-raw-html.js          # Step 1: Download
-│   ├── merge-raw-files.js            # Step 2: Merge
-│   ├── trim-silver-html.js           # Step 3: Trim
-│   ├── delta-trimmed-files.js        # Step 3.5: Delta comparison
-│   ├── extract-promotions.js         # Step 4: LLM extraction (happy hours + brunch)
-│   ├── create-spots.js              # Step 5: Generate spots
-│   ├── migrate-to-sqlite.js         # JSON → SQLite data migration
-│   ├── db/schema.sql                # Database schema definition
-│   └── utils/
-│       ├── db.js                    # Data Access Layer (DAL) for ETL scripts
-│       └── config.js                # Pipeline config helpers (DB-backed)
 ├── src/
-│   ├── app/                 # Next.js app router (pages + API routes)
-│   ├── components/          # React components (Map, Modals, Toast, ErrorBoundary)
-│   ├── contexts/            # React contexts (Spots, Venues, Activities)
-│   └── lib/
-│       ├── db.ts            # Data Access Layer (DAL) for Next.js routes
-│       └── telegram.ts      # Telegram bot integration
-├── logs/                    # Pipeline run logs (gitignored)
-└── e2e/                     # Playwright E2E tests
+│   ├── app/            # Next.js pages + API routes
+│   ├── components/     # Map, modals, list view, chips
+│   ├── contexts/       # React contexts (spots, venues, activities)
+│   └── lib/            # DAL (db.ts), Telegram integration
+├── scripts/
+│   ├── run-incremental-pipeline.js   # Nightly ETL
+│   ├── seed-activity-spots.js        # Seed new activities (reusable)
+│   ├── backfill-venue-photos.js      # Google Places photo download
+│   └── utils/db.js                   # Script-side DAL
+├── data/
+│   ├── chs-spots.db    # SQLite database (gitignored)
+│   ├── config/         # Static config (LLM prompts, keywords)
+│   └── seeds/          # Activity seed data (JSON)
+└── public/spots/       # Spot photos
 ```
 
-## Troubleshooting
+## Nightly Pipeline
 
-- **Pipeline stuck**: Run `sqlite3 data/chs-spots.db "UPDATE pipeline_state SET value='idle' WHERE key='last_run_status'"` to reset
-- **Too many LLM calls**: Run `sqlite3 data/chs-spots.db "UPDATE pipeline_state SET value='500' WHERE key='pipeline.maxIncrementalFiles'"` or check normalization
-- **Database issues**: Re-run `node scripts/migrate-to-sqlite.js` to rebuild from JSON files (idempotent)
-- **Maps not loading**: Verify `NEXT_PUBLIC_GOOGLE_MAPS_KEY` in `.env.local`
-- **"For development purposes only" or no Google logo**: Google shows this when Maps API isn't fully configured for production. Fix in [Google Cloud Console](https://console.cloud.google.com/):
-  1. **Enable billing** — Maps requires billing to be enabled (you get $200/month free credit)
-  2. **Enable Maps JavaScript API** — APIs & Services → Enable APIs → Maps JavaScript API
-  3. **Allow your domain** — API key restrictions: add `https://chsfinds.com/*` and `https://www.chsfinds.com/*` to HTTP referrers (plus `http://localhost:*` for dev)
-  4. **Production env var** — Ensure `NEXT_PUBLIC_GOOGLE_MAPS_KEY` is set in your hosting platform (Vercel, etc.) — it must be present at build time for Next.js
-- **Telegram not working**: Ensure `TELEGRAM_ADMIN_CHAT_ID` is set (send `/start` to your bot)
-- **Edit/delete broken**: Should now work — was fixed (path mismatch bug)
+```bash
+node scripts/run-incremental-pipeline.js
+```
+
+Downloads HTML from ~990 venues → merges → trims → diffs against previous run → extracts promotions via Grok (only changed venues). Typical daily cost: 5–15 LLM calls.
+
+## Adding a New Activity
+
+1. Create a seed file: `data/seeds/your-activity.json`
+2. Insert the activity row into the `activities` table
+3. Run the seed script:
+   ```bash
+   GOOGLE_PLACES_ENABLED=true node scripts/seed-activity-spots.js \
+     --activity "Your Activity" --file data/seeds/your-activity.json --confirm
+   ```
+
+The script resolves coordinates and downloads photos via Google Places, then inserts approved spots.
+
+## Spot Approval
+
+User submits a spot → saved as `pending` → admin gets a Telegram message with Approve/Deny buttons → spot goes live or gets rejected.
+
+## Deployment
+
+```bash
+npm run build
+rsync -avz .next/ ubuntu:~/projects/chs-spots/.next/
+rsync -avz --exclude node_modules --exclude .next --exclude data --exclude .env.local ./ ubuntu:~/projects/chs-spots/
+ssh ubuntu "cd ~/projects/chs-spots && pm2 restart chs-spots"
+```

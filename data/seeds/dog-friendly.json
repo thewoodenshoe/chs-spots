@@ -1,0 +1,176 @@
+[
+  {
+    "title": "Brown Dog Deli",
+    "description": "Named one of Charleston's best dog-friendly spots. Special dog menu, water bowls, and a quirky, welcoming outdoor patio. Your pup eats well here too.",
+    "area": "Downtown Charleston",
+    "searchHint": "Brown Dog Deli Charleston SC"
+  },
+  {
+    "title": "Poogan's Porch",
+    "description": "Historic Victorian home restaurant named after a beloved neighborhood dog. Southern comfort food with spacious porch seating — servers happily bring water bowls.",
+    "area": "Downtown Charleston",
+    "searchHint": "Poogan's Porch 72 Queen St Charleston SC"
+  },
+  {
+    "title": "Fleet Landing Restaurant & Bar",
+    "description": "Waterfront dining on the harbor with a generous outdoor deck perfect for dogs. Fresh seafood, harbor views, and plenty of space for your pup to relax.",
+    "area": "Downtown Charleston",
+    "searchHint": "Fleet Landing Restaurant 186 Concord St Charleston SC"
+  },
+  {
+    "title": "Edmund's Oast Brewing Co.",
+    "description": "NoMo neighborhood brewpub with a spacious dog-friendly patio — covered seating, fans, and water bowls. Craft beers brewed on-site and elevated comfort food.",
+    "area": "Downtown Charleston",
+    "searchHint": "Edmund's Oast Brewing Co 1081 Morrison Dr Charleston SC"
+  },
+  {
+    "title": "Revelry Brewing Co.",
+    "description": "One of Charleston's most dog-welcoming breweries. Ample outdoor seating upstairs and down, staff provide water bowls, and you'll always see other dogs hanging out.",
+    "area": "Downtown Charleston",
+    "searchHint": "Revelry Brewing Co 10 Conroy St Charleston SC"
+  },
+  {
+    "title": "Bay Street Biergarten",
+    "description": "German-inspired beer garden with a large outdoor courtyard ideal for dogs. Craft beers, pretzels, and a communal atmosphere where four-legged friends are welcome.",
+    "area": "Downtown Charleston",
+    "searchHint": "Bay Street Biergarten 549 East Bay St Charleston SC"
+  },
+  {
+    "title": "Dog and Duck",
+    "description": "Award-winning pet-friendly pub with a laid-back patio. Classic pub fare, cold drinks, and a neighborhood vibe where dogs are regulars, not just visitors.",
+    "area": "Mount Pleasant",
+    "searchHint": "Dog and Duck 1568 Ben Sawyer Blvd Mount Pleasant SC"
+  },
+  {
+    "title": "Home Team BBQ - West Ashley",
+    "description": "Legendary BBQ joint with a dog-friendly outdoor patio. Pulled pork, craft cocktails, live music, and a relaxed atmosphere where dogs are always welcome.",
+    "area": "West Ashley",
+    "searchHint": "Home Team BBQ 1205 Ashley River Rd Charleston SC"
+  },
+  {
+    "title": "Saltwater Cowboys",
+    "description": "Waterfront restaurant on Shem Creek with a dog-friendly deck overlooking the boats and dolphins. Fresh seafood and sunset views with your pup by your side.",
+    "area": "Mount Pleasant",
+    "searchHint": "Saltwater Cowboys Shem Creek Mount Pleasant SC"
+  },
+  {
+    "title": "Bowens Island Restaurant",
+    "description": "Iconic Lowcountry oyster roast institution with outdoor seating on Folly Creek. Rustic, unforgettable, and dog-friendly — as Charleston as it gets.",
+    "area": "James Island",
+    "searchHint": "Bowens Island Restaurant 1870 Bowens Island Rd Charleston SC"
+  },
+  {
+    "title": "Lost Dog Café",
+    "description": "Folly Beach institution known for fantastic breakfast and laid-back vibes. Dog-friendly outdoor patio with a beach-casual atmosphere your pup will love.",
+    "area": "James Island",
+    "searchHint": "Lost Dog Cafe 106 W Huron Ave Folly Beach SC"
+  },
+  {
+    "title": "Red's Ice House",
+    "description": "Shem Creek waterfront bar with a casual outdoor deck. Cold beer, fresh seafood, and sunset views — bring your dog for the quintessential creek-side experience.",
+    "area": "Mount Pleasant",
+    "searchHint": "Red's Ice House 98 Church St Mount Pleasant SC"
+  },
+  {
+    "title": "Poe's Tavern",
+    "description": "Sullivan's Island burger joint with a spacious, dog-friendly patio. Creative burgers named after Poe works, cold beers, and island vibes.",
+    "area": "Sullivan's Island",
+    "searchHint": "Poe's Tavern 2210 Middle St Sullivan's Island SC"
+  },
+  {
+    "title": "Dunleavy's Pub",
+    "description": "Sullivan's Island neighborhood pub with a welcoming outdoor area. Cold drinks, casual bites, and the kind of laid-back island atmosphere that dogs (and their owners) love.",
+    "area": "Sullivan's Island",
+    "searchHint": "Dunleavy's Pub 2213 Middle St Sullivan's Island SC"
+  },
+  {
+    "title": "The Obstinate Daughter",
+    "description": "Sullivan's Island restaurant with a dog-friendly patio. Creative Italian-inspired coastal cuisine, craft cocktails, and a popular weekend brunch spot.",
+    "area": "Sullivan's Island",
+    "searchHint": "The Obstinate Daughter 2063 Middle St Sullivan's Island SC"
+  },
+  {
+    "title": "The Kingstide",
+    "description": "Daniel Island waterfront restaurant with rooftop and ground-level outdoor seating. Dogs welcome on the patio with views of the Wando River.",
+    "area": "Daniel Island",
+    "searchHint": "The Kingstide 32 River Landing Dr Daniel Island SC"
+  },
+  {
+    "title": "Dog Park at James Island County Park",
+    "description": "4-acre off-leash dog park with a dog beach, separate small-breed area, washing station, and lake access. USA Today Runner-up Best Dog Park. $2 park entry fee.",
+    "area": "James Island",
+    "searchHint": "James Island County Park Dog Park 871 Riverland Dr Charleston SC"
+  },
+  {
+    "title": "Dog Park at Wannamaker County Park",
+    "description": "Large off-leash area with separate spaces for big and small dogs, a Splash Paw spray fountain, washing area, and shaded seating under mature trees.",
+    "area": "North Charleston",
+    "searchHint": "Wannamaker County Park Dog Park 8888 University Blvd North Charleston SC"
+  },
+  {
+    "title": "Brittlebank Park",
+    "description": "Downtown's off-leash dog area along the Ashley River with views of the Ravenel Bridge. Non-fenced but spacious — a favorite for city-dwelling dog owners. Dawn to dusk.",
+    "area": "Downtown Charleston",
+    "searchHint": "Brittlebank Park 185 Lockwood Dr Charleston SC"
+  },
+  {
+    "title": "Palmetto Islands County Park",
+    "description": "Nature park in Mount Pleasant with dog-friendly trails through maritime forests and marshland. Great for walks and exploring with your leashed pup.",
+    "area": "Mount Pleasant",
+    "searchHint": "Palmetto Islands County Park Long Point Rd Mount Pleasant SC"
+  },
+  {
+    "title": "Sullivan's Island Beach",
+    "description": "Dog-friendly beach with seasonal off-leash hours (early morning before 10 AM). Town permit required ($25 residents, $50 visitors). One of the best dog beaches in the area.",
+    "area": "Sullivan's Island",
+    "searchHint": "Sullivan's Island Beach Sullivan's Island SC"
+  },
+  {
+    "title": "Isle of Palms Beach",
+    "description": "Seven miles of dog-friendly beach with off-leash hours early morning and evening. Free annual dog permit encouraged. Wide sandy beach perfect for fetch and swimming.",
+    "area": "Isle of Palms",
+    "searchHint": "Isle of Palms Beach Isle of Palms SC"
+  },
+  {
+    "title": "Folly Beach",
+    "description": "Dogs allowed year-round with seasonal time restrictions (no dogs 10 AM-6 PM, May-Sept). Must stay leashed. A fun beach outing for you and your dog.",
+    "area": "James Island",
+    "searchHint": "Folly Beach SC"
+  },
+  {
+    "title": "Ackerman Park Dog Park",
+    "description": "Fenced off-leash dog park on James Island with separate areas for large and small dogs. Well-maintained and popular with local dog owners. Dawn to dusk.",
+    "area": "James Island",
+    "searchHint": "Ackerman Park 55 Sycamore Ave Charleston SC"
+  },
+  {
+    "title": "Hampton Park",
+    "description": "Charleston's largest public park with beautiful gardens and wide paths perfect for dog walking. Leashes required but plenty of space to roam and socialize.",
+    "area": "Downtown Charleston",
+    "searchHint": "Hampton Park Charleston SC"
+  },
+  {
+    "title": "Waterfront Park",
+    "description": "Iconic downtown park along the harbor with the famous Pineapple Fountain. Dogs welcome on leash — great for a scenic walk with harbor views and cool breezes.",
+    "area": "Downtown Charleston",
+    "searchHint": "Waterfront Park Vendue Range Charleston SC"
+  },
+  {
+    "title": "The Royal American",
+    "description": "Dive bar with a big heart and an even bigger dog-friendly outdoor space. Live music, creative cocktails, and a funky atmosphere where dogs are part of the scene.",
+    "area": "Downtown Charleston",
+    "searchHint": "The Royal American 970 Morrison Dr Charleston SC"
+  },
+  {
+    "title": "Charles Towne Landing State Historic Site",
+    "description": "80 acres of dog-friendly trails through the original 1670 Charleston settlement site. Leashed dogs welcome on paths through old-growth forests along the Ashley River.",
+    "area": "West Ashley",
+    "searchHint": "Charles Towne Landing State Historic Site 1500 Old Towne Rd Charleston SC"
+  },
+  {
+    "title": "Grove Street Dog Park",
+    "description": "Downtown fenced dog park with separate areas for large and small dogs. Convenient city location for quick off-leash play sessions. Dawn to dusk.",
+    "area": "Downtown Charleston",
+    "searchHint": "Grove Street Dog Park Charleston SC"
+  }
+]

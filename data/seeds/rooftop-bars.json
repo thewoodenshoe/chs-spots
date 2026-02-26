@@ -1,0 +1,86 @@
+[
+  {
+    "title": "The Rooftop at The Vendue",
+    "description": "Charleston's original rooftop bar with sweeping views of the harbor, Waterfront Park, and the Ravenel Bridge. Two-level venue with covered and open-air seating, craft cocktails, and small plates.",
+    "area": "Downtown Charleston",
+    "searchHint": "The Vendue 19 Vendue Range Charleston SC"
+  },
+  {
+    "title": "Citrus Club",
+    "description": "Perched on the 8th floor of The Dewberry Hotel — the highest public viewpoint in Charleston. 360° panoramic views, citrus-inspired cocktails, and elegant small plates. Reservations recommended.",
+    "area": "Downtown Charleston",
+    "searchHint": "Citrus Club Dewberry Hotel Charleston SC"
+  },
+  {
+    "title": "Stars Rooftop & Grill Room",
+    "description": "Open-air rooftop on Upper King Street with craft cocktails, a full grill menu, and city skyline views. The connected Satellite Bar offers a more intimate vibe.",
+    "area": "Downtown Charleston",
+    "searchHint": "Stars Rooftop and Grill Room 495 King St Charleston SC"
+  },
+  {
+    "title": "Élevé Rooftop Restaurant & Lounge",
+    "description": "Grand Bohemian Hotel's luxury rooftop featuring farm-to-table Lowcountry cuisine, craft cocktails, and stunning views of historic Charleston. Indoor and outdoor seating.",
+    "area": "Downtown Charleston",
+    "searchHint": "Eleve Rooftop Restaurant Grand Bohemian Hotel Charleston SC"
+  },
+  {
+    "title": "Pavilion Bar",
+    "description": "Atop the Market Pavilion Hotel, featuring Charleston's only cascading rooftop pool. Upscale cocktails with panoramic harbor and church steeple views. Dress code enforced.",
+    "area": "Downtown Charleston",
+    "searchHint": "Pavilion Bar Market Pavilion Hotel Charleston SC"
+  },
+  {
+    "title": "The Watch Rooftop Kitchen & Spirits",
+    "description": "Seventh-floor venue at the Restoration Hotel with elevated Lowcountry fare, creative cocktails, and sweeping views from the French Quarter to the harbor.",
+    "area": "Downtown Charleston",
+    "searchHint": "The Watch Rooftop Kitchen Spirits 75 Wentworth St Charleston SC"
+  },
+  {
+    "title": "Fiat Lux",
+    "description": "Hotel Bennett's rooftop bar overlooking Marion Square and King Street. Refined cocktails in an elegant setting with one of the best aerial perspectives of the peninsula.",
+    "area": "Downtown Charleston",
+    "searchHint": "Fiat Lux Hotel Bennett Charleston SC"
+  },
+  {
+    "title": "Ritual Rooftop Restaurant & Lounge",
+    "description": "Vibrant rooftop above King and Calhoun with fresh seafood, lush greenery, and craft cocktails. Popular for weekend brunch and sunset drinks.",
+    "area": "Downtown Charleston",
+    "searchHint": "Ritual Rooftop Restaurant Lounge Charleston SC"
+  },
+  {
+    "title": "Uptown Social",
+    "description": "Upper King Street's lively rooftop with live music, frozen cocktails, and a social atmosphere. Known for the popular butterfly mural photo spot.",
+    "area": "Downtown Charleston",
+    "searchHint": "Uptown Social 575 King St Charleston SC"
+  },
+  {
+    "title": "The Cocktail Club",
+    "description": "Intimate craft cocktail bar on upper King Street with a charming rooftop patio. Expertly crafted drinks and a cozy speakeasy vibe.",
+    "area": "Downtown Charleston",
+    "searchHint": "The Cocktail Club 479 King St Charleston SC"
+  },
+  {
+    "title": "Little Palm",
+    "description": "Tropical-inspired rooftop oasis at The Ryder Hotel with lush greenery, frozen cocktails, and a laid-back coastal atmosphere. Open for weekend brunch through late night.",
+    "area": "Downtown Charleston",
+    "searchHint": "Little Palm Ryder Hotel 237 Meeting St Charleston SC"
+  },
+  {
+    "title": "The Kingstide",
+    "description": "Daniel Island's waterfront restaurant with a rooftop bar overlooking the Wando River. Casual rooftop vibe with fresh seafood, raw bar, and stunning sunset views.",
+    "area": "Daniel Island",
+    "searchHint": "The Kingstide 32 River Landing Dr Daniel Island SC"
+  },
+  {
+    "title": "Red's Ice House",
+    "description": "Laid-back Shem Creek institution with a treehouse-style rooftop deck. Cold beer, fresh local seafood, and prime sunset views over the creek and marshes.",
+    "area": "Mount Pleasant",
+    "searchHint": "Red's Ice House 98 Church St Mount Pleasant SC"
+  },
+  {
+    "title": "Aqua Terrace",
+    "description": "Rooftop pool bar at the Hotel Bella Grace with craft cocktails and views of the Holy City skyline. A serene escape in the heart of downtown.",
+    "area": "Downtown Charleston",
+    "searchHint": "Aqua Terrace Hotel Bella Grace Charleston SC"
+  }
+]

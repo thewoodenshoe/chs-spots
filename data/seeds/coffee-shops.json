@@ -1,0 +1,146 @@
+[
+  {
+    "title": "Second State Coffee",
+    "description": "Local Charleston roaster with a flagship cafe downtown. Specialty single-origin brews, seasonal lattes, and house-roasted beans in a bright, welcoming space.",
+    "area": "Downtown Charleston",
+    "searchHint": "Second State Coffee 70 Spring St Charleston SC"
+  },
+  {
+    "title": "Kudu Coffee & Craft Beer",
+    "description": "Iconic downtown cafe with a hidden courtyard garden. Excellent espresso, craft beer, and weekend live music under the live oaks. A Charleston institution.",
+    "area": "Downtown Charleston",
+    "searchHint": "Kudu Coffee Craft Beer 4 Vanderhorst St Charleston SC"
+  },
+  {
+    "title": "Black Tap Coffee",
+    "description": "Ultra-hip Beaufain Street roaster with a bright, Instagram-worthy interior. House-roasted beans, signature brown sugar and lavender lattes, and expertly pulled espresso.",
+    "area": "Downtown Charleston",
+    "searchHint": "Black Tap Coffee 193 St Philip St Charleston SC"
+  },
+  {
+    "title": "Bitty & Beau's Coffee",
+    "description": "More than coffee — a mission-driven cafe that employs people with intellectual and developmental disabilities. Warm hospitality, quality drinks, and an inspiring atmosphere.",
+    "area": "Downtown Charleston",
+    "searchHint": "Bitty and Beau's Coffee 159 Church St Charleston SC"
+  },
+  {
+    "title": "Carmella's Cafe & Dessert Bar",
+    "description": "East Bay Street gem combining excellent espresso with creative desserts and pastries. Late-night coffee and dessert cocktails make this a unique downtown stop.",
+    "area": "Downtown Charleston",
+    "searchHint": "Carmella's Cafe and Dessert Bar 198 East Bay St Charleston SC"
+  },
+  {
+    "title": "Mercantile & Mash",
+    "description": "Part coffee bar, part artisan market in a beautiful historic space. Craft coffee alongside curated local provisions, wines, and gourmet goods.",
+    "area": "Downtown Charleston",
+    "searchHint": "Mercantile and Mash 701 East Bay St Charleston SC"
+  },
+  {
+    "title": "The Daily",
+    "description": "Two convenient downtown locations serving specialty Onyx Coffee. Great pastries, breakfast sandwiches, and a reliable grab-and-go option for quality coffee.",
+    "area": "Downtown Charleston",
+    "searchHint": "The Daily 652 King St Charleston SC"
+  },
+  {
+    "title": "King Bean Coffee Roasters",
+    "description": "Upper King Street roaster with a relaxed vibe. House-roasted beans, cold brew on tap, and a cozy corner spot popular with locals and visitors alike.",
+    "area": "Downtown Charleston",
+    "searchHint": "King Bean Coffee Roasters 579 King St Charleston SC"
+  },
+  {
+    "title": "Park & Grove",
+    "description": "Beloved neighborhood cafe with an inviting outdoor patio. Quality espresso, fresh pastries, and a warm community atmosphere on the edge of downtown.",
+    "area": "Downtown Charleston",
+    "searchHint": "Park and Grove 730 Rutledge Ave Charleston SC"
+  },
+  {
+    "title": "Caviar & Bananas",
+    "description": "Upscale gourmet market and cafe with excellent coffee, creative sandwiches, and grab-and-go meals. Multiple locations including downtown and the airport.",
+    "area": "Downtown Charleston",
+    "searchHint": "Caviar and Bananas 51 George St Charleston SC"
+  },
+  {
+    "title": "Muddy Waters Coffee Bar",
+    "description": "Laid-back St. Philip Street cafe with a bohemian vibe. Strong coffee, smoothies, and a dog-friendly patio. A longtime local hangout.",
+    "area": "Downtown Charleston",
+    "searchHint": "Muddy Waters Coffee Bar 209 Calhoun St Charleston SC"
+  },
+  {
+    "title": "Clerks Coffee Company",
+    "description": "Small-batch specialty roaster focused on quality and sustainability. Carefully sourced beans and expertly prepared drinks in a clean, modern space.",
+    "area": "Downtown Charleston",
+    "searchHint": "Clerks Coffee Company Charleston SC"
+  },
+  {
+    "title": "Brown Fox Coffee",
+    "description": "Mount Pleasant favorite with a warm neighborhood feel. Excellent chai, quality espresso, and fresh pastries. Popular with locals for morning routines and remote work.",
+    "area": "Mount Pleasant",
+    "searchHint": "Brown Fox Coffee Mount Pleasant SC"
+  },
+  {
+    "title": "Tidal Grounds Coffee",
+    "description": "Mount Pleasant's go-to for balanced, smooth coffee. Friendly service, quality beans, and a relaxed atmosphere that keeps regulars coming back.",
+    "area": "Mount Pleasant",
+    "searchHint": "Tidal Grounds Coffee Mount Pleasant SC"
+  },
+  {
+    "title": "Second State Coffee - Mount Pleasant",
+    "description": "Mount Pleasant outpost of Charleston's beloved local roaster. Same quality house-roasted beans and specialty drinks in a convenient east-of-bridge location.",
+    "area": "Mount Pleasant",
+    "searchHint": "Second State Coffee Mount Pleasant SC"
+  },
+  {
+    "title": "Vintage Coffee",
+    "description": "Cozy Mount Pleasant cafe with vintage-inspired decor. Quality espresso, breakfast bites, and a welcoming space perfect for a morning pick-me-up.",
+    "area": "Mount Pleasant",
+    "searchHint": "Vintage Coffee Mount Pleasant SC"
+  },
+  {
+    "title": "The Orange Spot Coffeehouse",
+    "description": "Park Circle's beloved neighborhood coffee shop. Cozy, charming atmosphere with excellent cold brew, breakfast quiche, and friendly community vibes.",
+    "area": "North Charleston",
+    "searchHint": "The Orange Spot Coffeehouse Park Circle North Charleston SC"
+  },
+  {
+    "title": "Odd Duck Market",
+    "description": "Park Circle market and cafe combo voted one of Charleston's best. Creative drinks, fresh food, and a fun eclectic atmosphere in the heart of the neighborhood.",
+    "area": "North Charleston",
+    "searchHint": "Odd Duck Market Park Circle North Charleston SC"
+  },
+  {
+    "title": "Highfalutin Coffee Roasters",
+    "description": "James Island's own micro-roaster crafting small-batch beans on site. Watch the roasting process while sipping expertly brewed pour-overs and espresso.",
+    "area": "James Island",
+    "searchHint": "Highfalutin Coffee Roasters James Island SC"
+  },
+  {
+    "title": "Charleston Coffee Exchange",
+    "description": "West Ashley institution roasting beans in-house since day one. Wide selection of light and dark roasts, knowledgeable staff, and a loyal local following.",
+    "area": "West Ashley",
+    "searchHint": "Charleston Coffee Exchange Savannah Hwy West Ashley SC"
+  },
+  {
+    "title": "Broomwagon Coffee & Bikes",
+    "description": "Unique West Ashley cafe combining quality Second State coffee with a full bike shop. Grab an espresso while getting your wheels tuned — cycling culture meets coffee culture.",
+    "area": "West Ashley",
+    "searchHint": "Broomwagon Coffee West Ashley Charleston SC"
+  },
+  {
+    "title": "Café Roca",
+    "description": "Charming cafe with a focus on quality espresso and Latin-inspired flavors. Friendly service and a cozy atmosphere popular with the local community.",
+    "area": "West Ashley",
+    "searchHint": "Cafe Roca West Ashley Charleston SC"
+  },
+  {
+    "title": "Gold Star Coffee",
+    "description": "Tiny but mighty Johns Island coffee spot with bold, smooth brews and a dedicated local following. Quality over quantity in every cup.",
+    "area": "James Island",
+    "searchHint": "Gold Star Coffee Johns Island SC"
+  },
+  {
+    "title": "Harbinger Cafe & Bakery",
+    "description": "North Morrison Drive cafe pairing specialty coffee with fresh-baked pastries and creative breakfast options. A bright, airy space with a local neighborhood feel.",
+    "area": "Downtown Charleston",
+    "searchHint": "Harbinger Cafe Bakery Morrison Dr Charleston SC"
+  }
+]
