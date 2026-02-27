@@ -67,6 +67,13 @@ function ensureCoreTables(db: Database.Database) {
       action TEXT, old_data TEXT, new_data TEXT,
       created_at TEXT DEFAULT (datetime('now'))
     );
+    CREATE TABLE IF NOT EXISTS ideas (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      text TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'open',
+      created_at TEXT DEFAULT (datetime('now')),
+      resolved_at TEXT
+    );
   `);
 }
 
@@ -280,6 +287,41 @@ export const areasDb = {
 export const activitiesDb = {
   getAll(): ActivityRow[] {
     return getDb().prepare('SELECT * FROM activities ORDER BY name').all() as ActivityRow[];
+  },
+};
+
+// ── Ideas (backlog) ─────────────────────────────────────────────
+export interface IdeaRow {
+  id: number;
+  text: string;
+  status: string;
+  created_at: string;
+  resolved_at: string | null;
+}
+
+export const ideas = {
+  add(text: string): IdeaRow {
+    const stmt = getDb().prepare('INSERT INTO ideas (text) VALUES (?)');
+    const result = stmt.run(text);
+    return getDb().prepare('SELECT * FROM ideas WHERE id = ?').get(result.lastInsertRowid) as IdeaRow;
+  },
+
+  getOpen(): IdeaRow[] {
+    return getDb().prepare("SELECT * FROM ideas WHERE status = 'open' ORDER BY created_at ASC").all() as IdeaRow[];
+  },
+
+  getAll(): IdeaRow[] {
+    return getDb().prepare('SELECT * FROM ideas ORDER BY created_at DESC').all() as IdeaRow[];
+  },
+
+  resolve(id: number): boolean {
+    const result = getDb().prepare("UPDATE ideas SET status = 'resolved', resolved_at = datetime('now') WHERE id = ?").run(id);
+    return result.changes > 0;
+  },
+
+  setStatus(id: number, status: string): boolean {
+    const result = getDb().prepare('UPDATE ideas SET status = ? WHERE id = ?').run(status, id);
+    return result.changes > 0;
   },
 };
 

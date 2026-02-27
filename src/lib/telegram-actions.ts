@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { answerCallbackQuery, editMessage } from './telegram';
-import { spots, activitiesDb, venues, getDb } from './db';
+import { spots, activitiesDb, venues, ideas, getDb } from './db';
 import { invalidate } from './cache';
 
 function upsertWatchlist(venueId: string, name: string, area: string, reason: string) {
@@ -187,6 +187,32 @@ export async function handleTextCommand(text: string, chatId: string | number): 
     invalidate('api:spots');
     const venueNote = (spot.source === 'automated' && spot.venue_id) ? `\nVenue \`${spot.venue_id}\` added to watchlist.` : '';
     await send(`🗑 *Deleted*: ${spot.title} (ID: ${spotId})${venueNote}`);
+    return true;
+  }
+
+  const ideaMatch = text.match(/^\/idea\s+([\s\S]+)$/i);
+  if (ideaMatch) {
+    const ideaText = ideaMatch[1].trim();
+    if (!ideaText) {
+      await send('Usage: `/idea your idea here`');
+      return true;
+    }
+    const idea = ideas.add(ideaText);
+    await send(`💡 *Idea #${idea.id} saved*\n\n${ideaText}`);
+    return true;
+  }
+
+  if (text === '/ideas') {
+    const open = ideas.getOpen();
+    if (open.length === 0) {
+      await send('📭 No open ideas. Use `/idea your text` to add one.');
+      return true;
+    }
+    const lines = open.map((i) => {
+      const date = new Date(i.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      return `#${i.id} — ${i.text} _(${date})_`;
+    });
+    await send(`💡 *Open Ideas (${open.length})*\n\n${lines.join('\n\n')}`);
     return true;
   }
 
