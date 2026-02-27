@@ -33,26 +33,56 @@ function getDb(): Database.Database {
   return _db;
 }
 
+function ensureCoreTables(db: Database.Database) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS spots (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      venue_id TEXT, title TEXT NOT NULL, type TEXT NOT NULL DEFAULT 'Happy Hour',
+      source TEXT NOT NULL DEFAULT 'manual', status TEXT NOT NULL DEFAULT 'approved',
+      description TEXT, promotion_time TEXT, promotion_list TEXT, source_url TEXT,
+      submitter_name TEXT, manual_override INTEGER DEFAULT 0, photo_url TEXT,
+      last_update_date TEXT, pending_edit TEXT, pending_delete INTEGER DEFAULT 0,
+      submitted_at TEXT, edited_at TEXT,
+      created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now')),
+      lat REAL, lng REAL, area TEXT
+    );
+    CREATE TABLE IF NOT EXISTS venues (
+      id TEXT PRIMARY KEY, name TEXT NOT NULL, lat REAL, lng REAL,
+      address TEXT, website TEXT, area TEXT, photo_url TEXT, place_id TEXT,
+      operating_hours TEXT, created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS areas (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE,
+      lat REAL, lng REAL, zoom INTEGER DEFAULT 14,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS activities (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE,
+      icon TEXT, emoji TEXT, color TEXT, community_driven INTEGER DEFAULT 0,
+      hidden INTEGER DEFAULT 0, created_at TEXT DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS audit_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, table_name TEXT, row_id TEXT,
+      action TEXT, old_data TEXT, new_data TEXT,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+  `);
+}
+
 function runMigrations(db: Database.Database) {
+  ensureCoreTables(db);
+
   const spotCols = db.prepare("PRAGMA table_info(spots)").all() as { name: string }[];
   const spotColNames = new Set(spotCols.map(c => c.name));
-  if (!spotColNames.has('lat')) {
-    db.prepare("ALTER TABLE spots ADD COLUMN lat REAL").run();
-  }
-  if (!spotColNames.has('lng')) {
-    db.prepare("ALTER TABLE spots ADD COLUMN lng REAL").run();
-  }
-  if (!spotColNames.has('area')) {
-    db.prepare("ALTER TABLE spots ADD COLUMN area TEXT").run();
-  }
+  if (!spotColNames.has('lat')) db.prepare("ALTER TABLE spots ADD COLUMN lat REAL").run();
+  if (!spotColNames.has('lng')) db.prepare("ALTER TABLE spots ADD COLUMN lng REAL").run();
+  if (!spotColNames.has('area')) db.prepare("ALTER TABLE spots ADD COLUMN area TEXT").run();
 
   const actCols = db.prepare("PRAGMA table_info(activities)").all() as { name: string }[];
   const actColNames = new Set(actCols.map(c => c.name));
-  if (!actColNames.has('hidden')) {
-    db.prepare("ALTER TABLE activities ADD COLUMN hidden INTEGER DEFAULT 0").run();
-  }
+  if (!actColNames.has('hidden')) db.prepare("ALTER TABLE activities ADD COLUMN hidden INTEGER DEFAULT 0").run();
 
-  // Performance indexes — idempotent via IF NOT EXISTS
   db.prepare("CREATE INDEX IF NOT EXISTS idx_spots_source_status ON spots(source, status)").run();
   db.prepare("CREATE INDEX IF NOT EXISTS idx_spots_type ON spots(type)").run();
   db.prepare("CREATE INDEX IF NOT EXISTS idx_venues_area ON venues(area)").run();
