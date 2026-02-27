@@ -136,19 +136,38 @@ function getEasternNow(): Date {
 
 export type FreshnessLevel = 'fresh' | 'aging' | 'stale' | 'unknown';
 
-export function getFreshness(lastUpdateDate: string | null | undefined): {
+export function getFreshness(
+  verifiedDate: string | null | undefined,
+  updatedDate?: string | null,
+): {
   level: FreshnessLevel;
   label: string;
   daysAgo: number | null;
 } {
-  if (!lastUpdateDate) return { level: 'unknown', label: 'Unverified', daysAgo: null };
-  const updated = new Date(lastUpdateDate);
-  if (isNaN(updated.getTime())) return { level: 'unknown', label: 'Unverified', daysAgo: null };
+  if (!verifiedDate) return { level: 'unknown', label: 'Unverified', daysAgo: null };
+  const verified = new Date(verifiedDate);
+  if (isNaN(verified.getTime())) return { level: 'unknown', label: 'Unverified', daysAgo: null };
+
   const now = new Date();
-  const daysAgo = Math.floor((now.getTime() - updated.getTime()) / 86_400_000);
-  if (daysAgo <= 7) return { level: 'fresh', label: daysAgo === 0 ? 'Verified today' : `Verified ${daysAgo}d ago`, daysAgo };
-  if (daysAgo <= 14) return { level: 'aging', label: `Verified ${daysAgo}d ago`, daysAgo };
-  return { level: 'stale', label: `Verified ${daysAgo}d ago`, daysAgo };
+  const verifiedDays = Math.floor((now.getTime() - verified.getTime()) / 86_400_000);
+
+  const verifiedLabel = verifiedDays === 0 ? 'Verified today' : `Verified ${verifiedDays}d ago`;
+
+  let updatedLabel = '';
+  if (updatedDate) {
+    const updated = new Date(updatedDate);
+    if (!isNaN(updated.getTime())) {
+      const updatedDays = Math.floor((now.getTime() - updated.getTime()) / 86_400_000);
+      if (updatedDays > verifiedDays) {
+        updatedLabel = ` · Updated ${updatedDays}d ago`;
+      }
+    }
+  }
+
+  const label = verifiedLabel + updatedLabel;
+  if (verifiedDays <= 7) return { level: 'fresh', label, daysAgo: verifiedDays };
+  if (verifiedDays <= 14) return { level: 'aging', label, daysAgo: verifiedDays };
+  return { level: 'stale', label, daysAgo: verifiedDays };
 }
 
 export function isSpotActiveNow(spot: Spot): boolean {
