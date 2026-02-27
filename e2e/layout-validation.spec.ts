@@ -27,7 +27,7 @@ test.describe('Layout Validation - Header and Map', () => {
     expect(mapExists || await page.locator('body').isVisible()).toBeTruthy();
     
     // Click area dropdown if present and verify options appear
-    const areaButton = page.locator('button').filter({ hasText: /Daniel Island/i }).first();
+    const areaButton = page.locator('button').filter({ hasText: /Downtown Charleston|Daniel Island|Mount Pleasant|Sullivan|James Island/i }).first();
     if (await areaButton.isVisible({ timeout: 2000 }).catch(() => false)) {
       await areaButton.click();
       await page.waitForTimeout(500);
@@ -64,7 +64,7 @@ test.describe('Layout Validation - Header and Map', () => {
     expect(titleBox!.y).toBeLessThan(100); // Should be near top
     
     // Check both buttons are visible and same size
-    const areaButton = page.locator('button').filter({ hasText: /Daniel Island/i }).first();
+    const areaButton = page.locator('button').filter({ hasText: /Downtown Charleston|Daniel Island|Mount Pleasant|Sullivan|James Island/i }).first();
     const activityButton = page.locator('button').filter({ hasText: /Happy Hour/i }).first();
     
     await expect(areaButton).toBeVisible({ timeout: 5000 });
@@ -121,7 +121,7 @@ test.describe('Layout Validation - Header and Map', () => {
     await page.waitForTimeout(2000);
     
     // Find buttons
-    const areaButton = page.locator('button').filter({ hasText: /Daniel Island/i }).first();
+    const areaButton = page.locator('button').filter({ hasText: /Downtown Charleston|Daniel Island|Mount Pleasant|Sullivan|James Island/i }).first();
     const activityButton = page.locator('button').filter({ hasText: /Happy Hour/i }).first();
     
     await expect(areaButton).toBeVisible({ timeout: 5000 });
@@ -161,7 +161,7 @@ test.describe('Layout Validation - Header and Map', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1000);
     
-    const areaButtonMobile = page.locator('button').filter({ hasText: /Daniel Island/i }).first();
+    const areaButtonMobile = page.locator('button').filter({ hasText: /Downtown Charleston|Daniel Island|Mount Pleasant|Sullivan|James Island/i }).first();
     const activityButtonMobile = page.getByText('Happy Hour').first();
     
     const areaBoxMobile = await areaButtonMobile.boundingBox();
@@ -178,7 +178,7 @@ test.describe('Layout Validation - Header and Map', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1000);
     
-    const areaButtonDesktop = page.locator('button').filter({ hasText: /Daniel Island/i }).first();
+    const areaButtonDesktop = page.locator('button').filter({ hasText: /Downtown Charleston|Daniel Island|Mount Pleasant|Sullivan|James Island/i }).first();
     const activityButtonDesktop = page.getByText('Happy Hour').first();
     
     const areaBoxDesktop = await areaButtonDesktop.boundingBox();

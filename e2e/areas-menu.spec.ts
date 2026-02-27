@@ -19,7 +19,7 @@ test.describe('Areas Menu - Loads from areas.json', () => {
     await page.waitForTimeout(3000); // Wait for areas to load from API
 
     // Click the area selector button to open dropdown
-    const areaButton = page.locator('button').filter({ hasText: /Daniel Island|Select area/i }).first();
+    const areaButton = page.locator('button').filter({ hasText: /Downtown Charleston|Daniel Island|Mount Pleasant|Sullivan|James Island|Select area/i }).first();
     await expect(areaButton).toBeVisible({ timeout: 5000 });
     await areaButton.click();
     await page.waitForTimeout(500);
@@ -39,7 +39,7 @@ test.describe('Areas Menu - Loads from areas.json', () => {
     await page.waitForTimeout(3000);
 
     // Open area dropdown
-    const areaButton = page.locator('button').filter({ hasText: /Daniel Island|Select area/i }).first();
+    const areaButton = page.locator('button').filter({ hasText: /Downtown Charleston|Daniel Island|Mount Pleasant|Sullivan|James Island|Select area/i }).first();
     await areaButton.click();
     await page.waitForTimeout(500);
 
@@ -82,7 +82,7 @@ test.describe('Areas Menu - Loads from areas.json', () => {
     await page.waitForTimeout(3000);
 
     // Open dropdown
-    const areaButton = page.locator('button').filter({ hasText: /Daniel Island|Select area/i }).first();
+    const areaButton = page.locator('button').filter({ hasText: /Downtown Charleston|Daniel Island|Mount Pleasant|Sullivan|James Island|Select area/i }).first();
     await areaButton.click();
     await page.waitForTimeout(500);
 
