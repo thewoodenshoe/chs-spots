@@ -7,7 +7,9 @@
 
 const { getDb: initDb } = require('./utils/db');
 const { webSearch } = require('./utils/llm-client');
-const { log } = require('./utils/logger');
+const { createLogger } = require('./utils/logger');
+
+const { log } = createLogger('backfill-phones');
 
 const BATCH_SIZE = 10;
 const DELAY_BETWEEN_BATCHES_MS = 2000;
@@ -33,7 +35,7 @@ async function lookupPhones(venues) {
 
   const result = await webSearch({
     query: prompt,
-    log: (msg) => log('backfill-phones', msg),
+    log,
     timeoutMs: 30000,
   });
 
@@ -61,14 +63,14 @@ async function main() {
   `).all();
 
   const total = Math.min(venues.length, limit);
-  log('backfill-phones', `Found ${venues.length} venues without phone. Processing ${total}.${dryRun ? ' (DRY RUN)' : ''}`);
+  log(`Found ${venues.length} venues without phone. Processing ${total}.${dryRun ? ' (DRY RUN)' : ''}`);
 
   let updated = 0;
   let failed = 0;
 
   for (let i = 0; i < total; i += BATCH_SIZE) {
     const batch = venues.slice(i, Math.min(i + BATCH_SIZE, total));
-    log('backfill-phones', `Batch ${Math.floor(i / BATCH_SIZE) + 1}: ${batch.map(v => v.name).join(', ')}`);
+    log(`Batch ${Math.floor(i / BATCH_SIZE) + 1}: ${batch.map(v => v.name).join(', ')}`);
 
     try {
       const results = await lookupPhones(batch);
@@ -79,25 +81,25 @@ async function main() {
         if (!phone) continue;
 
         if (dryRun) {
-          log('backfill-phones', `[DRY] ${venue.name} -> ${phone}`);
+          log(`[DRY] ${venue.name} -> ${phone}`);
         } else {
           db.prepare('UPDATE venues SET phone = ?, updated_at = datetime(\'now\') WHERE id = ?').run(phone, venue.id);
-          log('backfill-phones', `Updated ${venue.name} -> ${phone}`);
+          log(`Updated ${venue.name} -> ${phone}`);
         }
         updated++;
       }
     } catch (err) {
-      log('backfill-phones', `Batch failed: ${err.message}`);
+      log(`Batch failed: ${err.message}`);
       failed += BATCH_SIZE;
     }
 
     if (i + BATCH_SIZE < total) await sleep(DELAY_BETWEEN_BATCHES_MS);
   }
 
-  log('backfill-phones', `Done. Updated: ${updated}, Failed batches: ${Math.ceil(failed / BATCH_SIZE)}`);
+  log(`Done. Updated: ${updated}, Failed batches: ${Math.ceil(failed / BATCH_SIZE)}`);
 }
 
 main().catch(err => {
-  log('backfill-phones', `Fatal: ${err.message}`);
+  log(`Fatal: ${err.message}`);
   process.exit(1);
 });
