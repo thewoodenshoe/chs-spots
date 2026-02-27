@@ -138,7 +138,7 @@ export default function AreaSelector({ selectedArea, onAreaChange, onMapRecenter
                 <div className="px-4 py-3 text-sm text-gray-500">No areas available</div>
               ) : (
                 <>
-                  {hasUserLocation && (
+                  {(hasUserLocation || selectedArea === NEAR_ME) && (
                     <>
                       <button
                         onClick={() => handleAreaSelect(NEAR_ME as Area)}

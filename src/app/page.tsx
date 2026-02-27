@@ -43,7 +43,7 @@ export default function Home() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const FALLBACK_AREA = 'Downtown Charleston';
   const FALLBACK_CENTER = { lat: 32.776, lng: -79.931, zoom: 15 };
-  const [selectedArea, setSelectedArea] = useState<Area>(FALLBACK_AREA);
+  const [selectedArea, setSelectedArea] = useState<Area>(NEAR_ME);
   const [selectedActivity, setSelectedActivity] = useState<SpotType>('Happy Hour');
   const [pinLocation, setPinLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [editingSpot, setEditingSpot] = useState<Spot | null>(null);
@@ -189,22 +189,19 @@ export default function Home() {
   const applyUserPosition = (userPos: { lat: number; lng: number }, skipAreaChange = false) => {
     setUserLocation(userPos);
     if (deepLinkActive.current || pendingDeepLink.current || skipAreaChange) return;
-    const dLat = userPos.lat - 32.776;
-    const dLng = userPos.lng - (-79.931);
-    const distKm = Math.sqrt(dLat * dLat + dLng * dLng) * 111;
-    if (distKm <= 50) {
-      const detectedArea = getAreaFromCoordinates(userPos.lat, userPos.lng);
-      setSelectedArea(detectedArea as Area);
-      setMapCenter({ lat: userPos.lat, lng: userPos.lng, zoom: 14 });
-    }
+    setMapCenter({ lat: userPos.lat, lng: userPos.lng, zoom: 14 });
   };
 
   useEffect(() => {
-    if (geoResolved.current || !navigator.geolocation) return;
+    if (geoResolved.current) return;
     geoResolved.current = true;
+    if (!navigator.geolocation) {
+      setSelectedArea(FALLBACK_AREA);
+      return;
+    }
     navigator.geolocation.getCurrentPosition(
       (pos) => applyUserPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => { /* denied */ },
+      () => { setSelectedArea(FALLBACK_AREA); },
     );
   }, [areaCenters]);
 
@@ -264,15 +261,12 @@ export default function Home() {
     setDeepLinkSpotId(null);
     setSelectedArea(area);
     trackAreaView(area);
-    if (area === NEAR_ME && userLocation) {
+    if (area === NEAR_ME) {
       trackNearMe();
-      const dLat = userLocation.lat - 32.776;
-      const dLng = userLocation.lng - (-79.931);
-      const distKm = Math.sqrt(dLat * dLat + dLng * dLng) * 111;
-      if (distKm <= 50) {
+      if (userLocation) {
         setMapCenter({ lat: userLocation.lat, lng: userLocation.lng, zoom: 13 });
       } else {
-        setMapCenter(FALLBACK_CENTER);
+        handleLocateMe();
       }
       return;
     }
