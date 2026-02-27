@@ -24,6 +24,10 @@ export interface Spot {
   venueId?: string;
   area?: string;
   manualOverride?: boolean;
+  venuePhone?: string;
+  venueAddress?: string;
+  venueWebsite?: string;
+  operatingHours?: Record<string, { open: string; close: string }>;
 }
 
 interface SpotsContextType {

@@ -35,6 +35,10 @@ function transformSpot(spot: SpotRow, venueMap: Map<string, VenueRow>) {
     venueId: spot.venue_id || undefined,
     area: venue?.area || spot.area || undefined,
     submitterName: spot.submitter_name || undefined,
+    venuePhone: venue?.phone || undefined,
+    venueAddress: venue?.address || undefined,
+    venueWebsite: venue?.website || undefined,
+    operatingHours: venue?.operating_hours ? safeJsonParse(venue.operating_hours) : undefined,
   };
   return transformed;
 }
