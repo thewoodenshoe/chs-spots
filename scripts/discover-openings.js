@@ -889,7 +889,9 @@ async function sendTelegramSummary(stats) {
       insertedNames.push(`${spot.classification === 'Recently Opened' ? '🆕' : '🔜'} ${spotTitle} (${area || 'Downtown Charleston'})`);
       log(`  ✅ #${newId}: ${spotTitle} [${spot.classification}] → ${area || 'Downtown Charleston'}`);
 
-      const secondaryTypes = detectSecondaryTypes(`${spotTitle} ${description}`, spot.classification);
+      const secondaryTypes = spot.classification === 'Recently Opened'
+        ? detectSecondaryTypes(`${spotTitle} ${description}`, spot.classification)
+        : [];
       for (const secType of secondaryTypes) {
         try {
           const secId = db.spots.insert({

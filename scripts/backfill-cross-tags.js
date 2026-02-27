@@ -13,7 +13,7 @@ const DRY_RUN = process.argv.includes('--dry-run');
 
 async function main() {
   const spots = db.getDb().prepare(
-    "SELECT * FROM spots WHERE type IN ('Recently Opened', 'Coming Soon') AND source = 'automated'",
+    "SELECT * FROM spots WHERE type = 'Recently Opened' AND source = 'automated'",
   ).all();
 
   console.log(`Scanning ${spots.length} spots for cross-tagging…`);
