@@ -366,18 +366,18 @@ export default function SpotListView({
           const promoTime = spot.promotionTime || spot.happyHourTime;
           const promoList = spot.promotionList ?? spot.happyHourList ?? [];
           const isExpanded = expandedId === spot.id;
+          const timeParts = promoTime ? promoTime.split(/\s*[•]\s*/).filter(Boolean) : [];
 
           return (
             <div
               key={spot.id}
               className="rounded-xl bg-white shadow-sm border border-gray-100 active:scale-[0.99] transition-transform touch-manipulation"
             >
-              {/* Main card row — always visible */}
+              {/* ── Collapsed row (always visible) ── */}
               <button
                 onClick={() => setExpandedId(isExpanded ? null : spot.id)}
                 className="flex w-full items-start gap-3 p-3 text-left"
               >
-                {/* Emoji circle */}
                 <span
                   className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-lg"
                   style={{ backgroundColor: color + '20' }}
@@ -385,12 +385,9 @@ export default function SpotListView({
                   {emoji}
                 </span>
 
-                {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-900 text-sm truncate">
-                      {spot.title}
-                    </span>
+                    <span className="font-semibold text-gray-900 text-sm truncate">{spot.title}</span>
                     {(isSearching || selectedArea === NEAR_ME) && spot.area && (
                       <span className="flex-shrink-0 rounded-full bg-teal-50 px-1.5 py-0.5 text-[10px] font-medium text-teal-600">
                         {spot.area}
@@ -399,32 +396,23 @@ export default function SpotListView({
                     {MIXED_ACTIVITIES.has(spot.type) && (() => {
                       const tag = getSubTag(spot.title);
                       return tag ? (
-                        <span className="flex-shrink-0 rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500">
-                          {tag}
-                        </span>
+                        <span className="flex-shrink-0 rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500">{tag}</span>
                       ) : null;
                     })()}
                     {spot.status === 'pending' && (
-                      <span className="flex-shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">
-                        Pending
-                      </span>
+                      <span className="flex-shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">Pending</span>
                     )}
                   </div>
 
                   {promoTime && (
                     <p className="mt-0.5 text-xs text-gray-500 truncate">
-                      <span className="font-semibold text-gray-600">
-                        {spot.type === 'Happy Hour' ? 'Happy Hour' : spot.type === 'Brunch' ? 'Brunch' : spot.type}:{' '}
-                      </span>
+                      <span className="font-semibold text-gray-600">{spot.type}: </span>
                       {promoTime}
                     </p>
                   )}
 
-                  {venueHours && (
-                    <p className="mt-0.5 text-xs text-gray-400 truncate">
-                      <span className="font-medium text-gray-500">Opening Hours: </span>
-                      {formatTodayHours(venueHours)}
-                    </p>
+                  {!promoTime && spot.description && (
+                    <p className="mt-0.5 text-xs text-gray-400 truncate">{spot.description}</p>
                   )}
 
                   {!isExpanded && promoList.length > 0 && (
@@ -435,26 +423,8 @@ export default function SpotListView({
                       }).join(' · ')}
                     </p>
                   )}
-
-                  {!promoTime && !venueHours && promoList.length === 0 && spot.description && (
-                    <p className="mt-0.5 text-xs text-gray-400 truncate">
-                      {spot.description}
-                    </p>
-                  )}
-
-                  {(() => {
-                    const f = getFreshness(spot.lastVerifiedDate, spot.lastUpdateDate);
-                    const dotColor = f.level === 'fresh' ? 'bg-green-400' : f.level === 'aging' ? 'bg-yellow-400' : f.level === 'stale' ? 'bg-red-400' : 'bg-gray-300';
-                    return (
-                      <span className="mt-0.5 inline-flex items-center gap-1 text-[10px] text-gray-400">
-                        <span className={`inline-block h-1.5 w-1.5 rounded-full ${dotColor}`} />
-                        {f.label}
-                      </span>
-                    );
-                  })()}
                 </div>
 
-                {/* Right side: active, time, distance, fav */}
                 <div className="flex flex-col items-end gap-1 flex-shrink-0">
                   {activeNow && (
                     <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700 whitespace-nowrap animate-pulse">
@@ -463,32 +433,21 @@ export default function SpotListView({
                   )}
                   {!activeNow && openStatus && openStatus.label && (
                     <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap ${
-                      openStatus.isOpen
-                        ? 'bg-emerald-50 text-emerald-600'
-                        : 'bg-gray-100 text-gray-500'
+                      openStatus.isOpen ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'
                     }`}>
                       {openStatus.label === 'Closing soon'
                         ? `Closes ${openStatus.closesAt}`
-                        : openStatus.isOpen
-                          ? `Open til ${openStatus.closesAt}`
-                          : 'Closed'}
+                        : openStatus.isOpen ? `Open til ${openStatus.closesAt}` : 'Closed'}
                     </span>
                   )}
                   {distance !== null && (
                     <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-600 whitespace-nowrap">
-                      {distance < 0.1
-                        ? '<0.1 mi'
-                        : distance < 10
-                          ? `${distance.toFixed(1)} mi`
-                          : `${Math.round(distance)} mi`}
+                      {distance < 0.1 ? '<0.1 mi' : distance < 10 ? `${distance.toFixed(1)} mi` : `${Math.round(distance)} mi`}
                     </span>
                   )}
                   <div className="flex items-center gap-1">
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleFavorite(spot.id);
-                      }}
+                      onClick={(e) => { e.stopPropagation(); handleToggleFavorite(spot.id); }}
                       className="p-0.5 transition-colors"
                       aria-label={fav ? 'Remove from saved' : 'Save spot'}
                     >
@@ -496,213 +455,203 @@ export default function SpotListView({
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                       </svg>
                     </button>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className={`h-4 w-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
+                    <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                     </svg>
                   </div>
                 </div>
               </button>
 
-              {/* Expanded detail */}
+              {/* ── Expanded detail ── */}
               {isExpanded && (
-                <div className="border-t border-gray-100 px-4 pb-3 pt-2 space-y-2">
-                  {/* Activity-specific times (Happy Hour / Brunch / etc.) */}
-                  {promoTime && (
-                    <div>
-                      <div className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-0.5">
-                        {spot.type === 'Happy Hour' ? 'Happy Hour' : spot.type === 'Brunch' ? 'Brunch Hours' : spot.type}
-                      </div>
-                      <div className="space-y-0.5">
-                        {promoTime.split(/\s*[•]\s*/).filter(Boolean).map((part, i) => (
-                          <div key={i} className="text-xs text-gray-700 leading-snug">{part}</div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                <div className="border-t border-gray-100 px-4 pb-3 pt-2">
 
-                  {/* Address & Phone */}
-                  {(venueAddress || venuePhone) && (
-                    <div className="flex flex-col gap-0.5">
-                      {venueAddress && (
+                  {/* ─── Section 1: Activity ─── */}
+                  {(promoTime || promoList.length > 0 || spot.description) && (
+                    <div className="space-y-1.5">
+                      {promoTime && (
+                        <div>
+                          <div className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-0.5">{spot.type}</div>
+                          {timeParts.map((part, i) => (
+                            <div key={i} className="text-xs text-gray-700 leading-snug">{part}</div>
+                          ))}
+                        </div>
+                      )}
+
+                      {promoList.length > 0 && (
+                        <div>
+                          <div className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-0.5">Specials</div>
+                          {promoList.map((item, i) => {
+                            const m = item.match(/^\[([^\]]+)\]\s*(.*)/);
+                            const label = m ? m[1] : null;
+                            const text = m ? m[2] : item;
+                            if (!text.trim()) return null;
+                            return (
+                              <div key={i} className="text-xs text-gray-600">
+                                {label && <span className="font-semibold text-gray-700">{label}: </span>}
+                                {text}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {!promoTime && promoList.length === 0 && spot.description && (
+                        <p className="text-xs text-gray-600">{spot.description}</p>
+                      )}
+
+                      {spot.sourceUrl && (
                         <a
-                          href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(venueAddress)}`}
+                          href={spot.sourceUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="flex items-start gap-1.5 text-xs text-gray-600 hover:text-teal-700 transition-colors"
+                          className="inline-flex items-center gap-1 text-xs font-medium text-teal-600 hover:text-teal-800 transition-colors"
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 flex-shrink-0 mt-0.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                           </svg>
-                          <span className="leading-snug">{venueAddress.replace(/, United States$/, '')}</span>
-                        </a>
-                      )}
-                      {venuePhone && (
-                        <a
-                          href={`tel:${venuePhone}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-teal-700 transition-colors"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                          </svg>
-                          {venuePhone}
+                          Visit website
                         </a>
                       )}
                     </div>
                   )}
 
-                  {/* Opening Hours */}
-                  {venueHours && (
-                    <div>
-                      <div className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-0.5">
-                        Opening Hours
-                      </div>
-                      <div className="space-y-0.5">
-                        {formatFullWeekHours(venueHours).map(({ day, hours: h, isToday }) => (
-                          <div key={day} className={`text-xs leading-snug flex gap-2 ${isToday ? 'text-gray-900 font-semibold' : 'text-gray-500'}`}>
-                            <span className="w-8">{day}</span>
-                            <span>{h}</span>
+                  {/* ─── Section 2: Venue Info ─── */}
+                  {(venuePhone || venueAddress || venueHours) && (
+                    <div className="mt-3 border-t border-gray-100 pt-2">
+                      <div className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-1">Venue Info</div>
+                      <div className="space-y-1">
+                        {venuePhone && (
+                          <a
+                            href={`tel:${venuePhone}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-teal-700 transition-colors"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                            {venuePhone}
+                          </a>
+                        )}
+                        {venueAddress && (
+                          <a
+                            href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(venueAddress)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex items-start gap-1.5 text-xs text-gray-600 hover:text-teal-700 transition-colors"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 flex-shrink-0 mt-0.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span className="leading-snug">{venueAddress.replace(/, United States$/, '')}</span>
+                          </a>
+                        )}
+                        {venueHours && (
+                          <div className="pt-1">
+                            <div className="text-[10px] font-medium text-gray-400 mb-0.5">Hours</div>
+                            {formatFullWeekHours(venueHours).map(({ day, hours: h, isToday }) => (
+                              <div key={day} className={`text-xs leading-snug flex gap-2 ${isToday ? 'text-gray-900 font-semibold' : 'text-gray-500'}`}>
+                                <span className="w-8">{day}</span>
+                                <span>{h}</span>
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        )}
                       </div>
                     </div>
                   )}
 
-                  {/* Specials */}
-                  {promoList.length > 0 && (
-                    <div>
-                      <div className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-0.5">
-                        Specials
-                      </div>
-                      <div className="space-y-0.5">
-                        {promoList.map((item, i) => {
-                          const m = item.match(/^\[([^\]]+)\]\s*(.*)/);
-                          const label = m ? m[1] : null;
-                          const text = m ? m[2] : item;
-                          if (!text.trim()) return null;
-                          return (
-                            <div key={i} className="text-xs text-gray-600">
-                              {label && <span className="font-semibold text-gray-700">{label}: </span>}
-                              {text}
-                            </div>
-                          );
-                        })}
-                      </div>
+                  {/* ─── Section 3: Listing Details ─── */}
+                  <div className="mt-3 border-t border-gray-100 pt-2">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-1.5">Listing</div>
+
+                    {(() => {
+                      const f = getFreshness(spot.lastVerifiedDate, spot.lastUpdateDate);
+                      const dotColor = f.level === 'fresh' ? 'bg-green-400' : f.level === 'aging' ? 'bg-yellow-400' : f.level === 'stale' ? 'bg-red-400' : 'bg-gray-300';
+                      return (
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <span className={`inline-block h-2 w-2 rounded-full ${dotColor}`} />
+                          <span className="text-[11px] text-gray-500">{f.label}</span>
+                        </div>
+                      );
+                    })()}
+
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <span
+                        className="rounded-full px-2 py-0.5 text-[10px] font-semibold text-white"
+                        style={{ backgroundColor: color }}
+                      >
+                        {emoji} {spot.type}
+                      </span>
                     </div>
-                  )}
 
-                  {/* Fallback description */}
-                  {!promoTime && promoList.length === 0 && spot.description && (
-                    <p className="text-xs text-gray-600">{spot.description}</p>
-                  )}
+                    {spot.photoUrl && (
+                      <div className="relative h-28 w-full overflow-hidden rounded-lg mb-2">
+                        <Image
+                          src={spot.photoUrl}
+                          alt={spot.title}
+                          fill
+                          className="object-cover"
+                          unoptimized
+                          onError={(e: SyntheticEvent<HTMLImageElement>) => {
+                            e.currentTarget.parentElement!.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
 
-                  {/* Photo */}
-                  {spot.photoUrl && (
-                    <div className="relative h-28 w-full overflow-hidden rounded-lg">
-                      <Image
-                        src={spot.photoUrl}
-                        alt={spot.title}
-                        fill
-                        className="object-cover"
-                        unoptimized
-                        onError={(e: SyntheticEvent<HTMLImageElement>) => {
-                          e.currentTarget.parentElement!.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onSpotSelect(spot); }}
+                        className="flex items-center gap-1 rounded-full bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-700 hover:bg-teal-100 transition-colors"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                        </svg>
+                        Map
+                      </button>
 
-                  {/* Action row */}
-                  <div className="flex items-center gap-2 pt-1">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSpotSelect(spot);
-                      }}
-                      className="flex items-center gap-1 rounded-full bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-700 hover:bg-teal-100 transition-colors"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                      </svg>
-                      Map
-                    </button>
-
-                    <a
-                      href={`https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lng}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="flex items-center gap-1 rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      Directions
-                    </a>
-
-                    {spot.sourceUrl && (
                       <a
-                        href={spot.sourceUrl}
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lng}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
+                        className="flex items-center gap-1 rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        Website
+                        Directions
                       </a>
-                    )}
 
-                    <button
-                      onClick={async (e) => {
-                        e.stopPropagation();
-                        const result = await shareSpot(spot.title, spot.id, spot.type, spot.area);
-                        if (result === 'copied' || result === 'shared') setShareToast(spot.id);
-                      }}
-                      className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-200 transition-colors"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                      </svg>
-                      {shareToastId === spot.id ? 'Copied!' : 'Share'}
-                    </button>
-
-                    {onEditSpot && (
                       <button
-                        onClick={(e) => {
+                        onClick={async (e) => {
                           e.stopPropagation();
-                          onEditSpot(spot);
+                          const result = await shareSpot(spot.title, spot.id, spot.type, spot.area);
+                          if (result === 'copied' || result === 'shared') setShareToast(spot.id);
                         }}
-                        className="ml-auto flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-200 transition-colors"
+                        className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-200 transition-colors"
                       >
-                        Suggest Edit
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                        </svg>
+                        {shareToastId === spot.id ? 'Copied!' : 'Share'}
                       </button>
-                    )}
-                  </div>
 
-                  {/* Last updated */}
-                  {spot.lastUpdateDate && (
-                    <p className="text-[10px] text-gray-400">
-                      Updated{' '}
-                      {new Date(spot.lastUpdateDate).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </p>
-                  )}
+                      {onEditSpot && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onEditSpot(spot); }}
+                          className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-200 transition-colors"
+                        >
+                          Suggest Edit
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
