@@ -43,7 +43,8 @@ const GOOGLE_MAPS_API_KEY =
   process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY ||
   process.env.GOOGLE_PLACES_KEY;
 
-const GROK_API_KEY = process.env.XAI_API_KEY || process.env.GROK_API_KEY || '';
+const { webSearch, getApiKey } = require('./utils/llm-client');
+
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_CHAT = process.env.TELEGRAM_ADMIN_CHAT_ID || '';
 
@@ -51,8 +52,8 @@ if (!GOOGLE_MAPS_API_KEY) {
   log('Error: No Google Places API key found');
   process.exit(1);
 }
-if (!GROK_API_KEY) {
-  log('Error: No Grok API key found (XAI_API_KEY)');
+if (!getApiKey()) {
+  log('Error: No Grok API key found (GROK_API_KEY / XAI_API_KEY)');
   process.exit(1);
 }
 
@@ -165,95 +166,26 @@ Only include venues in the greater Charleston SC area. Include bars with regular
 
   log('Calling Grok API with web_search...');
 
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 120000);
-
-    const res = await fetch('https://api.x.ai/v1/responses', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${GROK_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'grok-4-1-fast-reasoning',
-        temperature: 0.2,
-        input: [
-          { role: 'system', content: 'You are a Charleston SC live music researcher. Return only valid JSON arrays. No markdown fences, no commentary.' },
-          { role: 'user', content: prompt },
-        ],
-        tools: [{ type: 'web_search' }],
-      }),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeout);
-
-    if (!res.ok) {
-      const errBody = await res.text().catch(() => '');
-      log(`Grok API error: HTTP ${res.status} ${errBody.substring(0, 200)}`);
-      return [];
-    }
-
-    const data = await res.json();
-
-    let text = '';
-    if (data.output && Array.isArray(data.output)) {
-      for (const block of data.output) {
-        if (block.type === 'message' && Array.isArray(block.content)) {
-          for (const part of block.content) {
-            if (part.type === 'output_text' && part.text) text += part.text;
-          }
-        }
-      }
-    }
-    if (!text && data.choices?.[0]?.message?.content) {
-      text = data.choices[0].message.content;
-    }
-
-    if (!text) {
-      log('Grok API returned empty response');
-      return [];
-    }
-
-    const jsonMatch = text.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) {
-      log('Grok response contained no JSON array');
-      return [];
-    }
-
-    let items;
-    try {
-      items = JSON.parse(jsonMatch[0]);
-    } catch (e) {
-      log(`Grok JSON parse failed: ${e.message}`);
-      return [];
-    }
-
-    if (!Array.isArray(items)) return [];
-
-    const valid = items
-      .filter(item => item.venue && item.description)
-      .slice(0, 40)
-      .map(item => ({
-        name: item.venue.trim(),
-        address: (item.address || '').trim() || null,
-        area: VALID_AREAS.includes(item.neighborhood) ? item.neighborhood : null,
-        description: (item.description || '').trim(),
-        schedule: (item.schedule || '').trim() || null,
-        website: (item.website || '').trim() || null,
-      }));
-
-    log(`Grok API: ${items.length} results, ${valid.length} valid`);
-    return valid;
-  } catch (err) {
-    if (err.name === 'AbortError') {
-      log('Grok API timed out after 120s');
-    } else {
-      log(`Grok API error: ${err.message}`);
-    }
+  const result = await webSearch({ prompt, timeoutMs: 120000, log });
+  if (!result?.parsed || !Array.isArray(result.parsed)) {
+    log('Grok API returned no valid JSON array');
     return [];
   }
+
+  const valid = result.parsed
+    .filter(item => item.venue && item.description)
+    .slice(0, 40)
+    .map(item => ({
+      name: item.venue.trim(),
+      address: (item.address || '').trim() || null,
+      area: VALID_AREAS.includes(item.neighborhood) ? item.neighborhood : null,
+      description: (item.description || '').trim(),
+      schedule: (item.schedule || '').trim() || null,
+      website: (item.website || '').trim() || null,
+    }));
+
+  log(`Grok API: ${result.parsed.length} results, ${valid.length} valid`);
+  return valid;
 }
 
 // ── Main ────────────────────────────────────────────────────────

@@ -297,11 +297,12 @@ function isWithinDays(dateStr, days) {
 
 // ── Grok API Discovery ──────────────────────────────────────────
 
-const GROK_API_KEY = process.env.GROK_API_KEY || '';
+const { webSearch, chat, getApiKey } = require('./utils/llm-client');
+
 const VALID_AREAS = areasConfig.map(a => a.name);
 
 async function discoverViaGrok() {
-  if (!GROK_API_KEY) {
+  if (!getApiKey()) {
     log('  Grok API skipped: no GROK_API_KEY');
     return [];
   }
@@ -325,103 +326,28 @@ Only include the Charleston SC metro area. No national chains unless it is their
 
   log('  Calling Grok API with web_search...');
 
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 120000);
-
-    const res = await fetch('https://api.x.ai/v1/responses', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${GROK_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'grok-4-1-fast-reasoning',
-        temperature: 0.2,
-        input: [
-          { role: 'system', content: 'You are a Charleston SC restaurant industry researcher. Return only valid JSON arrays. No markdown fences, no commentary.' },
-          { role: 'user', content: prompt },
-        ],
-        tools: [{ type: 'web_search' }],
-      }),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeout);
-
-    if (!res.ok) {
-      const errBody = await res.text().catch(() => '');
-      log(`  ❌ Grok API error: HTTP ${res.status} ${errBody.substring(0, 200)}`);
-      return [];
-    }
-
-    const data = await res.json();
-
-    let text = '';
-    if (data.output && Array.isArray(data.output)) {
-      for (const block of data.output) {
-        if (block.type === 'message' && Array.isArray(block.content)) {
-          for (const part of block.content) {
-            if (part.type === 'output_text' && part.text) text += part.text;
-          }
-        }
-      }
-    }
-    if (!text && data.choices?.[0]?.message?.content) {
-      text = data.choices[0].message.content;
-    }
-
-    if (!text) {
-      log('  ⚠️ Grok API returned empty response');
-      logVerbose(`  Grok raw response: ${JSON.stringify(data).substring(0, 500)}`);
-      return [];
-    }
-
-    const jsonMatch = text.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) {
-      log('  ⚠️ Grok response contained no JSON array');
-      logVerbose(`  Grok text: ${text.substring(0, 500)}`);
-      return [];
-    }
-
-    let items;
-    try {
-      items = JSON.parse(jsonMatch[0]);
-    } catch (e) {
-      log(`  ⚠️ Grok JSON parse failed: ${e.message}`);
-      logVerbose(`  Grok JSON: ${jsonMatch[0].substring(0, 500)}`);
-      return [];
-    }
-
-    if (!Array.isArray(items)) {
-      log('  ⚠️ Grok response was not an array');
-      return [];
-    }
-
-    const valid = items
-      .filter(item => item.name && item.classification)
-      .slice(0, 50)
-      .map(item => ({
-        restaurantName: item.name.trim(),
-        classification: item.classification === 'Recently Opened' ? 'Recently Opened' : 'Coming Soon',
-        grokDescription: (item.description || '').trim(),
-        grokArea: VALID_AREAS.includes(item.area) ? item.area : null,
-        grokAddress: (item.address || '').trim() || null,
-        source: (item.source || 'Grok web search').trim(),
-        expectedOpen: (item.expected_open || '').trim() || null,
-        feed: 'Grok API',
-      }));
-
-    log(`  🤖 Grok API: ${items.length} results, ${valid.length} valid`);
-    return valid;
-  } catch (err) {
-    if (err.name === 'AbortError') {
-      log('  ❌ Grok API timed out (120s)');
-    } else {
-      log(`  ❌ Grok API failed: ${err.message}`);
-    }
+  const result = await webSearch({ prompt, timeoutMs: 120000, log });
+  if (!result?.parsed || !Array.isArray(result.parsed)) {
+    log('  ⚠️ Grok API returned no valid JSON array');
     return [];
   }
+
+  const valid = result.parsed
+    .filter(item => item.name && item.classification)
+    .slice(0, 50)
+    .map(item => ({
+      restaurantName: item.name.trim(),
+      classification: item.classification === 'Recently Opened' ? 'Recently Opened' : 'Coming Soon',
+      grokDescription: (item.description || '').trim(),
+      grokArea: VALID_AREAS.includes(item.area) ? item.area : null,
+      grokAddress: (item.address || '').trim() || null,
+      source: (item.source || 'Grok web search').trim(),
+      expectedOpen: (item.expected_open || '').trim() || null,
+      feed: 'Grok API',
+    }));
+
+  log(`  🤖 Grok API: ${result.parsed.length} results, ${valid.length} valid`);
+  return valid;
 }
 
 // ── Area Assignment ─────────────────────────────────────────────
@@ -464,48 +390,25 @@ function findAreaFromAddress(address) {
 // ── Grok Enrichment Fallback ────────────────────────────────────
 
 async function enrichViaGrok(name, address) {
-  if (!GROK_API_KEY) return null;
+  if (!getApiKey()) return null;
   const areaList = VALID_AREAS.map(a => `"${a}"`).join(', ');
-  const prompt = `For the restaurant/bar "${name}" in Charleston, SC${address ? ` (address: ${address})` : ''}:
-Return a JSON object with:
-- "area": which Charleston neighborhood? One of: ${areaList}
-- "address": the full street address
-- "venueType": "restaurant", "bar", "cafe", "brewery", or "bakery"
-- "description": one sentence about what it is
 
-Only return the JSON object, nothing else.`;
+  const result = await chat({
+    messages: [{
+      role: 'user',
+      content: `For the restaurant/bar "${name}" in Charleston, SC${address ? ` (address: ${address})` : ''}:\nReturn a JSON object with:\n- "area": which Charleston neighborhood? One of: ${areaList}\n- "address": the full street address\n- "venueType": "restaurant", "bar", "cafe", "brewery", or "bakery"\n- "description": one sentence about what it is\n\nOnly return the JSON object, nothing else.`,
+    }],
+    model: 'grok-3-mini-fast',
+    timeoutMs: 30000,
+    log: (msg) => logVerbose(msg),
+  });
 
-  try {
-    const res = await fetch('https://api.x.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${GROK_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'grok-3-mini-fast',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.1,
-      }),
-    });
-    if (!res.ok) {
-      logVerbose(`  Grok enrichment failed: HTTP ${res.status}`);
-      return null;
-    }
-    const data = await res.json();
-    const text = data.choices?.[0]?.message?.content?.trim();
-    if (!text) return null;
-
-    const jsonStr = text.replace(/```json\s*/g, '').replace(/```/g, '').trim();
-    const parsed = JSON.parse(jsonStr);
-    if (parsed.area && VALID_AREAS.includes(parsed.area)) {
-      log(`  🤖 Grok enriched "${name}" → area: ${parsed.area}, type: ${parsed.venueType || '?'}`);
-      return parsed;
-    }
-    logVerbose(`  Grok returned invalid area for "${name}": ${parsed.area}`);
-  } catch (err) {
-    logVerbose(`  Grok enrichment error for "${name}": ${err.message}`);
+  if (!result?.parsed) return null;
+  if (result.parsed.area && VALID_AREAS.includes(result.parsed.area)) {
+    log(`  🤖 Grok enriched "${name}" → area: ${result.parsed.area}, type: ${result.parsed.venueType || '?'}`);
+    return result.parsed;
   }
+  logVerbose(`  Grok returned invalid area for "${name}": ${result.parsed.area}`);
   return null;
 }
 

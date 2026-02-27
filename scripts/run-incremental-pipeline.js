@@ -21,6 +21,7 @@ const { loadConfig, saveConfig, updateConfigField, getRunDate } = require('./uti
 const { dataPath } = require('./utils/data-dir');
 const db = require('./utils/db');
 const { acquire: acquireLock, release: releaseLock } = require('./utils/pipeline-lock');
+const { archiveDirectory, cleanOldArchives } = require('./utils/archive');
 
 // Parse optional run_date parameter (YYYYMMDD format) - defaults to today if not provided
 // Flags like --confirm, --force etc. are NOT area filters
@@ -374,64 +375,6 @@ async function main() {
     // Before any today→previous overwrite, snapshot the current "previous"
     // (i.e. yesterday's data) to a dated archive directory so we keep a
     // rolling window of historical data for analysis.
-    const ARCHIVE_RETENTION_DAYS = 14;
-    
-    function archiveDirectory(sourceDir, archiveBase, dateLabel) {
-      if (!fs.existsSync(sourceDir)) return;
-      // Exclude archive/, hidden files, and non-data subdirectories
-      const EXCLUDE = new Set(['archive', 'archive-incremental', 'incremental-history', '.bulk-complete']);
-      const files = fs.readdirSync(sourceDir).filter(f => !f.startsWith('.') && !EXCLUDE.has(f));
-      if (files.length === 0) return;
-      
-      const archiveDir = path.join(archiveBase, dateLabel);
-      if (fs.existsSync(archiveDir)) {
-        console.log(`   📦 Archive ${archiveDir} already exists — skipping`);
-        return;
-      }
-      fs.mkdirSync(archiveDir, { recursive: true });
-      
-      let count = 0;
-      for (const item of files) {
-        const src = path.join(sourceDir, item);
-        const dst = path.join(archiveDir, item);
-        const stat = fs.statSync(src);
-        if (stat.isDirectory()) {
-          // For raw/ which has venue subdirectories (one level deep)
-          fs.mkdirSync(dst, { recursive: true });
-          const subFiles = fs.readdirSync(src);
-          for (const sf of subFiles) {
-            const sfSrc = path.join(src, sf);
-            if (fs.statSync(sfSrc).isFile()) {
-              fs.copyFileSync(sfSrc, path.join(dst, sf));
-            }
-          }
-          count++;
-        } else if (stat.isFile()) {
-          fs.copyFileSync(src, dst);
-          count++;
-        }
-      }
-      console.log(`   📦 Archived ${count} item(s) to ${archiveDir}`);
-    }
-    
-    function cleanOldArchives(archiveBase) {
-      if (!fs.existsSync(archiveBase)) return;
-      const cutoff = Date.now() - (ARCHIVE_RETENTION_DAYS * 24 * 60 * 60 * 1000);
-      const dirs = fs.readdirSync(archiveBase).filter(d => /^\d{8}$/.test(d));
-      for (const d of dirs) {
-        // Parse YYYYMMDD to a date
-        const y = parseInt(d.substring(0, 4));
-        const m = parseInt(d.substring(4, 6)) - 1;
-        const dd = parseInt(d.substring(6, 8));
-        const dirDate = new Date(y, m, dd).getTime();
-        if (dirDate < cutoff) {
-          const dirPath = path.join(archiveBase, d);
-          fs.rmSync(dirPath, { recursive: true, force: true });
-          console.log(`   🗑️  Cleaned old archive: ${d}`);
-        }
-      }
-    }
-    
     // Archive paths - Respect DATA_DIR
     const RAW_ARCHIVE_BASE = dataPath('raw', 'archive');
     const SILVER_TRIMMED_ARCHIVE_BASE = dataPath('silver_trimmed', 'archive');

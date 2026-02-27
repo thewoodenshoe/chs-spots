@@ -23,6 +23,7 @@ import { useActivities } from '@/contexts/ActivitiesContext';
 import { compressImageForUpload } from '@/utils/image';
 import { getAreaFromCoordinates } from '@/utils/area';
 import { getFavoriteIds } from '@/utils/favorites';
+import { useFilteredSpots, useVenueAreaMap, useSpotCounts } from '@/hooks/useSpotFiltering';
 
 const MapComponent = dynamic(() => import('@/components/MapComponent'), {
   ssr: false,
@@ -204,55 +205,15 @@ export default function Home() {
     );
   }, [areaCenters]);
 
-  const venueAreaById = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const v of venues) {
-      if (v.id && v.area) m.set(v.id, v.area);
-    }
-    return m;
-  }, [venues]);
-
+  const venueAreaById = useVenueAreaMap(venues);
   const isSearching = searchQuery.trim().length >= 2;
   const isNearMe = selectedArea === NEAR_ME;
-  const AREA_BYPASS_ACTIVITIES = ['Recently Opened', 'Coming Soon'];
-  const isAreaBypass = AREA_BYPASS_ACTIVITIES.includes(selectedActivity);
 
-  const spotCountsByActivity = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const spot of spots) {
-      if (spot.lat === 0 && spot.lng === 0) continue;
-      counts[spot.type] = (counts[spot.type] || 0) + 1;
-    }
-    return counts;
-  }, [spots]);
+  const spotCountsByActivity = useSpotCounts(spots);
 
-  const filteredSpots = useMemo(() => {
-    const query = searchQuery.toLowerCase().trim();
-    let results = spots.filter((spot) => {
-      if (spot.lat === 0 && spot.lng === 0) return false;
-      const activityMatch = spot.type === selectedActivity;
-      if (query) {
-        const searchMatch = spot.title.toLowerCase().includes(query) || (spot.description || '').toLowerCase().includes(query);
-        return activityMatch && searchMatch;
-      }
-      if (isNearMe || isAreaBypass) return activityMatch;
-      const spotArea = spot.area
-        || (spot.venueId ? venueAreaById.get(spot.venueId) : undefined)
-        || getAreaFromCoordinates(spot.lat, spot.lng);
-      return spotArea === selectedArea && activityMatch;
-    });
-
-    if (isNearMe && userLocation && !query) {
-      results.sort((a, b) => {
-        const da = (a.lat - userLocation.lat) ** 2 + (a.lng - userLocation.lng) ** 2;
-        const db = (b.lat - userLocation.lat) ** 2 + (b.lng - userLocation.lng) ** 2;
-        return da - db;
-      });
-      results = results.slice(0, 30);
-    }
-
-    return results;
-  }, [spots, selectedArea, selectedActivity, venueAreaById, searchQuery, isNearMe, isAreaBypass, userLocation]);
+  const filteredSpots = useFilteredSpots({
+    spots, selectedArea, selectedActivity, searchQuery, userLocation, venueAreaById,
+  });
 
   useEffect(() => {
     if (deepLinkActive.current || pendingDeepLink.current) return;

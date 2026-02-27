@@ -60,8 +60,7 @@ const SERVER_URL = process.env.SERVER_PUBLIC_URL || '';
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_CHAT = process.env.TELEGRAM_ADMIN_CHAT_ID || '';
-const GROK_API_KEY = process.env.GROK_API_KEY || '';
-const GROK_API_URL = 'https://api.x.ai/v1/chat/completions';
+const { chat, getApiKey } = require('../utils/llm-client');
 
 // ── Helpers ─────────────────────────────────────────────────────
 async function umamiLogin() {
@@ -1345,35 +1344,24 @@ async function main() {
 
       // Try LLM-generated summary
       let llmSummary = null;
-      if (GROK_API_KEY) {
-        try {
-          const summaryData = {
-            date: today, pipelineStatus: pStatus, totalSpots: pipeline.totalSpots,
-            visitors: { today: visitors24h, week: visitors7d, month: visitors30d },
-            sessions: { total: sessions, engaged },
-            actions: pipeline.actions.slice(0, 5).map(a => ({ severity: a.severity, title: a.title })),
-            confidenceReview: { flagged: pipeline.confidenceFlagged?.length || 0, rejected: pipeline.confidenceRejected?.length || 0, llmAutoApplied: pipeline.llmAutoApplied || 0 },
-            recentlyOpened: roCount, comingSoon: csCount,
-          };
-          const res = await fetch(GROK_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${GROK_API_KEY}` },
-            body: JSON.stringify({
-              model: 'grok-4-fast-reasoning',
-              messages: [
-                { role: 'system', content: 'You are the daily report summarizer for Charleston Finds & Deals, a Charleston SC restaurant/bar deals app. Write a concise 2-3 sentence summary of today\'s report. Be direct, highlight anything unusual or noteworthy. Use plain text, no markdown. Keep it under 280 characters.' },
-                { role: 'user', content: JSON.stringify(summaryData) },
-              ],
-              temperature: 0.3,
-            }),
-          });
-          if (res.ok) {
-            const data = await res.json();
-            llmSummary = data.choices?.[0]?.message?.content?.trim();
-          }
-        } catch (e) {
-          debugLog('llm-summary', e);
-        }
+      if (getApiKey()) {
+        const summaryData = {
+          date: today, pipelineStatus: pStatus, totalSpots: pipeline.totalSpots,
+          visitors: { today: visitors24h, week: visitors7d, month: visitors30d },
+          sessions: { total: sessions, engaged },
+          actions: pipeline.actions.slice(0, 5).map(a => ({ severity: a.severity, title: a.title })),
+          confidenceReview: { flagged: pipeline.confidenceFlagged?.length || 0, rejected: pipeline.confidenceRejected?.length || 0, llmAutoApplied: pipeline.llmAutoApplied || 0 },
+          recentlyOpened: roCount, comingSoon: csCount,
+        };
+        const result = await chat({
+          messages: [
+            { role: 'system', content: 'You are the daily report summarizer for Charleston Finds & Deals, a Charleston SC restaurant/bar deals app. Write a concise 2-3 sentence summary of today\'s report. Be direct, highlight anything unusual or noteworthy. Use plain text, no markdown. Keep it under 280 characters.' },
+            { role: 'user', content: JSON.stringify(summaryData) },
+          ],
+          temperature: 0.3,
+          timeoutMs: 30000,
+        });
+        if (result?.content) llmSummary = result.content.trim();
       }
 
       const lines = [

@@ -44,15 +44,7 @@ function logError(msg) {
 if (!fs.existsSync(GOLD_DIR)) fs.mkdirSync(GOLD_DIR, { recursive: true });
 if (!fs.existsSync(INCREMENTAL_HISTORY_DIR)) fs.mkdirSync(INCREMENTAL_HISTORY_DIR, { recursive: true });
 
-async function fetchWithTimeout(url, options = {}, timeoutMs = 120000) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-        return await fetch(url, { ...options, signal: controller.signal });
-    } finally {
-        clearTimeout(timer);
-    }
-}
+const { fetchWithTimeout, CHAT_URL, DEFAULT_MODEL } = require('./utils/llm-client');
 
 function parseAreaFilter(areaFilterRaw) {
     if (!areaFilterRaw) return null;
@@ -76,8 +68,6 @@ async function extractHappyHours(isIncremental = false) {
         console.error('Error: GROK_API_KEY is not set in environment variables.');
         process.exit(1);
     }
-    const GROK_API_URL = 'https://api.x.ai/v1/chat/completions';
-    const GROK_MODEL = 'grok-4-fast-reasoning';
     
     // Load LLM instructions once (system message) — xAI auto-caches identical
     // system messages at 75% discount ($0.05/M instead of $0.20/M input tokens)
@@ -335,14 +325,14 @@ async function extractHappyHours(isIncremental = false) {
         while (retries > 0) {
             let response;
             try {
-                response = await fetchWithTimeout(GROK_API_URL, {
+                response = await fetchWithTimeout(CHAT_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${GROK_API_KEY}`
                     },
                     body: JSON.stringify({
-                        model: GROK_MODEL,
+                        model: DEFAULT_MODEL,
                         messages: [
                             {
                                 role: 'system',

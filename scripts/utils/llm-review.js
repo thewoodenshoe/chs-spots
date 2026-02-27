@@ -1,19 +1,15 @@
 /**
  * LLM-powered confidence review for flagged/rejected spot entries.
  *
- * Sends batches of flagged entries to Grok for validation.
- * Returns structured decisions with confidence scores.
- *
  * Auto-apply thresholds:
- *   ≥85  → auto-apply (approve or reject), save to DB
- *   <85  → flag for human review in daily report
+ *   >=85  -> auto-apply (approve or reject), save to DB
+ *   <85   -> flag for human review in daily report
  */
 
-const GROK_API_URL = 'https://api.x.ai/v1/chat/completions';
-const GROK_MODEL = 'grok-4-fast-reasoning';
+const { chat, extractJsonArray } = require('./llm-client');
+
 const BATCH_SIZE = 10;
 const AUTO_APPLY_THRESHOLD = 85;
-const REQUEST_TIMEOUT_MS = 60000;
 
 const SYSTEM_PROMPT = `You are a data quality reviewer for a Charleston, SC restaurant deals app.
 
@@ -40,24 +36,11 @@ Return ONLY a JSON array. Each element must have:
   "reasoning": "<one sentence>"
 }`;
 
-async function fetchWithTimeout(url, options, timeoutMs = REQUEST_TIMEOUT_MS) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    return await fetch(url, { ...options, signal: controller.signal });
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
 function buildUserPrompt(entries) {
   const items = entries.map((e, i) => ({
-    index: i,
-    venue: e.venue,
+    index: i, venue: e.venue,
     type: e.type || e.activityType,
-    label: e.label,
-    times: e.times || 'N/A',
-    days: e.days || 'N/A',
+    label: e.label, times: e.times || 'N/A', days: e.days || 'N/A',
     flags: e.flags || e.confidenceFlags,
     heuristicScore: e.effectiveConfidence,
     llmOriginalScore: e.llmConfidence || e.confidence,
@@ -66,85 +49,37 @@ function buildUserPrompt(entries) {
 }
 
 function parseResponse(text) {
-  const jsonMatch = text.match(/\[[\s\S]*\]/);
-  if (!jsonMatch) return null;
-  try {
-    const arr = JSON.parse(jsonMatch[0]);
-    if (!Array.isArray(arr)) return null;
-    return arr.filter(r =>
-      typeof r.index === 'number'
-      && (r.decision === 'approve' || r.decision === 'reject')
-      && typeof r.confidence === 'number',
-    );
-  } catch {
-    return null;
-  }
+  const arr = extractJsonArray(text);
+  if (!Array.isArray(arr)) return null;
+  return arr.filter(r =>
+    typeof r.index === 'number'
+    && (r.decision === 'approve' || r.decision === 'reject')
+    && typeof r.confidence === 'number',
+  );
 }
 
-/**
- * Send a batch of flagged entries to Grok for review.
- * @param {Array} entries — flagged items with venue, type, label, times, days, flags
- * @param {string} apiKey — GROK_API_KEY
- * @param {Function} log — logging function
- * @returns {Array} — decisions: { index, decision, confidence, reasoning }
- */
 async function reviewBatch(entries, apiKey, log) {
-  const userPrompt = buildUserPrompt(entries);
+  const result = await chat({
+    messages: [
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user', content: buildUserPrompt(entries) },
+    ],
+    timeoutMs: 60000,
+    retries: 2,
+    retryDelayMs: 2000,
+    apiKey,
+    log,
+  });
 
-  let retries = 2;
-  let delay = 2000;
-
-  while (retries >= 0) {
-    try {
-      const response = await fetchWithTimeout(GROK_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: GROK_MODEL,
-          messages: [
-            { role: 'system', content: SYSTEM_PROMPT },
-            { role: 'user', content: userPrompt },
-          ],
-          temperature: 0.1,
-        }),
-      });
-
-      if (!response.ok) {
-        const body = await response.text();
-        throw new Error(`Grok API ${response.status}: ${body.slice(0, 200)}`);
-      }
-
-      const data = await response.json();
-      const text = data.choices?.[0]?.message?.content;
-      if (!text) throw new Error('Empty response from Grok API');
-
-      const decisions = parseResponse(text);
-      if (!decisions || decisions.length === 0) {
-        throw new Error(`Failed to parse LLM response: ${text.slice(0, 200)}`);
-      }
-
-      return decisions;
-    } catch (err) {
-      if (retries === 0) {
-        log(`  ❌ LLM review failed after retries: ${err.message}`);
-        return [];
-      }
-      log(`  ⚠️  LLM review retry (${err.message}), waiting ${delay}ms...`);
-      await new Promise(r => setTimeout(r, delay));
-      delay *= 2;
-      retries--;
-    }
+  if (!result) return [];
+  const decisions = parseResponse(result.content);
+  if (!decisions || decisions.length === 0) {
+    log(`  ❌ Failed to parse LLM review response: ${result.content.slice(0, 200)}`);
+    return [];
   }
-  return [];
+  return decisions;
 }
 
-/**
- * Review all flagged+rejected entries via LLM in batches.
- * Returns { autoApplied, needsHumanReview, errors }.
- */
 async function reviewAll(entries, apiKey, log) {
   const autoApplied = [];
   const needsHumanReview = [];
@@ -160,9 +95,7 @@ async function reviewAll(entries, apiKey, log) {
 
     for (const d of decisions) {
       if (d.index < 0 || d.index >= batch.length) continue;
-      const entry = batch[d.index];
-      const result = { ...entry, llmDecision: d.decision, llmReviewConfidence: d.confidence, llmReasoning: d.reasoning };
-
+      const result = { ...batch[d.index], llmDecision: d.decision, llmReviewConfidence: d.confidence, llmReasoning: d.reasoning };
       if (d.confidence >= AUTO_APPLY_THRESHOLD) {
         autoApplied.push(result);
       } else {
@@ -178,9 +111,7 @@ async function reviewAll(entries, apiKey, log) {
       }
     }
 
-    if (i + BATCH_SIZE < entries.length) {
-      await new Promise(r => setTimeout(r, 500));
-    }
+    if (i + BATCH_SIZE < entries.length) await new Promise(r => setTimeout(r, 500));
   }
 
   return { autoApplied, needsHumanReview, errors };

@@ -20,9 +20,9 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env.local') });
 const { dataPath } = require('./utils/data-dir');
 const db = require('./utils/db');
 
+const { chat, extractJsonArray, extractJsonObject, getApiKey } = require('./utils/llm-client');
+
 const SILVER_TRIMMED_DIR = dataPath('silver_trimmed', 'today');
-const GROK_API_URL = 'https://api.x.ai/v1/chat/completions';
-const GROK_MODEL = 'grok-4-fast-reasoning';
 
 const DAY_NAMES = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 const DAY_FULL = {
@@ -129,103 +129,51 @@ Rules:
 - Only look for REGULAR BUSINESS HOURS, not happy hour or event times
 - Output ONLY valid JSON, no explanation text`;
 
-async function llmExtractHours(text, venueName, venueId) {
-  const GROK_API_KEY = process.env.GROK_API_KEY;
-  if (!GROK_API_KEY) return null;
+async function llmExtractHours(text, venueName) {
+  if (!getApiKey()) return null;
 
-  const userPrompt = `Extract the regular operating/business hours for "${venueName}" from this website content:\n\n${text.substring(0, 8000)}`;
+  const result = await chat({
+    messages: [
+      { role: 'system', content: HOURS_SYSTEM_PROMPT },
+      { role: 'user', content: `Extract the regular operating/business hours for "${venueName}" from this website content:\n\n${text.substring(0, 8000)}` },
+    ],
+    temperature: 0,
+    timeoutMs: 30000,
+    log: (msg) => console.warn(msg),
+  });
 
-  try {
-    const response = await fetch(GROK_API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${GROK_API_KEY}` },
-      body: JSON.stringify({
-        model: GROK_MODEL,
-        messages: [
-          { role: 'system', content: HOURS_SYSTEM_PROMPT },
-          { role: 'user', content: userPrompt },
-        ],
-        temperature: 0,
-        max_tokens: 500,
-      }),
-    });
-    if (!response.ok) {
-      console.warn(`  [LLM] API error ${response.status} for ${venueName}`);
-      return null;
-    }
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content?.trim();
-    if (!content) return null;
-
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return null;
-
-    const parsed = JSON.parse(jsonMatch[0]);
-    if (!parsed.found || !parsed.hours) return null;
-    return parsed.hours;
-  } catch (err) {
-    console.warn(`  [LLM] Error for ${venueName}: ${err.message}`);
-    return null;
-  }
+  if (!result) return null;
+  const parsed = extractJsonObject(result.content);
+  if (!parsed?.found || !parsed?.hours) return null;
+  return parsed.hours;
 }
 
 // ── Tier 3: LLM knowledge query ────────────────────────────────
 
 async function llmKnowledgeQuery(venues) {
-  const GROK_API_KEY = process.env.GROK_API_KEY;
-  if (!GROK_API_KEY || venues.length === 0) return new Map();
+  if (!getApiKey() || venues.length === 0) return new Map();
 
   const venueList = venues.map((v, i) => `${i}. ${v.name} at ${v.address || 'Charleston, SC'}`).join('\n');
-  const userPrompt = `What are the regular operating hours for each of these restaurants/bars in Charleston, SC?
 
-${venueList}
+  const result = await chat({
+    messages: [
+      { role: 'system', content: 'You are a helpful assistant that knows operating hours for restaurants and bars in Charleston, SC. Return ONLY a valid JSON array.' },
+      { role: 'user', content: `What are the regular operating hours for each of these restaurants/bars in Charleston, SC?\n\n${venueList}\n\nReturn a JSON array where each element has:\n{"index": <number matching the list above>, "hours": {"mon": {"open": "11:00", "close": "22:00"}, "tue": ...}}\n\nUse 24-hour format. Day abbreviations: mon, tue, wed, thu, fri, sat, sun. If a day is closed, use "closed" as the value. If you don't know a venue's hours, still include it with "hours": null.\nReturn ONLY a valid JSON array.` },
+    ],
+    temperature: 0,
+    timeoutMs: 60000,
+    log: (msg) => console.warn(msg),
+  });
 
-Return a JSON array where each element has:
-{"index": <number matching the list above>, "hours": {"mon": {"open": "11:00", "close": "22:00"}, "tue": ...}}
+  if (!result?.parsed || !Array.isArray(result.parsed)) return new Map();
 
-Use 24-hour format. Day abbreviations: mon, tue, wed, thu, fri, sat, sun. If a day is closed, use "closed" as the value. If you don't know a venue's hours, still include it with "hours": null.
-Return ONLY a valid JSON array.`;
-
-  try {
-    const response = await fetch(GROK_API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${GROK_API_KEY}` },
-      body: JSON.stringify({
-        model: GROK_MODEL,
-        messages: [
-          { role: 'system', content: 'You are a helpful assistant that knows operating hours for restaurants and bars in Charleston, SC. Return ONLY a valid JSON array.' },
-          { role: 'user', content: userPrompt },
-        ],
-        temperature: 0,
-        max_tokens: 6000,
-      }),
-    });
-    if (!response.ok) {
-      console.warn(`  [LLM Knowledge] API error ${response.status}`);
-      return new Map();
-    }
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content?.trim();
-    if (!content) return new Map();
-
-    const jsonMatch = content.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) {
-      console.warn('  [LLM Knowledge] No JSON array found in response');
-      return new Map();
-    }
-
-    const parsed = JSON.parse(jsonMatch[0]);
-    const results = new Map();
-    for (const item of parsed) {
-      if (typeof item.index !== 'number' || item.index < 0 || item.index >= venues.length) continue;
-      if (!item.hours || typeof item.hours !== 'object') continue;
-      results.set(venues[item.index].id, item.hours);
-    }
-    return results;
-  } catch (err) {
-    console.warn(`  [LLM Knowledge] Error: ${err.message}`);
-    return new Map();
+  const results = new Map();
+  for (const item of result.parsed) {
+    if (typeof item.index !== 'number' || item.index < 0 || item.index >= venues.length) continue;
+    if (!item.hours || typeof item.hours !== 'object') continue;
+    results.set(venues[item.index].id, item.hours);
   }
+  return results;
 }
 
 // ── Main ────────────────────────────────────────────────────────

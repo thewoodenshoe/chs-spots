@@ -6,6 +6,13 @@ const crypto = require('crypto');
 const mockFetch = jest.fn();
 jest.mock('node-fetch', () => mockFetch);
 
+// Mock llm-client so fetchWithTimeout delegates to mockFetch
+jest.mock('../scripts/utils/llm-client', () => ({
+    fetchWithTimeout: jest.fn((url, options) => mockFetch(url, options)),
+    CHAT_URL: 'https://api.x.ai/v1/chat/completions',
+    DEFAULT_MODEL: 'grok-4-fast-reasoning',
+}));
+
 // Mock database module
 jest.mock('../scripts/utils/db', () => ({
     ensureSchema: jest.fn(),
