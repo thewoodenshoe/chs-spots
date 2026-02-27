@@ -20,6 +20,7 @@
 const fs = require('fs');
 const path = require('path');
 const db = require('./utils/db');
+const { detectSecondaryTypes } = require('./utils/activity-tagger');
 
 // ── Logging ─────────────────────────────────────────────────────
 
@@ -887,6 +888,28 @@ async function sendTelegramSummary(stats) {
       insertedCount++;
       insertedNames.push(`${spot.classification === 'Recently Opened' ? '🆕' : '🔜'} ${spotTitle} (${area || 'Downtown Charleston'})`);
       log(`  ✅ #${newId}: ${spotTitle} [${spot.classification}] → ${area || 'Downtown Charleston'}`);
+
+      const secondaryTypes = detectSecondaryTypes(`${spotTitle} ${description}`, spot.classification);
+      for (const secType of secondaryTypes) {
+        try {
+          const secId = db.spots.insert({
+            venue_id: venueId,
+            title: spotTitle,
+            type: secType,
+            source: 'automated',
+            status: 'approved',
+            description,
+            source_url: spot.website || null,
+            lat: spot.lat,
+            lng: spot.lng,
+            area: area || 'Downtown Charleston',
+            last_update_date: today,
+          });
+          log(`  🏷️  #${secId}: ${spotTitle} [${secType}] (cross-tagged)`);
+        } catch (secErr) {
+          log(`  ⚠️  Cross-tag "${secType}" failed for "${spotTitle}": ${secErr.message}`);
+        }
+      }
     } catch (err) {
       log(`  ❌ Failed to insert "${spotTitle}": ${err.message}`);
     }
