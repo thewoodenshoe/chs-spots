@@ -128,7 +128,6 @@ export default function Home() {
     const spotId = params.get('spot');
     if (spotId) {
       pendingDeepLink.current = spotId;
-      window.history.replaceState({}, '', window.location.pathname);
     } else if (!hasSeenWelcome()) {
       setViewMode('list');
     }
@@ -256,9 +255,16 @@ export default function Home() {
     setIsFilterOpen(true);
   };
 
-  const handleAreaChange = (area: Area) => {
+  const clearDeepLink = () => {
     deepLinkActive.current = false;
     setDeepLinkSpotId(null);
+    if (window.location.search.includes('spot=')) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  };
+
+  const handleAreaChange = (area: Area) => {
+    clearDeepLink();
     setSelectedArea(area);
     trackAreaView(area);
     if (area === NEAR_ME) {
@@ -523,8 +529,7 @@ export default function Home() {
             onFavoritesChange={(count) => setSavedCount(count)}
             onRefresh={handleRefresh}
             onWhatsNewSelect={(spot) => {
-              deepLinkActive.current = false;
-              setDeepLinkSpotId(null);
+              clearDeepLink();
               setSelectedActivity(spot.type as SpotType);
               const spotArea = spot.area || getAreaFromCoordinates(spot.lat, spot.lng);
               setSelectedArea(spotArea as Area);
@@ -644,8 +649,7 @@ export default function Home() {
         selectedActivity={selectedActivity}
         spotCounts={spotCountsByActivity}
         onActivityChange={(activity: SpotType) => {
-          deepLinkActive.current = false;
-          setDeepLinkSpotId(null);
+          clearDeepLink();
           setSelectedActivity(activity);
           trackActivityFilter(activity);
           const hasTimeData = activity === 'Happy Hour' || activity === 'Brunch' || activity === 'Live Music';
