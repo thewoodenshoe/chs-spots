@@ -259,6 +259,13 @@ Only include venues in the greater Charleston SC area. Include bars with regular
 // ── Main ────────────────────────────────────────────────────────
 
 async function main() {
+  const { acquire: acquireLock, release: releaseLock } = require('./utils/pipeline-lock');
+  const lock = acquireLock('discover-live-music');
+  if (!lock.acquired) {
+    log(`🔒 Pipeline locked by ${lock.holder} (PID ${lock.pid}). Waiting for next run.`);
+    process.exit(0);
+  }
+
   const startTime = Date.now();
   log('=== Live Music Discovery ===\n');
 
@@ -270,6 +277,7 @@ async function main() {
     log('No venues found from Grok API');
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
     await sendTelegram(`🎵 Live Music Discovery\nNo new venues found.\nElapsed: ${elapsed}s`);
+    releaseLock();
     db.closeDb();
     return;
   }
@@ -279,6 +287,12 @@ async function main() {
     "SELECT title FROM spots WHERE type = 'Live Music' AND status = 'approved'"
   ).all();
   const existingTitles = new Set(existingSpots.map(s => s.title.toLowerCase()));
+
+  // Load watchlist to skip excluded venues
+  const excludedIds = db.watchlist.getExcludedIds();
+  const excludedNames = new Set(
+    db.watchlist.getExcluded().map(w => (w.name || '').toLowerCase().trim()).filter(Boolean)
+  );
 
   // Also check venue names for photo reuse
   const allVenues = db.venues.getAll();
@@ -292,10 +306,19 @@ async function main() {
 
   for (const venue of grokVenues) {
     if (existingTitles.has(venue.name.toLowerCase())) continue;
+    if (excludedNames.has(venue.name.toLowerCase())) {
+      log(`  SKIP (watchlist excluded): ${venue.name}`);
+      continue;
+    }
 
     // Try venue match for photo/coords reuse
     const existingVenue = venuesByName.get(venue.name.toLowerCase());
     let lat, lng, placeId, photoUrl;
+
+    if (existingVenue && excludedIds.has(existingVenue.id)) {
+      log(`  SKIP (venue watchlisted): ${venue.name}`);
+      continue;
+    }
 
     if (existingVenue) {
       lat = existingVenue.lat;
@@ -373,7 +396,12 @@ async function main() {
   ].filter(Boolean).join('\n');
   await sendTelegram(msg);
 
+  releaseLock();
   db.closeDb();
 }
 
-main().catch(e => { console.error('Fatal:', e); process.exit(1); });
+main().catch(e => {
+  console.error('Fatal:', e);
+  try { require('./utils/pipeline-lock').release(); } catch {}
+  process.exit(1);
+});

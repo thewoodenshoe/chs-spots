@@ -22,6 +22,7 @@ const { loadConfig } = require('./utils/config');
 const { dataPath, reportingPath, configPath, getDataRoot } = require('./utils/data-dir');
 const { validateGoldEntries } = require('./utils/confidence');
 const { reviewAll } = require('./utils/llm-review');
+const { enrichAreas } = require('./utils/llm-enrich');
 
 // Logging setup
 const logDir = path.join(__dirname, '..', 'logs');
@@ -389,11 +390,20 @@ async function main() {
   const overriddenSpots = existingSpots.filter(s => s.source === 'automated' && s.manualOverride);
   const overriddenKeys = new Set(overriddenSpots.map(s => `${s.venueId}::${s.type}`));
 
+  const pendingActionSpots = db.spots.getPendingActionSpots();
+  const pendingKeys = new Set();
+  for (const ps of pendingActionSpots) {
+    if (ps.venue_id && ps.type) pendingKeys.add(`${ps.venue_id}::${ps.type}`);
+  }
+  if (pendingActionSpots.length > 0) {
+    log(`⏳ Found ${pendingActionSpots.length} spot(s) with pending user actions — will be preserved`);
+  }
+
   if (manualSpots.length > 0) {
     log(`📋 Found ${manualSpots.length} manual spot(s) — will be preserved`);
   }
   if (overriddenSpots.length > 0) {
-    log(`✏️  Found ${overriddenSpots.length} user-edited automated spot(s) — will be preserved\n`);
+    log(`✏️  Found ${overriddenSpots.length} user-edited automated spot(s) — will be preserved`);
   }
 
   // ── Load confidence review decisions ─────────────────────────
@@ -421,7 +431,7 @@ async function main() {
   const excludedIds = db.watchlist.getExcludedIds();
   let excludedCount = 0;
 
-  const seenKeys = new Set(overriddenKeys);
+  const seenKeys = new Set([...overriddenKeys, ...pendingKeys]);
 
   for (const row of goldRows) {
     try {
@@ -535,6 +545,34 @@ async function main() {
     log(`\n📋 Review decisions applied: ${reviewApprovedCount} approved, ${reviewRejectedCount} rejected`);
   }
 
+  // Staleness detection: check if upstream gold data changed or vanished for overridden spots
+  const staleOverrides = [];
+  const goldVenueIds = new Set(goldRows.map(r => r.venue_id));
+  for (const spot of overriddenSpots) {
+    if (!spot.venueId) continue;
+    const goldRow = goldRows.find(r => r.venue_id === spot.venueId);
+    if (!goldRow) {
+      staleOverrides.push({ spot, reason: 'upstream gold extraction no longer exists' });
+      continue;
+    }
+    const promoData = typeof goldRow.promotions === 'string' ? JSON.parse(goldRow.promotions) : goldRow.promotions;
+    if (!promoData?.found) {
+      staleOverrides.push({ spot, reason: 'upstream venue no longer reports promotions' });
+      continue;
+    }
+    const entries = promoData.entries || [];
+    const hasMatchingType = entries.some(e => (e.activityType || 'Happy Hour') === spot.type);
+    if (!hasMatchingType && promoData.times === undefined) {
+      staleOverrides.push({ spot, reason: `upstream no longer has ${spot.type} data` });
+    }
+  }
+  if (staleOverrides.length > 0) {
+    log(`\n⚠️  ${staleOverrides.length} overridden spot(s) may be stale:`);
+    for (const { spot, reason } of staleOverrides) {
+      log(`   📌 ${spot.title} [${spot.type}] — ${reason}`);
+    }
+  }
+
   // ── Detect content changes vs previous spots (streak tracking) ─
   const oldSpotMap = new Map();
   for (const s of existingSpots) {
@@ -572,15 +610,19 @@ async function main() {
   log(`\n📈 Content changes this run: ${updatedSpotNames.length}`);
 
   // ── Write to DB: atomic delete + insert in a transaction ──
+  // Only delete types this script manages (from gold extractions), not types from other scripts
+  const managedTypes = [...new Set(newAutomatedSpots.map(s => s.type))];
+  if (managedTypes.length === 0) managedTypes.push('Happy Hour', 'Brunch');
+  log(`\n🔄 Managed types: ${managedTypes.join(', ')}`);
   const { deletedCount } = db.transaction(() => {
-    const deletedCount = db.spots.deleteAutomated();
+    const deletedCount = db.spots.deleteAutomated(managedTypes);
     for (const spot of newAutomatedSpots) {
       const newId = db.spots.insert(spot);
       spot.id = newId;
     }
     return { deletedCount };
   });
-  log(`🗑️  Cleared ${deletedCount} old automated spot(s) from database`);
+  log(`🗑️  Cleared ${deletedCount} old automated spot(s) of types [${managedTypes.join(', ')}] from database`);
   log(`💾 Inserted ${newAutomatedSpots.length} automated spot(s) into database`);
 
   // Safety net: backfill any spots that ended up without an area from their venue
@@ -598,8 +640,36 @@ async function main() {
     log(`  ⚠️  Area backfill check failed: ${err.message}`);
   }
 
-  // Complete in-memory spots array (manual + overridden preserved in DB, new automated just inserted)
-  const spots = [...manualSpots, ...overriddenSpots, ...newAutomatedSpots];
+  // LLM-powered area enrichment for spots still missing an area
+  try {
+    const apiKey = process.env.GROK_API_KEY;
+    if (apiKey) {
+      const d = db.getDb();
+      const missingArea = d.prepare(
+        "SELECT s.id, s.title as name, s.lat, s.lng, v.address " +
+        "FROM spots s LEFT JOIN venues v ON v.id = s.venue_id " +
+        "WHERE (s.area IS NULL OR s.area = '' OR s.area = 'Unknown') LIMIT 50",
+      ).all();
+      if (missingArea.length > 0) {
+        const validAreas = db.areas.getNames();
+        log(`🤖 LLM area enrichment: ${missingArea.length} spot(s) missing area...`);
+        const enriched = await enrichAreas(missingArea, validAreas, apiKey, log);
+        if (enriched.length > 0) {
+          const updateStmt = d.prepare('UPDATE spots SET area = ? WHERE id = ?');
+          for (const e of enriched) {
+            updateStmt.run(e.area, e.id);
+          }
+          log(`  ✅ LLM assigned areas to ${enriched.length} spot(s)`);
+        }
+      }
+    }
+  } catch (err) {
+    log(`  ⚠️  LLM area enrichment failed: ${err.message}`);
+  }
+
+  // Complete in-memory spots array: re-read from DB to include all preserved spots
+  const allDbSpots = db.spots.getAll().map(mapSpotFromDb);
+  const spots = allDbSpots;
 
   // ── Dual-write: spots.json (backward compat during transition) ─
   fs.writeFileSync(SPOTS_PATH, JSON.stringify(spots, null, 2), 'utf8');
@@ -737,6 +807,9 @@ async function main() {
     generatedAt: new Date().toISOString(),
     flagged: remainingFlagged.map(mapEntry),
     rejected: remainingRejected.map(mapEntry),
+    staleOverrides: staleOverrides.map(({ spot, reason }) => ({
+      venue: spot.title, venueId: spot.venueId, type: spot.type, reason,
+    })),
     llmAutoApplied,
     reviewsInDb: reviewMap.size + llmAutoApplied,
   };

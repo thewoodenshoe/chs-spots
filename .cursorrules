@@ -1,5 +1,8 @@
 # Charleston Finds — Project Rules
 
+## ⚠️ MANDATORY: EVERY TASK ENDS WITH DEPLOY + NOTIFY
+**No task is complete until you have: (1) git committed and pushed, (2) deployed to the server via rsync + PM2 restart, (3) sent a Telegram notification summarizing the change. ALWAYS add these as the final TODO items in every task list. If you are about to respond to the user without having done all three, STOP and do them first. See DEPLOYMENT WORKFLOW section for exact commands.**
+
 ## YOUR ROLE
 You are the expert architect and senior staff engineer for chs-spots.
 Paul provides functional requirements only, or addresses bugs.
@@ -82,13 +85,13 @@ Every pipeline script must follow this skeleton:
 
 If a script has more than 5 helper functions, extract them to a dedicated utils module.
 
-## DEPLOYMENT WORKFLOW (ALWAYS follow after making changes)
+## DEPLOYMENT WORKFLOW (MANDATORY — EVERY CHANGE, NO EXCEPTIONS)
 
-After completing any code change:
+**You MUST complete ALL steps below after ANY code change. These steps MUST appear as TODO items (git-push, deploy, telegram) in every task list you create. Never mark a task as "done" until these are executed.**
 
 1. **Run tests**: `npx jest --no-cache` — all tests must pass
 2. **Build locally**: `npm run build` — build must succeed with zero type errors
-3. **Git push**: Commit changes and `git push` to the remote repository
+3. **Git commit + push**: Stage, commit with a descriptive message, and `git push`
 4. **Deploy to server**:
    - Rsync the build: `rsync -avz .next/ ubuntu:~/projects/chs-spots/.next/`
    - Rsync source files: `rsync -avz --exclude='node_modules' --exclude='.next' --exclude='data' --exclude='.env.local' ./ ubuntu:~/projects/chs-spots/`
@@ -102,6 +105,15 @@ After completing any code change:
    - Bot token: read from `.env.local` → `TELEGRAM_BOT_TOKEN`
    - Chat ID: read from `.env.local` → `TELEGRAM_ADMIN_CHAT_ID`
    - Include: what changed, spot/venue counts from health check
+
+## TODO LIST RULES
+
+Every TODO list you create MUST end with these three items (use these exact IDs):
+- `id: "git-push"` — "Git commit and push all changes"
+- `id: "deploy"` — "Deploy to server (rsync + PM2 restart + health check)"
+- `id: "telegram"` — "Send Telegram deployment notification"
+
+These are non-negotiable. If you create a TODO list without them, you are violating project rules.
 
 ## SERVER NOTES
 
@@ -122,3 +134,6 @@ Before marking any task as done, verify:
 - [ ] No empty catch blocks introduced
 - [ ] README updated if applicable (see README MAINTENANCE section)
 - [ ] Changed scripts tested against live DB on server (read-only verification)
+- [ ] Git committed and pushed (see DEPLOYMENT WORKFLOW)
+- [ ] Deployed to server via rsync + PM2 restart (see DEPLOYMENT WORKFLOW)
+- [ ] Telegram notification sent (see DEPLOYMENT WORKFLOW)

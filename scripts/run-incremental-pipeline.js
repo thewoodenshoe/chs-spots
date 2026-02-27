@@ -20,6 +20,7 @@ const fs = require('fs');
 const { loadConfig, saveConfig, updateConfigField, getRunDate } = require('./utils/config');
 const { dataPath } = require('./utils/data-dir');
 const db = require('./utils/db');
+const { acquire: acquireLock, release: releaseLock } = require('./utils/pipeline-lock');
 
 // Parse optional run_date parameter (YYYYMMDD format) - defaults to today if not provided
 // Flags like --confirm, --force etc. are NOT area filters
@@ -312,6 +313,12 @@ async function main() {
   const logPath = setupLogging();
   
   try {
+    const lock = acquireLock('run-incremental-pipeline');
+    if (!lock.acquired) {
+      console.log(`🔒 Pipeline locked by ${lock.holder} (PID ${lock.pid}, running ${Math.round(lock.ageMs / 1000)}s). Exiting.`);
+      process.exit(0);
+    }
+
     console.log('\n🚀 Starting Incremental Pipeline with State Management');
     console.log(`   Starting entire script at ${pipelineStartTimeEST} EST`);
     console.log(`   Log file: ${logPath}`);
@@ -687,14 +694,13 @@ async function main() {
         console.log(`   Incremental files preserved: ${incrementalFileCount} (for later analysis)`);
         
         finalizeManifest(currentRunContext.manifestPath, 'completed_successfully');
-        // Flush log stream before exiting — process.exit() would kill pending I/O
+        releaseLock();
         if (logFileStream) {
           logFileStream.end(() => {
             logFileStream = null;
             restoreConsole();
             process.exit(0);
           });
-          // Safety timeout in case end() callback never fires
           setTimeout(() => { restoreConsole(); process.exit(0); }, 2000);
         } else {
           restoreConsole();
@@ -864,9 +870,11 @@ async function main() {
     console.error(`   Last trimmed processed date: ${finalConfig.last_trimmed_processed_date || 'null'}`);
     finalizeManifest(currentRunContext?.manifestPath, finalConfig.last_run_status || 'failed');
     
+    releaseLock();
     restoreConsole();
     process.exit(1);
   } finally {
+    releaseLock();
     restoreConsole();
   }
 }

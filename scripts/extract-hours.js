@@ -17,14 +17,12 @@
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env.local') });
-const fetchModule = require('node-fetch');
-const fetch = typeof fetchModule === 'function' ? fetchModule : fetchModule.default;
 const { dataPath } = require('./utils/data-dir');
 const db = require('./utils/db');
 
 const SILVER_TRIMMED_DIR = dataPath('silver_trimmed', 'today');
 const GROK_API_URL = 'https://api.x.ai/v1/chat/completions';
-const GROK_MODEL = 'grok-3-mini';
+const GROK_MODEL = 'grok-4-fast-reasoning';
 
 const DAY_NAMES = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 const DAY_FULL = {
@@ -177,10 +175,16 @@ async function llmKnowledgeQuery(venues) {
   const GROK_API_KEY = process.env.GROK_API_KEY;
   if (!GROK_API_KEY || venues.length === 0) return new Map();
 
-  const venueList = venues.map(v => `- ${v.name} at ${v.address || 'Charleston, SC'}`).join('\n');
-  const userPrompt = `What are the regular operating hours for each of these restaurants/bars in Charleston, SC?\n\n${venueList}\n\nReturn a JSON object where keys are venue names (exactly as listed) and values follow this format:
-{"mon": {"open": "11:00", "close": "22:00"}, ...}
-Use 24-hour format. Day abbreviations: mon, tue, wed, thu, fri, sat, sun. If closed, use "closed". If you don't know, omit that venue. Return ONLY valid JSON.`;
+  const venueList = venues.map((v, i) => `${i}. ${v.name} at ${v.address || 'Charleston, SC'}`).join('\n');
+  const userPrompt = `What are the regular operating hours for each of these restaurants/bars in Charleston, SC?
+
+${venueList}
+
+Return a JSON array where each element has:
+{"index": <number matching the list above>, "hours": {"mon": {"open": "11:00", "close": "22:00"}, "tue": ...}}
+
+Use 24-hour format. Day abbreviations: mon, tue, wed, thu, fri, sat, sun. If a day is closed, use "closed" as the value. If you don't know a venue's hours, still include it with "hours": null.
+Return ONLY a valid JSON array.`;
 
   try {
     const response = await fetch(GROK_API_URL, {
@@ -189,11 +193,11 @@ Use 24-hour format. Day abbreviations: mon, tue, wed, thu, fri, sat, sun. If clo
       body: JSON.stringify({
         model: GROK_MODEL,
         messages: [
-          { role: 'system', content: 'You are a helpful assistant that knows operating hours for restaurants and bars. Return ONLY valid JSON.' },
+          { role: 'system', content: 'You are a helpful assistant that knows operating hours for restaurants and bars in Charleston, SC. Return ONLY a valid JSON array.' },
           { role: 'user', content: userPrompt },
         ],
         temperature: 0,
-        max_tokens: 4000,
+        max_tokens: 6000,
       }),
     });
     if (!response.ok) {
@@ -204,16 +208,18 @@ Use 24-hour format. Day abbreviations: mon, tue, wed, thu, fri, sat, sun. If clo
     const content = data.choices?.[0]?.message?.content?.trim();
     if (!content) return new Map();
 
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return new Map();
+    const jsonMatch = content.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) {
+      console.warn('  [LLM Knowledge] No JSON array found in response');
+      return new Map();
+    }
 
     const parsed = JSON.parse(jsonMatch[0]);
     const results = new Map();
-    for (const v of venues) {
-      const hours = parsed[v.name];
-      if (hours && typeof hours === 'object') {
-        results.set(v.id, hours);
-      }
+    for (const item of parsed) {
+      if (typeof item.index !== 'number' || item.index < 0 || item.index >= venues.length) continue;
+      if (!item.hours || typeof item.hours !== 'object') continue;
+      results.set(venues[item.index].id, item.hours);
     }
     return results;
   } catch (err) {
@@ -356,9 +362,9 @@ async function main() {
       console.warn('  GROK_API_KEY not set, skipping Tier 3');
       metrics.failed += tier3Queue.length;
     } else {
-      // Batch in groups of 15
-      for (let i = 0; i < tier3Queue.length; i += 15) {
-        const batch = tier3Queue.slice(i, i + 15);
+      for (let i = 0; i < tier3Queue.length; i += 8) {
+        const batch = tier3Queue.slice(i, i + 8);
+        console.log(`  Batch ${Math.floor(i / 8) + 1}/${Math.ceil(tier3Queue.length / 8)} (${batch.length} venues)...`);
         const results = await llmKnowledgeQuery(batch);
 
         for (const venue of batch) {
@@ -377,7 +383,7 @@ async function main() {
             console.log(`  ✗ ${venue.name}: unknown hours`);
           }
         }
-        if (i + 15 < tier3Queue.length) await new Promise(r => setTimeout(r, 1000));
+        if (i + 8 < tier3Queue.length) await new Promise(r => setTimeout(r, 1000));
       }
     }
     console.log(`  Tier 3 complete: ${metrics.tier3} found\n`);

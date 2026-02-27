@@ -86,8 +86,11 @@ const venues = {
       INSERT INTO venues (id, name, address, lat, lng, area, website, photo_url, types, raw_google_data, updated_at)
       VALUES (@id, @name, @address, @lat, @lng, @area, @website, @photo_url, @types, @raw_google_data, datetime('now'))
       ON CONFLICT(id) DO UPDATE SET
-        name=@name, address=@address, lat=@lat, lng=@lng, area=@area,
-        website=@website, photo_url=@photo_url, types=@types,
+        name=@name, address=@address, lat=@lat, lng=@lng,
+        area=COALESCE(@area, area),
+        website=COALESCE(@website, website),
+        photo_url=COALESCE(@photo_url, photo_url),
+        types=@types,
         raw_google_data=@raw_google_data, updated_at=datetime('now')
     `).run({
       id: v.id,
@@ -215,11 +218,24 @@ const spots = {
     return true;
   },
 
-  deleteAutomated() {
+  deleteAutomated(types) {
     const db = getDb();
-    const count = db.prepare("SELECT COUNT(*) as cnt FROM spots WHERE source = 'automated' AND manual_override = 0").get().cnt;
-    db.prepare("DELETE FROM spots WHERE source = 'automated' AND manual_override = 0").run();
+    const pendingGuard = "AND (pending_edit IS NULL OR pending_edit = '') AND pending_delete = 0";
+    if (types && types.length > 0) {
+      const placeholders = types.map(() => '?').join(',');
+      const count = db.prepare(`SELECT COUNT(*) as cnt FROM spots WHERE source = 'automated' AND manual_override = 0 ${pendingGuard} AND type IN (${placeholders})`).get(...types).cnt;
+      db.prepare(`DELETE FROM spots WHERE source = 'automated' AND manual_override = 0 ${pendingGuard} AND type IN (${placeholders})`).run(...types);
+      return count;
+    }
+    const count = db.prepare(`SELECT COUNT(*) as cnt FROM spots WHERE source = 'automated' AND manual_override = 0 ${pendingGuard}`).get().cnt;
+    db.prepare(`DELETE FROM spots WHERE source = 'automated' AND manual_override = 0 ${pendingGuard}`).run();
     return count;
+  },
+
+  getPendingActionSpots() {
+    return getDb().prepare(
+      "SELECT * FROM spots WHERE (pending_edit IS NOT NULL AND pending_edit != '') OR pending_delete = 1"
+    ).all();
   },
 
   maxId() {

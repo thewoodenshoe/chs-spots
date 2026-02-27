@@ -2,9 +2,29 @@
 
 import React, { useState, useMemo } from 'react';
 import { Spot } from '@/contexts/SpotsContext';
-import { useVenues } from '@/contexts/VenuesContext';
+import { useVenues, OperatingHours } from '@/contexts/VenuesContext';
 import { isSpotActiveNow } from '@/utils/time-utils';
 import { getOpenStatus } from '@/utils/active-status';
+
+const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
+const DAY_LABELS: Record<string, string> = {
+  sun: 'Sun', mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat',
+};
+function fmt12(t: string): string {
+  const [h, m] = t.split(':').map(Number);
+  const ap = h >= 12 ? 'pm' : 'am';
+  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return m ? `${h12}:${String(m).padStart(2, '0')}${ap}` : `${h12}${ap}`;
+}
+function weekHours(hours: OperatingHours | null) {
+  if (!hours) return [];
+  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
+  const todayIdx = now.getDay();
+  return DAY_KEYS.map((key, idx) => {
+    const e = hours[key];
+    return { day: DAY_LABELS[key], h: !e || e === 'closed' ? 'Closed' : `${fmt12(e.open)} - ${fmt12(e.close)}`, isToday: idx === todayIdx };
+  });
+}
 import { shareSpot } from '@/utils/share';
 import { formatDescription } from '@/utils/format-description';
 
@@ -19,10 +39,12 @@ interface SpotInfoWindowProps {
 export default function SpotInfoWindow({ spot, activities, onEdit, onReport, onClose }: SpotInfoWindowProps) {
   const [shareCopied, setShareCopied] = useState(false);
   const { venues } = useVenues();
-  const openStatus = useMemo(() => {
-    const venue = spot.venueId ? venues.find(v => v.id === spot.venueId) : undefined;
-    return venue ? getOpenStatus(venue.operatingHours) : null;
+  const venue = useMemo(() => {
+    return spot.venueId ? venues.find(v => v.id === spot.venueId) : undefined;
   }, [spot.venueId, venues]);
+  const openStatus = useMemo(() => {
+    return venue ? getOpenStatus(venue.operatingHours) : null;
+  }, [venue]);
 
   return (
     <div className="text-sm min-w-[200px] max-w-[300px]">
@@ -62,13 +84,14 @@ export default function SpotInfoWindow({ spot, activities, onEdit, onReport, onC
         )}
       </div>
 
-      {/* Schedule / Time */}
+      {/* Activity-specific times */}
       {(spot.promotionTime || spot.happyHourTime) && (() => {
         const raw = spot.promotionTime || spot.happyHourTime || '';
         const parts = raw.split(/\s*[•]\s*/).map((p: string) => p.trim()).filter(Boolean);
+        const label = spot.type === 'Happy Hour' ? 'Happy Hour' : spot.type === 'Brunch' ? 'Brunch Hours' : spot.type;
         return (
           <div className="mb-2">
-            <div className="font-semibold text-gray-700 mb-0.5 text-xs uppercase tracking-wide">Schedule</div>
+            <div className="font-semibold text-gray-700 mb-0.5 text-xs uppercase tracking-wide">{label}</div>
             <div className="space-y-0.5">
               {parts.map((part: string, idx: number) => (
                 <div key={idx} className="text-xs text-gray-800 leading-snug">{part}</div>
@@ -77,6 +100,21 @@ export default function SpotInfoWindow({ spot, activities, onEdit, onReport, onC
           </div>
         );
       })()}
+
+      {/* Opening Hours */}
+      {venue?.operatingHours && (
+        <div className="mb-2">
+          <div className="font-semibold text-gray-700 mb-0.5 text-xs uppercase tracking-wide">Opening Hours</div>
+          <div className="space-y-0.5">
+            {weekHours(venue.operatingHours).map(({ day, h, isToday }) => (
+              <div key={day} className={`text-xs leading-snug flex gap-2 ${isToday ? 'text-gray-900 font-bold' : 'text-gray-600'}`}>
+                <span className="w-8">{day}</span>
+                <span>{h}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Specials list */}
       {((spot.promotionList && spot.promotionList.length > 0) || (spot.happyHourList && spot.happyHourList.length > 0)) && (() => {

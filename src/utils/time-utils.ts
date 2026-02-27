@@ -86,8 +86,6 @@ const DAY_PATTERNS: Record<string, number[]> = {
   'saturday': [6], 'sat': [6],
 };
 
-const DAY_ORDER = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-
 function parseDays(raw: string): number[] | null {
   const dayPart = raw.split('•').slice(1).join('•').trim();
   if (!dayPart) return null;
@@ -132,6 +130,10 @@ function parseDays(raw: string): number[] | null {
   return collected.length > 0 ? collected : null;
 }
 
+function getEasternNow(): Date {
+  return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
+}
+
 export function isSpotActiveNow(spot: Spot): boolean {
   const start = getSpotStartMinutes(spot);
   const end = getSpotEndMinutes(spot);
@@ -139,19 +141,17 @@ export function isSpotActiveNow(spot: Spot): boolean {
 
   const raw = spot.promotionTime || spot.happyHourTime || '';
 
-  // Check day-of-week if specified
+  const now = getEasternNow();
+
   const allowedDays = parseDays(raw);
   if (allowedDays !== null) {
-    const today = new Date().getDay();
-    if (!allowedDays.includes(today)) return false;
+    if (!allowedDays.includes(now.getDay())) return false;
   }
 
-  const now = new Date();
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
 
   if (end >= start) {
     return nowMinutes >= start && nowMinutes <= end;
   }
-  // Wraps past midnight (e.g. 10pm-2am)
   return nowMinutes >= start || nowMinutes <= end;
 }

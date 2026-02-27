@@ -599,8 +599,6 @@ function isDuplicate(candidate, existingSpots, existingVenues) {
       logVerbose(`  Duplicate by title: "${candidate.placeName}" matches spot #${spot.id}`);
       return true;
     }
-    // Only match substrings if the existing title is a meaningful length
-    // and represents most of the candidate name (not a generic substring)
     if (spotTitle.length > 5 && candidateTitle.length > 5) {
       const shorter = spotTitle.length < candidateTitle.length ? spotTitle : candidateTitle;
       const longer = spotTitle.length < candidateTitle.length ? candidateTitle : spotTitle;
@@ -618,10 +616,15 @@ function isDuplicate(candidate, existingSpots, existingVenues) {
         return true;
       }
     }
+    // Also check if any existing spot already references this venue
+    for (const spot of existingSpots) {
+      if (spot.venue_id === candidate.placeId) {
+        logVerbose(`  Duplicate by venue_id: "${candidate.placeName}" matches spot #${spot.id} "${spot.title}"`);
+        return true;
+      }
+    }
   }
 
-  // Only match proximity for same-type spots (don't dedup a Coming Soon
-  // against a Happy Hour at a nearby but different venue)
   if (candidate.lat && candidate.lng) {
     for (const spot of existingSpots) {
       if (!spot.lat || !spot.lng) continue;
@@ -728,6 +731,13 @@ async function sendTelegramSummary(stats) {
 // ── Main Pipeline ───────────────────────────────────────────────
 
 (async () => {
+  const { acquire: acquireLock, release: releaseLock } = require('./utils/pipeline-lock');
+  const lock = acquireLock('discover-openings');
+  if (!lock.acquired) {
+    log(`🔒 Pipeline locked by ${lock.holder} (PID ${lock.pid}). Waiting for next run.`);
+    process.exit(0);
+  }
+
   const startTime = Date.now();
   log('🔍 Nightly Restaurant Opening Discovery');
   log(`   ${new Date().toISOString()}\n`);
@@ -769,6 +779,7 @@ async function sendTelegramSummary(stats) {
     log('⚠️  No articles found from any feed. Exiting.');
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
     await sendTelegramSummary({ articlesScanned: 0, candidatesFound: 0, geocoded: 0, insertedCount: 0, insertedNames: [], cleanedUp: 0, elapsed });
+    releaseLock();
     db.closeDb();
     return;
   }
@@ -828,6 +839,7 @@ async function sendTelegramSummary(stats) {
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
     log(`\n✨ Discovery complete in ${elapsed}s (0 new spots)`);
     await sendTelegramSummary({ articlesScanned: dedupedArticles.length, grokCount: grokResults.length, candidatesFound: 0, geocoded: 0, insertedCount: 0, insertedNames: [], cleanedUp, elapsed });
+    releaseLock();
     db.closeDb();
     return;
   }
@@ -878,16 +890,26 @@ async function sendTelegramSummary(stats) {
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
     log(`\n✨ Discovery complete in ${elapsed}s (0 new spots)`);
     await sendTelegramSummary({ articlesScanned: dedupedArticles.length, grokCount: grokResults.length, candidatesFound: uniqueCandidates.length, geocoded: 0, insertedCount: 0, insertedNames: [], cleanedUp, elapsed });
+    releaseLock();
     db.closeDb();
     return;
   }
 
-  // Step 4: Deduplicate against existing data
+  // Step 4: Deduplicate against database + watchlist
   log('Step 4: Deduplicating against database...');
   const existingSpots = db.spots.getAll({});
   const existingVenues = db.getDb().prepare('SELECT * FROM venues').all();
+  const excludedNames = new Set(
+    db.watchlist.getExcluded().map(w => (w.name || '').toLowerCase().trim()).filter(Boolean)
+  );
 
-  const newSpots = geocoded.filter(c => !isDuplicate(c, existingSpots, existingVenues));
+  const newSpots = geocoded.filter(c => {
+    if (excludedNames.has(c.placeName.toLowerCase().trim())) {
+      log(`  🚫 Watchlist excluded: ${c.placeName}`);
+      return false;
+    }
+    return !isDuplicate(c, existingSpots, existingVenues);
+  });
   log(`  ${newSpots.length} new spots after database dedup\n`);
 
   // Step 5: Insert new spots
@@ -923,9 +945,22 @@ async function sendTelegramSummary(stats) {
 
     const today = new Date().toISOString().split('T')[0];
 
+    // Link to existing venue if we got a Place ID match
+    let venueId = null;
+    if (spot.placeId) {
+      const matchedVenue = existingVenues.find(v => v.id === spot.placeId);
+      if (matchedVenue) {
+        venueId = matchedVenue.id;
+        if (!area || area === 'Downtown Charleston') {
+          area = matchedVenue.area || area;
+        }
+        log(`  🔗 Linked to venue: ${matchedVenue.name} (${matchedVenue.id})`);
+      }
+    }
+
     try {
       const newId = db.spots.insert({
-        venue_id: null,
+        venue_id: venueId,
         title: spotTitle,
         type: spot.classification,
         source: 'automated',
@@ -989,5 +1024,10 @@ async function sendTelegramSummary(stats) {
   });
 
   log(`\nLog saved to ${logPath}`);
+  releaseLock();
   db.closeDb();
-})();
+})().catch(err => {
+  console.error('Fatal:', err);
+  try { require('./utils/pipeline-lock').release(); } catch {}
+  process.exit(1);
+});

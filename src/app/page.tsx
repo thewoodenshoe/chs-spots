@@ -54,7 +54,7 @@ export default function Home() {
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [reportingSpot, setReportingSpot] = useState<Spot | null>(null);
   const [viewMode, setViewMode] = useState<'map' | 'list'>('list');
-  const [listSortMode, setListSortMode] = useState<SortMode>('active');
+  const [listSortMode, setListSortMode] = useState<SortMode>('activityActive');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [mapCenter, setMapCenter] = useState(FALLBACK_CENTER);
@@ -662,7 +662,7 @@ export default function Home() {
           setSelectedActivity(activity);
           trackActivityFilter(activity);
           const hasTimeData = activity === 'Happy Hour' || activity === 'Brunch' || activity === 'Live Music';
-          setListSortMode(hasTimeData ? 'active' : (userLocation ? 'nearest' : 'alpha'));
+          setListSortMode(hasTimeData ? 'activityActive' : (userLocation ? 'nearest' : 'alpha'));
         }}
       />
 

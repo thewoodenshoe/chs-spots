@@ -5,8 +5,9 @@ import { GoogleMap, Marker, InfoWindow, MarkerClusterer, useJsApiLoader } from '
 import { Spot } from '@/contexts/SpotsContext';
 import { useVenues, Venue } from '@/contexts/VenuesContext';
 import { useActivities } from '@/contexts/ActivitiesContext';
-import { SpotType } from './FilterModal';
+import { SpotType, ACTIVITY_GROUPS } from './FilterModal';
 import { NEAR_ME } from './AreaSelector';
+import { isOpenNow } from '@/utils/active-status';
 import CommunityBanner, { shouldShowBanner } from './CommunityBanner';
 import SpotInfoWindow from './SpotInfoWindow';
 import { CLUSTER_ICONS, createMarkerIcon, createVenueMarkerIcon } from '@/utils/marker-icons';
@@ -68,6 +69,35 @@ export default function MapComponent({
   const currentKey = `${selectedActivity}::${selectedArea}`;
   const emptyStateDismissed = emptyDismissedKey === currentKey;
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showOnlyVenueOpen, setShowOnlyVenueOpen] = useState(false);
+  const [showOnlyActivityActive, setShowOnlyActivityActive] = useState(false);
+
+  const whatsHappening = ACTIVITY_GROUPS.find(g => g.label === "What's Happening");
+  const whatsNew = ACTIVITY_GROUPS.find(g => g.label === "What's New");
+  const isWhatsHappening = whatsHappening?.activities.includes(selectedActivity) ?? false;
+  const isWhatsNew = whatsNew?.activities.includes(selectedActivity) ?? false;
+  const showVenueOpenToggle = !isWhatsNew;
+  const showActivityToggle = isWhatsHappening;
+
+  const venueMap = useMemo(() => {
+    const m = new Map<string, (typeof venues)[number]>();
+    for (const v of venues) m.set(v.id, v);
+    return m;
+  }, [venues]);
+
+  const visibleSpots = useMemo(() => {
+    let result = filteredSpots;
+    if (showOnlyVenueOpen) {
+      result = result.filter(s => {
+        const venue = s.venueId ? venueMap.get(s.venueId) : undefined;
+        return venue ? isOpenNow(venue.operatingHours) : false;
+      });
+    }
+    if (showOnlyActivityActive) {
+      result = result.filter(s => isSpotActiveNow(s));
+    }
+    return result;
+  }, [filteredSpots, showOnlyVenueOpen, showOnlyActivityActive, venueMap]);
 
   const [initialCenter] = useState(() =>
     mapCenter ? { lat: mapCenter.lat, lng: mapCenter.lng } : DEFAULT_CENTER
@@ -128,6 +158,13 @@ export default function MapComponent({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedSpot(deepLinkSpot);
   }, [deepLinkSpot, map]);
+
+  const [prevAct, setPrevAct] = useState(selectedActivity);
+  if (prevAct !== selectedActivity) {
+    setPrevAct(selectedActivity);
+    setShowOnlyVenueOpen(false);
+    setShowOnlyActivityActive(false);
+  }
 
   const AREA_BYPASS_ACTIVITIES = ['Recently Opened', 'Coming Soon'];
   const isAreaBypass = AREA_BYPASS_ACTIVITIES.includes(selectedActivity);
@@ -284,6 +321,17 @@ export default function MapComponent({
   const isCommunityActivity = activityConfig?.communityDriven === true;
   const showCommunityBanner = isCommunityActivity && shouldShowBanner(selectedActivity) && !bannerDismissedFor.has(selectedActivity);
 
+  const activityToggleLabel = (() => {
+    switch (selectedActivity) {
+      case 'Happy Hour': return 'Happy Hour Now';
+      case 'Brunch': return 'Brunch Active Now';
+      case 'Live Music': return 'Live Music Now';
+      default: return `${selectedActivity} Now`;
+    }
+  })();
+
+  const hasAnyToggle = showVenueOpenToggle || showActivityToggle;
+
   return (
     <div className="relative h-full w-full">
       {toastMessage && (
@@ -299,6 +347,37 @@ export default function MapComponent({
         />
       )}
 
+      {hasAnyToggle && !isSubmissionMode && (
+        <div className="absolute top-2 right-2 z-[55] flex flex-col gap-1.5">
+          {showVenueOpenToggle && (
+            <button
+              onClick={() => setShowOnlyVenueOpen(prev => !prev)}
+              className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-md transition-all ${
+                showOnlyVenueOpen
+                  ? 'bg-teal-600 text-white'
+                  : 'bg-white/95 text-gray-700 border border-gray-200 backdrop-blur-sm'
+              }`}
+            >
+              <span className={`inline-block h-2 w-2 rounded-full ${showOnlyVenueOpen ? 'bg-green-300' : 'bg-gray-300'}`} />
+              Venue Open Now
+            </button>
+          )}
+          {showActivityToggle && (
+            <button
+              onClick={() => setShowOnlyActivityActive(prev => !prev)}
+              className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-md transition-all ${
+                showOnlyActivityActive
+                  ? 'bg-teal-600 text-white'
+                  : 'bg-white/95 text-gray-700 border border-gray-200 backdrop-blur-sm'
+              }`}
+            >
+              <span className={`inline-block h-2 w-2 rounded-full ${showOnlyActivityActive ? 'bg-green-300' : 'bg-gray-300'}`} />
+              {activityToggleLabel}
+            </button>
+          )}
+        </div>
+      )}
+
       {isSubmissionMode && (
         <div className="absolute top-2 left-1/2 z-[55] -translate-x-1/2 rounded-full bg-teal-600 px-5 py-2 shadow-lg">
           <span className="text-sm font-semibold text-white">
@@ -307,7 +386,7 @@ export default function MapComponent({
         </div>
       )}
 
-      {!isSubmissionMode && filteredSpots.length === 0 && !showCommunityBanner && !emptyStateDismissed && (
+      {!isSubmissionMode && visibleSpots.length === 0 && !showCommunityBanner && !emptyStateDismissed && (
         <div className="absolute top-3 left-3 right-3 z-[55] animate-fade-in-down">
           <div className="rounded-xl bg-white/95 px-4 py-3 shadow-lg backdrop-blur-sm border border-gray-200">
             <div className="flex items-start gap-2">
@@ -350,7 +429,7 @@ export default function MapComponent({
             gestureHandling: 'greedy',
           }}
         >
-        {filteredSpots.length > 0 && (
+        {visibleSpots.length > 0 && (
           <MarkerClusterer
             options={{
               enableRetinaIcons: true,
@@ -363,7 +442,7 @@ export default function MapComponent({
           >
             {(clusterer) => (
               <>
-                {filteredSpots.map((spot) => {
+                {visibleSpots.map((spot) => {
                   const active = isSpotActiveNow(spot);
                   return (
                     <Marker

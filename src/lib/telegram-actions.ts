@@ -13,6 +13,10 @@ function upsertWatchlist(venueId: string, name: string, area: string, reason: st
   `).run(venueId, name, area, reason);
 }
 
+function clearConfidenceReviews(venueId: string) {
+  getDb().prepare('DELETE FROM confidence_reviews WHERE venue_id = ?').run(venueId);
+}
+
 function lookupArea(venueId: string | null): string {
   if (!venueId) return 'Unknown';
   const venue = venues.getById(venueId);
@@ -73,6 +77,7 @@ export async function handleReportAction(action: string, spotId: number, cq: any
   if (spot.venue_id) {
     const area = lookupArea(spot.venue_id);
     upsertWatchlist(spot.venue_id, spot.title, area, `Excluded via user report (spot #${spotId})`);
+    clearConfidenceReviews(spot.venue_id);
   }
   spots.delete(spotId);
   invalidate('api:spots');
@@ -144,6 +149,7 @@ export async function handleDeleteAction(action: string, spotId: number, cq: any
   if (spot.source === 'automated' && spot.venue_id) {
     const area = lookupArea(spot.venue_id);
     upsertWatchlist(spot.venue_id, spot.title, area, `Deleted via user request (spot #${spotId})`);
+    clearConfidenceReviews(spot.venue_id);
   }
   spots.delete(spotId);
   invalidate('api:spots');
@@ -175,6 +181,7 @@ export async function handleTextCommand(text: string, chatId: string | number): 
     if (spot.source === 'automated' && spot.venue_id) {
       const area = lookupArea(spot.venue_id);
       upsertWatchlist(spot.venue_id, spot.title, area, `Deleted via /delete command (spot #${spotId})`);
+      clearConfidenceReviews(spot.venue_id);
     }
     spots.delete(spotId);
     invalidate('api:spots');

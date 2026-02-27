@@ -2,15 +2,22 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import FilterModal, { SpotType } from '../FilterModal';
 
+const ALL_ACTIVITIES = [
+  { name: 'Happy Hour', icon: 'Martini', emoji: '🍹', color: '#0d9488' },
+  { name: 'Brunch', icon: 'Coffee', emoji: '🥞', color: '#d97706' },
+  { name: 'Live Music', icon: 'Music', emoji: '🎵', color: '#7c3aed' },
+  { name: 'Coffee Shops', icon: 'Coffee', emoji: '☕', color: '#92400e' },
+  { name: 'Rooftop Bars', icon: 'Building', emoji: '🏙️', color: '#6366f1' },
+  { name: 'Dog-Friendly', icon: 'Dog', emoji: '🐕', color: '#16a34a' },
+  { name: 'Fishing Spots', icon: 'Fish', emoji: '🎣', color: '#0284c7' },
+  { name: 'Landmarks & Attractions', icon: 'Landmark', emoji: '🏛️', color: '#b45309' },
+  { name: 'Recently Opened', icon: 'Sparkles', emoji: '🆕', color: '#16a34a' },
+  { name: 'Coming Soon', icon: 'Clock', emoji: '🔜', color: '#7c3aed' },
+];
+
 jest.mock('@/contexts/ActivitiesContext', () => ({
   useActivities: () => ({
-    activities: [
-      { name: 'Happy Hour', icon: 'Martini', emoji: '🍹', color: '#0d9488' },
-      { name: 'Brunch', icon: 'Coffee', emoji: '🥞', color: '#d97706' },
-      { name: 'Live Music', icon: 'Music', emoji: '🎵', color: '#7c3aed' },
-      { name: 'Recently Opened', icon: 'Sparkles', emoji: '🆕', color: '#16a34a' },
-      { name: 'Coming Soon', icon: 'Clock', emoji: '🔜', color: '#7c3aed' },
-    ],
+    activities: ALL_ACTIVITIES,
     loading: false,
     error: null,
   }),
@@ -24,6 +31,11 @@ describe('FilterModal', () => {
     'Happy Hour': 203,
     'Brunch': 118,
     'Live Music': 15,
+    'Coffee Shops': 22,
+    'Rooftop Bars': 8,
+    'Dog-Friendly': 31,
+    'Fishing Spots': 5,
+    'Landmarks & Attractions': 12,
     'Recently Opened': 0,
     'Coming Soon': 0,
   };
@@ -88,5 +100,24 @@ describe('FilterModal', () => {
 
     expect(screen.queryByText('Select Activity')).not.toBeInTheDocument();
     expect(screen.queryByText('Happy Hour')).not.toBeInTheDocument();
+  });
+
+  it('shows Explore group with all explore activities', () => {
+    render(<FilterModal {...defaultProps} />);
+
+    expect(screen.getByText('Explore')).toBeInTheDocument();
+    expect(screen.getByText('Coffee Shops')).toBeInTheDocument();
+    expect(screen.getByText('Rooftop Bars')).toBeInTheDocument();
+    expect(screen.getByText('Dog-Friendly')).toBeInTheDocument();
+    expect(screen.getByText('Fishing Spots')).toBeInTheDocument();
+    expect(screen.getByText('Landmarks & Attractions')).toBeInTheDocument();
+  });
+
+  it('every known activity appears in ACTIVITY_GROUPS', () => {
+    render(<FilterModal {...defaultProps} spotCounts={{ ...spotCounts, 'Recently Opened': 1, 'Coming Soon': 1 }} />);
+
+    for (const activity of ALL_ACTIVITIES) {
+      expect(screen.getByText(activity.name)).toBeInTheDocument();
+    }
   });
 });

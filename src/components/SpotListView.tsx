@@ -6,14 +6,46 @@ import { Spot } from '@/contexts/SpotsContext';
 import { NEAR_ME } from '@/components/AreaSelector';
 import { Activity } from '@/utils/activities';
 import { calculateDistanceMiles } from '@/utils/distance';
-import { getSpotStartMinutes, isSpotActiveNow } from '@/utils/time-utils';
+import { isSpotActiveNow } from '@/utils/time-utils';
 import { toggleFavorite } from '@/utils/favorites';
 import { shareSpot } from '@/utils/share';
-import { useVenues } from '@/contexts/VenuesContext';
+import { useVenues, OperatingHours } from '@/contexts/VenuesContext';
 import { getOpenStatus } from '@/utils/active-status';
 import WhatsNewStrip from '@/components/WhatsNewStrip';
 
-export type SortMode = 'alpha' | 'recent' | 'nearest' | 'time' | 'active';
+export type SortMode = 'alpha' | 'activityActive' | 'venueOpen' | 'nearest';
+
+const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
+const DAY_LABELS: Record<string, string> = {
+  sun: 'Sun', mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat',
+};
+
+function formatTime12(t: string): string {
+  const [h, m] = t.split(':').map(Number);
+  const ampm = h >= 12 ? 'pm' : 'am';
+  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return m ? `${h12}:${String(m).padStart(2, '0')}${ampm}` : `${h12}${ampm}`;
+}
+
+function formatTodayHours(hours: OperatingHours | null): string | null {
+  if (!hours) return null;
+  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
+  const day = DAY_KEYS[now.getDay()];
+  const entry = hours[day];
+  if (!entry || entry === 'closed') return 'Closed today';
+  return `${formatTime12(entry.open)} - ${formatTime12(entry.close)}`;
+}
+
+function formatFullWeekHours(hours: OperatingHours | null): { day: string; hours: string; isToday: boolean }[] {
+  if (!hours) return [];
+  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
+  const todayIdx = now.getDay();
+  return DAY_KEYS.map((key, idx) => {
+    const entry = hours[key];
+    const h = !entry || entry === 'closed' ? 'Closed' : `${formatTime12(entry.open)} - ${formatTime12(entry.close)}`;
+    return { day: DAY_LABELS[key], hours: h, isToday: idx === todayIdx };
+  });
+}
 
 const SUB_TAG_RULES: [RegExp, string][] = [
   [/\bDog Park\b/i, 'Dog Park'],
@@ -117,9 +149,9 @@ export default function SpotListView({
         distance: userLocation
           ? calculateDistanceMiles(userLocation.lat, userLocation.lng, spot.lat, spot.lng)
           : null,
-        startMinutes: getSpotStartMinutes(spot),
         activeNow: isSpotActiveNow(spot),
         openStatus: venue ? getOpenStatus(venue.operatingHours) : null,
+        venueHours: venue?.operatingHours ?? null,
         fav: favIds.has(spot.id),
       };
     });
@@ -127,26 +159,25 @@ export default function SpotListView({
     switch (sortMode) {
       case 'nearest':
         return withMeta.sort((a, b) => {
-          if (a.distance === null || b.distance === null) return 0;
+          if (a.distance === null && b.distance === null) return a.spot.title.localeCompare(b.spot.title);
+          if (a.distance === null) return 1;
+          if (b.distance === null) return -1;
           return a.distance - b.distance;
         });
-      case 'recent':
-        return withMeta.sort((a, b) => {
-          const da = a.spot.lastUpdateDate ? new Date(a.spot.lastUpdateDate).getTime() : 0;
-          const db = b.spot.lastUpdateDate ? new Date(b.spot.lastUpdateDate).getTime() : 0;
-          return db - da;
-        });
-      case 'time':
-        return withMeta.sort((a, b) => {
-          if (a.startMinutes === null && b.startMinutes === null) return 0;
-          if (a.startMinutes === null) return 1;
-          if (b.startMinutes === null) return -1;
-          return a.startMinutes - b.startMinutes;
-        });
-      case 'active':
+      case 'activityActive':
         return withMeta.sort((a, b) => {
           if (a.activeNow === b.activeNow) return a.spot.title.localeCompare(b.spot.title);
           return a.activeNow ? -1 : 1;
+        });
+      case 'venueOpen':
+        return withMeta.sort((a, b) => {
+          const aOpen = a.openStatus?.isOpen ? 1 : 0;
+          const bOpen = b.openStatus?.isOpen ? 1 : 0;
+          if (aOpen !== bOpen) return bOpen - aOpen;
+          const aClosing = a.openStatus?.label === 'Closing soon' ? 1 : 0;
+          const bClosing = b.openStatus?.label === 'Closing soon' ? 1 : 0;
+          if (aClosing !== bClosing) return bClosing - aClosing;
+          return a.spot.title.localeCompare(b.spot.title);
         });
       case 'alpha':
       default:
@@ -214,13 +245,10 @@ export default function SpotListView({
             className="rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 focus:border-teal-400 focus:outline-none"
           >
             <option value="alpha">A &ndash; Z</option>
-            {(selectedActivity === 'Happy Hour' || selectedActivity === 'Brunch') && (
-              <>
-                <option value="active">Active Now</option>
-                <option value="time">Time</option>
-              </>
+            {['Happy Hour', 'Brunch', 'Live Music'].includes(selectedActivity) && (
+              <option value="activityActive">Activity Active</option>
             )}
-            <option value="recent">Recently Updated</option>
+            <option value="venueOpen">Open Now</option>
             {userLocation && <option value="nearest">Nearest</option>}
           </select>
         </div>
@@ -234,9 +262,9 @@ export default function SpotListView({
         if (activeCount === 0) return null;
         return (
           <button
-            onClick={() => onSortChange('active')}
+            onClick={() => onSortChange('activityActive')}
             className={`flex items-center gap-2 px-4 py-2 text-xs font-medium transition-colors ${
-              sortMode === 'active'
+              sortMode === 'activityActive'
                 ? 'bg-green-50 text-green-700'
                 : 'bg-green-50/50 text-green-600 hover:bg-green-50'
             }`}
@@ -246,7 +274,7 @@ export default function SpotListView({
               <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
             </span>
             {activeCount} active right now
-            {sortMode !== 'active' && (
+            {sortMode !== 'activityActive' && (
               <span className="ml-auto text-[10px] text-green-500">Tap to sort</span>
             )}
           </button>
@@ -273,7 +301,7 @@ export default function SpotListView({
 
       {/* Scrollable card list */}
       <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
-        {sortedSpots.map(({ spot, distance, activeNow, openStatus, fav }) => {
+        {sortedSpots.map(({ spot, distance, activeNow, openStatus, venueHours, fav }) => {
           const cfg = getActivityConfig(spot.type);
           const emoji = cfg?.emoji || '📍';
           const color = cfg?.color || '#0d9488';
@@ -327,8 +355,17 @@ export default function SpotListView({
 
                   {promoTime && (
                     <p className="mt-0.5 text-xs text-gray-500 truncate">
-                      <span className="font-semibold text-gray-600">{spot.type}: </span>
+                      <span className="font-semibold text-gray-600">
+                        {spot.type === 'Happy Hour' ? 'Happy Hour' : spot.type === 'Brunch' ? 'Brunch' : spot.type}:{' '}
+                      </span>
                       {promoTime}
+                    </p>
+                  )}
+
+                  {venueHours && (
+                    <p className="mt-0.5 text-xs text-gray-400 truncate">
+                      <span className="font-medium text-gray-500">Opening Hours: </span>
+                      {formatTodayHours(venueHours)}
                     </p>
                   )}
 
@@ -338,6 +375,12 @@ export default function SpotListView({
                         const m = item.match(/^\[([^\]]+)\]\s*(.*)/);
                         return m ? m[2] : item;
                       }).join(' · ')}
+                    </p>
+                  )}
+
+                  {!promoTime && !venueHours && promoList.length === 0 && spot.description && (
+                    <p className="mt-0.5 text-xs text-gray-400 truncate">
+                      {spot.description}
                     </p>
                   )}
                 </div>
@@ -401,15 +444,32 @@ export default function SpotListView({
               {/* Expanded detail */}
               {isExpanded && (
                 <div className="border-t border-gray-100 px-4 pb-3 pt-2 space-y-2">
-                  {/* Times */}
+                  {/* Activity-specific times (Happy Hour / Brunch / etc.) */}
                   {promoTime && (
                     <div>
                       <div className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-0.5">
-                        {spot.type} Times
+                        {spot.type === 'Happy Hour' ? 'Happy Hour' : spot.type === 'Brunch' ? 'Brunch Hours' : spot.type}
                       </div>
                       <div className="space-y-0.5">
                         {promoTime.split(/\s*[•]\s*/).filter(Boolean).map((part, i) => (
                           <div key={i} className="text-xs text-gray-700 leading-snug">{part}</div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Opening Hours */}
+                  {venueHours && (
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-0.5">
+                        Opening Hours
+                      </div>
+                      <div className="space-y-0.5">
+                        {formatFullWeekHours(venueHours).map(({ day, hours: h, isToday }) => (
+                          <div key={day} className={`text-xs leading-snug flex gap-2 ${isToday ? 'text-gray-900 font-semibold' : 'text-gray-500'}`}>
+                            <span className="w-8">{day}</span>
+                            <span>{h}</span>
+                          </div>
                         ))}
                       </div>
                     </div>

@@ -60,6 +60,8 @@ const SERVER_URL = process.env.SERVER_PUBLIC_URL || '';
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_CHAT = process.env.TELEGRAM_ADMIN_CHAT_ID || '';
+const GROK_API_KEY = process.env.GROK_API_KEY || '';
+const GROK_API_URL = 'https://api.x.ai/v1/chat/completions';
 
 // ── Helpers ─────────────────────────────────────────────────────
 async function umamiLogin() {
@@ -1332,19 +1334,57 @@ async function main() {
           }).join('\n')
         : '\u2705 No actions needed';
 
-      const lines = [
-        `\uD83D\uDCCA CHS Finds \u2014 ${today}`,
-        '',
-        `\uD83C\uDFAF ACTIONS (${pipeline.actions.length}):`,
-        actionsSummary,
-        '',
+      // Build stats block for both fallback and LLM context
+      const statsBlock = [
         `\uD83D\uDC64 Users: ${visitors24h} today \u00B7 ${visitors7d} (7d) \u00B7 ${visitors30d} (30d)`,
         `\uD83D\uDCA1 Sessions: ${sessions} total, ${engaged} engaged`,
-        '',
         `\u2699\uFE0F Pipeline: ${pStatus}${pipeline.pipelineDuration ? ' \u00B7 ' + fmtDuration(pipeline.pipelineDuration) : ''}`,
         `\uD83D\uDCCD Content: ${pipeline.totalSpots} spots \u00B7 ${roCount} opened \u00B7 ${csCount} coming`,
         pipeline.llmProcessed != null ? `\uD83E\uDD16 LLM: ${pipeline.llmProcessed} processed, ${pipeline.llmErrors ?? 0} errors` : null,
-        pipeline.discoveryInserted != null ? `\uD83D\uDD0D Discovery: ${pipeline.discoveryInserted} new spots (${pipeline.discoveryRssArticles ?? 0} RSS + ${pipeline.discoveryGrokResults ?? 0} Grok)` : null,
+      ].filter(Boolean);
+
+      // Try LLM-generated summary
+      let llmSummary = null;
+      if (GROK_API_KEY) {
+        try {
+          const summaryData = {
+            date: today, pipelineStatus: pStatus, totalSpots: pipeline.totalSpots,
+            visitors: { today: visitors24h, week: visitors7d, month: visitors30d },
+            sessions: { total: sessions, engaged },
+            actions: pipeline.actions.slice(0, 5).map(a => ({ severity: a.severity, title: a.title })),
+            confidenceReview: { flagged: pipeline.confidenceFlagged?.length || 0, rejected: pipeline.confidenceRejected?.length || 0, llmAutoApplied: pipeline.llmAutoApplied || 0 },
+            recentlyOpened: roCount, comingSoon: csCount,
+          };
+          const res = await fetch(GROK_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${GROK_API_KEY}` },
+            body: JSON.stringify({
+              model: 'grok-4-fast-reasoning',
+              messages: [
+                { role: 'system', content: 'You are the daily report summarizer for Charleston Finds & Deals, a Charleston SC restaurant/bar deals app. Write a concise 2-3 sentence summary of today\'s report. Be direct, highlight anything unusual or noteworthy. Use plain text, no markdown. Keep it under 280 characters.' },
+                { role: 'user', content: JSON.stringify(summaryData) },
+              ],
+              temperature: 0.3,
+            }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            llmSummary = data.choices?.[0]?.message?.content?.trim();
+          }
+        } catch (e) {
+          debugLog('llm-summary', e);
+        }
+      }
+
+      const lines = [
+        `\uD83D\uDCCA CHS Finds \u2014 ${today}`,
+        '',
+        llmSummary ? `\uD83D\uDCA1 ${llmSummary}` : null,
+        llmSummary ? '' : null,
+        `\uD83C\uDFAF ACTIONS (${pipeline.actions.length}):`,
+        actionsSummary,
+        '',
+        ...statsBlock,
         '',
         `\uD83D\uDCCE ${reportUrl}`,
       ].filter(l => l != null);
