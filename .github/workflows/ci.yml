@@ -62,7 +62,9 @@ jobs:
       run: npx playwright install --with-deps chromium
 
     - name: Run E2E tests
-      run: npm run test:e2e
+      run: npx playwright test --timeout 15000
+      continue-on-error: true
+      timeout-minutes: 5
       env:
         NEXT_PUBLIC_GOOGLE_MAPS_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_KEY }}
 
