@@ -8,10 +8,9 @@ test.describe('Layout Validation - Header and Map', () => {
     // Wait for page to load
     await page.waitForLoadState('networkidle');
     
-    // Check title contains "CHS Finds"
-    const title = page.getByRole('heading', { name: /CHS Finds/i });
+    const title = page.getByRole('heading', { name: /Charleston Finds/i });
     await expect(title).toBeVisible();
-    await expect(title).toContainText('CHS Finds');
+    await expect(title).toContainText('Charleston Finds');
     
     // Wait for Google Map to load - check for map canvas or business label
     // Google Maps renders as iframe or canvas elements
@@ -55,7 +54,7 @@ test.describe('Layout Validation - Header and Map', () => {
     await page.waitForTimeout(2000);
     
     // Check title is visible and not overlapped
-    const title = page.getByRole('heading', { name: /CHS Finds/i });
+    const title = page.getByRole('heading', { name: /Charleston Finds/i });
     await expect(title).toBeVisible();
     
     // Get title position
@@ -95,7 +94,6 @@ test.describe('Layout Validation - Header and Map', () => {
     
     // Check header doesn't overlap with map content
     // Map should start below header
-    const mapContainer = page.locator('.gm-style, iframe[src*="google"]').or(page.locator('[style*="padding-top"]')).first();
     await page.waitForTimeout(1000);
     
     // Header should be fixed at top, content should have padding

@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Spot } from '@/contexts/SpotsContext';
+import { useVenues } from '@/contexts/VenuesContext';
 import { isSpotActiveNow } from '@/utils/time-utils';
+import { getOpenStatus } from '@/utils/active-status';
 import { shareSpot } from '@/utils/share';
 import { formatDescription } from '@/utils/format-description';
 
@@ -16,6 +18,11 @@ interface SpotInfoWindowProps {
 
 export default function SpotInfoWindow({ spot, activities, onEdit, onReport, onClose }: SpotInfoWindowProps) {
   const [shareCopied, setShareCopied] = useState(false);
+  const { venues } = useVenues();
+  const openStatus = useMemo(() => {
+    const venue = spot.venueId ? venues.find(v => v.id === spot.venueId) : undefined;
+    return venue ? getOpenStatus(venue.operatingHours) : null;
+  }, [spot.venueId, venues]);
 
   return (
     <div className="text-sm min-w-[200px] max-w-[300px]">
@@ -26,6 +33,21 @@ export default function SpotInfoWindow({ spot, activities, onEdit, onReport, onC
         {isSpotActiveNow(spot) && (
           <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">
             Active Now
+          </span>
+        )}
+        {openStatus && openStatus.label && (
+          <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+            openStatus.isOpen
+              ? 'bg-emerald-50 text-emerald-600'
+              : 'bg-gray-100 text-gray-500'
+          }`}>
+            {openStatus.isOpen
+              ? openStatus.label === 'Closing soon'
+                ? `Closing soon · til ${openStatus.closesAt}`
+                : `Open · til ${openStatus.closesAt}`
+              : openStatus.opensAt
+                ? `Closed · opens ${openStatus.opensAt}`
+                : 'Closed'}
           </span>
         )}
         {spot.status === 'pending' && (
@@ -134,6 +156,8 @@ export default function SpotInfoWindow({ spot, activities, onEdit, onReport, onC
           {spot.type}
         </span>
       </div>
+      {/* next/image doesn't work inside Google Maps InfoWindow DOM */}
+      { }
       {spot.photoUrl && (
         <img
           src={spot.photoUrl}

@@ -5,6 +5,11 @@ import { getCache, setCache } from '@/lib/cache';
 
 const VENUES_TTL = 300_000; // 5 minutes
 
+function safeJsonParse(value: string): unknown {
+  try { return JSON.parse(value); }
+  catch { return null; }
+}
+
 export async function GET(request: Request) {
   const ip = getClientIp(request);
   if (!checkRateLimit(`venues-get:${ip}`, 60, 60_000)) {
@@ -33,6 +38,7 @@ export async function GET(request: Request) {
       area: v.area || null,
       address: v.address || null,
       website: v.website || null,
+      operatingHours: v.operating_hours ? safeJsonParse(v.operating_hours) : null,
     }));
 
     setCache(cacheKey, transformed, VENUES_TTL);

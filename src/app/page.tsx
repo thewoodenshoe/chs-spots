@@ -37,7 +37,6 @@ export default function Home() {
   const { spots, addSpot, updateSpot, deleteSpot, loading: spotsLoading } = useSpots();
   const { showToast } = useToast();
   const [healthStatus, setHealthStatus] = useState<'checking' | 'ok' | 'error'>('checking');
-  const [isHydrated, setIsHydrated] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -122,7 +121,6 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    setIsHydrated(true);
     setSavedCount(getFavoriteIds().length);
 
     const params = new URLSearchParams(window.location.search);

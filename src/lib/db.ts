@@ -96,6 +96,9 @@ export interface VenueRow {
   photo_url: string | null;
   types: string | null;
   raw_google_data: string | null;
+  operating_hours: string | null;
+  hours_source: string | null;
+  hours_updated_at: string | null;
   created_at: string;
   updated_at: string;
 }

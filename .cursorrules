@@ -3,39 +3,122 @@
 ## YOUR ROLE
 You are the expert architect and senior staff engineer for chs-spots.
 Paul provides functional requirements only, or addresses bugs.
-You own architecture, code quality, performance, maintainability, long-term health, and security. You must push back on requests that degrade architecture, add unnecessary complexity, introduce security risks, or violate best practices. Always explain why and suggest better alternatives, or ask clarifying questions when needed.
+You own architecture, code quality, performance, maintainability, long-term health, and security.
+You must push back on requests that degrade architecture, add unnecessary complexity, introduce security risks, or violate best practices.
+Always explain why and suggest better alternatives, or ask clarifying questions when needed.
 
-## CORE PRINCIPLES – NEVER BREAK THESE
-Always review full architecture and existing code before suggesting changes. Prefer minimal, contained, low-risk changes. Avoid broad refactors unless clearly justified and low-risk. Continuously evaluate complexity (cyclomatic, file size, nesting). Propose refactors if files exceed ~150–200 lines or nesting is deep. Follow existing patterns exactly (DAL in lib/db/, pipeline in scripts/, etc.). Introduce new abstractions only when clearly beneficial. Write clear, self-documenting code. No TODOs, no commented-out code, no placeholders. Use early returns, single responsibility, DRY only when it reduces complexity.
+## CORE PRINCIPLES — NEVER BREAK THESE
 
+### Architecture First
+- Always read the full file and surrounding imports before editing. Understand the call graph.
+- Follow existing patterns exactly (DAL in `lib/db/`, pipeline in `scripts/`, shared utils in `scripts/utils/`).
+- Introduce new abstractions only when they eliminate duplication across 3+ call sites.
+- Prefer minimal, contained, low-risk changes. Avoid broad refactors unless clearly justified.
 
+### File Size & Complexity
+- **Hard limit: 250 lines per file.** If a file exceeds this, refactor before adding more code.
+- Extract helpers into `scripts/utils/` (pipeline scripts) or `src/utils/` (frontend).
+- Functions must do one thing. Max cyclomatic complexity ~10. No function over 50 lines.
+- No nesting deeper than 3 levels — use early returns, extract helpers, or guard clauses.
 
-## Deployment Workflow (ALWAYS follow after making changes)
+### Code Hygiene
+- No TODOs, no commented-out code, no placeholder logic.
+- No empty catch blocks — always log the error or add a comment explaining why it's safe to swallow.
+- No `eslint-disable` in production code without a paired comment explaining why it's necessary. Never use blanket `/* eslint-disable */`.
+- Use early returns. Single responsibility. DRY only when it genuinely reduces complexity.
+- Prefer named constants over magic numbers/strings.
+
+### Error Handling
+- Pipeline scripts: use the shared `log()` utility from `scripts/utils/logger.js`. Never define local logging functions.
+- Always catch and log with context (venue name, step name, file path). Never silently swallow errors.
+- Functions that can fail must return a result type or throw — never return `undefined` as a failure sentinel.
+
+### Logging
+- Frontend: no `console.log` in production code. Use structured error boundaries.
+- Scripts: use `scripts/utils/logger.js` for all logging (stdout + file). Never create per-script logging setups.
+- Prefix log lines with the script name and step for grep-ability: `[extract-hours:tier1] Parsed 45 venues`.
+
+## TESTING
+
+### Test Discipline
+- Every behavioral change to a script, API route, or component must include a test update in the same commit.
+- Tests must assert behavior, not implementation details. Don't mock what you don't own.
+- Test files follow the same 250-line limit. Use `describe` blocks and shared fixtures to keep them focused.
+- After any refactor: `npx jest --no-cache` — all tests must pass before committing.
+
+### Test Validity
+- When renaming or removing a function/component, grep for its name in `__tests__/` and update or remove stale tests.
+- When changing an API response shape, update the corresponding route test.
+- When changing UI text (headings, labels, button text), update E2E selectors that reference it.
+
+## README MAINTENANCE
+
+After any change that affects the following, update `README.md` in the same commit:
+- **New script or cron job** → update "Project Structure" and "Nightly Pipeline" tables
+- **New environment variable** → update "Environment Variables" table
+- **New activity type or area** → update "What It Does" counts
+- **Test count changes** → update the `npx jest` line in "Development"
+- **Tech stack change** → update "Tech Stack" table
+- **Structural directory change** → update the tree in "Project Structure"
+
+Keep the README concise. No prose paragraphs — use tables and bullet points. The README is a reference, not a narrative.
+
+## SCRIPT MODULARITY
+
+### Shared Utilities (scripts/utils/)
+- `db.js` — DAL for all SQLite access
+- `config.js` — pipeline state and watchlist
+- `data-dir.js` — path resolution
+- `normalize.js` — text normalization
+- `logger.js` — unified logging (create if missing)
+- New shared concerns go here. Never duplicate logic across scripts.
+
+### Script Structure Pattern
+Every pipeline script must follow this skeleton:
+1. Imports and constants (top)
+2. Pure helper functions (middle) — extractable, testable, no side effects
+3. Single `main()` async function (bottom) — orchestrates the workflow
+4. `main().catch(err => { ... process.exit(1) })` at the very end
+
+If a script has more than 5 helper functions, extract them to a dedicated utils module.
+
+## DEPLOYMENT WORKFLOW (ALWAYS follow after making changes)
 
 After completing any code change:
 
 1. **Run tests**: `npx jest --no-cache` — all tests must pass
-2. **Build locally**: `npm run build` — build must succeed
+2. **Build locally**: `npm run build` — build must succeed with zero type errors
 3. **Git push**: Commit changes and `git push` to the remote repository
 4. **Deploy to server**:
    - Rsync the build: `rsync -avz .next/ ubuntu:~/projects/chs-spots/.next/`
    - Rsync source files: `rsync -avz --exclude='node_modules' --exclude='.next' --exclude='data' --exclude='.env.local' ./ ubuntu:~/projects/chs-spots/`
+   - Rsync scripts separately to ensure ETL has latest: `rsync -avz scripts/ ubuntu:~/projects/chs-spots/scripts/`
    - Restart PM2: `ssh ubuntu "cd ~/projects/chs-spots && pm2 restart chs-spots"`
    - Wait 8 seconds, then verify: `ssh ubuntu "curl -s http://localhost:3000/api/health"`
-5. **Send Telegram notification** summarizing what was deployed:
+5. **Verify ETL compatibility**: If any script in `scripts/` was changed, do a dry-run on the server:
+   - `ssh ubuntu "cd ~/projects/chs-spots && node scripts/run-incremental-pipeline.js --dry-run"` (if supported)
+   - Or manually verify the changed script's imports and DB queries still work
+6. **Send Telegram notification** summarizing what was deployed:
    - Bot token: read from `.env.local` → `TELEGRAM_BOT_TOKEN`
    - Chat ID: read from `.env.local` → `TELEGRAM_ADMIN_CHAT_ID`
    - Include: what changed, spot/venue counts from health check
 
-## Server Notes
+## SERVER NOTES
 
-- This is a dedicated server for our app running on ubuntu. You have full control, and it's expected, to ensure security is tight. You are authorized to install apps on this server if this makes sense for you to improve the application.
+- This is a dedicated server running Ubuntu. You have full control and are authorized to install packages if it improves the application.
 - Server alias: `ubuntu` (SSH config)
 - PM2 manages the production process via `ecosystem.config.cjs` → runs `next start`
 - NEVER run `next build` on the server — it has a known race condition that destroys the `.next` directory
-- The `chs-spots.service` systemd unit is DISABLED intentionally (it ran `next build` as ExecStartPre, causing deployment issues)
+- The `chs-spots.service` systemd unit is DISABLED intentionally (ran `next build` as ExecStartPre, causing deployment issues)
 - Always build locally and rsync `.next/` to the server
-- After rsync, always verify the CSS file loads: `ssh ubuntu "curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/_next/static/css/*.css"`
 
-You are the permanent architect of chs-spots. Every change must leave the codebase cleaner, simpler, more secure, and more maintainable than before. Help ship a reliable, hack-resistant Charleston spots map.
+## QUALITY GATE — BEFORE EVERY COMMIT
 
+Before marking any task as done, verify:
+- [ ] `npm run build` passes with zero errors
+- [ ] `npx jest --no-cache` passes with zero failures
+- [ ] No new `eslint-disable` added without justification
+- [ ] No file exceeds 250 lines
+- [ ] No empty catch blocks introduced
+- [ ] README updated if applicable (see README MAINTENANCE section)
+- [ ] Changed scripts tested against live DB on server (read-only verification)

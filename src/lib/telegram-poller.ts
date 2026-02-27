@@ -110,7 +110,7 @@ async function handleCallback(callbackQuery: any): Promise<void> {
   }
 }
 
-export function startTelegramPolling(intervalMs = 5000): void {
+export async function startTelegramPolling(intervalMs = 5000): Promise<void> {
   if (intervalId) return;
 
   const pollingEnabled = process.env.TELEGRAM_POLLING_ENABLED === 'true';
@@ -123,6 +123,13 @@ export function startTelegramPolling(intervalMs = 5000): void {
   if (!token) {
     console.log('[Telegram] No TELEGRAM_BOT_TOKEN set, polling disabled.');
     return;
+  }
+
+  try {
+    await fetchWithTimeout(`https://api.telegram.org/bot${token}/deleteWebhook`, {}, 10000);
+    console.log('[Telegram] Cleared any active webhook');
+  } catch {
+    console.warn('[Telegram] Could not clear webhook, continuing anyway');
   }
 
   console.log(`[Telegram] Polling started (every ${intervalMs / 1000}s)`);

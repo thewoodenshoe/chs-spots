@@ -11,6 +11,7 @@ import CommunityBanner, { shouldShowBanner } from './CommunityBanner';
 import SpotInfoWindow from './SpotInfoWindow';
 import { CLUSTER_ICONS, createMarkerIcon, createVenueMarkerIcon } from '@/utils/marker-icons';
 import { calculateDistanceMiles } from '@/utils/distance';
+import { isSpotActiveNow } from '@/utils/time-utils';
 
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || '';
 const DEFAULT_CENTER = { lat: 32.862, lng: -79.908 };
@@ -362,16 +363,19 @@ export default function MapComponent({
           >
             {(clusterer) => (
               <>
-                {filteredSpots.map((spot) => (
-                  <Marker
-                    key={spot.id}
-                    position={{ lat: spot.lat, lng: spot.lng }}
-                    icon={createMarkerIcon(spot, activities)}
-                    clusterer={clusterer}
-                    onClick={() => handleMarkerClick(spot)}
-                    zIndex={1000}
-                  />
-                ))}
+                {filteredSpots.map((spot) => {
+                  const active = isSpotActiveNow(spot);
+                  return (
+                    <Marker
+                      key={spot.id}
+                      position={{ lat: spot.lat, lng: spot.lng }}
+                      icon={createMarkerIcon(spot, activities, active)}
+                      clusterer={clusterer}
+                      onClick={() => handleMarkerClick(spot)}
+                      zIndex={active ? 1100 : 1000}
+                    />
+                  );
+                })}
               </>
             )}
           </MarkerClusterer>

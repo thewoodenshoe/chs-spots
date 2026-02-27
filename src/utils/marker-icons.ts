@@ -14,22 +14,31 @@ export const CLUSTER_ICONS = {
 export function createMarkerIcon(
   spot: { type: string },
   activities: Array<{ name: string; emoji: string; color: string }>,
+  isActive?: boolean,
 ): google.maps.Icon {
   const activityConfig = activities.find(a => a.name === spot.type);
   const emoji = activityConfig?.emoji || '📍';
   const color = activityConfig?.color || '#0d9488';
 
+  const size = isActive ? 48 : 40;
+  const cx = size / 2;
+  const r = isActive ? 22 : 18;
+  const activeRing = isActive
+    ? `<circle cx="${cx}" cy="${cx}" r="${cx - 2}" fill="none" stroke="#22c55e" stroke-width="3" opacity="0.6"/>`
+    : '';
+
   const svg = `
-    <svg width="40" height="40" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="20" cy="20" r="18" fill="${color}" stroke="white" stroke-width="3"/>
-      <text x="20" y="28" font-size="20" text-anchor="middle" fill="white">${emoji}</text>
+    <svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
+      ${activeRing}
+      <circle cx="${cx}" cy="${cx}" r="${r}" fill="${color}" stroke="white" stroke-width="3"/>
+      <text x="${cx}" y="${cx + 8}" font-size="20" text-anchor="middle" fill="white">${emoji}</text>
     </svg>
   `;
 
   return {
     url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-    scaledSize: new google.maps.Size(40, 40),
-    anchor: new google.maps.Point(20, 40),
+    scaledSize: new google.maps.Size(size, size),
+    anchor: new google.maps.Point(cx, size),
   };
 }
 

@@ -7,9 +7,9 @@ test.describe('Areas Menu - Loads from areas.json', () => {
 
   test.beforeAll(() => {
     // Load areas from areas.json file
-    const areasPath = path.join(process.cwd(), 'data', 'areas.json');
+    const areasPath = path.join(process.cwd(), 'data', 'config', 'areas.json');
     const areasData = JSON.parse(fs.readFileSync(areasPath, 'utf8'));
-    areasFromFile = areasData.map((area: any) => area.name);
+    areasFromFile = areasData.map((area: { name: string }) => area.name);
     console.log('📋 Areas loaded from areas.json:', areasFromFile);
   });
 

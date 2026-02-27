@@ -9,6 +9,8 @@ import { calculateDistanceMiles } from '@/utils/distance';
 import { getSpotStartMinutes, extractCompactTime, isSpotActiveNow } from '@/utils/time-utils';
 import { toggleFavorite } from '@/utils/favorites';
 import { shareSpot } from '@/utils/share';
+import { useVenues } from '@/contexts/VenuesContext';
+import { getOpenStatus } from '@/utils/active-status';
 import WhatsNewStrip from '@/components/WhatsNewStrip';
 
 export type SortMode = 'alpha' | 'recent' | 'nearest' | 'time' | 'active';
@@ -74,6 +76,8 @@ export default function SpotListView({
   onFavoritesChange,
   onWhatsNewSelect,
 }: SpotListViewProps) {
+  const { venues } = useVenues();
+  const venueMap = useMemo(() => new Map(venues.map(v => [v.id, v])), [venues]);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [favIds, setFavIds] = useState<Set<number>>(() => {
     if (typeof window === 'undefined') return new Set();
@@ -106,16 +110,20 @@ export default function SpotListView({
       filtered = filtered.filter((s) => favIds.has(s.id));
     }
 
-    const withMeta = filtered.map((spot) => ({
-      spot,
-      distance: userLocation
-        ? calculateDistanceMiles(userLocation.lat, userLocation.lng, spot.lat, spot.lng)
-        : null,
-      timeDisplay: extractCompactTime(spot),
-      startMinutes: getSpotStartMinutes(spot),
-      activeNow: isSpotActiveNow(spot),
-      fav: favIds.has(spot.id),
-    }));
+    const withMeta = filtered.map((spot) => {
+      const venue = spot.venueId ? venueMap.get(spot.venueId) : undefined;
+      return {
+        spot,
+        distance: userLocation
+          ? calculateDistanceMiles(userLocation.lat, userLocation.lng, spot.lat, spot.lng)
+          : null,
+        timeDisplay: extractCompactTime(spot),
+        startMinutes: getSpotStartMinutes(spot),
+        activeNow: isSpotActiveNow(spot),
+        openStatus: venue ? getOpenStatus(venue.operatingHours) : null,
+        fav: favIds.has(spot.id),
+      };
+    });
 
     switch (sortMode) {
       case 'nearest':
@@ -145,7 +153,7 @@ export default function SpotListView({
       default:
         return withMeta.sort((a, b) => a.spot.title.localeCompare(b.spot.title));
     }
-  }, [spots, sortMode, userLocation, showFavoritesOnly, favIds]);
+  }, [spots, sortMode, userLocation, showFavoritesOnly, favIds, venueMap]);
 
   const getActivityConfig = (type: string) =>
     activities.find((a) => a.name === type);
@@ -266,7 +274,7 @@ export default function SpotListView({
 
       {/* Scrollable card list */}
       <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
-        {sortedSpots.map(({ spot, distance, timeDisplay, activeNow, fav }) => {
+        {sortedSpots.map(({ spot, distance, timeDisplay, activeNow, openStatus, fav }) => {
           const cfg = getActivityConfig(spot.type);
           const emoji = cfg?.emoji || '📍';
           const color = cfg?.color || '#0d9488';
@@ -337,6 +345,19 @@ export default function SpotListView({
                   {activeNow && (
                     <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700 whitespace-nowrap animate-pulse">
                       Active Now
+                    </span>
+                  )}
+                  {!activeNow && openStatus && openStatus.label && (
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap ${
+                      openStatus.isOpen
+                        ? 'bg-emerald-50 text-emerald-600'
+                        : 'bg-gray-100 text-gray-500'
+                    }`}>
+                      {openStatus.label === 'Closing soon'
+                        ? `Closes ${openStatus.closesAt}`
+                        : openStatus.isOpen
+                          ? `Open til ${openStatus.closesAt}`
+                          : 'Closed'}
                     </span>
                   )}
                   {timeDisplay && (

@@ -2,6 +2,10 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
+export interface OperatingHours {
+  [day: string]: { open: string; close: string } | 'closed';
+}
+
 export interface Venue {
   id: string;
   name: string;
@@ -10,6 +14,7 @@ export interface Venue {
   area: string | null;
   address: string | null;
   website: string | null;
+  operatingHours: OperatingHours | null;
 }
 
 interface VenuesContextType {

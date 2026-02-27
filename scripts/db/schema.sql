@@ -16,6 +16,9 @@ CREATE TABLE IF NOT EXISTS venues (
   photo_url TEXT,
   types TEXT,
   raw_google_data TEXT,
+  operating_hours TEXT,
+  hours_source TEXT,
+  hours_updated_at TEXT,
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now'))
 );

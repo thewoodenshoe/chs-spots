@@ -2,19 +2,19 @@
 
 > **Built entirely by Claude Opus 4.6 (Orion).** Zero lines of human-written code. Architecture, frontend, backend, ETL pipeline, deployment — all AI-generated from natural language instructions.
 
-A live map for discovering Charleston, SC — happy hours, brunch, rooftop bars, coffee shops, dog-friendly spots, landmarks, fishing spots, and more. Auto-updates nightly via AI-powered venue extraction and restaurant opening discovery.
+A live map for discovering Charleston, SC — happy hours, brunch, live music, rooftop bars, coffee shops, dog-friendly spots, landmarks, and more. Auto-updates nightly via AI-powered venue extraction and restaurant opening discovery.
 
 **Live at [chsfinds.com](https://chsfinds.com)**
 
 ## What It Does
 
-- **Interactive map + list view** with 7 Charleston neighborhoods and 10 activity types
+- **Interactive map + list view** with 7 Charleston neighborhoods and 7 activity types
 - **Auto-detects your location** and defaults to the nearest area (falls back to Downtown if outside Charleston)
 - **Nightly ETL pipeline** scrapes ~1,000 venue websites, diffs content, and uses Grok (xAI) to extract happy hour and brunch specials — only processing venues that changed
 - **Nightly opening discovery** finds recently opened and coming soon restaurants via RSS feeds + Grok web search
+- **Weekly live music discovery** via Grok web search
 - **Community submissions** — anyone can add spots; admin approves via Telegram
-- **Google Places integration** for coordinates, photos, and restaurant websites
-- **Daily report** with actionable items, pipeline health, and user analytics
+- **Open/Closed status** — operating hours extracted from venue websites, shown on cards and map pins
 - **Share any spot** via deep link
 
 ## Tech Stack
@@ -43,7 +43,7 @@ npm run dev
 
 ```bash
 npm run dev          # Start local dev server
-npx jest --no-cache  # Run all tests (41 suites, 560+ tests)
+npx jest --no-cache  # Run all tests (41 suites, 564 tests)
 npm run build        # Production build
 ```
 
@@ -66,38 +66,49 @@ chs-spots/
 │   ├── app/            # Next.js pages + API routes
 │   ├── components/     # Map, modals, list view, filters
 │   ├── contexts/       # React contexts (spots, venues, activities)
-│   └── lib/            # DAL (db.ts), Telegram, rate-limit, cache
+│   ├── lib/            # DAL (db.ts), Telegram, rate-limit, cache
+│   └── utils/          # Active status, time, distance, favorites
 ├── scripts/
 │   ├── download-raw-html.js         # Step 1: Download venue websites
 │   ├── extract-promotions.js        # Step 2: LLM extraction via Grok
 │   ├── create-spots.js              # Step 3: Create spots from gold data
+│   ├── extract-hours.js             # Operating hours extraction (3-tier)
 │   ├── discover-openings.js         # Nightly: find new/coming restaurants
+│   ├── discover-live-music.js       # Weekly: find live music events
 │   ├── run-incremental-pipeline.js  # Orchestrates nightly ETL
 │   ├── seed-venues.js               # Google Places venue seeding
 │   ├── ops/
 │   │   ├── generate-report.js       # Daily analytics + pipeline report
 │   │   ├── run-nightly-pipeline.sh  # Cron: ETL + report (3 AM)
 │   │   ├── run-nightly-openings.sh  # Cron: opening discovery (2 AM)
-│   │   └── run-biweekly-seed.sh     # Cron: venue discovery (1 AM)
-│   ├── utils/db.js                  # Script-side DAL
+│   │   ├── run-weekly-live-music.sh # Cron: live music (Wed 4 AM)
+│   │   ├── run-biweekly-seed.sh     # Cron: venue discovery (1 AM)
+│   │   └── run-monthly-hours.sh     # Cron: operating hours refresh
+│   ├── utils/
+│   │   ├── db.js                    # Script-side DAL
+│   │   ├── config.js                # Pipeline state + watchlist
+│   │   ├── data-dir.js              # Path resolution
+│   │   ├── normalize.js             # Text normalization
+│   │   └── logger.js                # Shared logging utility
 │   └── db/schema.sql                # SQLite schema
 ├── data/
 │   ├── chs-spots.db    # SQLite database (gitignored)
 │   ├── config/         # Areas, activities, LLM prompts, watchlist
 │   └── seeds/          # Activity seed data (JSON)
+├── e2e/                # Playwright E2E tests
 ├── logs/               # Structured pipeline logs
 └── public/spots/       # Spot photos
 ```
 
 ## Nightly Pipeline
 
-Three cron jobs run sequentially:
-
 | Time | Job | Script |
 |------|-----|--------|
-| 1:00 AM | Biweekly venue discovery | `run-biweekly-seed.sh` |
+| 1:00 AM | Venue discovery (Google Places) | `run-biweekly-seed.sh` |
 | 2:00 AM | Opening discovery (RSS + Grok) | `run-nightly-openings.sh` |
 | 3:00 AM | ETL pipeline + daily report | `run-nightly-pipeline.sh` |
+| 4:00 AM Wed | Live music discovery | `run-weekly-live-music.sh` |
+| Monthly | Operating hours refresh | `run-monthly-hours.sh` |
 
 **ETL flow:** Download HTML → merge → trim → diff → extract via Grok (only changed venues) → create spots → generate report. Typical daily cost: 5–15 LLM calls.
 

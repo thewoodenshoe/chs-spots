@@ -43,6 +43,13 @@ function logError(msg) {
   console.error(msg);
   if (_logStream && !_logStream.destroyed) _logStream.write(line + '\n');
 }
+const DEBUG = process.env.DEBUG === '1' || process.env.REPORT_DEBUG === '1';
+function debugLog(section, err) {
+  if (!DEBUG) return;
+  const msg = `[report:${section}] skipped: ${err?.message || 'unknown'}`;
+  console.warn(msg);
+  if (_logStream && !_logStream.destroyed) _logStream.write(`[${new Date().toISOString()}] WARN: ${msg}\n`);
+}
 
 // ── Config ──────────────────────────────────────────────────────
 const UMAMI_API = process.env.UMAMI_API_URL || 'http://127.0.0.1:3001';
@@ -142,7 +149,7 @@ function getPipelineData() {
     const src = fs.readFileSync(path.join(appDir, 'scripts/extract-promotions.js'), 'utf8');
     const m = src.match(/GROK_MODEL\s*=\s*['"]([^'"]+)['"]/);
     if (m) result.llmModel = m[1];
-  } catch { /* ignore */ }
+  } catch (e) { debugLog('llmModel', e); }
 
   try {
     const allSpots = db.spots.getAll();
@@ -157,7 +164,7 @@ function getPipelineData() {
       result.spotsByArea[area] = (result.spotsByArea[area] || 0) + 1;
       result.spotsByActivity[activity] = (result.spotsByActivity[activity] || 0) + 1;
     }
-  } catch { /* ignore */ }
+  } catch (e) { debugLog('spotCounts', e); }
 
   try {
     const database = db.getDb();
@@ -187,7 +194,7 @@ function getPipelineData() {
         result.pipelineDuration = new Date(run.finished_at).getTime() - new Date(run.started_at).getTime();
       }
     }
-  } catch { /* ignore */ }
+  } catch (e) { debugLog('data', e); }
 
   result.pipelineSkipReasons = [];
   result.pipelineVenuesDownloaded = null;
@@ -212,7 +219,7 @@ function getPipelineData() {
     if (cfg.pipeline?.maxIncrementalFiles && !result.maxIncrementalFiles) {
       result.maxIncrementalFiles = cfg.pipeline.maxIncrementalFiles;
     }
-  } catch { /* ignore */ }
+  } catch (e) { debugLog('data', e); }
 
   try {
     const candidates = [];
@@ -297,7 +304,7 @@ function getPipelineData() {
       }
       result.pipelineSkipReasons = [...new Set(result.pipelineSkipReasons)];
     }
-  } catch { /* ignore */ }
+  } catch (e) { debugLog('data', e); }
 
   result.downloadErrors = 0;
   result.downloadErrorsByType = {};
@@ -334,7 +341,7 @@ function getPipelineData() {
         .slice(0, 5)
         .map(([name, count]) => ({ id: name, count }));
     }
-  } catch { /* ignore */ }
+  } catch (e) { debugLog('data', e); }
 
   result.watchlistExcluded = 0;
   result.watchlistFlagged = 0;
@@ -352,7 +359,7 @@ function getPipelineData() {
           const promo = typeof g.promotions === 'string' ? JSON.parse(g.promotions) : (g.promotions || {});
           goldStatus = promo.found ? 'Has promotions' : 'No promotions';
         }
-      } catch { /* ignore */ }
+      } catch (e) { debugLog('data', e); }
       result.watchlistFlaggedVenues.push({
         name: entry.name || entry.venue_id,
         area: entry.area || 'Unknown',
@@ -360,7 +367,7 @@ function getPipelineData() {
         goldStatus,
       });
     }
-  } catch { /* ignore */ }
+  } catch (e) { debugLog('data', e); }
 
   try {
     const archiveDirs = [dataPath('silver_trimmed', 'archive'), dataPath('raw', 'archive')];
@@ -372,7 +379,7 @@ function getPipelineData() {
       }
     }
     result.archiveDays = maxDays;
-  } catch { /* ignore */ }
+  } catch (e) { debugLog('data', e); }
 
   try {
     const goldRows = db.gold.getAll();
@@ -384,7 +391,7 @@ function getPipelineData() {
     }
     result.llmFoundPromotions = found;
     result.llmNoPromotions = notFound;
-  } catch { /* ignore */ }
+  } catch (e) { debugLog('data', e); }
 
   try {
     const logPath = path.join(appDir, 'logs/create-spots.log');
@@ -403,7 +410,7 @@ function getPipelineData() {
         }
       }
     }
-  } catch { /* ignore */ }
+  } catch (e) { debugLog('data', e); }
 
   try {
     const streakRows = db.streaks.getAll();
@@ -412,7 +419,7 @@ function getPipelineData() {
       streakObj[s.venue_id + ':' + s.type] = { name: s.name, streak: s.streak, lastDate: s.last_date, venueId: s.venue_id };
     }
     result.updateStreaks = streakObj;
-  } catch { /* ignore */ }
+  } catch (e) { debugLog('data', e); }
 
   // ── Opening Discovery Stats ──
   result.discoveryRssArticles = null;
@@ -449,7 +456,7 @@ function getPipelineData() {
       const durationMatch = content.match(/Discovery complete in ([\d.]+)s/);
       if (durationMatch) result.discoveryDuration = parseFloat(durationMatch[1]);
     }
-  } catch { /* ignore */ }
+  } catch (e) { debugLog('data', e); }
 
   try {
     const database = db.getDb();
@@ -459,7 +466,7 @@ function getPipelineData() {
     result.comingSoonSpots = database.prepare(
       "SELECT id, title, area, description, source_url, lat, lng FROM spots WHERE type = 'Coming Soon' ORDER BY id DESC",
     ).all();
-  } catch { /* ignore */ }
+  } catch (e) { debugLog('data', e); }
 
   // ── Actionable Items ──
   result.actions = [];
@@ -479,7 +486,7 @@ function getPipelineData() {
         instruction: `Review if promotions are real. If noise, exclude:\n  nano data/config/venue-watchlist.json\n  Add: { "name": "${s.name}", "status": "excluded", "reason": "Daily content churn" }`,
       });
     }
-  } catch { /* ignore */ }
+  } catch (e) { debugLog('data', e); }
 
   // 2. Discovery spots needing review (no area, no website, suspect location)
   try {
@@ -499,7 +506,7 @@ function getPipelineData() {
         });
       }
     }
-  } catch { /* ignore */ }
+  } catch (e) { debugLog('data', e); }
 
   // 3. Spots with no area assignment (recent only, skip user submissions with gibberish)
   try {
@@ -516,7 +523,7 @@ function getPipelineData() {
         instruction: `These spots won't appear when users filter by area. Run:\n  node scripts/analyze-spots-by-area.js\nto investigate area assignment gaps.`,
       });
     }
-  } catch { /* ignore */ }
+  } catch (e) { debugLog('data', e); }
 
   // 4. Flagged watchlist venues
   if (result.watchlistFlaggedVenues.length > 0) {
@@ -666,7 +673,7 @@ function buildHtml(data) {
         const badge = status === 'completed' ? 'badge-ok' : status === 'skipped' ? 'badge-skip' : status === 'failed' ? 'badge-fail' : 'badge-pending';
         let dur = '\u2013';
         if (step.startedAt && step.finishedAt) {
-          try { dur = fmtDuration(new Date(step.finishedAt) - new Date(step.startedAt)); } catch { /* ignore */ }
+          try { dur = fmtDuration(new Date(step.finishedAt) - new Date(step.startedAt)); } catch (e) { debugLog('data', e); }
         }
         return `<tr><td>${name}</td><td><span class="badge ${badge}">${status}</span></td><td>${dur}</td></tr>`;
       }).join('')
@@ -1165,20 +1172,20 @@ async function main() {
     try {
       const active = await umamiGet(token, '/active');
       analytics.activeNow = active?.visitors ?? null;
-    } catch { /* ignore */ }
+    } catch (e) { debugLog('data', e); }
 
     try {
       const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
       const daily = await umamiGet(token, `/pageviews?startAt=${twoWeeksAgo.getTime()}&endAt=${now.getTime()}&unit=day&timezone=America/New_York`);
       analytics.dailyPageviews = daily?.pageviews || [];
       analytics.dailySessions = daily?.sessions || [];
-    } catch { /* ignore */ }
+    } catch (e) { debugLog('data', e); }
 
     try {
       const monthly = await umamiGet(token, `/pageviews?startAt=${sixMonthsAgo.getTime()}&endAt=${now.getTime()}&unit=month&timezone=America/New_York`);
       analytics.monthlyPageviews = monthly?.pageviews || [];
       analytics.monthlySessions = monthly?.sessions || [];
-    } catch { /* ignore */ }
+    } catch (e) { debugLog('data', e); }
 
     try {
       analytics.sessions24h = await fetchAllSessions(token, oneDayAgo.getTime(), now.getTime());
@@ -1191,17 +1198,17 @@ async function main() {
     try {
       const events = await umamiGet(token, `/metrics?startAt=${oneWeekAgo.getTime()}&endAt=${now.getTime()}&type=event`);
       analytics.topEvents = Array.isArray(events) ? events.sort((a, b) => (b.y || 0) - (a.y || 0)).slice(0, 15) : [];
-    } catch { /* ignore */ }
+    } catch (e) { debugLog('data', e); }
 
     try {
       const pages = await umamiGet(token, `/metrics?startAt=${oneWeekAgo.getTime()}&endAt=${now.getTime()}&type=path`);
       analytics.topPages = Array.isArray(pages) ? pages.sort((a, b) => (b.y || 0) - (a.y || 0)).slice(0, 10) : [];
-    } catch { /* ignore */ }
+    } catch (e) { debugLog('data', e); }
 
     try {
       const devices = await umamiGet(token, `/metrics?startAt=${oneWeekAgo.getTime()}&endAt=${now.getTime()}&type=device`);
       analytics.devices = Array.isArray(devices) ? devices : [];
-    } catch { /* ignore */ }
+    } catch (e) { debugLog('data', e); }
 
     try {
       const url = `/event-data/fields?startAt=${oneWeekAgo.getTime()}&endAt=${now.getTime()}`;
@@ -1219,7 +1226,7 @@ async function main() {
           analytics.eventDataFields[prop] = values.slice(0, 15);
         }
       }
-    } catch { /* ignore */ }
+    } catch (e) { debugLog('data', e); }
 
     console.log(`  Analytics fetched (${analytics.sessions24h.length} sessions 24h, ${analytics.allSessions30d.length} sessions 30d)`);
   }
