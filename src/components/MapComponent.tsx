@@ -179,6 +179,7 @@ export default function MapComponent({
   const handleMapClick = useCallback((e: google.maps.MapMouseEvent) => {
     setSelectedSpot(null);
     setSelectedVenue(null);
+    if (window.location.search) window.history.replaceState({}, '', window.location.pathname);
     if (isSubmissionMode && e.latLng && onMapClick) {
       onMapClick(e.latLng.lat(), e.latLng.lng());
     }
@@ -210,17 +211,20 @@ export default function MapComponent({
     setSelectedSpot(spot);
     setSelectedVenue(null);
     smartPan({ lat: spot.lat, lng: spot.lng });
+    window.history.replaceState({}, '', `?spot=${spot.id}`);
   }, [smartPan]);
 
   const handleVenueMarkerClick = useCallback((venue: Venue) => {
     setSelectedVenue(venue);
     setSelectedSpot(null);
     smartPan({ lat: venue.lat, lng: venue.lng });
+    if (window.location.search) window.history.replaceState({}, '', window.location.pathname);
   }, [smartPan]);
 
   const handleInfoWindowClose = useCallback(() => {
     setSelectedSpot(null);
     setSelectedVenue(null);
+    if (window.location.search) window.history.replaceState({}, '', window.location.pathname);
   }, []);
 
   const findClosestSpot = useCallback(() => {
@@ -239,6 +243,7 @@ export default function MapComponent({
         cur.distance < prev.distance ? cur : prev
       );
       setSelectedSpot(closest.spot);
+      window.history.replaceState({}, '', `?spot=${closest.spot.id}`);
       setToastMessage(`${label}${closest.spot.title} (${closest.distance.toFixed(1)} miles)`);
       map.panTo({ lat: closest.spot.lat, lng: closest.spot.lng });
       map.setZoom(15);
