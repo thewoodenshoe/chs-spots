@@ -1,12 +1,14 @@
 /**
- * backfill-venue-photos.js — One-off script to download Google Places photos
+ * backfill-venue-photos.js — Download Google Places photos for venues
  *
- * Downloads the primary photo for each venue and saves it to public/venues/.
- * Updates the venues.photo_url column so photos flow to spots automatically.
+ * Downloads the primary photo for each venue referenced by active spots
+ * and saves it to public/venues/. Updates the venues.photo_url column
+ * so photos flow to spots automatically via the API fallback chain.
  *
  * Usage: GOOGLE_PLACES_ENABLED=true node scripts/backfill-venue-photos.js --confirm
+ *        Add --all to include venues not referenced by any spot (~$24)
  *
- * Cost: ~$24 one-time (Details API + Photo API for ~991 venues)
+ * Cost: ~$5 for spot-referenced venues, ~$24 for all venues
  */
 
 const fs = require('fs');
@@ -16,7 +18,8 @@ const db = require('./utils/db');
 const REQUIRED_FLAG = '--confirm';
 if (!process.argv.includes(REQUIRED_FLAG)) {
   console.log('Usage: GOOGLE_PLACES_ENABLED=true node scripts/backfill-venue-photos.js --confirm');
-  console.log('This script calls Google Places API and will incur ~$24 in costs.');
+  console.log('       Add --all to include ALL venues (not just spot-referenced)');
+  console.log('Cost: ~$5 for spot-referenced, ~$24 for all venues.');
   process.exit(1);
 }
 
@@ -25,19 +28,25 @@ if (process.env.GOOGLE_PLACES_ENABLED !== 'true') {
   process.exit(1);
 }
 
+const INCLUDE_ALL = process.argv.includes('--all');
+
 try {
-  require('dotenv').config({ path: '.env.local' });
+  require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') });
 } catch {
   try { require('dotenv').config(); } catch { /* env vars set externally */ }
 }
 
-const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || process.env.GOOGLE_PLACES_KEY;
+const API_KEY =
+  process.env.GOOGLE_PLACES_SERVER_KEY ||
+  process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY ||
+  process.env.GOOGLE_PLACES_KEY;
 if (!API_KEY) {
-  console.error('NEXT_PUBLIC_GOOGLE_MAPS_KEY or GOOGLE_PLACES_KEY must be set');
+  console.error('GOOGLE_PLACES_SERVER_KEY or NEXT_PUBLIC_GOOGLE_MAPS_KEY must be set');
   process.exit(1);
 }
 
 const PHOTO_DIR = path.join(__dirname, '..', 'public', 'venues');
+const LOG_DIR = path.join(__dirname, '..', 'logs');
 const DELAY_MS = 250;
 const MAX_WIDTH = 800;
 
@@ -64,18 +73,32 @@ async function downloadPhoto(photoRef, destPath) {
 }
 
 async function main() {
-  if (!fs.existsSync(PHOTO_DIR)) {
-    fs.mkdirSync(PHOTO_DIR, { recursive: true });
-    console.log(`Created ${PHOTO_DIR}`);
-  }
+  if (!fs.existsSync(PHOTO_DIR)) fs.mkdirSync(PHOTO_DIR, { recursive: true });
+  if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR, { recursive: true });
+
+  const logFile = path.join(LOG_DIR, `backfill-photos-${new Date().toISOString().slice(0, 19).replace(/[T:]/g, '-')}.log`);
+  function log(msg) { console.log(msg); fs.appendFileSync(logFile, `${msg}\n`); }
 
   const allVenues = db.venues.getAll();
-  const venues = allVenues.filter(v => !v.photo_url);
 
-  console.log(`\nVenue photo backfill`);
-  console.log(`  Total venues: ${allVenues.length}`);
-  console.log(`  Already have photo: ${allVenues.length - venues.length}`);
-  console.log(`  Need photo: ${venues.length}\n`);
+  const d = db.getDb();
+  const spotVenueIds = new Set(
+    d.prepare("SELECT DISTINCT venue_id FROM spots WHERE venue_id IS NOT NULL AND status = 'approved'")
+      .all().map(r => r.venue_id),
+  );
+
+  const candidateVenues = INCLUDE_ALL
+    ? allVenues.filter(v => !v.photo_url)
+    : allVenues.filter(v => !v.photo_url && spotVenueIds.has(v.id));
+
+  log(`\n📷 Venue photo backfill`);
+  log(`  Total venues: ${allVenues.length}`);
+  log(`  Referenced by spots: ${spotVenueIds.size}`);
+  log(`  Already have photo: ${allVenues.length - allVenues.filter(v => !v.photo_url).length}`);
+  log(`  Will download: ${candidateVenues.length}${INCLUDE_ALL ? ' (--all)' : ' (spot-referenced only)'}`);
+  log(`  Estimated cost: ~$${(candidateVenues.length * 0.024).toFixed(2)}\n`);
+
+  const venues = candidateVenues;
 
   let downloaded = 0;
   let skippedNoPhoto = 0;
@@ -91,7 +114,7 @@ async function main() {
       const relPath = `/venues/${venue.id}.jpg`;
       db.venues.updatePhotoUrl(venue.id, relPath);
       downloaded++;
-      console.log(`${progress} ⏭  ${venue.name} (file exists, DB updated)`);
+      log(`${progress} ⏭  ${venue.name} (file exists, DB updated)`);
       continue;
     }
 
@@ -99,7 +122,7 @@ async function main() {
       const photoRef = await fetchPhotoReference(venue.id);
       if (!photoRef) {
         skippedNoPhoto++;
-        console.log(`${progress} ⬜ ${venue.name} — no photo in Google Places`);
+        log(`${progress} ⬜ ${venue.name} — no photo in Google Places`);
         await delay(DELAY_MS);
         continue;
       }
@@ -110,20 +133,21 @@ async function main() {
 
       totalBytes += bytes;
       downloaded++;
-      console.log(`${progress} ✅ ${venue.name} (${(bytes / 1024).toFixed(0)} KB)`);
+      log(`${progress} ✅ ${venue.name} (${(bytes / 1024).toFixed(0)} KB)`);
     } catch (err) {
       failed++;
-      console.error(`${progress} ❌ ${venue.name}: ${err.message}`);
+      log(`${progress} ❌ ${venue.name}: ${err.message}`);
     }
 
     await delay(DELAY_MS);
   }
 
-  console.log(`\nDone!`);
-  console.log(`  Downloaded: ${downloaded}`);
-  console.log(`  No photo available: ${skippedNoPhoto}`);
-  console.log(`  Failed: ${failed}`);
-  console.log(`  Total size: ${(totalBytes / 1024 / 1024).toFixed(1)} MB`);
+  log(`\n✨ Done!`);
+  log(`  Downloaded: ${downloaded}`);
+  log(`  No photo available: ${skippedNoPhoto}`);
+  log(`  Failed: ${failed}`);
+  log(`  Total size: ${(totalBytes / 1024 / 1024).toFixed(1)} MB`);
+  log(`  Log: ${logFile}`);
 }
 
 main().catch(err => {

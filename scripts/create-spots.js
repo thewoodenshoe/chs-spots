@@ -353,21 +353,27 @@ async function main() {
 
   log(`\n📈 Content changes this run: ${updatedSpotNames.length}`);
 
-  // ── Write to DB: atomic delete + insert in a transaction ──
-  // Only delete types this script manages (from gold extractions), not types from other scripts
+  // ── Write to DB: upsert + delete stale in a transaction ──
+  // Upsert preserves spot IDs across pipeline runs (deep link stability)
   const managedTypes = [...new Set(newAutomatedSpots.map(s => s.type))];
   if (managedTypes.length === 0) managedTypes.push('Happy Hour', 'Brunch');
   log(`\n🔄 Managed types: ${managedTypes.join(', ')}`);
-  const { deletedCount } = db.transaction(() => {
-    const deletedCount = db.spots.deleteAutomated(managedTypes);
+
+  const activeKeys = new Set();
+  const { upsertedCount, staleCount } = db.transaction(() => {
+    let upsertedCount = 0;
     for (const spot of newAutomatedSpots) {
-      const newId = db.spots.insert(spot);
-      spot.id = newId;
+      const id = db.spots.upsertAutomated(spot);
+      spot.id = id;
+      const venueId = spot.venueId || spot.venue_id;
+      if (venueId) activeKeys.add(`${venueId}::${spot.type}`);
+      upsertedCount++;
     }
-    return { deletedCount };
+    const staleCount = db.spots.deleteStaleAutomated(managedTypes, activeKeys);
+    return { upsertedCount, staleCount };
   });
-  log(`🗑️  Cleared ${deletedCount} old automated spot(s) of types [${managedTypes.join(', ')}] from database`);
-  log(`💾 Inserted ${newAutomatedSpots.length} automated spot(s) into database`);
+  log(`💾 Upserted ${upsertedCount} automated spot(s) (IDs preserved)`);
+  if (staleCount > 0) log(`🗑️  Removed ${staleCount} stale spot(s) no longer in pipeline`);
 
   // Safety net: backfill any spots that ended up without an area from their venue
   try {
@@ -578,6 +584,44 @@ async function main() {
   if (llmAutoApplied > 0) log(`   🤖 LLM auto-resolved: ${llmAutoApplied}`);
   if (llmNeedsHuman > 0) log(`   👤 Needs human review: ${llmNeedsHuman}`);
   log(`   📄 Total spots in spots.json: ${spots.length} (${manualSpots.length} manual + ${totalAutomatedCount} automated)`);
+
+  // ── Data coverage audit ──────────────────────────────────────
+  try {
+    const d = db.getDb();
+    const photoCoverage = d.prepare(`
+      SELECT COUNT(*) as total,
+        SUM(CASE WHEN s.photo_url IS NOT NULL AND length(s.photo_url) > 0 THEN 1
+             WHEN v.photo_url IS NOT NULL AND length(v.photo_url) > 0 THEN 1
+             ELSE 0 END) as with_photo
+      FROM spots s LEFT JOIN venues v ON s.venue_id = v.id WHERE s.status = 'approved'
+    `).get();
+    const phoneCoverage = d.prepare(`
+      SELECT COUNT(DISTINCT v.id) as total,
+        SUM(CASE WHEN v.phone IS NOT NULL AND length(v.phone) > 0 THEN 1 ELSE 0 END) as with_phone
+      FROM venues v JOIN spots s ON s.venue_id = v.id WHERE s.status = 'approved'
+    `).get();
+    const hoursCoverage = d.prepare(`
+      SELECT COUNT(DISTINCT v.id) as total,
+        SUM(CASE WHEN v.operating_hours IS NOT NULL AND length(v.operating_hours) > 0 THEN 1 ELSE 0 END) as with_hours
+      FROM venues v JOIN spots s ON s.venue_id = v.id WHERE s.status = 'approved'
+    `).get();
+
+    log(`\n📸 Data Coverage Audit:`);
+    log(`   Photos: ${photoCoverage.with_photo}/${photoCoverage.total} (${Math.round(photoCoverage.with_photo/photoCoverage.total*100)}%)`);
+    log(`   Phones: ${phoneCoverage.with_phone}/${phoneCoverage.total} (${Math.round(phoneCoverage.with_phone/phoneCoverage.total*100)}%)`);
+    log(`   Hours:  ${hoursCoverage.with_hours}/${hoursCoverage.total} (${Math.round(hoursCoverage.with_hours/hoursCoverage.total*100)}%)`);
+
+    const threshold = 90;
+    if (photoCoverage.with_photo / photoCoverage.total * 100 < threshold) {
+      log(`   ⚠️  ALERT: Photo coverage below ${threshold}%! Check venue photo backfill.`);
+    }
+    if (phoneCoverage.with_phone / phoneCoverage.total * 100 < threshold) {
+      log(`   ⚠️  ALERT: Phone coverage below ${threshold}%! Run backfill-phones.js.`);
+    }
+  } catch (err) {
+    log(`   ⚠️  Coverage audit failed: ${err.message}`);
+  }
+
   log(`\n✨ Done!`);
   log(`   Total spots: ${spots.length} (${manualSpots.length} manual + ${totalAutomatedCount} automated)`);
 }

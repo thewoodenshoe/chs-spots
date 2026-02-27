@@ -218,6 +218,61 @@ const spots = {
     return true;
   },
 
+  upsertAutomated(s) {
+    const db = getDb();
+    const venueId = s.venue_id || s.venueId || null;
+    const type = s.type || 'Happy Hour';
+    if (!venueId) return this.insert(s);
+
+    const existing = db.prepare(
+      "SELECT id FROM spots WHERE venue_id = ? AND type = ? AND source = 'automated'",
+    ).get(venueId, type);
+
+    if (existing) {
+      db.prepare(`
+        UPDATE spots SET title=@title, description=@description,
+          promotion_time=@promotion_time, promotion_list=@promotion_list,
+          source_url=@source_url, photo_url=COALESCE(@photo_url, photo_url),
+          last_update_date=@last_update_date, lat=@lat, lng=@lng,
+          area=@area, updated_at=datetime('now')
+        WHERE id = @id
+      `).run({
+        id: existing.id,
+        title: s.title,
+        description: s.description || null,
+        promotion_time: s.promotion_time || s.promotionTime || null,
+        promotion_list: s.promotion_list || (s.promotionList ? JSON.stringify(s.promotionList) : null),
+        source_url: s.source_url || s.sourceUrl || null,
+        photo_url: s.photo_url || s.photoUrl || null,
+        last_update_date: s.last_update_date || s.lastUpdateDate || null,
+        lat: s.lat ?? null,
+        lng: s.lng ?? null,
+        area: s.area || null,
+      });
+      return existing.id;
+    }
+    return this.insert(s);
+  },
+
+  deleteStaleAutomated(types, activeKeys) {
+    const db = getDb();
+    const pendingGuard = "AND (pending_edit IS NULL OR pending_edit = '') AND pending_delete = 0";
+    if (!types || types.length === 0) return 0;
+    const placeholders = types.map(() => '?').join(',');
+    const stale = db.prepare(
+      `SELECT id, venue_id, type FROM spots WHERE source = 'automated' AND manual_override = 0 ${pendingGuard} AND type IN (${placeholders})`,
+    ).all(...types);
+    let count = 0;
+    for (const row of stale) {
+      const key = `${row.venue_id}::${row.type}`;
+      if (!activeKeys.has(key)) {
+        db.prepare('DELETE FROM spots WHERE id = ?').run(row.id);
+        count++;
+      }
+    }
+    return count;
+  },
+
   deleteAutomated(types) {
     const db = getDb();
     const pendingGuard = "AND (pending_edit IS NULL OR pending_edit = '') AND pending_delete = 0";
