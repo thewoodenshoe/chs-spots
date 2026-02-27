@@ -37,6 +37,9 @@ You MUST classify every entry into exactly one of these activity types:
 ## Rules (do NOT violate)
 
 1. Never include regular business hours (e.g., "open 11am-10pm") unless explicitly tied to a discount or brunch service.
+1a. **Never classify market, café, deli, or bakery hours as Happy Hour.** Names like "Mercato", "Café", "Market" are NOT promotions — they are regular service windows. Only classify as Happy Hour if explicit drink discounts are listed.
+1b. **Happy hours almost never start before 11AM.** If a time window starts before 11AM and has no explicit drink discount language, it is NOT a happy hour.
+1c. **Regular bar hours are NOT Happy Hour.** "Bar: 4:30PM-Close" without specific discounts or deals is just operating hours, not a promotion. A Happy Hour requires explicit discounts, deals, or special pricing.
 2. Ignore "happy" in unrelated contexts (happy customers, happy birthday, etc.).
 3. Ignore user reviews, testimonials, blog posts — only use the restaurant's own text.
 4. Standardize days: "Monday-Friday", "Daily", "Weekdays", "Tue-Thu", etc.

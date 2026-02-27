@@ -20,6 +20,7 @@ const path = require('path');
 const db = require('./utils/db');
 const { loadConfig } = require('./utils/config');
 const { dataPath, reportingPath, configPath, getDataRoot } = require('./utils/data-dir');
+const { validateGoldEntries } = require('./utils/confidence');
 
 // Logging setup
 const logDir = path.join(__dirname, '..', 'logs');
@@ -176,8 +177,10 @@ function buildSpotFields(entries) {
 function createSpots(goldData, venueData, startId) {
   const happyHour = goldData.promotions || goldData.happyHour || {};
 
+  const EMPTY = { spots: [], flagged: [], rejected: [] };
+
   if (!happyHour.found) {
-    return [];
+    return EMPTY;
   }
 
   // Normalize all formats into an entries array
@@ -194,28 +197,23 @@ function createSpots(goldData, venueData, startId) {
       source: happyHour.source
     }];
   } else {
-    return [];
+    return EMPTY;
   }
 
-  // Filter out very low-confidence entries and entries with no usable data
+  // Filter entries with no usable data
   entries = entries.filter(entry => {
-    // Skip very low confidence (< 40) — these are almost always false positives
-    if (entry.confidence !== undefined && entry.confidence < 40) {
-      return false;
-    }
-    // Normalize "Not specified" / empty strings to null for filtering
     const times = entry.times && entry.times !== 'Not specified' ? entry.times : null;
     const days = entry.days && entry.days !== 'Not specified' ? entry.days : null;
     const specials = entry.specials && Array.isArray(entry.specials) && entry.specials.length > 0 ? entry.specials : null;
-    // Need at least one usable field
-    if (!times && !days && !specials) {
-      return false;
-    }
-    return true;
+    return times || days || specials;
   });
 
+  // Apply heuristic confidence validation
+  const validation = validateGoldEntries(entries);
+  entries = validation.kept;
+
   if (entries.length === 0) {
-    return [];
+    return { spots: [], flagged: validation.flagged, rejected: validation.rejected };
   }
 
   // Group entries by activityType (default to "Happy Hour" for backwards compat)
@@ -230,6 +228,8 @@ function createSpots(goldData, venueData, startId) {
 
   // Create one spot per activity type
   const spots = [];
+  const _flagged = validation.flagged;
+  const _rejected = validation.rejected;
   let idOffset = 0;
 
   for (const [activityType, groupEntries] of Object.entries(grouped)) {
@@ -287,7 +287,7 @@ function createSpots(goldData, venueData, startId) {
     idOffset++;
   }
 
-  return spots;
+  return { spots, flagged: _flagged, rejected: _rejected };
 }
 
 /**
@@ -378,6 +378,8 @@ function main() {
   let missingVenue = 0;
   let noHappyHour = 0;
   let incompleteData = 0;
+  const allFlagged = [];
+  const allRejected = [];
 
   const excludedIds = db.watchlist.getExcludedIds();
   let excludedCount = 0;
@@ -418,10 +420,19 @@ function main() {
         continue;
       }
 
-      const newSpots = createSpots(goldData, venueData, 0);
+      const result = createSpots(goldData, venueData, 0);
 
-      if (newSpots.length > 0) {
-        for (const spot of newSpots) {
+      for (const r of result.rejected) {
+        log(`  🚫 Rejected: ${goldData.venueName} [${r.activityType}] — confidence ${r.effectiveConfidence} (${r.confidenceFlags.join(', ')})`);
+        allRejected.push({ venue: goldData.venueName, venueId, ...r });
+      }
+      for (const f of result.flagged) {
+        log(`  ⚠️  Flagged for review: ${goldData.venueName} [${f.activityType}] — confidence ${f.effectiveConfidence} (${f.confidenceFlags.join(', ')})`);
+        allFlagged.push({ venue: goldData.venueName, venueId, ...f });
+      }
+
+      if (result.spots.length > 0) {
+        for (const spot of result.spots) {
           const key = `${venueId}::${spot.type}`;
 
           if (seenKeys.has(key)) {
@@ -591,6 +602,28 @@ function main() {
   log(`   ✂️  Silver trimmed today count: ${silverTrimmedTodayCount}`);
   log(`   ✂️  Silver trimmed incremental count: ${silverTrimmedIncrementalCount}`);
   
+  // ── Write confidence review data for daily report ──────────
+  if (allFlagged.length > 0 || allRejected.length > 0) {
+    const reviewPath = reportingPath('confidence-review.json');
+    const reviewData = {
+      generatedAt: new Date().toISOString(),
+      flagged: allFlagged.map(f => ({
+        venue: f.venue, venueId: f.venueId, type: f.activityType,
+        label: f.label, times: f.times, days: f.days,
+        llmConfidence: f.confidence, effectiveConfidence: f.effectiveConfidence,
+        flags: f.confidenceFlags,
+      })),
+      rejected: allRejected.map(r => ({
+        venue: r.venue, venueId: r.venueId, type: r.activityType,
+        label: r.label, times: r.times, days: r.days,
+        llmConfidence: r.confidence, effectiveConfidence: r.effectiveConfidence,
+        flags: r.confidenceFlags,
+      })),
+    };
+    fs.writeFileSync(reviewPath, JSON.stringify(reviewData, null, 2), 'utf8');
+    log(`\n📋 Confidence review: ${allFlagged.length} flagged, ${allRejected.length} rejected → ${reviewPath}`);
+  }
+
   log(`\n📊 Summary:`);
   log(`   ✅ New automated spots created: ${processed}`);
   log(`   📋 Existing automated spots preserved: ${existingAutomatedCount}`);
@@ -600,6 +633,8 @@ function main() {
   log(`   ❌ Missing venue data: ${missingVenue}`);
   log(`   ℹ️  No happy hour: ${noHappyHour}`);
   log(`   📋 Incomplete data: ${incompleteData} (time only, no days/specials)`);
+  if (allRejected.length > 0) log(`   🚫 Rejected (low confidence): ${allRejected.length}`);
+  if (allFlagged.length > 0) log(`   ⚠️  Flagged for review: ${allFlagged.length}`);
   log(`   📄 Total spots in spots.json: ${spots.length} (${manualSpots.length} manual + ${totalAutomatedCount} automated)`);
   log(`\n✨ Done! Updated reporting folder with spots.json, venues.json, and areas.json`);
   log(`   Total spots: ${spots.length} (${manualSpots.length} manual + ${totalAutomatedCount} automated)`);

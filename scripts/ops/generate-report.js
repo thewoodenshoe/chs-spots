@@ -585,6 +585,39 @@ function getPipelineData() {
     });
   }
 
+  // 9. Low-confidence spots (flagged or rejected by heuristic validation)
+  result.confidenceFlagged = [];
+  result.confidenceRejected = [];
+  try {
+    const reviewPath = reportingPath('confidence-review.json');
+    if (fs.existsSync(reviewPath)) {
+      const review = JSON.parse(fs.readFileSync(reviewPath, 'utf8'));
+      result.confidenceFlagged = review.flagged || [];
+      result.confidenceRejected = review.rejected || [];
+
+      for (const f of result.confidenceFlagged) {
+        result.actions.push({
+          severity: 'medium',
+          category: 'Confidence Review',
+          title: `${f.venue} [${f.type}] — confidence ${f.effectiveConfidence}/${f.llmConfidence}`,
+          detail: `Flags: ${f.flags.join(', ')}. Times: ${f.times || 'N/A'}, Days: ${f.days || 'N/A'}, Label: "${f.label || ''}"`,
+          instruction: `Review if this ${f.type} is genuine. If wrong, exclude via Telegram: /delete <spotId>\nOr add to watchlist to prevent future extraction.`,
+        });
+      }
+      if (result.confidenceRejected.length > 0) {
+        result.actions.push({
+          severity: 'low',
+          category: 'Confidence Review',
+          title: `${result.confidenceRejected.length} spot(s) auto-rejected by confidence heuristics`,
+          detail: result.confidenceRejected.slice(0, 5).map(r =>
+            `${r.venue} [${r.type}]: ${r.flags.join(', ')} (score: ${r.effectiveConfidence})`
+          ).join('\n'),
+          instruction: 'These were not created as spots. Review if any should be manually added.',
+        });
+      }
+    }
+  } catch (e) { debugLog('confidenceReview', e); }
+
   // Sort actions: high > medium > low
   const severityOrder = { high: 0, medium: 1, low: 2 };
   result.actions.sort((a, b) => (severityOrder[a.severity] ?? 3) - (severityOrder[b.severity] ?? 3));
