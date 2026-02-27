@@ -118,11 +118,10 @@ async function main() {
   log(`📁 Found ${goldRows.length} gold extraction(s) in database\n`);
 
   if (goldRows.length === 0) {
-    log('⚠️  No gold extractions found.');
-    db.spots.deleteAutomated();
+    log('⚠️  No gold extractions found — preserving all existing spots (no deletions).');
     const remaining = db.spots.getAll().map(mapSpotFromDb);
     fs.writeFileSync(SPOTS_PATH, JSON.stringify(remaining, null, 2), 'utf8');
-    log('\n✨ Done! No automated spots created.');
+    log(`\n✨ Done! ${remaining.length} existing spots preserved.`);
     return;
   }
 
@@ -369,11 +368,11 @@ async function main() {
       if (venueId) activeKeys.add(`${venueId}::${spot.type}`);
       upsertedCount++;
     }
-    const staleCount = db.spots.deleteStaleAutomated(managedTypes, activeKeys);
+    const staleCount = db.spots.archiveStaleAutomated(managedTypes, activeKeys);
     return { upsertedCount, staleCount };
   });
   log(`💾 Upserted ${upsertedCount} automated spot(s) (IDs preserved)`);
-  if (staleCount > 0) log(`🗑️  Removed ${staleCount} stale spot(s) no longer in pipeline`);
+  if (staleCount > 0) log(`📦 Archived ${staleCount} stale spot(s) no longer in pipeline (status=expired)`);
 
   // Safety net: backfill any spots that ended up without an area from their venue
   try {

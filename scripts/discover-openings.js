@@ -549,38 +549,19 @@ function isDuplicate(candidate, existingSpots, existingVenues) {
 // ── Cleanup ─────────────────────────────────────────────────────
 
 function cleanupExpiredSpots() {
-  const database = db.getDb();
   const now = new Date();
+  const recentlyOpenedExpiry = new Date(now.getTime() - RECENTLY_OPENED_EXPIRY_DAYS * 86400000).toISOString().split('T')[0];
+  const comingSoonExpiry = new Date(now.getTime() - COMING_SOON_EXPIRY_DAYS * 86400000).toISOString().split('T')[0];
 
-  const recentlyOpenedExpiry = new Date(now.getTime() - RECENTLY_OPENED_EXPIRY_DAYS * 86400000).toISOString();
-  const comingSoonExpiry = new Date(now.getTime() - COMING_SOON_EXPIRY_DAYS * 86400000).toISOString();
+  const roCount = db.spots.archiveByType('Recently Opened', 'last_update_date < ?', [recentlyOpenedExpiry]);
+  if (roCount > 0) log(`  📦 Archived ${roCount} expired "Recently Opened" spots (older than ${RECENTLY_OPENED_EXPIRY_DAYS} days)`);
 
-  const roCount = database.prepare(
-    "SELECT COUNT(*) as cnt FROM spots WHERE type = 'Recently Opened' AND source = 'automated' AND last_update_date < ? AND manual_override = 0",
-  ).get(recentlyOpenedExpiry.split('T')[0]).cnt;
-
-  const csCount = database.prepare(
-    "SELECT COUNT(*) as cnt FROM spots WHERE type = 'Coming Soon' AND source = 'automated' AND last_update_date < ? AND manual_override = 0",
-  ).get(comingSoonExpiry.split('T')[0]).cnt;
-
-  if (roCount > 0) {
-    database.prepare(
-      "DELETE FROM spots WHERE type = 'Recently Opened' AND source = 'automated' AND last_update_date < ? AND manual_override = 0",
-    ).run(recentlyOpenedExpiry.split('T')[0]);
-    log(`  🗑️  Removed ${roCount} expired "Recently Opened" spots (older than ${RECENTLY_OPENED_EXPIRY_DAYS} days)`);
-  }
-
-  if (csCount > 0) {
-    database.prepare(
-      "DELETE FROM spots WHERE type = 'Coming Soon' AND source = 'automated' AND last_update_date < ? AND manual_override = 0",
-    ).run(comingSoonExpiry.split('T')[0]);
-    log(`  🗑️  Removed ${csCount} expired "Coming Soon" spots (older than ${COMING_SOON_EXPIRY_DAYS} days)`);
-  }
+  const csCount = db.spots.archiveByType('Coming Soon', 'last_update_date < ?', [comingSoonExpiry]);
+  if (csCount > 0) log(`  📦 Archived ${csCount} expired "Coming Soon" spots (older than ${COMING_SOON_EXPIRY_DAYS} days)`);
 
   if (roCount === 0 && csCount === 0) {
-    log('  ✅ No expired spots to clean up');
+    log('  ✅ No expired spots to archive');
   }
-
   return roCount + csCount;
 }
 

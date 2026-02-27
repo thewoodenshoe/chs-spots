@@ -90,10 +90,14 @@ describe('DAL: spots', () => {
     expect(db.spots.delete(9999)).toBe(false);
   });
 
-  test('deleteAutomated removes only automated non-override spots', () => {
+  test('deleteAutomated requires explicit types', () => {
+    expect(() => db.spots.deleteAutomated()).toThrow('requires explicit types');
+  });
+
+  test('deleteAutomated removes only automated non-override spots of given types', () => {
     db.spots.insert({ venue_id: 'test-venue-1', title: 'Auto', type: 'HH', source: 'automated' });
     db.spots.insert({ venue_id: 'test-venue-2', title: 'Manual', type: 'HH', source: 'manual' });
-    const deleted = db.spots.deleteAutomated();
+    const deleted = db.spots.deleteAutomated(['HH']);
     expect(deleted).toBe(1);
     expect(db.spots.count()).toBe(1);
     expect(db.spots.getAll()[0].source).toBe('manual');
@@ -105,6 +109,41 @@ describe('DAL: spots', () => {
     const visible = db.spots.getAll({ visibleOnly: true });
     expect(visible.length).toBe(1);
     expect(visible[0].title).toBe('Visible');
+  });
+
+  test('getAll with visibleOnly excludes expired spots', () => {
+    db.spots.insert({ venue_id: 'test-venue-1', title: 'Active', type: 'HH', source: 'automated', status: 'approved' });
+    db.spots.insert({ venue_id: 'test-venue-2', title: 'Expired', type: 'HH', source: 'automated', status: 'expired' });
+    const visible = db.spots.getAll({ visibleOnly: true });
+    expect(visible.length).toBe(1);
+    expect(visible[0].title).toBe('Active');
+  });
+
+  test('upsertAutomated preserves ID on update', () => {
+    db.venues.upsert({ id: 'v1', name: 'Test Venue', lat: 0, lng: 0 });
+    const id = db.spots.insert({ venue_id: 'v1', title: 'Old Title', type: 'HH', source: 'automated' });
+    const newId = db.spots.upsertAutomated({ venue_id: 'v1', title: 'New Title', type: 'HH' });
+    expect(newId).toBe(id);
+    expect(db.spots.getById(id).title).toBe('New Title');
+  });
+
+  test('upsertAutomated resurrects expired spots', () => {
+    db.venues.upsert({ id: 'v2', name: 'Test Venue 2', lat: 0, lng: 0 });
+    const id = db.spots.insert({ venue_id: 'v2', title: 'Old', type: 'HH', source: 'automated', status: 'expired' });
+    db.spots.upsertAutomated({ venue_id: 'v2', title: 'Back', type: 'HH' });
+    expect(db.spots.getById(id).status).toBe('approved');
+  });
+
+  test('archiveStaleAutomated sets status to expired', () => {
+    db.venues.upsert({ id: 'v-active', name: 'Active Venue', lat: 0, lng: 0 });
+    db.venues.upsert({ id: 'v-stale', name: 'Stale Venue', lat: 0, lng: 0 });
+    db.spots.insert({ venue_id: 'v-active', title: 'Active', type: 'HH', source: 'automated' });
+    db.spots.insert({ venue_id: 'v-stale', title: 'Stale', type: 'HH', source: 'automated' });
+    const activeKeys = new Set(['v-active::HH']);
+    const count = db.spots.archiveStaleAutomated(['HH'], activeKeys);
+    expect(count).toBe(1);
+    const stale = db.spots.getAll().find(s => s.venue_id === 'v-stale');
+    expect(stale.status).toBe('expired');
   });
 });
 

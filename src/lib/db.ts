@@ -191,7 +191,7 @@ export const spots = {
   getAll(opts?: { visibleOnly?: boolean }): SpotRow[] {
     if (opts?.visibleOnly) {
       return getDb().prepare(
-        "SELECT * FROM spots WHERE source = 'automated' OR status = 'approved' OR status IS NULL ORDER BY id"
+        "SELECT * FROM spots WHERE status != 'expired' AND (source = 'automated' OR status = 'approved' OR status IS NULL) ORDER BY id",
       ).all() as SpotRow[];
     }
     return getDb().prepare('SELECT * FROM spots ORDER BY id').all() as SpotRow[];

@@ -129,7 +129,7 @@ const spots = {
       if (filters.venueId) { clauses.push('venue_id = ?'); params.push(filters.venueId); }
       if (filters.status) { clauses.push('status = ?'); params.push(filters.status); }
       if (filters.visibleOnly) {
-        clauses.push("(source = 'automated' OR status = 'approved' OR status IS NULL)");
+        clauses.push("status != 'expired' AND (source = 'automated' OR status = 'approved' OR status IS NULL)");
       }
     }
     if (clauses.length > 0) sql += ' WHERE ' + clauses.join(' AND ');
@@ -234,7 +234,7 @@ const spots = {
           promotion_time=@promotion_time, promotion_list=@promotion_list,
           source_url=@source_url, photo_url=COALESCE(@photo_url, photo_url),
           last_update_date=@last_update_date, lat=@lat, lng=@lng,
-          area=@area, updated_at=datetime('now')
+          area=@area, status='approved', updated_at=datetime('now')
         WHERE id = @id
       `).run({
         id: existing.id,
@@ -254,36 +254,52 @@ const spots = {
     return this.insert(s);
   },
 
-  deleteStaleAutomated(types, activeKeys) {
+  archiveStaleAutomated(types, activeKeys) {
     const db = getDb();
     const pendingGuard = "AND (pending_edit IS NULL OR pending_edit = '') AND pending_delete = 0";
     if (!types || types.length === 0) return 0;
     const placeholders = types.map(() => '?').join(',');
     const stale = db.prepare(
-      `SELECT id, venue_id, type FROM spots WHERE source = 'automated' AND manual_override = 0 ${pendingGuard} AND type IN (${placeholders})`,
+      `SELECT id, venue_id, type FROM spots WHERE source = 'automated' AND manual_override = 0 AND status = 'approved' ${pendingGuard} AND type IN (${placeholders})`,
     ).all(...types);
     let count = 0;
     for (const row of stale) {
       const key = `${row.venue_id}::${row.type}`;
       if (!activeKeys.has(key)) {
-        db.prepare('DELETE FROM spots WHERE id = ?').run(row.id);
+        db.prepare("UPDATE spots SET status = 'expired', updated_at = datetime('now') WHERE id = ?").run(row.id);
+        logAudit('spots', row.id, 'UPDATE', row, { status: 'expired' });
         count++;
       }
     }
     return count;
   },
 
+  archiveByType(type, condition, params) {
+    const db = getDb();
+    const count = db.prepare(
+      `SELECT COUNT(*) as cnt FROM spots WHERE type = ? AND source = 'automated' AND status = 'approved' AND manual_override = 0 AND ${condition}`,
+    ).get(type, ...params).cnt;
+    if (count > 0) {
+      db.prepare(
+        `UPDATE spots SET status = 'expired', updated_at = datetime('now') WHERE type = ? AND source = 'automated' AND status = 'approved' AND manual_override = 0 AND ${condition}`,
+      ).run(type, ...params);
+    }
+    return count;
+  },
+
   deleteAutomated(types) {
+    if (!types || types.length === 0) {
+      throw new Error('deleteAutomated requires explicit types to prevent accidental full wipe');
+    }
     const db = getDb();
     const pendingGuard = "AND (pending_edit IS NULL OR pending_edit = '') AND pending_delete = 0";
-    if (types && types.length > 0) {
-      const placeholders = types.map(() => '?').join(',');
-      const count = db.prepare(`SELECT COUNT(*) as cnt FROM spots WHERE source = 'automated' AND manual_override = 0 ${pendingGuard} AND type IN (${placeholders})`).get(...types).cnt;
-      db.prepare(`DELETE FROM spots WHERE source = 'automated' AND manual_override = 0 ${pendingGuard} AND type IN (${placeholders})`).run(...types);
-      return count;
-    }
-    const count = db.prepare(`SELECT COUNT(*) as cnt FROM spots WHERE source = 'automated' AND manual_override = 0 ${pendingGuard}`).get().cnt;
-    db.prepare(`DELETE FROM spots WHERE source = 'automated' AND manual_override = 0 ${pendingGuard}`).run();
+    const placeholders = types.map(() => '?').join(',');
+    const count = db.prepare(
+      `SELECT COUNT(*) as cnt FROM spots WHERE source = 'automated' AND manual_override = 0 ${pendingGuard} AND type IN (${placeholders})`,
+    ).get(...types).cnt;
+    db.prepare(
+      `DELETE FROM spots WHERE source = 'automated' AND manual_override = 0 ${pendingGuard} AND type IN (${placeholders})`,
+    ).run(...types);
     return count;
   },
 
