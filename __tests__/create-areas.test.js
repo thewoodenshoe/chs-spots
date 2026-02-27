@@ -43,7 +43,7 @@ describe('create-areas.js script tests', () => {
       execSync(`node ${scriptPath}`, { stdio: 'pipe', encoding: 'utf8' });
       const areasData = JSON.parse(fs.readFileSync(areasFilePath, 'utf8'));
       expect(Array.isArray(areasData)).toBe(true);
-      expect(areasData.length).toBe(8); // Updated: Now includes Isle of Palms
+      expect(areasData.length).toBe(7); // Sullivan's Island + Isle of Palms merged into Sullivan's & IOP
     });
   });
   

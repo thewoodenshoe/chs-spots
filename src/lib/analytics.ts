@@ -60,3 +60,23 @@ export function trackSpotDetailsView(spotId: number, spotName: string, area: str
 export function trackSearchFilter(query: string): void {
   trackEvent('search-filter', { query });
 }
+
+export function trackViewMode(mode: 'map' | 'list'): void {
+  trackEvent('view-mode', { mode });
+}
+
+export function trackNearMe(): void {
+  trackEvent('near-me');
+}
+
+export function trackSortMode(mode: string): void {
+  trackEvent('sort-mode', { mode });
+}
+
+export function trackShare(spotId: number, spotName: string): void {
+  trackEvent('share', { spotId, spotName });
+}
+
+export function trackFavorite(spotId: number, spotName: string, action: 'add' | 'remove'): void {
+  trackEvent('favorite', { spotId, spotName, action });
+}

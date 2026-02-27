@@ -273,11 +273,14 @@ function createSpots(goldData, venueData, startId) {
       venueId: goldData.venueId || undefined,
     };
 
-    // Add photoUrl if available from venue
-    if (venueData.photoUrl) {
+    // Only set photoUrl if the referenced file actually exists on disk
+    if (venueData.photoUrl && venueData.photoUrl.startsWith('/')) {
+      const photoPath = path.join(__dirname, '..', 'public', venueData.photoUrl);
+      if (fs.existsSync(photoPath)) {
+        spot.photoUrl = venueData.photoUrl;
+      }
+    } else if (venueData.photoUrl) {
       spot.photoUrl = venueData.photoUrl;
-    } else if (venueData.photos && venueData.photos.length > 0) {
-      spot.photoUrl = venueData.photos[0].photo_reference;
     }
 
     spots.push(spot);
@@ -486,15 +489,32 @@ function main() {
 
   log(`\n📈 Content changes this run: ${updatedSpotNames.length}`);
 
-  // ── Write to DB: delete old automated spots, insert new ones ──
-  const deletedCount = db.spots.deleteAutomated();
+  // ── Write to DB: atomic delete + insert in a transaction ──
+  const { deletedCount } = db.transaction(() => {
+    const deletedCount = db.spots.deleteAutomated();
+    for (const spot of newAutomatedSpots) {
+      const newId = db.spots.insert(spot);
+      spot.id = newId;
+    }
+    return { deletedCount };
+  });
   log(`🗑️  Cleared ${deletedCount} old automated spot(s) from database`);
-
-  for (const spot of newAutomatedSpots) {
-    const newId = db.spots.insert(spot);
-    spot.id = newId;
-  }
   log(`💾 Inserted ${newAutomatedSpots.length} automated spot(s) into database`);
+
+  // Safety net: backfill any spots that ended up without an area from their venue
+  try {
+    const d = db.getDb();
+    const fixed = d.prepare(
+      "UPDATE spots SET area = (SELECT v.area FROM venues v WHERE v.id = spots.venue_id) " +
+      "WHERE (area IS NULL OR area = '' OR area = 'Unknown') AND venue_id IS NOT NULL " +
+      "AND EXISTS (SELECT 1 FROM venues v WHERE v.id = spots.venue_id AND v.area IS NOT NULL AND v.area != '')",
+    ).run();
+    if (fixed.changes > 0) {
+      log(`🔧 Area backfill: fixed ${fixed.changes} spot(s) with missing area from venue data`);
+    }
+  } catch (err) {
+    log(`  ⚠️  Area backfill check failed: ${err.message}`);
+  }
 
   // Complete in-memory spots array (manual + overridden preserved in DB, new automated just inserted)
   const spots = [...manualSpots, ...overriddenSpots, ...newAutomatedSpots];

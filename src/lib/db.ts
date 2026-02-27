@@ -51,6 +51,11 @@ function runMigrations(db: Database.Database) {
   if (!actColNames.has('hidden')) {
     db.prepare("ALTER TABLE activities ADD COLUMN hidden INTEGER DEFAULT 0").run();
   }
+
+  // Performance indexes — idempotent via IF NOT EXISTS
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_spots_source_status ON spots(source, status)").run();
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_spots_type ON spots(type)").run();
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_venues_area ON venues(area)").run();
 }
 
 // ── Spot type for API responses ─────────────────────────────────
@@ -190,10 +195,20 @@ export const spots = {
   update(id: number, fields: Record<string, any>): boolean {
     const existing = this.getById(id);
     if (!existing) return false;
+
+    const ALLOWED_COLUMNS = new Set([
+      'title', 'description', 'type', 'source', 'status',
+      'promotion_time', 'promotion_list', 'source_url',
+      'submitter_name', 'manual_override', 'photo_url',
+      'last_update_date', 'pending_edit', 'pending_delete',
+      'submitted_at', 'edited_at', 'lat', 'lng', 'area', 'venue_id',
+    ]);
+
     const setClauses: string[] = [];
     const params: Record<string, any> = { id };
     for (const [key, val] of Object.entries(fields)) {
       const col = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+      if (!ALLOWED_COLUMNS.has(col)) continue;
       setClauses.push(`${col} = @${col}`);
       if (val !== null && typeof val === 'object') {
         params[col] = JSON.stringify(val);
@@ -201,6 +216,7 @@ export const spots = {
         params[col] = val;
       }
     }
+    if (setClauses.length === 0) return false;
     setClauses.push("updated_at = datetime('now')");
     getDb().prepare(`UPDATE spots SET ${setClauses.join(', ')} WHERE id = @id`).run(params);
     logAudit('spots', id, 'UPDATE', existing, fields);
@@ -247,8 +263,8 @@ function logAudit(tableName: string, rowId: number | string, action: string, old
       oldData ? JSON.stringify(oldData) : null,
       newData ? JSON.stringify(newData) : null
     );
-  } catch {
-    // Don't let audit logging failures break the app
+  } catch (err) {
+    console.warn('Audit log write failed:', err);
   }
 }
 

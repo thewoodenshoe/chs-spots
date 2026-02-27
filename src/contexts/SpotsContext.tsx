@@ -37,18 +37,9 @@ interface SpotsContextType {
 
 const SpotsContext = createContext<SpotsContextType | undefined>(undefined);
 
-// Check for admin mode from URL or localStorage
+// Admin mode via localStorage only (no URL params for security)
 function getAdminSecret(): string | null {
   if (typeof window === 'undefined') return null;
-
-  const params = new URLSearchParams(window.location.search);
-  const adminParam = params.get('admin');
-
-  if (adminParam) {
-    localStorage.setItem('chs_admin_key', adminParam);
-    localStorage.setItem('chs_admin', 'true');
-    return adminParam;
-  }
 
   if (localStorage.getItem('chs_admin') === 'true') {
     return localStorage.getItem('chs_admin_key');

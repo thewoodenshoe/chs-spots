@@ -1,0 +1,50 @@
+[
+  {
+    "title": "Commonhouse Aleworks",
+    "description": "Park Circle's favorite craft brewery. $1 off all drafts during happy hour Mon-Fri 4-6pm. Spacious taproom with board games and a great patio.",
+    "area": "North Charleston",
+    "searchHint": "Commonhouse Aleworks 4831 O'Hear Ave North Charleston SC"
+  },
+  {
+    "title": "Edmund's Oast Brewing",
+    "description": "Award-winning brewery and taproom in the Park Circle area. Rotating seasonal beers, $2 off pints Mon-Fri 4-6pm. Excellent food menu too.",
+    "area": "North Charleston",
+    "searchHint": "Edmunds Oast Brewing 1505 King St Extension North Charleston SC"
+  },
+  {
+    "title": "EVO Pizzeria",
+    "description": "Wood-fired pizza and craft cocktails in Park Circle. Half-price appetizers and $2 off draft beers Mon-Fri 4-6pm. Family-friendly with outdoor seating.",
+    "area": "North Charleston",
+    "searchHint": "EVO Pizzeria 1075 East Montague Ave North Charleston SC"
+  },
+  {
+    "title": "The Sparrow Bar & Cookshop",
+    "description": "Trendy Park Circle cocktail bar with creative small plates. Daily happy hour 4-6pm with $8 cocktails and discounted bites. Great date night spot.",
+    "area": "North Charleston",
+    "searchHint": "The Sparrow Bar Cookshop 1078 East Montague Ave North Charleston SC"
+  },
+  {
+    "title": "Frothy Beard Brewing Company",
+    "description": "Laid-back brewery near Park Circle with a rotating tap list. $1 off all pints Tue-Thu 4-6pm. Dog-friendly patio and food trucks on weekends.",
+    "area": "North Charleston",
+    "searchHint": "Frothy Beard Brewing Company 1401 Sam Rittenberg Blvd North Charleston SC"
+  },
+  {
+    "title": "Bay Street Biergarten",
+    "description": "German-inspired beer garden in Park Circle. Daily happy hour 4-6pm with $5 steins and half-price pretzels. Live music on weekends.",
+    "area": "North Charleston",
+    "searchHint": "Bay Street Biergarten 1011 East Montague Ave North Charleston SC"
+  },
+  {
+    "title": "Tradesman Brewing Company",
+    "description": "Neighborhood brewery in a converted warehouse. $1 off all house beers Mon-Fri 3-6pm. Rotating food trucks and a relaxed industrial vibe.",
+    "area": "North Charleston",
+    "searchHint": "Tradesman Brewing Company 1245 Truxtun Ave North Charleston SC"
+  },
+  {
+    "title": "Malagon",
+    "description": "Spanish-inspired tapas and wine bar in Park Circle. Wine and beer specials Mon-Fri 4-6pm. Excellent croquetas and charcuterie boards.",
+    "area": "North Charleston",
+    "searchHint": "Malagon 1080 East Montague Ave North Charleston SC"
+  }
+]

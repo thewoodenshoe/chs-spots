@@ -35,6 +35,28 @@ if (fs.existsSync(configPath)) {
 export UMAMI_WEBSITE_ID="${NEXT_PUBLIC_UMAMI_WEBSITE_ID:-}"
 export SERVER_PUBLIC_URL="${SERVER_PUBLIC_URL:-https://chsfinds.com}"
 
+# Backup SQLite database before pipeline (7-day rolling retention)
+BACKUP_DIR="$APP_DIR/backups"
+mkdir -p "$BACKUP_DIR"
+DB_FILE="$APP_DIR/data/chs-spots.db"
+if [ -f "$DB_FILE" ]; then
+  BACKUP_FILE="$BACKUP_DIR/chs-spots-$(date +%F).db"
+  node -e "
+    const Database = require('better-sqlite3');
+    const db = new Database('$DB_FILE', { readonly: true });
+    db.backup('$BACKUP_FILE').then(() => {
+      console.log('Database backed up successfully');
+      db.close();
+    }).catch(err => {
+      console.error('Backup failed:', err);
+      db.close();
+      process.exit(1);
+    });
+  " >> "$LOG_FILE" 2>&1 || echo "WARNING: Database backup failed" >> "$LOG_FILE"
+  # Keep only last 7 daily backups
+  find "$BACKUP_DIR" -name 'chs-spots-*.db' -mtime +7 -delete 2>/dev/null || true
+fi
+
 # Full all-areas pipeline
 node scripts/run-incremental-pipeline.js --confirm >> "$LOG_FILE" 2>&1 || true
 PIPELINE_EXIT=${PIPESTATUS[0]:-$?}

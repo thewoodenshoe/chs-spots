@@ -12,7 +12,7 @@ describe('SearchBar', () => {
 
   it('renders with placeholder', () => {
     render(<SearchBar {...defaultProps} />);
-    expect(screen.getByPlaceholderText('Search spots...')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Search all areas...')).toBeInTheDocument();
   });
 
   it('renders with custom placeholder', () => {
@@ -22,7 +22,7 @@ describe('SearchBar', () => {
 
   it('calls onChange when typing', () => {
     render(<SearchBar {...defaultProps} />);
-    const input = screen.getByPlaceholderText('Search spots...');
+    const input = screen.getByPlaceholderText('Search all areas...');
     fireEvent.change(input, { target: { value: 'tacos' } });
     expect(defaultProps.onChange).toHaveBeenCalledWith('tacos');
   });
@@ -45,14 +45,14 @@ describe('SearchBar', () => {
 
   it('focuses on / key press', () => {
     render(<SearchBar {...defaultProps} />);
-    const input = screen.getByPlaceholderText('Search spots...');
+    const input = screen.getByPlaceholderText('Search all areas...');
     fireEvent.keyDown(window, { key: '/' });
     expect(document.activeElement).toBe(input);
   });
 
   it('has proper touch target size for mobile (min 40px)', () => {
     render(<SearchBar {...defaultProps} />);
-    const input = screen.getByPlaceholderText('Search spots...');
+    const input = screen.getByPlaceholderText('Search all areas...');
     expect(input.className).toContain('h-10');
   });
 });

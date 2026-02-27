@@ -11,10 +11,10 @@ let areasFromFile: string[] = [];
 
 try {
   const areasData = JSON.parse(fs.readFileSync(areasFilePath, 'utf8'));
-  areasFromFile = areasData.map((area: any) => area.name);
+  areasFromFile = areasData.map((area: { name: string }) => area.name);
 } catch (error) {
   console.warn('Could not load areas.json for tests, using fallback');
-  areasFromFile = ['Daniel Island', 'Mount Pleasant', 'James Island', 'Downtown Charleston', "Sullivan's Island", 'North Charleston', 'West Ashley'];
+  areasFromFile = ['Daniel Island', 'Mount Pleasant', 'James Island', 'Downtown Charleston', "Sullivan's & IOP", 'North Charleston', 'West Ashley'];
 }
 
 // Mock fetch for API calls

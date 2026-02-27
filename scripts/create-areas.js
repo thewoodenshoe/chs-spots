@@ -120,7 +120,7 @@ const areas = [
   {
     name: "Daniel Island",
     displayName: "Daniel Island",
-    description: "Includes Clements Ferry Road and northern extensions",
+    description: "Quiet planned community. Upscale dining, golf & marina vibes",
     center: { lat: 32.845, lng: -79.908 },
     radiusMeters: 8000,
     bounds: { south: 32.82, west: -79.96, north: 32.89, east: -79.88 },
@@ -129,7 +129,7 @@ const areas = [
   {
     name: "Mount Pleasant",
     displayName: "Mount Pleasant",
-    description: "Broad coverage including Shem Creek",
+    description: "Family-friendly suburb. Shem Creek seafood & waterfront bars",
     center: { lat: 32.795, lng: -79.875 },
     radiusMeters: 12000,
     bounds: { south: 32.75, west: -80.00, north: 32.90, east: -79.80 },
@@ -138,25 +138,25 @@ const areas = [
   {
     name: "Downtown Charleston",
     displayName: "Downtown Charleston",
-    description: "Historic downtown and surrounding neighborhoods",
+    description: "Historic heart. King Street nightlife, fine dining & carriage rides",
     center: { lat: 32.776, lng: -79.931 },
     radiusMeters: 5000,
     bounds: { south: 32.76, west: -79.96, north: 32.79, east: -79.91 },
     zipCodes: ["29401", "29403"]
   },
   {
-    name: "Sullivan's Island",
-    displayName: "Sullivan's Island",
-    description: "Beach community and restaurants",
-    center: { lat: 32.760, lng: -79.840 },
-    radiusMeters: 3000,
-    bounds: { south: 32.75, west: -79.87, north: 32.77, east: -79.83 },
-    zipCodes: ["29482"]
+    name: "Sullivan's & IOP",
+    displayName: "Sullivan's & IOP",
+    description: "Beach communities. Casual seafood, ocean views & island vibes",
+    center: { lat: 32.773, lng: -79.818 },
+    radiusMeters: 8000,
+    bounds: { south: 32.75, west: -79.87, north: 32.80, east: -79.77 },
+    zipCodes: ["29482", "29451"]
   },
   {
     name: "North Charleston",
     displayName: "North Charleston",
-    description: "North Charleston area including Tanger Outlets and airport area",
+    description: "Diverse & affordable. Breweries, Park Circle food scene & live music",
     center: { lat: 32.888, lng: -80.006 },
     radiusMeters: 10000,
     bounds: { south: 32.82, west: -80.10, north: 32.95, east: -79.90 },
@@ -165,7 +165,7 @@ const areas = [
   {
     name: "West Ashley",
     displayName: "West Ashley",
-    description: "West Ashley area across the Ashley River",
+    description: "Residential charm. Local gems & the Avondale bar scene",
     center: { lat: 32.785, lng: -80.040 },
     radiusMeters: 8000,
     bounds: { south: 32.72, west: -80.10, north: 32.85, east: -79.95 },
@@ -174,20 +174,11 @@ const areas = [
   {
     name: "James Island",
     displayName: "James Island",
-    description: "James Island including western coverage like The Harlow",
+    description: "Chill island living. Neighborhood pubs & gateway to Folly Beach",
     center: { lat: 32.737, lng: -79.965 },
     radiusMeters: 10000,
     bounds: { south: 32.7, west: -79.98, north: 32.75, east: -79.9 },
     zipCodes: ["29412"]
-  },
-  {
-    name: "Isle of Palms",
-    displayName: "Isle of Palms",
-    description: "Isle of Palms beach community and restaurants",
-    center: { lat: 32.786, lng: -79.795 },
-    radiusMeters: 5000,
-    bounds: { south: 32.77, west: -79.82, north: 32.80, east: -79.77 },
-    zipCodes: ["29451"]
   }
 ];
 

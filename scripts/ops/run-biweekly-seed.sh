@@ -25,6 +25,11 @@ TIMESTAMP="$(date +%F-%H%M%S)"
 LOG_FILE="$LOG_DIR/biweekly-seed-$TIMESTAMP.log"
 
 cd "$APP_DIR"
+set -a
+source "$APP_DIR/.env.local"
+set +a
+export GOOGLE_PLACES_ENABLED=true
+
 node scripts/seed-venues.js --confirm >> "$LOG_FILE" 2>&1
 printf "%s" "$NOW_EPOCH" > "$STAMP_FILE"
 

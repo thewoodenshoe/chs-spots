@@ -271,8 +271,9 @@ function mapGoogleSublocalityToArea(googleSublocality) {
     'historic district': 'Downtown Charleston',
     'french quarter': 'Downtown Charleston',
     'james island': 'James Island',
-    "sullivan's island": "Sullivan's Island",
-    'sullivans island': "Sullivan's Island",
+    "sullivan's island": "Sullivan's & IOP",
+    'sullivans island': "Sullivan's & IOP",
+    'isle of palms': "Sullivan's & IOP",
     'north charleston': 'North Charleston',
     'n charleston': 'North Charleston',
     'west ashley': 'West Ashley',
@@ -300,8 +301,9 @@ function extractAreaFromAddress(address) {
     'mt. pleasant': 'Mount Pleasant',
     'west ashley': 'West Ashley',
     'james island': 'James Island',
-    "sullivan's island": "Sullivan's Island",
-    'sullivans island': "Sullivan's Island",
+    "sullivan's island": "Sullivan's & IOP",
+    'sullivans island': "Sullivan's & IOP",
+    'isle of palms': "Sullivan's & IOP",
     'daniel island': 'Daniel Island',
   };
   

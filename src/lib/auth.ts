@@ -7,7 +7,6 @@
  * Supported methods (checked in order):
  *   1. Authorization: Bearer <ADMIN_API_KEY>
  *   2. x-admin-key: <ADMIN_API_KEY>
- *   3. ?admin=<ADMIN_API_KEY> (for frontend; same value as env)
  */
 
 function getAdminSecret(): string {
@@ -16,25 +15,16 @@ function getAdminSecret(): string {
 
 export function isAdminRequest(request: Request): boolean {
   const secret = getAdminSecret();
+  if (!secret) return false;
 
-  // 1. Bearer token
   const authHeader = request.headers.get('authorization');
   if (authHeader) {
     const token = authHeader.replace(/^Bearer\s+/i, '');
     if (token === secret) return true;
   }
 
-  // 2. Custom header
   const keyHeader = request.headers.get('x-admin-key');
   if (keyHeader === secret) return true;
-
-  // 3. Query param (legacy frontend compat)
-  try {
-    const url = new URL(request.url);
-    if (url.searchParams.get('admin') === secret) return true;
-  } catch {
-    // Ignore URL parse errors
-  }
 
   return false;
 }

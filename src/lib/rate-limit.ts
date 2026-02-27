@@ -55,12 +55,27 @@ export function checkRateLimit(
 
 /**
  * Extract client IP from request headers.
- * Respects X-Forwarded-For (set by Nginx) or X-Real-IP.
+ *
+ * Only trusts X-Forwarded-For / X-Real-IP when behind our own Nginx
+ * reverse proxy, which always sets X-Real-IP to the true client IP
+ * and overwrites X-Forwarded-For. When those headers are absent
+ * (direct access), we fall back to "unknown" — Nginx should be the
+ * only entry point in production.
  */
 export function getClientIp(request: Request): string {
-  const xff = request.headers.get('x-forwarded-for');
-  if (xff) return xff.split(',')[0].trim();
+  // Prefer X-Real-IP: Nginx sets this to the actual remote addr and
+  // it cannot be spoofed through Nginx (proxy_set_header X-Real-IP $remote_addr).
   const xri = request.headers.get('x-real-ip');
-  if (xri) return xri;
+  if (xri) return xri.trim();
+
+  // Fall back to X-Forwarded-For last entry (closest proxy hop).
+  // The *last* entry is the one added by our trusted Nginx, whereas
+  // the first entry can be spoofed by the client.
+  const xff = request.headers.get('x-forwarded-for');
+  if (xff) {
+    const parts = xff.split(',').map(s => s.trim()).filter(Boolean);
+    return parts[parts.length - 1];
+  }
+
   return 'unknown';
 }

@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import { venues } from '@/lib/db';
+import { getCache, setCache } from '@/lib/cache';
+
+const VENUES_TTL = 300_000; // 5 minutes
 
 export async function GET(request: Request) {
   const ip = getClientIp(request);
@@ -10,8 +13,14 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const areaFilter = searchParams.get('area');
+  const cacheKey = `api:venues:${areaFilter || 'all'}`;
 
   try {
+    const cached = getCache<unknown[]>(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached, { headers: { 'X-Cache': 'HIT' } });
+    }
+
     const allVenues = areaFilter
       ? venues.getByArea(areaFilter)
       : venues.getAll();
@@ -26,9 +35,10 @@ export async function GET(request: Request) {
       website: v.website || null,
     }));
 
-    return NextResponse.json(transformed);
+    setCache(cacheKey, transformed, VENUES_TTL);
+    return NextResponse.json(transformed, { headers: { 'X-Cache': 'MISS' } });
   } catch (error) {
     console.error('Error reading venues from database:', error);
-    return NextResponse.json([]);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

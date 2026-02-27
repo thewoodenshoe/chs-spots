@@ -1,0 +1,188 @@
+[
+  {
+    "title": "Page's Okra Grill",
+    "description": "Southern staples and a covered patio perfect for dogs, with fans and heaters for comfort in all weather. Shrimp and grits while your pup hangs leashed beside you.",
+    "area": "Mount Pleasant",
+    "searchHint": "Page's Okra Grill 302 Coleman Blvd Mount Pleasant Charleston SC"
+  },
+  {
+    "title": "Hobcaw Brewing Company",
+    "description": "Brewery where dogs are welcome outside and in the warehouse space on leash. Craft beers in a pet-friendly environment.",
+    "area": "Mount Pleasant",
+    "searchHint": "Hobcaw Brewing Company Mount Pleasant Charleston SC"
+  },
+  {
+    "title": "Pitt Street Bridge Dog Walk",
+    "description": "Scenic former trolley bridge with waterfront views, perfect for leashed dog walks and sunsets. Popular for pets and owners enjoying the marsh.",
+    "area": "Mount Pleasant",
+    "searchHint": "Pitt Street Bridge Mount Pleasant Charleston SC"
+  },
+  {
+    "title": "Mount Pleasant Waterfront Park",
+    "description": "Waterfront park with a pier where leashed dogs are welcome. Great for walks and enjoying harbor views near Patriots Point.",
+    "area": "Mount Pleasant",
+    "searchHint": "Mount Pleasant Waterfront Park Mount Pleasant Charleston SC"
+  },
+  {
+    "title": "New Realm Brewing",
+    "description": "Brewery with outdoor seating areas where dogs are welcome on leash. Sip on flights and pints in a spacious pet-friendly space.",
+    "area": "Daniel Island",
+    "searchHint": "New Realm Brewing 880 Island Park Dr Daniel Island Charleston SC"
+  },
+  {
+    "title": "Indigo Reef Brewing Company",
+    "description": "Dog-friendly brewery with outdoor spaces for leashed pets. Craft beers in a relaxed island atmosphere.",
+    "area": "Daniel Island",
+    "searchHint": "Indigo Reef Brewing Company Daniel Island Charleston SC"
+  },
+  {
+    "title": "The Dime Patio",
+    "description": "Casual Daniel Island spot with dog-friendly patio for drinks and food. Leashed dogs welcome outdoors.",
+    "area": "Daniel Island",
+    "searchHint": "The Dime Daniel Island Charleston SC"
+  },
+  {
+    "title": "Daniel Island Grille",
+    "description": "Restaurant with outdoor tables welcoming leashed dogs. Varied menu in a pet-friendly neighborhood setting.",
+    "area": "Daniel Island",
+    "searchHint": "Daniel Island Grille 259 Seven Farms Dr Daniel Island Charleston SC"
+  },
+  {
+    "title": "Dog and Duck - Daniel Island",
+    "description": "Pub with dog-friendly outdoor seating. Serves pub fare and beers with leashed pets welcome on the patio.",
+    "area": "Daniel Island",
+    "searchHint": "Dog and Duck Daniel Island Charleston SC"
+  },
+  {
+    "title": "Daniel Island Trails",
+    "description": "Scenic network of trails and parks on Daniel Island where leashed dogs can enjoy walks through marshes and neighborhoods.",
+    "area": "Daniel Island",
+    "searchHint": "Daniel Island Trails Daniel Island Charleston SC"
+  },
+  {
+    "title": "Coconut Joe's",
+    "description": "Oceanfront restaurant with a dog-friendly rooftop deck and covered patio. Leashed dogs welcome for seafood and drinks with ocean views.",
+    "area": "Sullivan's & IOP",
+    "searchHint": "Coconut Joe's 1120 Ocean Blvd Isle of Palms Charleston SC"
+  },
+  {
+    "title": "Acme Lowcountry Kitchen",
+    "description": "Eatery with umbrella-shaded patio tables welcoming leashed dogs. Lowcountry cuisine during breakfast, lunch, and dinner.",
+    "area": "Sullivan's & IOP",
+    "searchHint": "Acme Lowcountry Kitchen 31 J C Long Blvd Isle of Palms Charleston SC"
+  },
+  {
+    "title": "Sea Biscuit Cafe",
+    "description": "Cafe with outdoor tables for leashed dogs during breakfast or lunch. Pet-friendly spot for casual beachside meals.",
+    "area": "Sullivan's & IOP",
+    "searchHint": "Sea Biscuit Cafe 21 J C Long Blvd Isle of Palms Charleston SC"
+  },
+  {
+    "title": "Islander 71",
+    "description": "Fish and raw bar with dog-friendly covered dining pavilion. Leashed dogs welcome for seafood on the Intracoastal Waterway.",
+    "area": "Sullivan's & IOP",
+    "searchHint": "Islander 71 80 41st Ave Isle of Palms Charleston SC"
+  },
+  {
+    "title": "The Dinghy",
+    "description": "Taproom with pet-friendly covered porch. Leashed dogs welcome while enjoying craft beers and casual bites.",
+    "area": "Sullivan's & IOP",
+    "searchHint": "The Dinghy 8 J C Long Blvd Isle of Palms Charleston SC"
+  },
+  {
+    "title": "DIG in the Park",
+    "description": "Sports bar with a spacious dog-friendly patio and fenced grassy area in Park Circle. Leashed dogs welcome for beers and games.",
+    "area": "North Charleston",
+    "searchHint": "DIG in the Park 1049 E Montague Ave North Charleston SC"
+  },
+  {
+    "title": "Commonhouse Aleworks",
+    "description": "Brewery with outdoor seating where leashed dogs are allowed. Rotating taps and community events with your pet.",
+    "area": "North Charleston",
+    "searchHint": "Commonhouse Aleworks 4831 O'Hear Ave North Charleston SC"
+  },
+  {
+    "title": "EVO Pizzeria",
+    "description": "Pizzeria with dog-friendly patio in Park Circle. Leashed dogs welcome for wood-fired pizza and local beers.",
+    "area": "North Charleston",
+    "searchHint": "EVO Pizzeria 1075 E Montague Ave North Charleston SC"
+  },
+  {
+    "title": "Broken Leash Dog Park & Bar",
+    "description": "Off-leash dog park with craft beer bar and patio. Dogs can roam free in designated areas while owners enjoy drinks.",
+    "area": "North Charleston",
+    "searchHint": "Broken Leash Dog Park & Bar 8811 Old University Blvd North Charleston SC"
+  },
+  {
+    "title": "Holy City Brewing",
+    "description": "Brewery with dog-friendly outdoor spaces. Leashed pets welcome for craft beer tastings in a relaxed setting.",
+    "area": "North Charleston",
+    "searchHint": "Holy City Brewing North Charleston SC"
+  },
+  {
+    "title": "North Charleston Riverfront Park",
+    "description": "Park overlooking the Cooper River with walking paths and dog-friendly areas on leash. Great for outdoor strolls with pets.",
+    "area": "North Charleston",
+    "searchHint": "North Charleston Riverfront Park North Charleston SC"
+  },
+  {
+    "title": "Swig & Swine - West Ashley",
+    "description": "BBQ restaurant with dog-friendly patio. Leashed dogs welcome while you enjoy smoked meats and Southern sides.",
+    "area": "West Ashley",
+    "searchHint": "Swig and Swine 1217 Savannah Hwy West Ashley Charleston SC"
+  },
+  {
+    "title": "Three Little Birds Cafe",
+    "description": "Charming cafe with a dog-friendly courtyard. Leashed pets allowed for breakfast and light lunches in a cozy setting.",
+    "area": "West Ashley",
+    "searchHint": "Three Little Birds Cafe 65 Windermere Blvd West Ashley Charleston SC"
+  },
+  {
+    "title": "West Ashley Greenway",
+    "description": "10-mile paved trail through wetlands and neighborhoods, ideal for leashed dog walks. Scenic views and seasonal sunflower fields.",
+    "area": "West Ashley",
+    "searchHint": "West Ashley Greenway West Ashley Charleston SC"
+  },
+  {
+    "title": "Rita's Seaside Grille",
+    "description": "Seaside grille on Folly Beach with covered patio and dog menu including burgers and eggs. Leashed dogs welcome with ocean vibes.",
+    "area": "James Island",
+    "searchHint": "Rita's Seaside Grille 2 Center St Folly Beach Charleston SC"
+  },
+  {
+    "title": "Loggerhead's Beach Grill",
+    "description": "Beach grill with outdoor deck seating for leashed dogs. Burgers, seafood, and cocktails steps from the sand.",
+    "area": "James Island",
+    "searchHint": "Loggerhead's Beach Grill Folly Beach Charleston SC"
+  },
+  {
+    "title": "Folly Beach Crab Shack",
+    "description": "Seafood shack with great outdoor area providing water bowls and treats for dogs on leash. Specializes in steamed seafood.",
+    "area": "James Island",
+    "searchHint": "Folly Beach Crab Shack 26 Center St Folly Beach Charleston SC"
+  },
+  {
+    "title": "Fam's Brewing Co.",
+    "description": "Brewery with dog-friendly patio serving beer and pizza. Leashed dogs welcome in outdoor areas.",
+    "area": "James Island",
+    "searchHint": "Fam's Brewing Co. James Island Charleston SC"
+  },
+  {
+    "title": "Sullivan's Fish Camp",
+    "description": "Seafood restaurant with outdoor seating welcoming leashed dogs. Fresh oysters and cocktails in a beachside setting.",
+    "area": "Sullivan's & IOP",
+    "searchHint": "Sullivan's Fish Camp 2019 Middle St Sullivan's Island Charleston SC"
+  },
+  {
+    "title": "Home Team BBQ - Sullivan's Island",
+    "description": "BBQ joint with covered patio and live music, leashed dogs welcome. Smoky flavors and wings on the island.",
+    "area": "Sullivan's & IOP",
+    "searchHint": "Home Team BBQ 2209 Middle St Sullivan's Island Charleston SC"
+  },
+  {
+    "title": "The Co-Op - Sullivan's Island",
+    "description": "Cafe with dog-friendly patio for beach eats and frose. Perfect stop after a dog walk on the beach.",
+    "area": "Sullivan's & IOP",
+    "searchHint": "The Co-Op 2019 Middle St Suite A Sullivan's Island Charleston SC"
+  }
+]

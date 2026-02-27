@@ -111,6 +111,14 @@ export default function AboutModal({ isOpen, onClose, lastUpdated, healthIndicat
                   We reserve the right to moderate, edit, or remove user-submitted content.
                 </p>
               </div>
+              <a
+                href="/privacy"
+                className="inline-block text-xs font-medium text-teal-600 hover:underline mt-1"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Full Privacy Policy &rarr;
+              </a>
             </div>
           </div>
         </div>

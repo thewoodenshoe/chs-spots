@@ -1,10 +1,10 @@
- 
 import { NextResponse } from 'next/server';
 import { sendEditApproval, sendDeleteApproval } from '@/lib/telegram';
 import { isAdminRequest } from '@/lib/auth';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import { updateSpotSchema, parseOrError } from '@/lib/validations';
 import { spots } from '@/lib/db';
+import { invalidate } from '@/lib/cache';
 
 export async function DELETE(
   request: Request,
@@ -29,6 +29,7 @@ export async function DELETE(
 
     if (isAdminRequest(request)) {
       spots.delete(spotId);
+      invalidate('api:spots');
       return NextResponse.json({ success: true }, { status: 200 });
     }
 
@@ -94,6 +95,7 @@ export async function PUT(
         ...(existing.source === 'automated' ? { manualOverride: 1 } : {}),
       });
 
+      invalidate('api:spots');
       const updated = spots.getById(spotId);
       return NextResponse.json(updated, { status: 200 });
     }

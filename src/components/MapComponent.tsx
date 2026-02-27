@@ -2,96 +2,29 @@
 
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { GoogleMap, Marker, InfoWindow, MarkerClusterer, useJsApiLoader } from '@react-google-maps/api';
-import { useSpots, Spot } from '@/contexts/SpotsContext';
+import { Spot } from '@/contexts/SpotsContext';
 import { useVenues, Venue } from '@/contexts/VenuesContext';
 import { useActivities } from '@/contexts/ActivitiesContext';
-import { Area, SpotType } from './FilterModal';
+import { SpotType } from './FilterModal';
+import { NEAR_ME } from './AreaSelector';
 import CommunityBanner, { shouldShowBanner } from './CommunityBanner';
-import { isSpotActiveNow } from '@/utils/time-utils';
-import { shareSpot } from '@/utils/share';
+import SpotInfoWindow from './SpotInfoWindow';
+import { CLUSTER_ICONS, createMarkerIcon, createVenueMarkerIcon } from '@/utils/marker-icons';
+import { calculateDistanceMiles } from '@/utils/distance';
 
-// Google Maps API key - set in .env.local as NEXT_PUBLIC_GOOGLE_MAPS_KEY
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || '';
-
-// Default center: Daniel Island
 const DEFAULT_CENTER = { lat: 32.862, lng: -79.908 };
 const DEFAULT_ZOOM = 14;
 
-// Map container style
 const mapContainerStyle = {
   width: '100%',
   height: '100%',
 };
 
-// Pre-computed base64 circle SVGs for cluster icons (marker-clusterer draws the count on top)
-const CLUSTER_ICONS = {
-  teal: {
-    sm: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMTgiIGZpbGw9IiMwZDk0ODgiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==',
-    md: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCI+PGNpcmNsZSBjeD0iMjQiIGN5PSIyNCIgcj0iMjIiIGZpbGw9IiMwZDk0ODgiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==',
-    lg: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1NiIgaGVpZ2h0PSI1NiI+PGNpcmNsZSBjeD0iMjgiIGN5PSIyOCIgcj0iMjYiIGZpbGw9IiMwZDk0ODgiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==',
-  },
-  gray: {
-    sm: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMTgiIGZpbGw9IiM2NDc0OGIiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==',
-    md: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCI+PGNpcmNsZSBjeD0iMjQiIGN5PSIyNCIgcj0iMjIiIGZpbGw9IiM2NDc0OGIiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==',
-    lg: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1NiIgaGVpZ2h0PSI1NiI+PGNpcmNsZSBjeD0iMjgiIGN5PSIyOCIgcj0iMjYiIGZpbGw9IiM2NDc0OGIiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==',
-  },
-};
-
-function createMarkerIcon(spot: Spot, activities: Array<{ name: string; emoji: string; color: string }>): google.maps.Icon {
-  const activityConfig = activities.find(a => a.name === spot.type);
-  const emoji = activityConfig?.emoji || '📍';
-  const color = activityConfig?.color || '#0d9488';
-  
-  // Create a data URL for the marker icon
-  const svg = `
-    <svg width="40" height="40" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="20" cy="20" r="18" fill="${color}" stroke="white" stroke-width="3"/>
-      <text x="20" y="28" font-size="20" text-anchor="middle" fill="white">${emoji}</text>
-    </svg>
-  `;
-  
-  return {
-    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-    scaledSize: new google.maps.Size(40, 40),
-    anchor: new google.maps.Point(20, 40),
-  };
-}
-
-// Create red marker icon for venues (debugging/visualization)
-function createVenueMarkerIcon(): google.maps.Icon {
-  const svg = `
-    <svg width="32" height="32" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="16" cy="16" r="14" fill="#ef4444" stroke="white" stroke-width="2"/>
-      <circle cx="16" cy="16" r="6" fill="white"/>
-    </svg>
-  `;
-  
-  return {
-    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-    scaledSize: new google.maps.Size(32, 32),
-    anchor: new google.maps.Point(16, 32),
-  };
-}
-
-// Helper function to determine area from coordinates
-function getAreaFromCoordinates(lat: number, lng: number): Area {
-  if (lat >= 32.83 && lat <= 32.86 && lng >= -79.92 && lng <= -79.89) {
-    return 'Daniel Island';
-  } else if (lat >= 32.78 && lat <= 32.82 && lng >= -79.88 && lng <= -79.82) {
-    return 'Mount Pleasant';
-  } else if (lat >= 32.70 && lat <= 32.75 && lng >= -79.96 && lng <= -79.90) {
-    return 'James Island';
-  } else if (lat >= 32.76 && lat <= 32.80 && lng >= -79.95 && lng <= -79.92) {
-    return 'Downtown Charleston';
-  } else if (lat >= 32.75 && lat <= 32.78 && lng >= -79.87 && lng <= -79.81) {
-    return 'Sullivan\'s Island';
-  }
-  return 'Daniel Island'; // Default
-}
-
 interface MapComponentProps {
-  selectedArea: Area;
+  selectedArea: string;
   selectedActivity: SpotType;
+  filteredSpots: Spot[];
   isSubmissionMode?: boolean;
   pinLocation?: { lat: number; lng: number } | null;
   onMapClick?: (lat: number, lng: number) => void;
@@ -100,6 +33,7 @@ interface MapComponentProps {
   onReportSpot?: (spot: Spot) => void;
   showAllVenues?: boolean;
   searchQuery?: string;
+  deepLinkSpotId?: number | null;
 }
 
 let geolocatedOnce = false;
@@ -107,6 +41,7 @@ let geolocatedOnce = false;
 export default function MapComponent({
   selectedArea,
   selectedActivity,
+  filteredSpots,
   isSubmissionMode = false,
   pinLocation,
   onMapClick,
@@ -115,11 +50,11 @@ export default function MapComponent({
   onReportSpot,
   showAllVenues = false,
   searchQuery = '',
+  deepLinkSpotId,
 }: MapComponentProps) {
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
   });
-  const { spots, loading: spotsLoading } = useSpots();
   const { venues } = useVenues();
   const { activities } = useActivities();
   const [map, setMap] = useState<google.maps.Map | null>(null);
@@ -127,26 +62,20 @@ export default function MapComponent({
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [bannerDismissedFor, setBannerDismissedFor] = useState<Set<string>>(new Set());
-  const [shareCopied, setShareCopied] = useState(false);
   const [emptyDismissedKey, setEmptyDismissedKey] = useState('');
 
   const currentKey = `${selectedActivity}::${selectedArea}`;
   const emptyStateDismissed = emptyDismissedKey === currentKey;
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Lazy-initialized state for the *first* center/zoom only.
-  // useState(() => ...) runs once; the value never changes, so re-renders
-  // won't push the map back to the starting position.
   const [initialCenter] = useState(() =>
     mapCenter ? { lat: mapCenter.lat, lng: mapCenter.lng } : DEFAULT_CENTER
   );
   const [initialZoom] = useState(() => mapCenter?.zoom ?? DEFAULT_ZOOM);
 
-  // Track the last area we centered on so we only recenter on *actual* area changes
   const lastCenteredArea = useRef(selectedArea);
+  const lastCenteredPos = useRef<{ lat: number; lng: number; zoom: number } | null>(null);
 
-  // Request user geolocation once on the first map load only.
-  // Subsequent remounts (e.g. toggling list→map) should respect the selected area.
   useEffect(() => {
     if (geolocatedOnce || !navigator.geolocation) return;
     geolocatedOnce = true;
@@ -171,74 +100,72 @@ export default function MapComponent({
     );
   }, [map]);
 
-  // Recenter map ONLY when the user picks a different area
   useEffect(() => {
-    if (map && mapCenter && selectedArea !== lastCenteredArea.current) {
+    if (!map || !mapCenter) return;
+
+    const areaChanged = selectedArea !== lastCenteredArea.current;
+    const centerChanged = !lastCenteredPos.current
+      || Math.abs(lastCenteredPos.current.lat - mapCenter.lat) > 0.0001
+      || Math.abs(lastCenteredPos.current.lng - mapCenter.lng) > 0.0001
+      || lastCenteredPos.current.zoom !== mapCenter.zoom;
+
+    if (areaChanged || centerChanged) {
       lastCenteredArea.current = selectedArea;
+      lastCenteredPos.current = { ...mapCenter };
       map.panTo({ lat: mapCenter.lat, lng: mapCenter.lng });
       map.setZoom(mapCenter.zoom);
     }
   }, [selectedArea, mapCenter, map]);
 
-  // Filter spots based on area and activity
-  const venueAreaById = useMemo(() => {
-    const map = new Map<string, Area>();
-    for (const venue of venues) {
-      if (venue.id && venue.area) {
-        map.set(venue.id, venue.area as Area);
-      }
+  const deepLinkSpot = useMemo(() => {
+    if (!deepLinkSpotId) return null;
+    return filteredSpots.find(s => s.id === deepLinkSpotId) ?? null;
+  }, [deepLinkSpotId, filteredSpots]);
+
+  useEffect(() => {
+    if (!deepLinkSpot || !map) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSelectedSpot(deepLinkSpot);
+  }, [deepLinkSpot, map]);
+
+  const AREA_BYPASS_ACTIVITIES = ['Recently Opened', 'Coming Soon'];
+  const isAreaBypass = AREA_BYPASS_ACTIVITIES.includes(selectedActivity);
+
+  useEffect(() => {
+    if (deepLinkSpotId) return;
+    const isSearch = searchQuery && searchQuery.trim().length >= 2;
+    if (!map || (!isSearch && !isAreaBypass)) return;
+    if (filteredSpots.length === 0) return;
+    if (filteredSpots.length === 1) {
+      map.panTo({ lat: filteredSpots[0].lat, lng: filteredSpots[0].lng });
+      map.setZoom(15);
+      return;
     }
-    return map;
-  }, [venues]);
+    const bounds = new google.maps.LatLngBounds();
+    filteredSpots.forEach((s) => bounds.extend({ lat: s.lat, lng: s.lng }));
+    map.fitBounds(bounds, { top: 50, bottom: 80, left: 30, right: 30 });
+  }, [map, filteredSpots, searchQuery, isAreaBypass, deepLinkSpotId]);
 
-  const filteredSpots = useMemo(() => {
-    const query = searchQuery.toLowerCase().trim();
-    return spots.filter((spot) => {
-      if (spot.lat === 0 && spot.lng === 0) return false;
-      const spotArea = spot.area
-        || (spot.venueId ? venueAreaById.get(spot.venueId) : undefined)
-        || getAreaFromCoordinates(spot.lat, spot.lng);
-      const areaMatch = spotArea === selectedArea;
-      const activityMatch = spot.type === selectedActivity;
-      const searchMatch = !query || spot.title.toLowerCase().includes(query) || (spot.description || '').toLowerCase().includes(query);
-      return areaMatch && activityMatch && searchMatch;
-    });
-  }, [spots, selectedArea, selectedActivity, venueAreaById, searchQuery]);
-
-  // Filter venues - when showAllVenues is true, show ALL venues regardless of area
   const filteredVenues = useMemo(() => {
     if (!showAllVenues) return [];
-    // Show ALL venues when showAllVenues is true (no area filtering)
-    return venues.filter((venue) => {
-      // Only filter out venues without coordinates
-      return venue.lat && venue.lng;
-    });
+    return venues.filter((venue) => venue.lat && venue.lng);
   }, [venues, showAllVenues]);
 
-  // Handle map click — always dismiss open InfoWindows; forward to pin-drop in submission mode
   const handleMapClick = useCallback((e: google.maps.MapMouseEvent) => {
-    // Close any open InfoWindow on every map tap
     setSelectedSpot(null);
     setSelectedVenue(null);
-
     if (isSubmissionMode && e.latLng && onMapClick) {
       onMapClick(e.latLng.lat(), e.latLng.lng());
     }
   }, [isSubmissionMode, onMapClick]);
 
-  // Pan so the marker + its InfoWindow (above) are comfortably visible between header and footer
   const smartPan = useCallback((position: { lat: number; lng: number }) => {
     if (!map) return;
-
-    // Place the marker in the lower third of the visible area so the InfoWindow
-    // (which renders above) has plenty of room and isn't clipped by the header.
-    // The visible band is roughly between y=165px (header) and y-72px (footer).
     const div = map.getDiv();
     const mapH = div.offsetHeight;
     const visibleTop = 165;
     const visibleBottom = 72;
     const usableH = mapH - visibleTop - visibleBottom;
-    // Target: place the marker at ~65% down the usable area
     const targetScreenY = visibleTop + usableH * 0.65;
     const targetFraction = targetScreenY / mapH;
 
@@ -250,237 +177,72 @@ export default function MapComponent({
     const ne = bounds.getNorthEast();
     const sw = bounds.getSouthWest();
     const latSpan = ne.lat() - sw.lat();
-
-    // Desired center lat so that the marker sits at targetFraction from the top
     const desiredCenterLat = position.lat + latSpan * (targetFraction - 0.5);
-
     map.panTo({ lat: desiredCenterLat, lng: position.lng });
   }, [map]);
 
-  // Handle marker click
   const handleMarkerClick = useCallback((spot: Spot) => {
     setSelectedSpot(spot);
     setSelectedVenue(null);
     smartPan({ lat: spot.lat, lng: spot.lng });
   }, [smartPan]);
 
-  // Handle venue marker click
   const handleVenueMarkerClick = useCallback((venue: Venue) => {
     setSelectedVenue(venue);
     setSelectedSpot(null);
     smartPan({ lat: venue.lat, lng: venue.lng });
   }, [smartPan]);
 
-  // Close info window
   const handleInfoWindowClose = useCallback(() => {
     setSelectedSpot(null);
     setSelectedVenue(null);
-    setShareCopied(false);
   }, []);
 
-  // Format description with proper line breaks and bullet points
-  // Preserves time ranges (e.g., "4pm-6pm") and creates clean bullet points
-  const formatDescription = (description: string): React.ReactElement => {
-    // Split by newlines first (preserves intentional line breaks)
-    const rawLines = description.split('\n');
-    
-    const formattedLines: React.ReactElement[] = [];
-    
-    for (const rawLine of rawLines) {
-      const trimmed = rawLine.trim();
-      if (!trimmed) continue;
-      
-      // Check if line contains source attribution
-      const sourceMatch = trimmed.match(/(.+?)\s*—\s*source:\s*(.+)/i) || trimmed.match(/(.+?)\s*source:\s*(.+)/i);
-      
-      if (sourceMatch) {
-        const [, content, source] = sourceMatch;
-        formattedLines.push(
-          <div key={formattedLines.length} className="text-xs text-gray-600">
-            <span>• {content.trim()}</span>
-            <span className="text-gray-500 italic"> — source: {source.trim()}</span>
-          </div>
-        );
-        continue;
-      }
-      
-      // Check if line contains bullet separator (•)
-      // If it's a time/day combination (e.g., "4pm-6pm • Monday-Friday"), keep it together
-      // Otherwise, split by bullet for other cases
-      if (trimmed.includes('•')) {
-        // Check if this looks like a time/day combination
-        // Pattern: contains time (pm/am) AND contains day names (Monday, Tuesday, etc.) or "Daily", "Weekday", etc.
-        const hasTime = /\d+(?:am|pm|AM|PM)/i.test(trimmed);
-        const hasDays = /(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|Daily|Weekday|Weekend|Weekdays|Weekends)/i.test(trimmed);
-        
-        if (hasTime && hasDays) {
-          // Keep time and days together on one line
-          formattedLines.push(
-            <div key={formattedLines.length} className="text-xs text-gray-600">
-              • {trimmed}
-            </div>
-          );
-        } else {
-          // Split by bullet for other cases
-          const parts = trimmed.split('•').map(p => p.trim()).filter(p => p.length > 0);
-          for (const part of parts) {
-            formattedLines.push(
-              <div key={formattedLines.length} className="text-xs text-gray-600">
-                • {part}
-              </div>
-            );
-          }
-        }
-      } else {
-        // Single line without bullets - this is likely a special or standalone item
-        formattedLines.push(
-          <div key={formattedLines.length} className="text-xs text-gray-600">
-            • {trimmed}
-          </div>
-        );
-      }
-    }
-    
-    return (
-      <div className="space-y-1">
-        {formattedLines}
-      </div>
-    );
-  };
-
-  // Haversine formula to calculate distance between two points in miles
-  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
-    const R = 3959; // Earth's radius in miles
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLng / 2) * Math.sin(dLng / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  };
-
-  // Find closest spot
   const findClosestSpot = useCallback(() => {
     if (!map || filteredSpots.length === 0) {
       setToastMessage('No spots available');
       setTimeout(() => setToastMessage(null), 3000);
       return;
     }
-    
-    // Request location permission when button is clicked
+
+    const showClosest = (origin: { lat: number; lng: number }, label: string) => {
+      const spotsWithDistance = filteredSpots.map(spot => ({
+        spot,
+        distance: calculateDistanceMiles(origin.lat, origin.lng, spot.lat, spot.lng),
+      }));
+      const closest = spotsWithDistance.reduce((prev, cur) =>
+        cur.distance < prev.distance ? cur : prev
+      );
+      setSelectedSpot(closest.spot);
+      setToastMessage(`${label}${closest.spot.title} (${closest.distance.toFixed(1)} miles)`);
+      map.panTo({ lat: closest.spot.lat, lng: closest.spot.lng });
+      map.setZoom(15);
+      setTimeout(() => setToastMessage(null), 3000);
+    };
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          const userPos = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          };
+          const userPos = { lat: position.coords.latitude, lng: position.coords.longitude };
           setUserLocation(userPos);
-          
-          // Calculate distances to all filtered spots from user location
-          const spotsWithDistance = filteredSpots.map(spot => ({
-            spot,
-            distance: calculateDistance(userPos.lat, userPos.lng, spot.lat, spot.lng),
-          }));
-          
-          // Find closest
-          const closest = spotsWithDistance.reduce((prev, current) => 
-            current.distance < prev.distance ? current : prev
-          );
-          
-          // Show popup and toast
-          setSelectedSpot(closest.spot);
-          setToastMessage(`Closest: ${closest.spot.title} (${closest.distance.toFixed(1)} miles)`);
-          
-          // Center map on closest spot
-          map.panTo({ lat: closest.spot.lat, lng: closest.spot.lng });
-          map.setZoom(15);
-          
-          // Clear toast after 3 seconds
-          setTimeout(() => setToastMessage(null), 3000);
+          showClosest(userPos, 'Closest: ');
         },
         () => {
-          // Location permission denied or error - use map center as fallback
           const origin = map.getCenter()?.toJSON() || DEFAULT_CENTER;
-          if (!origin) {
-            setToastMessage('Unable to determine location');
-            setTimeout(() => setToastMessage(null), 3000);
-            return;
-          }
-          
-          // Calculate distances from map center
-          const spotsWithDistance = filteredSpots.map(spot => ({
-            spot,
-            distance: calculateDistance(origin.lat, origin.lng, spot.lat, spot.lng),
-          }));
-          
-          // Find closest
-          const closest = spotsWithDistance.reduce((prev, current) => 
-            current.distance < prev.distance ? current : prev
-          );
-          
-          // Show popup and toast with note about using map center
-          setSelectedSpot(closest.spot);
-          setToastMessage(`Closest from map center: ${closest.spot.title} (${closest.distance.toFixed(1)} miles)`);
-          
-          // Center map on closest spot
-          map.panTo({ lat: closest.spot.lat, lng: closest.spot.lng });
-          map.setZoom(15);
-          
-          // Clear toast after 3 seconds
-          setTimeout(() => setToastMessage(null), 3000);
+          showClosest(origin, 'Closest from map center: ');
         },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0, // Force fresh location
-        }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     } else {
-      // Geolocation not supported - use map center
       const origin = map.getCenter()?.toJSON() || DEFAULT_CENTER;
-      if (!origin) {
-        setToastMessage('Location not supported');
-        setTimeout(() => setToastMessage(null), 3000);
-        return;
-      }
-      
-      // Calculate distances from map center
-      const spotsWithDistance = filteredSpots.map(spot => ({
-        spot,
-        distance: calculateDistance(origin.lat, origin.lng, spot.lat, spot.lng),
-      }));
-      
-      // Find closest
-      const closest = spotsWithDistance.reduce((prev, current) => 
-        current.distance < prev.distance ? current : prev
-      );
-      
-      // Show popup and toast
-      setSelectedSpot(closest.spot);
-      setToastMessage(`Closest from map center: ${closest.spot.title} (${closest.distance.toFixed(1)} miles)`);
-      
-      // Center map on closest spot
-      map.panTo({ lat: closest.spot.lat, lng: closest.spot.lng });
-      map.setZoom(15);
-      
-      // Clear toast after 3 seconds
-      setTimeout(() => setToastMessage(null), 3000);
+      showClosest(origin, 'Closest from map center: ');
     }
   }, [map, filteredSpots]);
 
-  // Listen for findClosestSpot event
   useEffect(() => {
-    const handleFindClosest = () => {
-      findClosestSpot();
-    };
-    
+    const handleFindClosest = () => findClosestSpot();
     window.addEventListener('findClosestSpot', handleFindClosest);
-    return () => {
-      window.removeEventListener('findClosestSpot', handleFindClosest);
-    };
+    return () => window.removeEventListener('findClosestSpot', handleFindClosest);
   }, [findClosestSpot]);
 
   if (!GOOGLE_MAPS_API_KEY) {
@@ -523,14 +285,12 @@ export default function MapComponent({
 
   return (
     <div className="relative h-full w-full">
-      {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-20 left-1/2 z-[60] -translate-x-1/2 animate-slide-down rounded-lg bg-gray-900 px-4 py-3 text-sm font-medium text-white shadow-2xl safe-area-top">
           {toastMessage}
         </div>
       )}
 
-      {/* Community banner — shown once per activity type */}
       {showCommunityBanner && (
         <CommunityBanner
           activityName={selectedActivity}
@@ -538,7 +298,6 @@ export default function MapComponent({
         />
       )}
 
-      {/* Submission mode banner */}
       {isSubmissionMode && (
         <div className="absolute top-2 left-1/2 z-[55] -translate-x-1/2 rounded-full bg-teal-600 px-5 py-2 shadow-lg">
           <span className="text-sm font-semibold text-white">
@@ -547,27 +306,21 @@ export default function MapComponent({
         </div>
       )}
 
-      {/* Empty state — hidden while community banner is visible to prevent overlap */}
-      {!isSubmissionMode && !spotsLoading && filteredSpots.length === 0 && !showCommunityBanner && !emptyStateDismissed && (
+      {!isSubmissionMode && filteredSpots.length === 0 && !showCommunityBanner && !emptyStateDismissed && (
         <div className="absolute top-3 left-3 right-3 z-[55] animate-fade-in-down">
           <div className="rounded-xl bg-white/95 px-4 py-3 shadow-lg backdrop-blur-sm border border-gray-200">
             <div className="flex items-start gap-2">
               <div className="flex-1 min-w-0">
-                {isCommunityActivity ? (
-                  <>
-                    <p className="text-sm font-medium text-gray-700">
-                      No {selectedActivity} in {selectedArea} yet
-                    </p>
-                    <p className="text-xs text-gray-500 mt-0.5">Be the first — tap &quot;Add Spot&quot; below!</p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-sm font-medium text-gray-700">
-                      No {selectedActivity} in {selectedArea}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-0.5">Try a different area or activity</p>
-                  </>
-                )}
+                <>
+                  <p className="text-sm font-medium text-gray-700">
+                    No {selectedActivity} {selectedArea === NEAR_ME ? 'nearby' : `in ${selectedArea}`} yet
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {selectedActivity === 'Recently Opened' || selectedActivity === 'Coming Soon'
+                      ? 'Know a new opening? Tip us and we\u2019ll add it!'
+                      : 'Know a spot? Tap "Add Spot" below to help out!'}
+                  </p>
+                </>
               </div>
               <button
                 onClick={() => setEmptyDismissedKey(currentKey)}
@@ -582,7 +335,7 @@ export default function MapComponent({
           </div>
         </div>
       )}
-      
+
       <GoogleMap
           mapContainerStyle={mapContainerStyle}
           center={initialCenter}
@@ -593,10 +346,9 @@ export default function MapComponent({
             fullscreenControl: false,
             mapTypeControl: false,
             streetViewControl: false,
-            gestureHandling: 'greedy', // Mobile-friendly touch gestures
+            gestureHandling: 'greedy',
           }}
         >
-        {/* Curated Spots with Clustering */}
         {filteredSpots.length > 0 && (
           <MarkerClusterer
             options={{
@@ -625,7 +377,6 @@ export default function MapComponent({
           </MarkerClusterer>
         )}
 
-        {/* All Venues (Red Markers) - Debugging/Visualization */}
         {showAllVenues && filteredVenues.length > 0 && (
           <MarkerClusterer
             options={{
@@ -654,7 +405,6 @@ export default function MapComponent({
           </MarkerClusterer>
         )}
 
-        {/* User Location Marker (Blue Dot) */}
         {userLocation && (
           <Marker
             position={{ lat: userLocation.lat, lng: userLocation.lng }}
@@ -671,7 +421,6 @@ export default function MapComponent({
           />
         )}
 
-        {/* InfoWindow for selected spot */}
         {selectedSpot && (
           <InfoWindow
             position={{ lat: selectedSpot.lat, lng: selectedSpot.lng }}
@@ -681,191 +430,16 @@ export default function MapComponent({
               maxWidth: 320,
             }}
           >
-            <div className="text-sm min-w-[200px] max-w-[300px]">
-              <div className="font-bold text-gray-900 mb-1 text-base">{selectedSpot.title}</div>
-              
-              {/* Status badges */}
-              <div className="mb-2 flex flex-wrap gap-1">
-                {isSpotActiveNow(selectedSpot) && (
-                  <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">
-                    Active Now
-                  </span>
-                )}
-                {selectedSpot.status === 'pending' && (
-                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
-                    Pending Approval
-                  </span>
-                )}
-                {selectedSpot.source === 'manual' && selectedSpot.submitterName && (
-                  <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
-                    Added by {selectedSpot.submitterName}
-                  </span>
-                )}
-              </div>
-              
-              {/* Schedule / Time — split on bullet separator for readability */}
-              {(selectedSpot.promotionTime || selectedSpot.happyHourTime) && (() => {
-                const raw = selectedSpot.promotionTime || selectedSpot.happyHourTime || '';
-                const parts = raw.split(/\s*[•]\s*/).map((p: string) => p.trim()).filter(Boolean);
-                return (
-                  <div className="mb-2">
-                    <div className="font-semibold text-gray-700 mb-0.5 text-xs uppercase tracking-wide">Schedule</div>
-                    <div className="space-y-0.5">
-                      {parts.map((part: string, idx: number) => (
-                        <div key={idx} className="text-xs text-gray-800 leading-snug">{part}</div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Specials list — extract bracketed labels into bold headings */}
-              {((selectedSpot.promotionList && selectedSpot.promotionList.length > 0) || (selectedSpot.happyHourList && selectedSpot.happyHourList.length > 0)) && (() => {
-                const items: string[] = selectedSpot.promotionList ?? selectedSpot.happyHourList ?? [];
-                // Group items by their [Label] prefix, or "Other" if none
-                const groups: { label: string; entries: string[] }[] = [];
-                const groupMap: Record<string, string[]> = {};
-                const order: string[] = [];
-                items.forEach((item: string) => {
-                  const match = item.match(/^\[([^\]]+)\]\s*(.*)/);
-                  const label = match ? match[1] : '';
-                  const text = match ? match[2] : item;
-                  if (!text.trim()) return;
-                  if (!groupMap[label]) { groupMap[label] = []; order.push(label); }
-                  groupMap[label].push(text.trim());
-                });
-                order.forEach(label => groups.push({ label, entries: groupMap[label] }));
-
-                return (
-                  <div className="mb-2">
-                    <div className="font-semibold text-gray-700 mb-1 text-xs uppercase tracking-wide">
-                      Specials
-                    </div>
-                    <div className="space-y-1.5">
-                      {groups.map((g, gIdx) => (
-                        <div key={gIdx}>
-                          {g.label && <div className="text-xs font-semibold text-gray-700">{g.label}</div>}
-                          {g.entries.map((entry, eIdx) => (
-                            <div key={eIdx} className="text-xs text-gray-600 pl-2">
-                              {entry}
-                            </div>
-                          ))}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })()}
-              
-              {selectedSpot.sourceUrl && (
-                <div className="mb-2">
-                  <a 
-                    href={selectedSpot.sourceUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline text-sm font-medium"
-                  >
-                    Website
-                  </a>
-                </div>
-              )}
-              
-              {selectedSpot.lastUpdateDate && (
-                <div className="mb-2">
-                  <span className="font-semibold text-gray-700">Last Update Date: </span>
-                  <span className="text-gray-800 text-xs">
-                    {new Date(selectedSpot.lastUpdateDate).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric'
-                    })}
-                  </span>
-                </div>
-              )}
-              
-              {/* Fallback to description if new fields not available (backwards compatibility) */}
-              {!selectedSpot.promotionTime && !selectedSpot.happyHourTime && !selectedSpot.promotionList && !selectedSpot.happyHourList && selectedSpot.description && (
-                <div className="mb-3">
-                  {formatDescription(selectedSpot.description)}
-                </div>
-              )}
-              
-              <div className="mt-2 flex items-center gap-2 mb-2">
-                <span className="text-base">
-                  {activities.find(a => a.name === selectedSpot.type)?.emoji || '📍'}
-                </span>
-                <span className="rounded-full bg-teal-100 px-2 py-0.5 text-xs font-medium text-teal-800">
-                  {selectedSpot.type}
-                </span>
-              </div>
-              {selectedSpot.photoUrl && (
-                <img
-                  src={selectedSpot.photoUrl}
-                  alt={selectedSpot.title}
-                  className="mt-2 h-32 w-full rounded-lg object-cover"
-                />
-              )}
-              {/* Action buttons */}
-              <div className="mt-3 flex gap-2">
-                {onEditSpot && (
-                  <button
-                    onClick={() => {
-                      onEditSpot(selectedSpot);
-                      handleInfoWindowClose();
-                    }}
-                    className="flex-1 rounded-lg bg-teal-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-teal-700 touch-manipulation"
-                  >
-                    Edit
-                  </button>
-                )}
-                <a
-                  href={`https://www.google.com/maps/dir/?api=1&destination=${selectedSpot.lat},${selectedSpot.lng}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-lg bg-indigo-100 px-3 py-2 text-xs font-semibold text-indigo-700 transition-colors hover:bg-indigo-200 touch-manipulation"
-                  title="Get directions"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </a>
-                <button
-                  onClick={async () => {
-                    const result = await shareSpot(selectedSpot.title, selectedSpot.id);
-                    if (result === 'copied') {
-                      setShareCopied(true);
-                      setTimeout(() => setShareCopied(false), 2000);
-                    }
-                  }}
-                  className="rounded-lg bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-200 touch-manipulation"
-                  title="Share this spot"
-                >
-                  {shareCopied ? (
-                    <span className="text-xs font-semibold text-teal-600">Copied!</span>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-              {onReportSpot && selectedSpot.source === 'automated' && (
-                <button
-                  onClick={() => {
-                    onReportSpot(selectedSpot);
-                    handleInfoWindowClose();
-                  }}
-                  className="mt-1.5 w-full rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800 transition-colors hover:bg-amber-100 touch-manipulation"
-                >
-                  Something wrong? Suggest an edit, or provide feedback
-                </button>
-              )}
-            </div>
+            <SpotInfoWindow
+              spot={selectedSpot}
+              activities={activities}
+              onEdit={onEditSpot}
+              onReport={onReportSpot}
+              onClose={handleInfoWindowClose}
+            />
           </InfoWindow>
         )}
 
-        {/* InfoWindow for selected venue (red marker) */}
         {selectedVenue && (
           <InfoWindow
             position={{ lat: selectedVenue.lat, lng: selectedVenue.lng }}
@@ -900,7 +474,6 @@ export default function MapComponent({
           </InfoWindow>
         )}
 
-        {/* Temporary pin for submission mode */}
         {isSubmissionMode && pinLocation && (
           <Marker
             position={{ lat: pinLocation.lat, lng: pinLocation.lng }}

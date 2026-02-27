@@ -33,7 +33,6 @@ export default function SuggestActivityModal({ isOpen, onClose, onSuccess }: Sug
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) { setError('Please enter your name.'); return; }
     if (!activityName.trim()) { setError('Please enter an activity name.'); return; }
 
     setSubmitting(true);
@@ -44,7 +43,7 @@ export default function SuggestActivityModal({ isOpen, onClose, onSuccess }: Sug
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: name.trim(),
+          name: name.trim() || 'Anonymous',
           activityName: activityName.trim(),
           description: description.trim(),
         }),
@@ -94,12 +93,11 @@ export default function SuggestActivityModal({ isOpen, onClose, onSuccess }: Sug
         <form onSubmit={handleSubmit} className="space-y-3">
           <input
             type="text"
-            placeholder="Your name *"
+            placeholder="Your name (optional)"
             value={name}
             onChange={(e) => setName(e.target.value)}
             onFocus={handleFocusInput}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-            required
           />
           <input
             type="text"

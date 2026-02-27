@@ -1,0 +1,32 @@
+[
+  {
+    "title": "Swig & Swine",
+    "description": "BBQ brunch in Park Circle. Weekend brunch Sat-Sun 10am-2pm with smoked meat eggs benedict, brisket hash, and boozy cocktails. Laid-back patio vibes.",
+    "area": "North Charleston",
+    "searchHint": "Swig and Swine 1217 Savannah Hwy North Charleston SC"
+  },
+  {
+    "title": "Park Pizza & Brewing Co",
+    "description": "Park Circle's go-to for weekend brunch pizzas. Sat-Sun 10am-2pm with breakfast pies, mimosa pitchers, and house-brewed beers. Kid-friendly.",
+    "area": "North Charleston",
+    "searchHint": "Park Pizza Brewing Co 1063 East Montague Ave North Charleston SC"
+  },
+  {
+    "title": "The Barrel",
+    "description": "Cozy Park Circle restaurant with weekend brunch Sat-Sun 10am-2pm. Southern-inspired dishes, shrimp and grits, French toast, and a solid Bloody Mary bar.",
+    "area": "North Charleston",
+    "searchHint": "The Barrel 1859 Summerville Ave North Charleston SC"
+  },
+  {
+    "title": "Sesame Burgers & Beer",
+    "description": "Weekend brunch with gourmet burgers and creative brunch cocktails Sat-Sun 10am-2pm. Famous for their loaded breakfast burgers and truffle fries.",
+    "area": "North Charleston",
+    "searchHint": "Sesame Burgers Beer 4726 Spruill Ave North Charleston SC"
+  },
+  {
+    "title": "La Nortena",
+    "description": "Authentic Mexican brunch in Park Circle. Weekend brunch Sat-Sun 10am-3pm with huevos rancheros, chilaquiles, and fresh-squeezed margaritas.",
+    "area": "North Charleston",
+    "searchHint": "La Nortena 4705 Spruill Ave North Charleston SC"
+  }
+]

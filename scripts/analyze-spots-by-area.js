@@ -61,11 +61,10 @@ function main() {
     'Daniel Island',
     'Mount Pleasant',
     'Downtown Charleston',
-    "Sullivan's Island",
+    "Sullivan's & IOP",
     'North Charleston',
     'West Ashley',
-    'James Island',
-    'Isle of Palms'
+    'James Island'
   ];
 
   console.log('\n📊 Spots by Area (Happy Hour & Brunch)\n');

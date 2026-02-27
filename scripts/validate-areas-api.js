@@ -35,7 +35,7 @@ try {
     'Daniel Island',
     'Mount Pleasant',
     'Downtown Charleston',
-    "Sullivan's Island",
+    "Sullivan's & IOP",
     'North Charleston',
     'West Ashley',
     'James Island',

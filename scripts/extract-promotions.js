@@ -16,8 +16,29 @@ const INCREMENTAL_HISTORY_DIR = path.join(GOLD_DIR, 'incremental-history');
 const LLM_INSTRUCTIONS_PATH = configPath('llm-instructions.txt');
 const CONFIG_PATH = configPath('config.json');
 const LLM_CANDIDATES_HISTORY_PATH = path.join(__dirname, '../logs/llm-candidates-history.txt');
+const LOG_PATH = path.join(__dirname, '../logs/extract-promotions.log');
 const { updateConfigField, loadWatchlist } = require('./utils/config');
 const db = require('./utils/db');
+
+// Structured logging: writes to both console and log file
+const logStream = (() => {
+  try {
+    if (process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID) return null;
+    const logsDir = path.dirname(LOG_PATH);
+    if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
+    return fs.createWriteStream(LOG_PATH, { flags: 'a' });
+  } catch { return null; }
+})();
+function log(msg) {
+  const line = `[${new Date().toISOString()}] ${msg}`;
+  console.log(msg);
+  if (logStream && !logStream.destroyed) logStream.write(line + '\n');
+}
+function logError(msg) {
+  const line = `[${new Date().toISOString()}] ERROR: ${msg}`;
+  console.error(msg);
+  if (logStream && !logStream.destroyed) logStream.write(line + '\n');
+}
 
 // Ensure gold and incremental history directories exist
 if (!fs.existsSync(GOLD_DIR)) fs.mkdirSync(GOLD_DIR, { recursive: true });
@@ -73,7 +94,8 @@ async function extractHappyHours(isIncremental = false) {
         console.error(`Error reading LLM instructions from ${LLM_INSTRUCTIONS_PATH}: ${error.message}`);
         process.exit(1);
     }
-    console.log(`Starting happy hour extraction (${isIncremental ? 'incremental' : 'bulk'})...`);
+    log(`═══ extract-promotions.js START (${isIncremental ? 'incremental' : 'bulk'}) ═══`);
+    const metrics = { processed: 0, skipped: 0, errors: 0, watchlistSkipped: 0, found: 0, notFound: 0 };
     const areaFilterSet = parseAreaFilter(process.env.AREA_FILTER);
     // Permanent safeguard: always reprocess legacy gold records that still miss activityType.
     // This can be disabled only by explicitly setting AUTO_REPROCESS_MISSING_ACTIVITY_TYPE=false.
@@ -231,6 +253,7 @@ async function extractHappyHours(isIncremental = false) {
 
         if (watchlist.excluded.has(venueId)) {
             watchlistSkipped++;
+            metrics.watchlistSkipped++;
             continue;
         }
 
@@ -427,7 +450,8 @@ async function extractHappyHours(isIncremental = false) {
                 }
                 
                 // Out of retries
-                console.error(`Error calling Grok API for ${venueData.venueName} (${venueId}): ${error.message}`);
+                logError(`Grok API failed for ${venueData.venueName} (${venueId}): ${error.message}`);
+                metrics.errors++;
                 result = { 
                     found: false, 
                     reason: `Error processing: ${error.message}`,
@@ -448,6 +472,10 @@ async function extractHappyHours(isIncremental = false) {
             normalizedSourceHash: normalizedSourceHash,
             processedAt: new Date().toISOString()
         };
+
+        metrics.processed++;
+        if (result.found) metrics.found++;
+        else metrics.notFound++;
 
         try {
             db.gold.upsert({
@@ -479,7 +507,9 @@ async function extractHappyHours(isIncremental = false) {
         updateConfigField('last_run_status', 'completed_successfully');
     }
     
-    console.log('Happy hour extraction complete.');
+    log(`═══ extract-promotions.js COMPLETE ═══`);
+    log(`  Processed: ${metrics.processed} | Skipped: ${metrics.skipped} | Errors: ${metrics.errors}`);
+    log(`  Found HH: ${metrics.found} | Not found: ${metrics.notFound} | Watchlist: ${metrics.watchlistSkipped}`);
 }
 
 // Export function for testing

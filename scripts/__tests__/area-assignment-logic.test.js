@@ -31,9 +31,9 @@ const AREAS_CONFIG = [
     zipCodes: ['29407', '29414']
   },
   {
-    name: "Sullivan's Island",
-    bounds: { south: 32.75, west: -79.87, north: 32.77, east: -79.83 },
-    zipCodes: ['29482']
+    name: "Sullivan's & IOP",
+    bounds: { south: 32.75, west: -79.87, north: 32.80, east: -79.77 },
+    zipCodes: ['29482', '29451']
   },
   {
     name: 'James Island',
@@ -235,8 +235,9 @@ function extractAreaFromAddressTest(address) {
     'mt. pleasant': 'Mount Pleasant',
     'west ashley': 'West Ashley',
     'james island': 'James Island',
-    "sullivan's island": "Sullivan's Island",
-    'sullivans island': "Sullivan's Island",
+    "sullivan's island": "Sullivan's & IOP",
+    'sullivans island': "Sullivan's & IOP",
+    'isle of palms': "Sullivan's & IOP",
     'daniel island': 'Daniel Island',
   };
   
@@ -435,9 +436,8 @@ describe('Area Assignment Logic - Bounds Validation', () => {
       return areaA - areaB;
     });
     
-    // Smaller areas should come first
-    expect(sortedAreas[0].name).toBe("Sullivan's Island"); // Smallest
-    expect(sortedAreas[sortedAreas.length - 1].name).toBe('Mount Pleasant'); // Largest
+    expect(sortedAreas[0].name).toBe('Downtown Charleston');
+    expect(sortedAreas[sortedAreas.length - 1].name).toBe('Mount Pleasant');
   });
 });
 

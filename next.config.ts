@@ -10,6 +10,9 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
+      // Google Maps JS SDK requires unsafe-eval for its internal eval() calls.
+      // unsafe-inline is needed for Next.js inline scripts and Google Maps injected scripts.
+      // TODO: migrate to nonce-based CSP when Next.js App Router adds built-in nonce support.
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://maps.gstatic.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com https://*.ggpht.com https://maps.google.com",
@@ -18,6 +21,8 @@ const securityHeaders = [
       "frame-src https://www.google.com https://maps.google.com",
       "object-src 'none'",
       "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
     ].join('; '),
   },
 ];

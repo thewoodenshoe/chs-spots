@@ -20,11 +20,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Charleston Finds",
-  description: "Discover the best of Charleston — happy hours, brunch, fishing, and more.",
+  description: "Live deals and hidden gems in Charleston, SC — verified from venue sites and curated by locals.",
   metadataBase: new URL("https://chsfinds.com"),
   openGraph: {
     title: "Charleston Finds",
-    description: "Discover the best of Charleston — happy hours, brunch, fishing, and more.",
+    description: "Live deals and hidden gems in Charleston, SC — verified from venue sites and curated by locals.",
     url: "https://chsfinds.com",
     siteName: "Charleston Finds",
     type: "website",
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Charleston Finds",
-    description: "Discover the best of Charleston — happy hours, brunch, fishing, and more.",
+    description: "Live deals and hidden gems in Charleston, SC — verified from venue sites and curated by locals.",
     images: ["/api/og-image"],
   },
   icons: {

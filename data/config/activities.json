@@ -19,10 +19,28 @@
     "communityDriven": true
   },
   {
-    "name": "Must-Do Spots",
+    "name": "Landmarks & Attractions",
     "icon": "Compass",
-    "emoji": "⭐",
+    "emoji": "🏛️",
     "color": "#8b5cf6",
     "communityDriven": true
+  },
+  {
+    "name": "Live Music",
+    "icon": "Music",
+    "emoji": "🎵",
+    "color": "#e11d48"
+  },
+  {
+    "name": "Recently Opened",
+    "icon": "Sparkles",
+    "emoji": "🆕",
+    "color": "#16a34a"
+  },
+  {
+    "name": "Coming Soon",
+    "icon": "Clock",
+    "emoji": "🔜",
+    "color": "#7c3aed"
   }
 ]

@@ -18,12 +18,17 @@ export function isFavorite(spotId: number): boolean {
   return getIds().has(spotId);
 }
 
-export function toggleFavorite(spotId: number): boolean {
+export function toggleFavorite(spotId: number, spotName?: string): boolean {
   const ids = getIds();
   const nowFav = !ids.has(spotId);
   if (nowFav) ids.add(spotId);
   else ids.delete(spotId);
   persist(ids);
+  try {
+    import('@/lib/analytics').then(({ trackFavorite }) => {
+      trackFavorite(spotId, spotName || String(spotId), nowFav ? 'add' : 'remove');
+    });
+  } catch { /* analytics not critical */ }
   return nowFav;
 }
 

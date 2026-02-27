@@ -1,0 +1,68 @@
+[
+  {
+    "title": "The Co-Op Sullivan's Island",
+    "description": "Casual beachside cafe known for its affordable $1 fresh coffee, gourmet sandwiches, and relaxed atmosphere perfect for a quick bite or to-go drinks.",
+    "area": "Sullivan's & IOP",
+    "searchHint": "The Co-Op 2019 Middle St Sullivan's Island Charleston SC"
+  },
+  {
+    "title": "Beardcat's Sweet Shop",
+    "description": "Charming spot combining artisanal gelato with quality coffee options, offering a cozy environment for sweet treats and caffeinated beverages.",
+    "area": "Sullivan's & IOP",
+    "searchHint": "Beardcat's Sweet Shop 2063 Middle St Sullivan's Island Charleston SC"
+  },
+  {
+    "title": "Prophet Coffee",
+    "description": "Specializing in high-quality beans with divine blends, this shop offers mobile ordering, wholesale options, and a welcoming vibe for coffee enthusiasts.",
+    "area": "North Charleston",
+    "searchHint": "Prophet Coffee 4427 Spruill Ave North Charleston Charleston SC"
+  },
+  {
+    "title": "Park Circle Co-op",
+    "description": "A gem offering fresh coffees, teas, pastries, and sandwiches in a kind, community-oriented space with a focus on quality and hospitality.",
+    "area": "North Charleston",
+    "searchHint": "Park Circle Co-op 4546 Durant Ave North Charleston Charleston SC"
+  },
+  {
+    "title": "Lodi Coffee",
+    "description": "Popular spot featuring a range of coffee drinks in a convenient setting, praised for its quality and community appeal.",
+    "area": "North Charleston",
+    "searchHint": "Lodi Coffee 2210 Ashley Phosphate Rd North Charleston Charleston SC"
+  },
+  {
+    "title": "Second State Coffee - West Ashley",
+    "description": "Local Charleston roaster with a West Ashley outpost. Committed to craftsmanship and hospitality, sourcing and roasting the best coffees for exceptional cafe experiences.",
+    "area": "West Ashley",
+    "searchHint": "Second State Coffee 1630 Ashley Hall Rd West Ashley Charleston SC"
+  },
+  {
+    "title": "Harvest Market",
+    "description": "Local spot combining coffee with market goods, known for its fresh brews and community-focused atmosphere.",
+    "area": "James Island",
+    "searchHint": "Harvest Market James Island Charleston SC"
+  },
+  {
+    "title": "Dawn Patrol Coffeehouse",
+    "description": "Specialty coffee and a laid-back vibe, perfect for early risers seeking quality drinks and a cozy start to the day.",
+    "area": "James Island",
+    "searchHint": "Dawn Patrol Coffeehouse James Island Charleston SC"
+  },
+  {
+    "title": "Cooper River Coffee Roasters",
+    "description": "Roasts fresh beans from around the world in small batches on-site, providing a quiet and cozy indoor/outdoor space for enjoyment.",
+    "area": "Mount Pleasant",
+    "searchHint": "Cooper River Coffee Roasters 1303 Ben Sawyer Blvd Mount Pleasant Charleston SC"
+  },
+  {
+    "title": "Metto Coffee & Tea",
+    "description": "Inspired by Seattle's coffee culture, offering northern-grade coffee with southern hospitality and made-from-scratch pastries.",
+    "area": "Mount Pleasant",
+    "searchHint": "Metto Coffee & Tea 354 W Coleman Blvd Mount Pleasant Charleston SC"
+  },
+  {
+    "title": "Owlbear Cafe",
+    "description": "Cozy spot serving quality coffee and eats in a welcoming environment, popular among locals for its relaxed atmosphere.",
+    "area": "Mount Pleasant",
+    "searchHint": "Owlbear Cafe 1964 Riviera Dr Mount Pleasant Charleston SC"
+  }
+]

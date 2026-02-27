@@ -3,7 +3,7 @@ import { z } from 'zod';
 /** Schema for creating a new spot (POST /api/spots) */
 export const createSpotSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
-  submitterName: z.string().min(1, 'Name is required').max(100, 'Name too long'),
+  submitterName: z.string().max(100, 'Name too long').default('Anonymous'),
   description: z.string().max(2000, 'Description too long').default(''),
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),

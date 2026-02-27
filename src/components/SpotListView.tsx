@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, SyntheticEvent } from 'react';
 import Image from 'next/image';
 import { Spot } from '@/contexts/SpotsContext';
+import { NEAR_ME } from '@/components/AreaSelector';
 import { Activity } from '@/utils/activities';
 import { calculateDistanceMiles } from '@/utils/distance';
 import { getSpotStartMinutes, extractCompactTime, isSpotActiveNow } from '@/utils/time-utils';
 import { toggleFavorite } from '@/utils/favorites';
 import { shareSpot } from '@/utils/share';
+import WhatsNewStrip from '@/components/WhatsNewStrip';
 
 export type SortMode = 'alpha' | 'recent' | 'nearest' | 'time' | 'active';
 
@@ -39,6 +41,7 @@ const MIXED_ACTIVITIES = new Set(['Dog-Friendly', 'Must-See Spots']);
 
 interface SpotListViewProps {
   spots: Spot[];
+  allSpots?: Spot[];
   activities: Activity[];
   userLocation: { lat: number; lng: number } | null;
   selectedArea: string;
@@ -48,10 +51,15 @@ interface SpotListViewProps {
   onSpotSelect: (spot: Spot) => void;
   onEditSpot?: (spot: Spot) => void;
   onAddSpot?: () => void;
+  isSearching?: boolean;
+  showFavoritesOnly?: boolean;
+  onFavoritesChange?: (count: number) => void;
+  onWhatsNewSelect?: (spot: Spot) => void;
 }
 
 export default function SpotListView({
   spots,
+  allSpots,
   activities,
   userLocation,
   selectedArea,
@@ -61,6 +69,10 @@ export default function SpotListView({
   onSpotSelect,
   onEditSpot,
   onAddSpot,
+  isSearching = false,
+  showFavoritesOnly = false,
+  onFavoritesChange,
+  onWhatsNewSelect,
 }: SpotListViewProps) {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [favIds, setFavIds] = useState<Set<number>>(() => {
@@ -70,7 +82,6 @@ export default function SpotListView({
       return raw ? new Set(JSON.parse(raw) as number[]) : new Set();
     } catch { return new Set(); }
   });
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [shareToastId, setShareToastId] = useState<number | null>(null);
 
   const setShareToast = useCallback((id: number) => {
@@ -84,9 +95,10 @@ export default function SpotListView({
       const next = new Set(prev);
       if (nowFav) next.add(spotId);
       else next.delete(spotId);
+      onFavoritesChange?.(next.size);
       return next;
     });
-  }, []);
+  }, [onFavoritesChange]);
 
   const sortedSpots = useMemo(() => {
     let filtered = spots;
@@ -144,10 +156,12 @@ export default function SpotListView({
         <div className="text-center max-w-xs">
           <div className="text-4xl mb-3">🔍</div>
           <p className="text-base font-semibold text-gray-800">
-            No {selectedActivity} spots yet
+            No {selectedActivity} {selectedArea === NEAR_ME ? 'nearby' : `in ${selectedArea}`} yet
           </p>
           <p className="mt-1 text-sm text-gray-500">
-            {selectedArea} is waiting for its first {selectedActivity.toLowerCase()} spot.
+            {selectedActivity === 'Recently Opened' || selectedActivity === 'Coming Soon'
+              ? 'Know a new opening? Tip us and we\u2019ll add it!'
+              : 'Know a spot? Add it and help fellow explorers!'}
           </p>
           {onAddSpot && (
             <button
@@ -173,19 +187,14 @@ export default function SpotListView({
           <span className="text-xs font-medium text-gray-500">
             {sortedSpots.length} spot{sortedSpots.length !== 1 ? 's' : ''}
           </span>
-          <button
-            onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-            className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold transition-colors ${
-              showFavoritesOnly
-                ? 'bg-red-100 text-red-600'
-                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-            }`}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 24 24" fill={showFavoritesOnly ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-            Saved
-          </button>
+          {showFavoritesOnly && (
+            <span className="flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-600">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              Saved Only
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-1">
           <label htmlFor="sort-select" className="text-xs text-gray-500">
@@ -198,13 +207,62 @@ export default function SpotListView({
             className="rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 focus:border-teal-400 focus:outline-none"
           >
             <option value="alpha">A &ndash; Z</option>
-            <option value="active">Active Now</option>
-            <option value="time">Time</option>
+            {(selectedActivity === 'Happy Hour' || selectedActivity === 'Brunch') && (
+              <>
+                <option value="active">Active Now</option>
+                <option value="time">Time</option>
+              </>
+            )}
             <option value="recent">Recently Updated</option>
             {userLocation && <option value="nearest">Nearest</option>}
           </select>
         </div>
       </div>
+
+      {/* Active Now banner */}
+      {(() => {
+        const TIME_ACTIVITIES = new Set(['Happy Hour', 'Brunch', 'Live Music']);
+        if (!TIME_ACTIVITIES.has(selectedActivity)) return null;
+        const activeCount = spots.filter(s => isSpotActiveNow(s)).length;
+        if (activeCount === 0) return null;
+        return (
+          <button
+            onClick={() => onSortChange('active')}
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-medium transition-colors ${
+              sortMode === 'active'
+                ? 'bg-green-50 text-green-700'
+                : 'bg-green-50/50 text-green-600 hover:bg-green-50'
+            }`}
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
+            </span>
+            {activeCount} active right now
+            {sortMode !== 'active' && (
+              <span className="ml-auto text-[10px] text-green-500">Tap to sort</span>
+            )}
+          </button>
+        );
+      })()}
+
+      {/* What's New strip */}
+      {allSpots && onWhatsNewSelect
+        && selectedActivity !== 'Recently Opened'
+        && selectedActivity !== 'Coming Soon'
+        && (() => {
+          const newSpots = allSpots
+            .filter(s => (s.type === 'Recently Opened' || s.type === 'Coming Soon') && s.lat !== 0 && s.lng !== 0)
+            .sort((a, b) => {
+              const da = a.lastUpdateDate ? new Date(a.lastUpdateDate).getTime() : 0;
+              const db = b.lastUpdateDate ? new Date(b.lastUpdateDate).getTime() : 0;
+              return db - da;
+            })
+            .slice(0, 8);
+          if (newSpots.length === 0) return null;
+          return <WhatsNewStrip spots={newSpots} activities={activities} onSelect={onWhatsNewSelect} />;
+        })()
+      }
 
       {/* Scrollable card list */}
       <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
@@ -240,6 +298,11 @@ export default function SpotListView({
                     <span className="font-semibold text-gray-900 text-sm truncate">
                       {spot.title}
                     </span>
+                    {(isSearching || selectedArea === NEAR_ME) && spot.area && (
+                      <span className="flex-shrink-0 rounded-full bg-teal-50 px-1.5 py-0.5 text-[10px] font-medium text-teal-600">
+                        {spot.area}
+                      </span>
+                    )}
                     {MIXED_ACTIVITIES.has(spot.type) && (() => {
                       const tag = getSubTag(spot.title);
                       return tag ? (
@@ -371,6 +434,9 @@ export default function SpotListView({
                         fill
                         className="object-cover"
                         unoptimized
+                        onError={(e: SyntheticEvent<HTMLImageElement>) => {
+                          e.currentTarget.parentElement!.style.display = 'none';
+                        }}
                       />
                     </div>
                   )}
@@ -422,8 +488,8 @@ export default function SpotListView({
                     <button
                       onClick={async (e) => {
                         e.stopPropagation();
-                        const result = await shareSpot(spot.title, spot.id);
-                        if (result === 'copied') setShareToast(spot.id);
+                        const result = await shareSpot(spot.title, spot.id, spot.type, spot.area);
+                        if (result === 'copied' || result === 'shared') setShareToast(spot.id);
                       }}
                       className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-200 transition-colors"
                     >

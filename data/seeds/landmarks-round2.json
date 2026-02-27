@@ -1,0 +1,134 @@
+[
+  {
+    "title": "H.L. Hunley Submarine",
+    "description": "The world's first successful combat submarine from the Civil War era, offering guided tours that delve into its history and recovery. A must-visit for history enthusiasts interested in naval innovation.",
+    "area": "North Charleston",
+    "searchHint": "H.L. Hunley Submarine North Charleston SC"
+  },
+  {
+    "title": "North Charleston Fire Museum",
+    "description": "Interactive museum displaying antique fire engines and firefighting artifacts, educating visitors on fire safety and history. Kid-friendly with hands-on exhibits.",
+    "area": "North Charleston",
+    "searchHint": "North Charleston Fire Museum North Charleston SC"
+  },
+  {
+    "title": "Wannamaker County Park",
+    "description": "Large park with nature trails, splash pad, and picnic areas, perfect for outdoor activities and family fun. Features Whirlin' Waters Adventure Waterpark seasonally.",
+    "area": "North Charleston",
+    "searchHint": "Wannamaker County Park North Charleston SC"
+  },
+  {
+    "title": "Park Circle Disc Golf Course",
+    "description": "Free public disc golf course in the vibrant Park Circle neighborhood. Suitable for all skill levels with scenic holes and community events.",
+    "area": "North Charleston",
+    "searchHint": "Park Circle Disc Golf Course North Charleston SC"
+  },
+  {
+    "title": "Naval Base Memorial",
+    "description": "Memorial honoring the history of the Charleston Naval Base with exhibits and monuments along the riverfront. Part of the larger Riverfront Park area.",
+    "area": "North Charleston",
+    "searchHint": "Naval Base Memorial North Charleston SC"
+  },
+  {
+    "title": "Magnolia Plantation & Gardens",
+    "description": "One of America's oldest plantations with stunning gardens, house tours, and nature trails showcasing Lowcountry history. Offers boat tours and a petting zoo.",
+    "area": "West Ashley",
+    "searchHint": "Magnolia Plantation & Gardens West Ashley Charleston SC"
+  },
+  {
+    "title": "Middleton Place",
+    "description": "National Historic Landmark with America's oldest landscaped gardens, house museum, and stableyards reflecting 18th-century plantation life. Features artisan demonstrations.",
+    "area": "West Ashley",
+    "searchHint": "Middleton Place West Ashley Charleston SC"
+  },
+  {
+    "title": "Morris Island Lighthouse",
+    "description": "Historic 19th-century lighthouse visible from Folly Beach, representing Charleston's maritime history. Popular for scenic photos and eco-tours by boat.",
+    "area": "James Island",
+    "searchHint": "Morris Island Lighthouse James Island Charleston SC"
+  },
+  {
+    "title": "Deep Water Vineyard",
+    "description": "Local winery offering tastings, tours, and events in a relaxed vineyard setting. Unique for its muscadine wines and scenic Lowcountry grounds.",
+    "area": "James Island",
+    "searchHint": "Deep Water Vineyard James Island Charleston SC"
+  },
+  {
+    "title": "Terrace Theater",
+    "description": "Independent cinema showcasing art-house films, classics, and community events in a cozy setting. A beloved local cultural institution since 1946.",
+    "area": "James Island",
+    "searchHint": "Terrace Theater James Island Charleston SC"
+  },
+  {
+    "title": "Stono River Marsh",
+    "description": "Serene marsh area ideal for kayaking, paddleboarding, and wildlife viewing. Peaceful nature experience with opportunities to spot dolphins and shorebirds.",
+    "area": "James Island",
+    "searchHint": "Stono River Marsh James Island Charleston SC"
+  },
+  {
+    "title": "Charleston Brews Cruise",
+    "description": "Guided tours of local craft breweries with tastings and behind-the-scenes insights into Charleston's beer scene. A unique experience for craft beer lovers.",
+    "area": "James Island",
+    "searchHint": "Charleston Brews Cruise James Island Charleston SC"
+  },
+  {
+    "title": "Isle of Palms Beach",
+    "description": "Pristine barrier island beach with wide sands, dunes, and ocean access for swimming and sunbathing. Popular for relaxation, shelling, and family beach days.",
+    "area": "Sullivan's & IOP",
+    "searchHint": "Isle of Palms Beach Isle of Palms SC"
+  },
+  {
+    "title": "Wild Dunes Resort Golf Course",
+    "description": "Championship golf courses designed by Tom Fazio with ocean views and challenging play. A premier golfing experience amid dunes and maritime forest.",
+    "area": "Sullivan's & IOP",
+    "searchHint": "Wild Dunes Resort Golf Course Isle of Palms SC"
+  },
+  {
+    "title": "Barrier Island Eco Tours",
+    "description": "Guided boat tours exploring local ecosystems, wildlife, and uninhabited islands. Adventures include shelling trips and dolphin watching for nature enthusiasts.",
+    "area": "Sullivan's & IOP",
+    "searchHint": "Barrier Island Eco Tours Isle of Palms SC"
+  },
+  {
+    "title": "Islander 71",
+    "description": "Waterfront restaurant with fresh seafood and sunset views over the Intracoastal Waterway. Live music and boat-watching in a laid-back island setting.",
+    "area": "Sullivan's & IOP",
+    "searchHint": "Islander 71 Isle of Palms SC"
+  },
+  {
+    "title": "Memorial Waterfront Park",
+    "description": "Scenic park beneath the Ravenel Bridge with playgrounds, fishing pier, and panoramic harbor views. Known as Mount Pleasant's crown jewel for family outings.",
+    "area": "Mount Pleasant",
+    "searchHint": "Memorial Waterfront Park Mount Pleasant SC"
+  },
+  {
+    "title": "Charles Pinckney National Historic Site",
+    "description": "Preserved remains of Snee Farm, home of a Constitution signer, with trails and exhibits on colonial life. Free admission — great for history buffs.",
+    "area": "Mount Pleasant",
+    "searchHint": "Charles Pinckney National Historic Site Mount Pleasant SC"
+  },
+  {
+    "title": "Daniel Island Waterfront Park",
+    "description": "Scenic park along the Wando River with trails, picnic areas, and water views. Ideal for relaxation, fishing, and family gatherings with nearby playgrounds.",
+    "area": "Daniel Island",
+    "searchHint": "Daniel Island Waterfront Park Daniel Island Charleston SC"
+  },
+  {
+    "title": "Daniel Island Children's Park",
+    "description": "Kid-friendly playground with swings, slides, and open spaces for play. Features shaded areas, perfect for family outings in a quiet community setting.",
+    "area": "Daniel Island",
+    "searchHint": "Daniel Island Children's Park Daniel Island Charleston SC"
+  },
+  {
+    "title": "Smythe Park",
+    "description": "Neighborhood park with walking paths around a lake, benches, and scenic views. Great for birdwatching, picnics, and peaceful nature walks.",
+    "area": "Daniel Island",
+    "searchHint": "Smythe Park Daniel Island Charleston SC"
+  },
+  {
+    "title": "Etiwan Park",
+    "description": "Park with sports fields, playgrounds, and open green spaces for activities. Popular for family sports, dog walking, and casual outdoor recreation.",
+    "area": "Daniel Island",
+    "searchHint": "Etiwan Park Daniel Island Charleston SC"
+  }
+]

@@ -29,10 +29,10 @@ describe('SuggestActivityModal', () => {
     expect(screen.queryByText('Suggest an Activity')).not.toBeInTheDocument();
   });
 
-  it('has name input marked as required', () => {
+  it('has name input', () => {
     render(<SuggestActivityModal {...defaultProps} />);
-    const nameInput = screen.getByPlaceholderText('Your name *');
-    expect(nameInput).toHaveAttribute('required');
+    const nameInput = screen.getByPlaceholderText('Your name (optional)');
+    expect(nameInput).toBeInTheDocument();
   });
 
   it('has activity name input marked as required', () => {
@@ -45,7 +45,7 @@ describe('SuggestActivityModal', () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: true });
 
     render(<SuggestActivityModal {...defaultProps} />);
-    fireEvent.change(screen.getByPlaceholderText('Your name *'), { target: { value: 'John' } });
+    fireEvent.change(screen.getByPlaceholderText('Your name (optional)'), { target: { value: 'John' } });
     fireEvent.change(screen.getByPlaceholderText(/activity name/i), { target: { value: 'Sunset Tours' } });
     fireEvent.click(screen.getByText('Submit Suggestion'));
 
@@ -65,7 +65,7 @@ describe('SuggestActivityModal', () => {
     });
 
     render(<SuggestActivityModal {...defaultProps} />);
-    fireEvent.change(screen.getByPlaceholderText('Your name *'), { target: { value: 'John' } });
+    fireEvent.change(screen.getByPlaceholderText('Your name (optional)'), { target: { value: 'John' } });
     fireEvent.change(screen.getByPlaceholderText(/activity name/i), { target: { value: 'Sunset Tours' } });
     fireEvent.click(screen.getByText('Submit Suggestion'));
 
@@ -78,10 +78,8 @@ describe('SuggestActivityModal', () => {
     expect(defaultProps.onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('has required fields marked', () => {
+  it('has required activity name field', () => {
     render(<SuggestActivityModal {...defaultProps} />);
-    const nameInput = screen.getByPlaceholderText('Your name *');
-    expect(nameInput).toHaveAttribute('required');
     const activityInput = screen.getByPlaceholderText(/activity name/i);
     expect(activityInput).toHaveAttribute('required');
   });

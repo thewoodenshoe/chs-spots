@@ -277,16 +277,16 @@ describe('SubmissionModal', () => {
       expect(onSubmit).not.toHaveBeenCalled();
     });
 
-    it('should not submit if submitter name is empty', async () => {
+    it('should remain disabled without pin location even if title is filled', async () => {
       const onSubmit = jest.fn();
-      render(<SubmissionModal {...defaultProps} onSubmit={onSubmit} />);
-      
+      render(<SubmissionModal {...defaultProps} pinLocation={null} onSubmit={onSubmit} />);
+
       const titleInput = screen.getByPlaceholderText(/Best Sunset View/i);
       fireEvent.change(titleInput, { target: { value: 'Test Spot' } });
-      
+
       const submitButton = screen.getByRole('button', { name: /submit|save|add/i });
       expect(submitButton).toBeDisabled();
-      
+
       expect(onSubmit).not.toHaveBeenCalled();
     });
 

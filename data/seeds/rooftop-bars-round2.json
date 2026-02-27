@@ -1,0 +1,62 @@
+[
+  {
+    "title": "Henry's on the Market",
+    "description": "Multi-level historic venue featuring a spacious roof deck with views of the bustling Market area. Craft cocktails, live music, and a lively vibe perfect for nights out.",
+    "area": "Downtown Charleston",
+    "searchHint": "Henry's on the Market 54 N Market St Charleston SC"
+  },
+  {
+    "title": "Pour Taproom",
+    "description": "Highest rooftop bar in Charleston with panoramic views of downtown. Self-pour craft beers from over 30 taps, with a casual, innovative vibe for beer enthusiasts.",
+    "area": "Downtown Charleston",
+    "searchHint": "Pour Taproom 560 King St Charleston SC"
+  },
+  {
+    "title": "Revelry Brewing Rooftop",
+    "description": "Elevated rooftop at the brewery with urban city views. House-brewed beers and casual bites in a relaxed, laid-back brewery atmosphere.",
+    "area": "Downtown Charleston",
+    "searchHint": "Revelry Brewing Rooftop 10 Conroy St Charleston SC"
+  },
+  {
+    "title": "Rosemary Rose",
+    "description": "Chic rooftop bar atop the Nickle Hotel with views of downtown Charleston. Specialty cocktails with an elegant French Riviera-inspired vibe.",
+    "area": "Downtown Charleston",
+    "searchHint": "Rosemary Rose 529 King St Charleston SC"
+  },
+  {
+    "title": "Bridge Bar at Charleston Harbor Fish House",
+    "description": "Elevated bar with stunning views of Charleston Harbor, the Ravenel Bridge, and Fort Sumter. Craft cocktails and fresh seafood plates with a waterfront vibe.",
+    "area": "Mount Pleasant",
+    "searchHint": "Bridge Bar at Charleston Harbor Fish House 32 Patriots Point Rd Mount Pleasant SC"
+  },
+  {
+    "title": "Charleston Crab House",
+    "description": "Upper-level balcony with scenic views of Wappoo Creek. Seafood-inspired cocktails and drinks with a relaxed, coastal waterfront vibe.",
+    "area": "James Island",
+    "searchHint": "Charleston Crab House 145 Wappoo Creek Dr Charleston SC"
+  },
+  {
+    "title": "Loggerhead's Beach Grill",
+    "description": "Elevated open-air deck with direct ocean views on Folly Beach. Craft cocktails, beer, and seafood with a beachy, music-filled vibe.",
+    "area": "James Island",
+    "searchHint": "Loggerhead's Beach Grill 123 W Ashley Ave Folly Beach SC"
+  },
+  {
+    "title": "Pier 101 Restaurant & Bar",
+    "description": "Situated on the Folly Beach Pier with expansive ocean views. Drinks and light bites with live music in a casual beachfront atmosphere.",
+    "area": "James Island",
+    "searchHint": "Pier 101 Restaurant & Bar 101 E Arctic Ave Folly Beach SC"
+  },
+  {
+    "title": "Coconut Joe's Beach Grill",
+    "description": "Rooftop bar with panoramic views of the Atlantic Ocean. Full bar with tequila specialties and beach fare in a laid-back island setting.",
+    "area": "Sullivan's & IOP",
+    "searchHint": "Coconut Joe's Beach Grill 1120 Ocean Blvd Isle of Palms SC"
+  },
+  {
+    "title": "The Boathouse at Breach Inlet",
+    "description": "Rooftop bar with views of the Intracoastal Waterway and Atlantic Ocean. Craft cocktails and fresh seafood in a fine yet casual dining atmosphere.",
+    "area": "Sullivan's & IOP",
+    "searchHint": "The Boathouse at Breach Inlet 101 Palm Blvd Isle of Palms SC"
+  }
+]

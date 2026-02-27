@@ -5,6 +5,10 @@ import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import { isAdminRequest } from '@/lib/auth';
 import { createSpotSchema, parseOrError } from '@/lib/validations';
 import { spots, venues, type SpotRow, type VenueRow } from '@/lib/db';
+import { getCache, setCache, invalidate } from '@/lib/cache';
+
+const SPOTS_CACHE_KEY = 'api:spots';
+const SPOTS_TTL = 30_000;
 
 function safeJsonParse(value: string): unknown {
   try { return JSON.parse(value); }
@@ -43,6 +47,15 @@ export async function GET(request: Request) {
   const isAdmin = isAdminRequest(request);
 
   try {
+    if (!isAdmin) {
+      const cached = getCache<any[]>(SPOTS_CACHE_KEY);
+      if (cached) {
+        return NextResponse.json(cached, {
+          headers: { 'X-Cache': 'HIT' },
+        });
+      }
+    }
+
     const allSpots = isAdmin
       ? spots.getAll()
       : spots.getAll({ visibleOnly: true });
@@ -52,10 +65,17 @@ export async function GET(request: Request) {
     for (const v of allVenues) venueMap.set(v.id, v);
 
     const transformed = allSpots.map(s => transformSpot(s, venueMap));
-    return NextResponse.json(transformed);
+
+    if (!isAdmin) {
+      setCache(SPOTS_CACHE_KEY, transformed, SPOTS_TTL);
+    }
+
+    return NextResponse.json(transformed, {
+      headers: { 'X-Cache': 'MISS' },
+    });
   } catch (error) {
     console.error('Error reading spots from database:', error);
-    return NextResponse.json([]);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -119,6 +139,7 @@ export async function POST(request: Request) {
       console.warn('Telegram notification failed (spot still saved):', telegramError);
     }
 
+    invalidate(SPOTS_CACHE_KEY);
     return NextResponse.json(newSpot, { status: 201 });
   } catch (error) {
     console.error('Error adding spot:', error);

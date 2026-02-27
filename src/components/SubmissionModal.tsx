@@ -170,16 +170,13 @@ export default function SubmissionModal({
       showToast('Please enter a title', 'warning');
       return;
     }
-    if (!submitterName.trim()) {
-      showToast('Please enter your name', 'warning');
-      return;
-    }
+    
 
     setIsSubmitting(true);
     try {
       await onSubmit({
         title: title.trim(),
-        submitterName: submitterName.trim(),
+        submitterName: submitterName.trim() || 'Anonymous',
         description: description.trim(),
         type: selectedActivity,
         lat: pinLocation.lat,
@@ -359,7 +356,7 @@ export default function SubmissionModal({
             {/* Your Name */}
             <div className="mb-4">
               <label className="mb-2 block text-sm font-semibold text-gray-700">
-                Your Name <span className="text-red-500">*</span>
+                Your Name <span className="text-xs font-normal text-gray-400">(optional)</span>
               </label>
               <input
                 type="text"
@@ -367,7 +364,6 @@ export default function SubmissionModal({
                 onChange={(e) => setSubmitterName(e.target.value)}
                 placeholder="e.g., John D."
                 className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-base text-gray-800 placeholder-gray-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
-                required
               />
             </div>
 
@@ -462,7 +458,7 @@ export default function SubmissionModal({
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={!pinLocation || !title.trim() || !submitterName.trim() || isSubmitting}
+              disabled={!pinLocation || !title.trim() || isSubmitting}
               className="w-full rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 px-6 py-4 text-base font-bold text-white shadow-lg transition-all hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-lg mb-4"
             >
               {isSubmitting ? (

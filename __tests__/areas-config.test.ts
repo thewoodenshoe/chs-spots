@@ -6,9 +6,25 @@
 import fs from 'fs';
 import path from 'path';
 
+interface AreaBounds {
+  north: number;
+  south: number;
+  east: number;
+  west: number;
+}
+
+interface AreaConfig {
+  name: string;
+  center: { lat: number; lng: number };
+  radius: number;
+  bounds: AreaBounds;
+  zipCodes?: string[];
+  [key: string]: unknown;
+}
+
 describe('Step 1: Areas Configuration (data/config/areas.json)', () => {
   const areasFilePath = path.join(process.cwd(), 'data', 'config', 'areas.json');
-  let areasData: any[];
+  let areasData: AreaConfig[];
 
   beforeAll(() => {
     // Load areas.json
@@ -35,8 +51,8 @@ describe('Step 1: Areas Configuration (data/config/areas.json)', () => {
       expect(Array.isArray(areasData)).toBe(true);
     });
 
-    test('should have exactly 8 areas', () => {
-      expect(areasData.length).toBe(8);
+    test('should have exactly 7 areas', () => {
+      expect(areasData.length).toBe(7);
     });
   });
 
@@ -46,10 +62,9 @@ describe('Step 1: Areas Configuration (data/config/areas.json)', () => {
         'Mount Pleasant',
         'James Island',
         'Downtown Charleston',
-        "Sullivan's Island",
+        "Sullivan's & IOP",
         'North Charleston',
-        'West Ashley',
-        'Isle of Palms'
+        'West Ashley'
       ];
 
     test('should contain all required areas', () => {
@@ -152,7 +167,7 @@ describe('Step 1: Areas Configuration (data/config/areas.json)', () => {
 
   describe('Test 4: Radius roughly matches bounds diagonal (within 20% tolerance)', () => {
     // Calculate diagonal distance of bounds in meters
-    function calculateBoundsDiagonal(bounds: any): number {
+    function calculateBoundsDiagonal(bounds: AreaBounds): number {
       // Haversine formula for distance between two points
       const R = 6371000; // Earth radius in meters
       const lat1 = bounds.south * Math.PI / 180;
@@ -229,7 +244,7 @@ describe('Step 1: Areas Configuration (data/config/areas.json)', () => {
 
   describe('Test 6: Minimal overlaps between bounds', () => {
     // Calculate intersection area between two bounds
-    function calculateIntersectionArea(bounds1: any, bounds2: any): number {
+    function calculateIntersectionArea(bounds1: AreaBounds, bounds2: AreaBounds): number {
       const latOverlap = Math.max(0, 
         Math.min(bounds1.north, bounds2.north) - Math.max(bounds1.south, bounds2.south)
       );
@@ -240,7 +255,7 @@ describe('Step 1: Areas Configuration (data/config/areas.json)', () => {
     }
 
     // Calculate area of bounds
-    function calculateBoundsArea(bounds: any): number {
+    function calculateBoundsArea(bounds: AreaBounds): number {
       const latDiff = bounds.north - bounds.south;
       const lngDiff = bounds.east - bounds.west;
       return latDiff * lngDiff;
@@ -313,7 +328,7 @@ describe('Step 1: Areas Configuration (data/config/areas.json)', () => {
       }
     ];
 
-    function isPointInBounds(point: { lat: number; lng: number }, bounds: any): boolean {
+    function isPointInBounds(point: { lat: number; lng: number }, bounds: AreaBounds): boolean {
       return point.lat >= bounds.south &&
              point.lat <= bounds.north &&
              point.lng >= bounds.west &&

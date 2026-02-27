@@ -61,8 +61,8 @@
   },
   {
     "title": "Muddy Waters Coffee Bar",
-    "description": "Laid-back St. Philip Street cafe with a bohemian vibe. Strong coffee, smoothies, and a dog-friendly patio. A longtime local hangout.",
-    "area": "Downtown Charleston",
+    "description": "Laid-back cafe with a bohemian vibe. Strong coffee, smoothies, and a dog-friendly patio. A longtime local hangout.",
+    "area": "James Island",
     "searchHint": "Muddy Waters Coffee Bar 209 Calhoun St Charleston SC"
   },
   {
@@ -164,19 +164,19 @@
   {
     "title": "Cafe Paname",
     "description": "Isle of Palms cafe with locally-roasted espresso, fresh croissants, and pastries. Known for seasonal specialty drinks and an outstanding almond croissant.",
-    "area": "Isle of Palms",
+    "area": "Sullivan's & IOP",
     "searchHint": "Cafe Paname 1202 Palm Blvd Isle of Palms SC"
   },
   {
     "title": "The Co-Op Isle of Palms",
     "description": "Casual island cafe with $1 coffee, breakfast, gourmet sandwiches, and the famous frosé. A laid-back beach vibe with outdoor seating.",
-    "area": "Isle of Palms",
+    "area": "Sullivan's & IOP",
     "searchHint": "The Co-Op Isle of Palms SC"
   },
   {
     "title": "Sea Biscuit Cafe",
     "description": "Isle of Palms institution since 1986. Classic American breakfast, fresh coffee, and charming outdoor seating. A beach morning tradition.",
-    "area": "Isle of Palms",
+    "area": "Sullivan's & IOP",
     "searchHint": "Sea Biscuit Cafe Isle of Palms SC"
   }
 ]

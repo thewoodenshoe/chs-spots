@@ -213,10 +213,12 @@ describe('MapComponent — empty state & banner overlay', () => {
     selectedArea: string;
     selectedActivity: string;
     isSubmissionMode: boolean;
+    filteredSpots: any[];
   }> = {}) => {
     const merged = {
       selectedArea: 'Daniel Island',
       selectedActivity: 'Fishing Spots',
+      filteredSpots: [],
       ...props,
     };
     return render(
@@ -226,6 +228,7 @@ describe('MapComponent — empty state & banner overlay', () => {
             <MapComponent
               selectedArea={merged.selectedArea}
               selectedActivity={merged.selectedActivity}
+              filteredSpots={merged.filteredSpots}
               isSubmissionMode={merged.isSubmissionMode}
             />
           </ActivitiesProvider>
@@ -276,7 +279,7 @@ describe('MapComponent — empty state & banner overlay', () => {
     });
     expect(screen.getByLabelText('Dismiss')).toBeInTheDocument();
     expect(screen.getByText(/No Fishing Spots in Daniel Island yet/)).toBeInTheDocument();
-    expect(screen.getByText(/Be the first/)).toBeInTheDocument();
+    expect(screen.getByText(/Know a spot/)).toBeInTheDocument();
   });
 
   it('hides empty state when X close button is clicked', async () => {
@@ -294,22 +297,15 @@ describe('MapComponent — empty state & banner overlay', () => {
     renderMap({ selectedActivity: 'Happy Hour' });
     expect(screen.queryByTestId('community-banner')).not.toBeInTheDocument();
     expect(screen.getByText(/No Happy Hour in Daniel Island/)).toBeInTheDocument();
-    expect(screen.getByText(/Try a different area or activity/)).toBeInTheDocument();
+    expect(screen.getByText(/Know a spot/)).toBeInTheDocument();
     expect(screen.getByLabelText('Dismiss')).toBeInTheDocument();
   });
 
-  it('does not show empty state when spots are loading', () => {
-    useSpots.mockReturnValue({ spots: [], loading: true });
-    renderMap({ selectedActivity: 'Happy Hour' });
-    expect(screen.queryByText(/No Happy Hour/)).not.toBeInTheDocument();
-  });
-
   it('does not show empty state when there are spots', () => {
-    useSpots.mockReturnValue({
-      spots: [{ id: 1, title: 'Test', lat: 32.845, lng: -79.908, description: 'x', type: 'Happy Hour' }],
-      loading: false,
+    renderMap({
+      selectedActivity: 'Happy Hour',
+      filteredSpots: [{ id: 1, title: 'Test', lat: 32.845, lng: -79.908, description: 'x', type: 'Happy Hour' }],
     });
-    renderMap({ selectedActivity: 'Happy Hour' });
     expect(screen.queryByText(/No Happy Hour/)).not.toBeInTheDocument();
   });
 });

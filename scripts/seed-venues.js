@@ -375,9 +375,10 @@ function mapGoogleSublocalityToArea(googleSublocality) {
     // James Island
     'james island': 'James Island',
     
-    // Sullivan's Island
-    "sullivan's island": "Sullivan's Island",
-    'sullivans island': "Sullivan's Island",
+    // Sullivan's & IOP
+    "sullivan's island": "Sullivan's & IOP",
+    'sullivans island': "Sullivan's & IOP",
+    'isle of palms': "Sullivan's & IOP",
     
     // North Charleston
     'north charleston': 'North Charleston',
@@ -414,8 +415,9 @@ function extractAreaFromAddress(address) {
     'mt. pleasant': 'Mount Pleasant',
     'west ashley': 'West Ashley',
     'james island': 'James Island',
-    "sullivan's island": "Sullivan's Island",
-    'sullivans island': "Sullivan's Island",
+    "sullivan's island": "Sullivan's & IOP",
+    'sullivans island': "Sullivan's & IOP",
+    'isle of palms': "Sullivan's & IOP",
     'daniel island': 'Daniel Island',
   };
   

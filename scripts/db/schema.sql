@@ -39,6 +39,9 @@ CREATE TABLE IF NOT EXISTS spots (
   pending_delete INTEGER DEFAULT 0,
   submitted_at TEXT,
   edited_at TEXT,
+  lat REAL,
+  lng REAL,
+  area TEXT,
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now'))
 );
@@ -130,6 +133,7 @@ CREATE TABLE IF NOT EXISTS schema_version (
 CREATE INDEX IF NOT EXISTS idx_spots_venue ON spots(venue_id);
 CREATE INDEX IF NOT EXISTS idx_spots_type ON spots(type);
 CREATE INDEX IF NOT EXISTS idx_spots_source ON spots(source);
+CREATE INDEX IF NOT EXISTS idx_spots_area ON spots(area);
 CREATE INDEX IF NOT EXISTS idx_venues_area ON venues(area);
 CREATE INDEX IF NOT EXISTS idx_gold_venue ON gold_extractions(venue_id);
 CREATE INDEX IF NOT EXISTS idx_watchlist_status ON watchlist(status);
