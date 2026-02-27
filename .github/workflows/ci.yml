@@ -53,6 +53,11 @@ jobs:
       run: npm audit --audit-level=moderate
       continue-on-error: true
 
+    - name: Build Next.js
+      run: npm run build
+      env:
+        NEXT_PUBLIC_GOOGLE_MAPS_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_KEY }}
+
     - name: Install Playwright browsers
       run: npx playwright install --with-deps chromium
 
