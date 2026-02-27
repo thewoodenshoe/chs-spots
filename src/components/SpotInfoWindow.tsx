@@ -79,7 +79,7 @@ export default function SpotInfoWindow({ spot, activities, onEdit, onReport, onC
       <div className="mt-2 space-y-1.5">
         {promoTime && (
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-0.5">{spot.type}</div>
+            <div className="text-xs font-bold text-gray-700 mb-0.5">{spot.type}</div>
             {timeParts.map((part: string, i: number) => (
               <div key={i} className="text-xs text-gray-800 leading-snug">{part}</div>
             ))}
@@ -88,7 +88,7 @@ export default function SpotInfoWindow({ spot, activities, onEdit, onReport, onC
 
         {promoList.length > 0 && (
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-0.5">Specials</div>
+            <div className="text-xs font-bold text-gray-700 mb-0.5">Specials</div>
             {promoList.map((item: string, i: number) => {
               const m = item.match(/^\[([^\]]+)\]\s*(.*)/);
               const label = m ? m[1] : null;
@@ -126,7 +126,7 @@ export default function SpotInfoWindow({ spot, activities, onEdit, onReport, onC
       {/* ── Section 2: Venue Info ── */}
       {(venue?.phone || venue?.address || venue?.operatingHours) && (
         <div className="mt-2.5 border-t border-gray-100 pt-2">
-          <div className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-1">Venue Info</div>
+          <div className="text-xs font-bold text-gray-700 mb-1">Venue Info</div>
           <div className="space-y-1">
             {venue.phone && (
               <a href={`tel:${venue.phone}`} className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-teal-700 transition-colors">
@@ -152,7 +152,7 @@ export default function SpotInfoWindow({ spot, activities, onEdit, onReport, onC
             )}
             {venue.operatingHours && (
               <div className="pt-1">
-                <div className="text-[10px] font-medium text-gray-400 mb-0.5">Hours</div>
+                <div className="text-xs font-bold text-gray-700 mb-0.5">Opening Hours</div>
                 {weekHours(venue.operatingHours).map(({ day, h, isToday }) => (
                   <div key={day} className={`text-xs leading-snug flex gap-2 ${isToday ? 'text-gray-900 font-bold' : 'text-gray-600'}`}>
                     <span className="w-8">{day}</span>
@@ -167,7 +167,7 @@ export default function SpotInfoWindow({ spot, activities, onEdit, onReport, onC
 
       {/* ── Section 3: Listing ── */}
       <div className="mt-2.5 border-t border-gray-100 pt-2">
-        <div className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-1.5">Listing</div>
+        <div className="text-xs font-bold text-gray-700 mb-1.5">Listing</div>
 
         {(() => {
           const f = getFreshness(spot.lastVerifiedDate, spot.lastUpdateDate);
