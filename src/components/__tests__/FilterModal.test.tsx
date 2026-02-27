@@ -9,7 +9,6 @@ const ALL_ACTIVITIES = [
   { name: 'Coffee Shops', icon: 'Coffee', emoji: '☕', color: '#92400e' },
   { name: 'Rooftop Bars', icon: 'Building', emoji: '🏙️', color: '#6366f1' },
   { name: 'Dog-Friendly', icon: 'Dog', emoji: '🐕', color: '#16a34a' },
-  { name: 'Fishing Spots', icon: 'Fish', emoji: '🎣', color: '#0284c7' },
   { name: 'Landmarks & Attractions', icon: 'Landmark', emoji: '🏛️', color: '#b45309' },
   { name: 'Recently Opened', icon: 'Sparkles', emoji: '🆕', color: '#16a34a' },
   { name: 'Coming Soon', icon: 'Clock', emoji: '🔜', color: '#7c3aed' },
@@ -34,7 +33,6 @@ describe('FilterModal', () => {
     'Coffee Shops': 22,
     'Rooftop Bars': 8,
     'Dog-Friendly': 31,
-    'Fishing Spots': 5,
     'Landmarks & Attractions': 12,
     'Recently Opened': 0,
     'Coming Soon': 0,
@@ -109,7 +107,6 @@ describe('FilterModal', () => {
     expect(screen.getByText('Coffee Shops')).toBeInTheDocument();
     expect(screen.getByText('Rooftop Bars')).toBeInTheDocument();
     expect(screen.getByText('Dog-Friendly')).toBeInTheDocument();
-    expect(screen.getByText('Fishing Spots')).toBeInTheDocument();
     expect(screen.getByText('Landmarks & Attractions')).toBeInTheDocument();
   });
 

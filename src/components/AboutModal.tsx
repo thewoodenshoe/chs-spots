@@ -48,7 +48,7 @@ export default function AboutModal({ isOpen, onClose, lastUpdated, healthIndicat
           {/* Tagline */}
           <p className="text-base text-gray-700 leading-relaxed">
             Your community-powered map for the best of Charleston, SC.
-            Discover happy hours, fishing spots, sunset views, bike routes, and more — all curated by locals like you.
+            Discover happy hours, brunch deals, live music, dog-friendly spots, new openings, and more — verified from venue sites and curated by locals.
           </p>
 
           {/* How it works */}

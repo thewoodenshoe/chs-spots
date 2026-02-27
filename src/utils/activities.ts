@@ -11,7 +11,6 @@ export interface Activity {
 const DEFAULT_ACTIVITIES: Activity[] = [
   { name: 'Happy Hour', icon: 'Martini', emoji: '🍹', color: '#0d9488' },
   { name: 'Brunch', icon: 'Coffee', emoji: '🥞', color: '#d97706' },
-  { name: 'Fishing Spots', icon: 'Fish', emoji: '🎣', color: '#0284c7', communityDriven: true },
   { name: 'Must-Do Spots', icon: 'Compass', emoji: '⭐', color: '#8b5cf6', communityDriven: true },
 ];
 

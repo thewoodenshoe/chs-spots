@@ -37,15 +37,14 @@ describe('Activities Utility', () => {
 
       const activities = loadActivities();
 
-      expect(activities).toHaveLength(4);
+      expect(activities).toHaveLength(3);
       expect(activities[0].name).toBe('Happy Hour');
       expect(activities[0].icon).toBe('Martini');
       expect(activities[0].emoji).toBe('🍹');
       expect(activities[0].color).toBe('#0d9488');
-      expect(activities[2].name).toBe('Fishing Spots');
+      expect(activities[1].name).toBe('Brunch');
+      expect(activities[2].name).toBe('Must-Do Spots');
       expect(activities[2].communityDriven).toBe(true);
-      expect(activities[3].name).toBe('Must-Do Spots');
-      expect(activities[3].communityDriven).toBe(true);
     });
 
     it('should return fallback activities if database throws', () => {
@@ -53,7 +52,7 @@ describe('Activities Utility', () => {
 
       const activities = loadActivities();
 
-      expect(activities).toHaveLength(4);
+      expect(activities).toHaveLength(3);
       expect(activities[0].name).toBe('Happy Hour');
     });
 

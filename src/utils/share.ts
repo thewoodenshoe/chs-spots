@@ -13,8 +13,6 @@ function buildShareText(title: string, spotType: string, area: string): string {
       return `🥞 Brunch at ${title}${loc}`;
     case 'Live Music':
       return `🎸 Live music at ${title}${loc}`;
-    case 'Fishing Spots':
-      return `🎣 Check out ${title}${loc}`;
     case 'Landmarks & Attractions':
       return `🏛️ Check out ${title}${loc}`;
     default:
