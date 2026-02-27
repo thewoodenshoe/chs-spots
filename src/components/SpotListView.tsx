@@ -443,7 +443,7 @@ export default function SpotListView({
                   )}
 
                   {(() => {
-                    const f = getFreshness(spot.lastUpdateDate);
+                    const f = getFreshness(spot.lastVerifiedDate);
                     const dotColor = f.level === 'fresh' ? 'bg-green-400' : f.level === 'aging' ? 'bg-yellow-400' : f.level === 'stale' ? 'bg-red-400' : 'bg-gray-300';
                     return (
                       <span className="mt-0.5 inline-flex items-center gap-1 text-[10px] text-gray-400">

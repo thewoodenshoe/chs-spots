@@ -181,7 +181,7 @@ export default function SpotInfoWindow({ spot, activities, onEdit, onReport, onC
       )}
 
       {(() => {
-        const f = getFreshness(spot.lastUpdateDate);
+        const f = getFreshness(spot.lastVerifiedDate);
         const dotColor = f.level === 'fresh' ? 'bg-green-400' : f.level === 'aging' ? 'bg-yellow-400' : f.level === 'stale' ? 'bg-red-400' : 'bg-gray-300';
         return (
           <div className="mb-2 flex items-center gap-1.5">

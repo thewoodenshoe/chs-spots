@@ -20,6 +20,7 @@ export interface Spot {
   happyHourList?: string[];
   sourceUrl?: string;
   lastUpdateDate?: string;
+  lastVerifiedDate?: string;
   venueId?: string;
   area?: string;
   manualOverride?: boolean;

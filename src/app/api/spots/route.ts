@@ -31,6 +31,7 @@ function transformSpot(spot: SpotRow, venueMap: Map<string, VenueRow>) {
     happyHourList: spot.promotion_list ? safeJsonParse(spot.promotion_list) : undefined,
     sourceUrl: spot.source_url || undefined,
     lastUpdateDate: spot.last_update_date || undefined,
+    lastVerifiedDate: spot.updated_at || spot.last_update_date || undefined,
     venueId: spot.venue_id || undefined,
     area: venue?.area || spot.area || undefined,
     submitterName: spot.submitter_name || undefined,
