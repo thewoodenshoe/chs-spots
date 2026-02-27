@@ -170,6 +170,19 @@ export async function handleTextCommand(text: string, chatId: string | number): 
     });
   };
 
+  if (text === '/help' || text === '/start') {
+    await send([
+      `📖 *Charleston Finds — Bot Commands*`,
+      ``,
+      `/idea <text> — Save an idea to the backlog`,
+      `/ideas — List all open ideas`,
+      `/info <id> — Show full spot details`,
+      `/delete <id> — Delete a spot (adds venue to watchlist)`,
+      `/help — Show this message`,
+    ].join('\n'));
+    return true;
+  }
+
   const deleteMatch = text.match(/^\/delete\s+(\d+)$/i);
   if (deleteMatch) {
     const spotId = parseInt(deleteMatch[1], 10);
