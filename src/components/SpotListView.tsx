@@ -6,7 +6,7 @@ import { Spot } from '@/contexts/SpotsContext';
 import { NEAR_ME } from '@/components/AreaSelector';
 import { Activity } from '@/utils/activities';
 import { calculateDistanceMiles } from '@/utils/distance';
-import { getSpotStartMinutes, extractCompactTime, isSpotActiveNow } from '@/utils/time-utils';
+import { getSpotStartMinutes, isSpotActiveNow } from '@/utils/time-utils';
 import { toggleFavorite } from '@/utils/favorites';
 import { shareSpot } from '@/utils/share';
 import { useVenues } from '@/contexts/VenuesContext';
@@ -117,7 +117,6 @@ export default function SpotListView({
         distance: userLocation
           ? calculateDistanceMiles(userLocation.lat, userLocation.lng, spot.lat, spot.lng)
           : null,
-        timeDisplay: extractCompactTime(spot),
         startMinutes: getSpotStartMinutes(spot),
         activeNow: isSpotActiveNow(spot),
         openStatus: venue ? getOpenStatus(venue.operatingHours) : null,
@@ -274,7 +273,7 @@ export default function SpotListView({
 
       {/* Scrollable card list */}
       <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
-        {sortedSpots.map(({ spot, distance, timeDisplay, activeNow, openStatus, fav }) => {
+        {sortedSpots.map(({ spot, distance, activeNow, openStatus, fav }) => {
           const cfg = getActivityConfig(spot.type);
           const emoji = cfg?.emoji || '📍';
           const color = cfg?.color || '#0d9488';
@@ -327,7 +326,10 @@ export default function SpotListView({
                   </div>
 
                   {promoTime && (
-                    <p className="mt-0.5 text-xs text-gray-500 truncate">{promoTime}</p>
+                    <p className="mt-0.5 text-xs text-gray-500 truncate">
+                      <span className="font-semibold text-gray-600">{spot.type}: </span>
+                      {promoTime}
+                    </p>
                   )}
 
                   {!isExpanded && promoList.length > 0 && (
@@ -358,11 +360,6 @@ export default function SpotListView({
                         : openStatus.isOpen
                           ? `Open til ${openStatus.closesAt}`
                           : 'Closed'}
-                    </span>
-                  )}
-                  {timeDisplay && (
-                    <span className="rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-semibold text-teal-700 whitespace-nowrap">
-                      {timeDisplay}
                     </span>
                   )}
                   {distance !== null && (
@@ -404,11 +401,11 @@ export default function SpotListView({
               {/* Expanded detail */}
               {isExpanded && (
                 <div className="border-t border-gray-100 px-4 pb-3 pt-2 space-y-2">
-                  {/* Schedule */}
+                  {/* Times */}
                   {promoTime && (
                     <div>
                       <div className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-0.5">
-                        Schedule
+                        {spot.type} Times
                       </div>
                       <div className="space-y-0.5">
                         {promoTime.split(/\s*[•]\s*/).filter(Boolean).map((part, i) => (
