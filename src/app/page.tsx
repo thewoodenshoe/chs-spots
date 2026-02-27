@@ -223,7 +223,6 @@ export default function Home() {
 
   const venueAreaById = useVenueAreaMap(venues);
   const isSearching = searchQuery.trim().length >= 2;
-  const isNearMe = selectedArea === NEAR_ME;
 
   const spotCountsByActivity = useSpotCounts(spots);
 
