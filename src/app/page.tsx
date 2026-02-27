@@ -185,25 +185,41 @@ export default function Home() {
   }, []);
 
   const geoResolved = useRef(false);
+
+  const applyUserPosition = (userPos: { lat: number; lng: number }, skipAreaChange = false) => {
+    setUserLocation(userPos);
+    if (deepLinkActive.current || pendingDeepLink.current || skipAreaChange) return;
+    const dLat = userPos.lat - 32.776;
+    const dLng = userPos.lng - (-79.931);
+    const distKm = Math.sqrt(dLat * dLat + dLng * dLng) * 111;
+    if (distKm <= 50) {
+      const detectedArea = getAreaFromCoordinates(userPos.lat, userPos.lng);
+      setSelectedArea(detectedArea as Area);
+      setMapCenter({ lat: userPos.lat, lng: userPos.lng, zoom: 14 });
+    }
+  };
+
   useEffect(() => {
     if (geoResolved.current || !navigator.geolocation) return;
     geoResolved.current = true;
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        setUserLocation(userPos);
-        if (deepLinkActive.current || pendingDeepLink.current) return;
-        const dLat = userPos.lat - 32.776;
-        const dLng = userPos.lng - (-79.931);
-        const distKm = Math.sqrt(dLat * dLat + dLng * dLng) * 111;
-        if (distKm <= 50) {
-          setSelectedArea(NEAR_ME as Area);
-          setMapCenter({ lat: userPos.lat, lng: userPos.lng, zoom: 13 });
-        }
-      },
-      () => { /* denied */ }
+      (pos) => applyUserPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => { /* denied */ },
     );
   }, [areaCenters]);
+
+  const handleLocateMe = () => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        applyUserPosition(userPos);
+        setMapCenter({ lat: userPos.lat, lng: userPos.lng, zoom: 14 });
+      },
+      () => { /* denied */ },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 },
+    );
+  };
 
   const venueAreaById = useVenueAreaMap(venues);
   const isSearching = searchQuery.trim().length >= 2;
@@ -476,6 +492,8 @@ export default function Home() {
             showAllVenues={false}
             searchQuery={searchQuery}
             deepLinkSpotId={deepLinkSpotId}
+            userLocation={userLocation}
+            onLocateMe={handleLocateMe}
           />
         ) : (
           <SpotListView
@@ -544,6 +562,9 @@ export default function Home() {
           <button
             onClick={() => {
               const next = viewMode === 'map' ? 'list' : 'map';
+              if (next === 'map' && userLocation) {
+                setMapCenter({ lat: userLocation.lat, lng: userLocation.lng, zoom: 14 });
+              }
               setViewMode(next);
               trackViewMode(next);
             }}

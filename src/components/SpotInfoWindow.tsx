@@ -214,7 +214,7 @@ export default function SpotInfoWindow({ spot, activities, onEdit, onReport, onC
             }}
             className="flex-1 rounded-lg bg-teal-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-teal-700 touch-manipulation"
           >
-            Edit
+            Suggest Edit
           </button>
         )}
         <a

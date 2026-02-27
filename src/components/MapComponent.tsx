@@ -36,9 +36,9 @@ interface MapComponentProps {
   showAllVenues?: boolean;
   searchQuery?: string;
   deepLinkSpotId?: number | null;
+  userLocation?: { lat: number; lng: number } | null;
+  onLocateMe?: () => void;
 }
-
-let geolocatedOnce = false;
 
 export default function MapComponent({
   selectedArea,
@@ -53,6 +53,8 @@ export default function MapComponent({
   showAllVenues = false,
   searchQuery = '',
   deepLinkSpotId,
+  userLocation = null,
+  onLocateMe,
 }: MapComponentProps) {
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
@@ -60,7 +62,6 @@ export default function MapComponent({
   const { venues } = useVenues();
   const { activities } = useActivities();
   const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [bannerDismissedFor, setBannerDismissedFor] = useState<Set<string>>(new Set());
@@ -108,28 +109,14 @@ export default function MapComponent({
   const lastCenteredPos = useRef<{ lat: number; lng: number; zoom: number } | null>(null);
 
   useEffect(() => {
-    if (geolocatedOnce || !navigator.geolocation) return;
-    geolocatedOnce = true;
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const userPos = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        };
-        setUserLocation(userPos);
-        if (
-          map &&
-          userPos.lat >= 32.6 && userPos.lat <= 32.9 &&
-          userPos.lng >= -80.0 && userPos.lng <= -79.7
-        ) {
-          map.panTo(userPos);
-        }
-      },
-      (error) => {
-        console.log('Geolocation denied or error:', error);
-      }
-    );
-  }, [map]);
+    if (!map || !userLocation) return;
+    if (
+      userLocation.lat >= 32.6 && userLocation.lat <= 32.9 &&
+      userLocation.lng >= -80.0 && userLocation.lng <= -79.7
+    ) {
+      map.panTo(userLocation);
+    }
+  }, [map, userLocation]);
 
   useEffect(() => {
     if (!map || !mapCenter) return;
@@ -258,24 +245,13 @@ export default function MapComponent({
       setTimeout(() => setToastMessage(null), 3000);
     };
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const userPos = { lat: position.coords.latitude, lng: position.coords.longitude };
-          setUserLocation(userPos);
-          showClosest(userPos, 'Closest: ');
-        },
-        () => {
-          const origin = map.getCenter()?.toJSON() || DEFAULT_CENTER;
-          showClosest(origin, 'Closest from map center: ');
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
+    if (userLocation) {
+      showClosest(userLocation, 'Closest: ');
     } else {
       const origin = map.getCenter()?.toJSON() || DEFAULT_CENTER;
       showClosest(origin, 'Closest from map center: ');
     }
-  }, [map, filteredSpots]);
+  }, [map, filteredSpots, userLocation]);
 
   useEffect(() => {
     const handleFindClosest = () => findClosestSpot();
@@ -572,6 +548,21 @@ export default function MapComponent({
           />
         )}
       </GoogleMap>
+
+      {onLocateMe && (
+        <button
+          onClick={onLocateMe}
+          className="absolute bottom-24 right-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-lg transition-all hover:bg-gray-50 active:scale-95 touch-manipulation"
+          aria-label="Go to my location"
+          title="My location"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <circle cx="12" cy="12" r="3" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v3m0 14v3M2 12h3m14 0h3" />
+            <circle cx="12" cy="12" r="8" strokeDasharray="2 2" />
+          </svg>
+        </button>
+      )}
     </div>
   );
 }
