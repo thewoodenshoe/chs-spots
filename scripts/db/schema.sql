@@ -127,6 +127,20 @@ CREATE TABLE IF NOT EXISTS audit_log (
   timestamp TEXT DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS confidence_reviews (
+  venue_id TEXT NOT NULL,
+  activity_type TEXT NOT NULL,
+  decision TEXT NOT NULL CHECK(decision IN ('approved','rejected')),
+  reason TEXT,
+  reviewed_source_hash TEXT,
+  effective_confidence INTEGER,
+  flags TEXT,
+  source TEXT NOT NULL DEFAULT 'manual' CHECK(source IN ('manual','llm','auto')),
+  llm_confidence INTEGER,
+  reviewed_at TEXT DEFAULT (datetime('now')),
+  PRIMARY KEY (venue_id, activity_type)
+);
+
 CREATE TABLE IF NOT EXISTS schema_version (
   version INTEGER PRIMARY KEY,
   applied_at TEXT DEFAULT (datetime('now')),
@@ -142,3 +156,4 @@ CREATE INDEX IF NOT EXISTS idx_gold_venue ON gold_extractions(venue_id);
 CREATE INDEX IF NOT EXISTS idx_watchlist_status ON watchlist(status);
 CREATE INDEX IF NOT EXISTS idx_audit_table ON audit_log(table_name, timestamp);
 CREATE INDEX IF NOT EXISTS idx_pipeline_runs_date ON pipeline_runs(run_date);
+CREATE INDEX IF NOT EXISTS idx_confidence_reviews_decision ON confidence_reviews(decision);

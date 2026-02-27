@@ -585,22 +585,27 @@ function getPipelineData() {
     });
   }
 
-  // 9. Low-confidence spots (flagged or rejected by heuristic validation)
+  // 9. Low-confidence spots (only unreviewed items — LLM-resolved and human-reviewed are excluded)
   result.confidenceFlagged = [];
   result.confidenceRejected = [];
+  result.llmAutoApplied = 0;
+  result.reviewsInDb = 0;
   try {
     const reviewPath = reportingPath('confidence-review.json');
     if (fs.existsSync(reviewPath)) {
       const review = JSON.parse(fs.readFileSync(reviewPath, 'utf8'));
       result.confidenceFlagged = review.flagged || [];
       result.confidenceRejected = review.rejected || [];
+      result.llmAutoApplied = review.llmAutoApplied || 0;
+      result.reviewsInDb = review.reviewsInDb || 0;
 
       for (const f of result.confidenceFlagged) {
+        const llmNote = f.llmReasoning ? ` LLM says: "${f.llmReasoning}" (confidence: ${f.llmReviewConfidence})` : '';
         result.actions.push({
           severity: 'medium',
           category: 'Confidence Review',
           title: `${f.venue} [${f.type}] — confidence ${f.effectiveConfidence}/${f.llmConfidence}`,
-          detail: `Flags: ${f.flags.join(', ')}. Times: ${f.times || 'N/A'}, Days: ${f.days || 'N/A'}, Label: "${f.label || ''}"`,
+          detail: `Flags: ${f.flags.join(', ')}. Times: ${f.times || 'N/A'}, Days: ${f.days || 'N/A'}, Label: "${f.label || ''}"${llmNote}`,
           instruction: `Review if this ${f.type} is genuine. If wrong, exclude via Telegram: /delete <spotId>\nOr add to watchlist to prevent future extraction.`,
         });
       }
@@ -608,11 +613,20 @@ function getPipelineData() {
         result.actions.push({
           severity: 'low',
           category: 'Confidence Review',
-          title: `${result.confidenceRejected.length} spot(s) auto-rejected by confidence heuristics`,
+          title: `${result.confidenceRejected.length} spot(s) need human review (heuristic-rejected, LLM uncertain)`,
           detail: result.confidenceRejected.slice(0, 5).map(r =>
-            `${r.venue} [${r.type}]: ${r.flags.join(', ')} (score: ${r.effectiveConfidence})`
+            `${r.venue} [${r.type}]: ${r.flags.join(', ')} (score: ${r.effectiveConfidence})${r.llmReasoning ? ' — LLM: "' + r.llmReasoning + '"' : ''}`
           ).join('\n'),
           instruction: 'These were not created as spots. Review if any should be manually added.',
+        });
+      }
+      if (result.llmAutoApplied > 0) {
+        result.actions.push({
+          severity: 'low',
+          category: 'Confidence Review',
+          title: `${result.llmAutoApplied} entries auto-resolved by LLM review (${result.reviewsInDb} total in DB)`,
+          detail: 'High-confidence LLM decisions were automatically applied. No action needed.',
+          instruction: 'For reference only. These decisions persist across pipeline runs.',
         });
       }
     }

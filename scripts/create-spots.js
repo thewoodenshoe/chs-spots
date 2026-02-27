@@ -21,6 +21,7 @@ const db = require('./utils/db');
 const { loadConfig } = require('./utils/config');
 const { dataPath, reportingPath, configPath, getDataRoot } = require('./utils/data-dir');
 const { validateGoldEntries } = require('./utils/confidence');
+const { reviewAll } = require('./utils/llm-review');
 
 // Logging setup
 const logDir = path.join(__dirname, '..', 'logs');
@@ -291,9 +292,33 @@ function createSpots(goldData, venueData, startId) {
 }
 
 /**
+ * Build a spot object from a single entry that was resurrected via review approval.
+ */
+function buildSpotFromEntry(entry, goldData, venueData) {
+  const { promotionTime, promotionList, sourceUrl } = buildSpotFields([entry]);
+  return {
+    id: 0,
+    lat: venueData.lat || venueData.geometry?.location?.lat,
+    lng: venueData.lng || venueData.geometry?.location?.lng,
+    title: goldData.venueName || venueData.name || 'Unknown Venue',
+    description: formatHappyHourDescription(entry),
+    promotionTime,
+    promotionList,
+    happyHourTime: promotionTime,
+    happyHourList: promotionList,
+    sourceUrl: sourceUrl || venueData.website || null,
+    lastUpdateDate: goldData.processedAt || null,
+    type: entry.activityType || 'Happy Hour',
+    area: venueData.area || 'Unknown',
+    source: 'automated',
+    venueId: goldData.venueId,
+  };
+}
+
+/**
  * Main function
  */
-function main() {
+async function main() {
   log('🔄 Creating Spots from Gold Data\n');
 
   db.ensureSchema();
@@ -371,6 +396,16 @@ function main() {
     log(`✏️  Found ${overriddenSpots.length} user-edited automated spot(s) — will be preserved\n`);
   }
 
+  // ── Load confidence review decisions ─────────────────────────
+  const reviewMap = db.confidenceReviews.getDecisionMap();
+  const goldSourceHashes = new Map();
+  for (const row of goldRows) {
+    goldSourceHashes.set(row.venue_id, row.source_hash || row.normalized_source_hash);
+  }
+  if (reviewMap.size > 0) {
+    log(`📋 Loaded ${reviewMap.size} existing confidence review(s)\n`);
+  }
+
   // ── Build new automated spots ─────────────────────────────────
   const newAutomatedSpots = [];
   let processed = 0;
@@ -380,6 +415,8 @@ function main() {
   let incompleteData = 0;
   const allFlagged = [];
   const allRejected = [];
+  let reviewApprovedCount = 0;
+  let reviewRejectedCount = 0;
 
   const excludedIds = db.watchlist.getExcludedIds();
   let excludedCount = 0;
@@ -421,14 +458,44 @@ function main() {
       }
 
       const result = createSpots(goldData, venueData, 0);
+      const sourceHash = goldSourceHashes.get(venueId);
 
+      // Check existing reviews for rejected entries — approved reviews resurrect them
       for (const r of result.rejected) {
-        log(`  🚫 Rejected: ${goldData.venueName} [${r.activityType}] — confidence ${r.effectiveConfidence} (${r.confidenceFlags.join(', ')})`);
-        allRejected.push({ venue: goldData.venueName, venueId, ...r });
+        const reviewKey = `${venueId}::${r.activityType || 'Happy Hour'}`;
+        const review = reviewMap.get(reviewKey);
+        const hashMatch = review && review.reviewed_source_hash === sourceHash;
+
+        if (review && hashMatch && review.decision === 'approved') {
+          log(`  ✅ Review-approved (was rejected): ${goldData.venueName} [${r.activityType}]`);
+          result.spots.push(buildSpotFromEntry(r, goldData, venueData));
+          reviewApprovedCount++;
+        } else if (review && hashMatch && review.decision === 'rejected') {
+          reviewRejectedCount++;
+        } else {
+          log(`  🚫 Rejected: ${goldData.venueName} [${r.activityType}] — confidence ${r.effectiveConfidence} (${r.confidenceFlags.join(', ')})`);
+          allRejected.push({ venue: goldData.venueName, venueId, sourceHash, ...r });
+        }
       }
+
+      // Check existing reviews for flagged entries
       for (const f of result.flagged) {
-        log(`  ⚠️  Flagged for review: ${goldData.venueName} [${f.activityType}] — confidence ${f.effectiveConfidence} (${f.confidenceFlags.join(', ')})`);
-        allFlagged.push({ venue: goldData.venueName, venueId, ...f });
+        const reviewKey = `${venueId}::${f.activityType || 'Happy Hour'}`;
+        const review = reviewMap.get(reviewKey);
+        const hashMatch = review && review.reviewed_source_hash === sourceHash;
+
+        if (review && hashMatch) {
+          if (review.decision === 'approved') {
+            reviewApprovedCount++;
+          } else {
+            reviewRejectedCount++;
+            // Remove from kept list — review says reject
+            result.spots = result.spots.filter(s => s.type !== f.activityType);
+          }
+        } else {
+          log(`  ⚠️  Flagged for review: ${goldData.venueName} [${f.activityType}] — confidence ${f.effectiveConfidence} (${f.confidenceFlags.join(', ')})`);
+          allFlagged.push({ venue: goldData.venueName, venueId, sourceHash, ...f });
+        }
       }
 
       if (result.spots.length > 0) {
@@ -462,6 +529,10 @@ function main() {
       log(`  ❌ Error processing gold extraction for ${row.venue_id}: ${error.message}`);
       skipped++;
     }
+  }
+
+  if (reviewApprovedCount > 0 || reviewRejectedCount > 0) {
+    log(`\n📋 Review decisions applied: ${reviewApprovedCount} approved, ${reviewRejectedCount} rejected`);
   }
 
   // ── Detect content changes vs previous spots (streak tracking) ─
@@ -602,26 +673,78 @@ function main() {
   log(`   ✂️  Silver trimmed today count: ${silverTrimmedTodayCount}`);
   log(`   ✂️  Silver trimmed incremental count: ${silverTrimmedIncrementalCount}`);
   
-  // ── Write confidence review data for daily report ──────────
-  if (allFlagged.length > 0 || allRejected.length > 0) {
-    const reviewPath = reportingPath('confidence-review.json');
-    const reviewData = {
-      generatedAt: new Date().toISOString(),
-      flagged: allFlagged.map(f => ({
-        venue: f.venue, venueId: f.venueId, type: f.activityType,
-        label: f.label, times: f.times, days: f.days,
-        llmConfidence: f.confidence, effectiveConfidence: f.effectiveConfidence,
-        flags: f.confidenceFlags,
-      })),
-      rejected: allRejected.map(r => ({
-        venue: r.venue, venueId: r.venueId, type: r.activityType,
-        label: r.label, times: r.times, days: r.days,
-        llmConfidence: r.confidence, effectiveConfidence: r.effectiveConfidence,
-        flags: r.confidenceFlags,
-      })),
-    };
-    fs.writeFileSync(reviewPath, JSON.stringify(reviewData, null, 2), 'utf8');
-    log(`\n📋 Confidence review: ${allFlagged.length} flagged, ${allRejected.length} rejected → ${reviewPath}`);
+  // ── LLM review for unreviewed flagged/rejected entries ───────
+  const unreviewedEntries = [...allFlagged, ...allRejected];
+  let llmAutoApplied = 0;
+  let llmNeedsHuman = 0;
+  const remainingFlagged = [];
+  const remainingRejected = [];
+
+  if (unreviewedEntries.length > 0) {
+    const apiKey = process.env.GROK_API_KEY;
+    if (apiKey) {
+      log(`\n🤖 Running LLM review on ${unreviewedEntries.length} unreviewed entries...`);
+      const llmResult = await reviewAll(unreviewedEntries, apiKey, log);
+
+      for (const item of llmResult.autoApplied) {
+        const venueId = item.venueId;
+        const actType = item.activityType || 'Happy Hour';
+        db.confidenceReviews.upsert({
+          venue_id: venueId,
+          activity_type: actType,
+          decision: item.llmDecision === 'approve' ? 'approved' : 'rejected',
+          reason: item.llmReasoning,
+          reviewed_source_hash: item.sourceHash || goldSourceHashes.get(venueId),
+          effective_confidence: item.effectiveConfidence,
+          flags: item.confidenceFlags,
+          source: 'llm',
+          llm_confidence: item.llmReviewConfidence,
+        });
+        log(`  🤖 LLM auto-${item.llmDecision}: ${item.venue} [${actType}] (confidence: ${item.llmReviewConfidence})`);
+        llmAutoApplied++;
+      }
+
+      for (const item of llmResult.needsHumanReview) {
+        const wasFlagged = allFlagged.some(f => f.venueId === item.venueId && f.activityType === item.activityType);
+        if (wasFlagged) {
+          remainingFlagged.push(item);
+        } else {
+          remainingRejected.push(item);
+        }
+      }
+      llmNeedsHuman = llmResult.needsHumanReview.length;
+
+      log(`  📊 LLM review: ${llmAutoApplied} auto-applied, ${llmNeedsHuman} need human review, ${llmResult.errors} errors`);
+    } else {
+      log('\n⚠️  GROK_API_KEY not set — skipping LLM review, all flags go to report');
+      remainingFlagged.push(...allFlagged);
+      remainingRejected.push(...allRejected);
+    }
+  }
+
+  // ── Write confidence review data (only unreviewed items) ────
+  const reviewPath = reportingPath('confidence-review.json');
+  const mapEntry = (e) => ({
+    venue: e.venue, venueId: e.venueId, type: e.activityType,
+    label: e.label, times: e.times, days: e.days,
+    llmConfidence: e.confidence, effectiveConfidence: e.effectiveConfidence,
+    flags: e.confidenceFlags,
+    llmDecision: e.llmDecision || null,
+    llmReviewConfidence: e.llmReviewConfidence || null,
+    llmReasoning: e.llmReasoning || null,
+  });
+  const reviewFileData = {
+    generatedAt: new Date().toISOString(),
+    flagged: remainingFlagged.map(mapEntry),
+    rejected: remainingRejected.map(mapEntry),
+    llmAutoApplied,
+    reviewsInDb: reviewMap.size + llmAutoApplied,
+  };
+  fs.writeFileSync(reviewPath, JSON.stringify(reviewFileData, null, 2), 'utf8');
+  log(`\n📋 Confidence review: ${remainingFlagged.length} flagged, ${remainingRejected.length} rejected → ${reviewPath}`);
+  if (llmAutoApplied > 0) log(`   🤖 ${llmAutoApplied} resolved by LLM (not in report)`);
+  if (reviewApprovedCount + reviewRejectedCount > 0) {
+    log(`   📋 ${reviewApprovedCount + reviewRejectedCount} resolved by prior reviews (not in report)`);
   }
 
   log(`\n📊 Summary:`);
@@ -633,17 +756,17 @@ function main() {
   log(`   ❌ Missing venue data: ${missingVenue}`);
   log(`   ℹ️  No happy hour: ${noHappyHour}`);
   log(`   📋 Incomplete data: ${incompleteData} (time only, no days/specials)`);
-  if (allRejected.length > 0) log(`   🚫 Rejected (low confidence): ${allRejected.length}`);
-  if (allFlagged.length > 0) log(`   ⚠️  Flagged for review: ${allFlagged.length}`);
+  if (allRejected.length > 0) log(`   🚫 Rejected (heuristic): ${allRejected.length}`);
+  if (allFlagged.length > 0) log(`   ⚠️  Flagged (heuristic): ${allFlagged.length}`);
+  if (llmAutoApplied > 0) log(`   🤖 LLM auto-resolved: ${llmAutoApplied}`);
+  if (llmNeedsHuman > 0) log(`   👤 Needs human review: ${llmNeedsHuman}`);
   log(`   📄 Total spots in spots.json: ${spots.length} (${manualSpots.length} manual + ${totalAutomatedCount} automated)`);
-  log(`\n✨ Done! Updated reporting folder with spots.json, venues.json, and areas.json`);
+  log(`\n✨ Done!`);
   log(`   Total spots: ${spots.length} (${manualSpots.length} manual + ${totalAutomatedCount} automated)`);
 }
 
-try {
-  main();
-} catch (error) {
+main().catch(error => {
   log(`❌ Fatal error: ${error.message || error}`);
   console.error(error);
   process.exit(1);
-}
+});

@@ -377,6 +377,59 @@ const watchlist = {
   },
 };
 
+// ── Confidence Reviews ──────────────────────────────────────────
+const confidenceReviews = {
+  get(venueId, activityType) {
+    return getDb().prepare(
+      'SELECT * FROM confidence_reviews WHERE venue_id = ? AND activity_type = ?',
+    ).get(venueId, activityType);
+  },
+
+  getAll() {
+    return getDb().prepare('SELECT * FROM confidence_reviews ORDER BY reviewed_at DESC').all();
+  },
+
+  getDecisionMap() {
+    const rows = getDb().prepare('SELECT * FROM confidence_reviews').all();
+    const map = new Map();
+    for (const r of rows) map.set(`${r.venue_id}::${r.activity_type}`, r);
+    return map;
+  },
+
+  upsert(r) {
+    getDb().prepare(`
+      INSERT INTO confidence_reviews (venue_id, activity_type, decision, reason,
+        reviewed_source_hash, effective_confidence, flags, source, llm_confidence, reviewed_at)
+      VALUES (@venue_id, @activity_type, @decision, @reason,
+        @reviewed_source_hash, @effective_confidence, @flags, @source, @llm_confidence, datetime('now'))
+      ON CONFLICT(venue_id, activity_type) DO UPDATE SET
+        decision=@decision, reason=@reason, reviewed_source_hash=@reviewed_source_hash,
+        effective_confidence=@effective_confidence, flags=@flags, source=@source,
+        llm_confidence=@llm_confidence, reviewed_at=datetime('now')
+    `).run({
+      venue_id: r.venue_id || r.venueId,
+      activity_type: r.activity_type || r.activityType,
+      decision: r.decision,
+      reason: r.reason || null,
+      reviewed_source_hash: r.reviewed_source_hash || r.reviewedSourceHash || null,
+      effective_confidence: r.effective_confidence || r.effectiveConfidence || null,
+      flags: r.flags ? (typeof r.flags === 'string' ? r.flags : JSON.stringify(r.flags)) : null,
+      source: r.source || 'manual',
+      llm_confidence: r.llm_confidence || r.llmConfidence || null,
+    });
+  },
+
+  count() {
+    return getDb().prepare('SELECT COUNT(*) as cnt FROM confidence_reviews').get().cnt;
+  },
+
+  countByDecision() {
+    return getDb().prepare(
+      "SELECT decision, COUNT(*) as cnt FROM confidence_reviews GROUP BY decision",
+    ).all();
+  },
+};
+
 // ── Pipeline State (key/value) ──────────────────────────────────
 const config = {
   get(key) {
@@ -520,6 +573,7 @@ module.exports = {
   areas,
   activities,
   watchlist,
+  confidenceReviews,
   config,
   pipelineRuns,
   streaks,
