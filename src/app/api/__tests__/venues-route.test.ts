@@ -72,7 +72,7 @@ describe('GET /api/venues', () => {
     expect(data[0]).toEqual({
       id: 'ChIJ1', name: 'Test Venue 1', lat: 32.845, lng: -79.908,
       area: 'Daniel Island', address: '123 Test St', website: 'https://example.com',
-      operatingHours: null,
+      phone: null, operatingHours: null,
     });
   });
 

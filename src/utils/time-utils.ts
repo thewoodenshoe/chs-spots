@@ -134,6 +134,23 @@ function getEasternNow(): Date {
   return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
 }
 
+export type FreshnessLevel = 'fresh' | 'aging' | 'stale' | 'unknown';
+
+export function getFreshness(lastUpdateDate: string | null | undefined): {
+  level: FreshnessLevel;
+  label: string;
+  daysAgo: number | null;
+} {
+  if (!lastUpdateDate) return { level: 'unknown', label: 'Unverified', daysAgo: null };
+  const updated = new Date(lastUpdateDate);
+  if (isNaN(updated.getTime())) return { level: 'unknown', label: 'Unverified', daysAgo: null };
+  const now = new Date();
+  const daysAgo = Math.floor((now.getTime() - updated.getTime()) / 86_400_000);
+  if (daysAgo <= 7) return { level: 'fresh', label: daysAgo === 0 ? 'Verified today' : `Verified ${daysAgo}d ago`, daysAgo };
+  if (daysAgo <= 14) return { level: 'aging', label: `Verified ${daysAgo}d ago`, daysAgo };
+  return { level: 'stale', label: `Verified ${daysAgo}d ago`, daysAgo };
+}
+
 export function isSpotActiveNow(spot: Spot): boolean {
   const start = getSpotStartMinutes(spot);
   const end = getSpotEndMinutes(spot);

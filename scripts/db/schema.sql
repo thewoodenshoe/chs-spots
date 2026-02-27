@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS venues (
   operating_hours TEXT,
   hours_source TEXT,
   hours_updated_at TEXT,
+  phone TEXT,
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now'))
 );

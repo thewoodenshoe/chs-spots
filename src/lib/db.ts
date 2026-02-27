@@ -49,7 +49,7 @@ function ensureCoreTables(db: Database.Database) {
     CREATE TABLE IF NOT EXISTS venues (
       id TEXT PRIMARY KEY, name TEXT NOT NULL, lat REAL, lng REAL,
       address TEXT, website TEXT, area TEXT, photo_url TEXT, place_id TEXT,
-      operating_hours TEXT, created_at TEXT DEFAULT (datetime('now')),
+      operating_hours TEXT, phone TEXT, created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now'))
     );
     CREATE TABLE IF NOT EXISTS areas (
@@ -89,6 +89,10 @@ function runMigrations(db: Database.Database) {
   const actCols = db.prepare("PRAGMA table_info(activities)").all() as { name: string }[];
   const actColNames = new Set(actCols.map(c => c.name));
   if (!actColNames.has('hidden')) db.prepare("ALTER TABLE activities ADD COLUMN hidden INTEGER DEFAULT 0").run();
+
+  const venueCols = db.prepare("PRAGMA table_info(venues)").all() as { name: string }[];
+  const venueColNames = new Set(venueCols.map(c => c.name));
+  if (!venueColNames.has('phone')) db.prepare("ALTER TABLE venues ADD COLUMN phone TEXT").run();
 
   db.prepare("CREATE INDEX IF NOT EXISTS idx_spots_source_status ON spots(source, status)").run();
   db.prepare("CREATE INDEX IF NOT EXISTS idx_spots_type ON spots(type)").run();
@@ -130,6 +134,7 @@ export interface VenueRow {
   lng: number;
   area: string | null;
   website: string | null;
+  phone: string | null;
   photo_url: string | null;
   types: string | null;
   raw_google_data: string | null;

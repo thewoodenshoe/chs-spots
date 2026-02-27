@@ -35,7 +35,7 @@ const MapComponent = dynamic(() => import('@/components/MapComponent'), {
 });
 
 export default function Home() {
-  const { spots, addSpot, updateSpot, deleteSpot, loading: spotsLoading } = useSpots();
+  const { spots, addSpot, updateSpot, deleteSpot, refreshSpots, loading: spotsLoading } = useSpots();
   const { showToast } = useToast();
   const [healthStatus, setHealthStatus] = useState<'checking' | 'ok' | 'error'>('checking');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -66,7 +66,7 @@ export default function Home() {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [savedCount, setSavedCount] = useState(0);
-  const { venues } = useVenues();
+  const { venues, refreshVenues } = useVenues();
   const { activities } = useActivities();
 
   useEffect(() => {
@@ -207,6 +207,17 @@ export default function Home() {
       () => { /* denied */ },
     );
   }, [areaCenters]);
+
+  const handleRefresh = async () => {
+    await Promise.all([refreshSpots(), refreshVenues()]);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => applyUserPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude }, true),
+        () => { /* denied */ },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+      );
+    }
+  };
 
   const handleLocateMe = () => {
     if (!navigator.geolocation) return;
@@ -459,7 +470,7 @@ export default function Home() {
             />
           </div>
           <div className="flex-1 min-w-0">
-            <ActivityChip activity={selectedActivity} spotCount={spotsLoading ? undefined : filteredSpots.length} onClick={handleFilter} />
+            <ActivityChip activity={selectedActivity} spotCount={spotsLoading ? undefined : filteredSpots.length} emoji={activities.find(a => a.name === selectedActivity)?.emoji} onClick={handleFilter} />
           </div>
         </div>
       </header>
@@ -516,6 +527,7 @@ export default function Home() {
             isSearching={isSearching}
             showFavoritesOnly={showFavoritesOnly}
             onFavoritesChange={(count) => setSavedCount(count)}
+            onRefresh={handleRefresh}
             onWhatsNewSelect={(spot) => {
               deepLinkActive.current = false;
               setDeepLinkSpotId(null);

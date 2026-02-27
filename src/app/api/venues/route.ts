@@ -38,6 +38,7 @@ export async function GET(request: Request) {
       area: v.area || null,
       address: v.address || null,
       website: v.website || null,
+      phone: v.phone || null,
       operatingHours: v.operating_hours ? safeJsonParse(v.operating_hours) : null,
     }));
 

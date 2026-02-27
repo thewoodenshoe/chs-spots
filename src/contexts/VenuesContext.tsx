@@ -14,6 +14,7 @@ export interface Venue {
   area: string | null;
   address: string | null;
   website: string | null;
+  phone: string | null;
   operatingHours: OperatingHours | null;
 }
 

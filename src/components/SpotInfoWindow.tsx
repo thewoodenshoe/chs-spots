@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { Spot } from '@/contexts/SpotsContext';
 import { useVenues, OperatingHours } from '@/contexts/VenuesContext';
-import { isSpotActiveNow } from '@/utils/time-utils';
+import { isSpotActiveNow, getFreshness } from '@/utils/time-utils';
 import { getOpenStatus } from '@/utils/active-status';
 
 const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
@@ -83,6 +83,20 @@ export default function SpotInfoWindow({ spot, activities, onEdit, onReport, onC
           </span>
         )}
       </div>
+
+      {/* Address & Phone */}
+      {venue && (venue.address || venue.phone) && (
+        <div className="mb-2 space-y-0.5">
+          {venue.address && (
+            <p className="text-xs text-gray-600">{venue.address.replace(/, United States$/, '')}</p>
+          )}
+          {venue.phone && (
+            <a href={`tel:${venue.phone}`} className="text-xs text-teal-600 hover:underline font-medium">
+              {venue.phone}
+            </a>
+          )}
+        </div>
+      )}
 
       {/* Activity-specific times */}
       {(spot.promotionTime || spot.happyHourTime) && (() => {
@@ -166,18 +180,16 @@ export default function SpotInfoWindow({ spot, activities, onEdit, onReport, onC
         </div>
       )}
 
-      {spot.lastUpdateDate && (
-        <div className="mb-2">
-          <span className="font-semibold text-gray-700">Last Update Date: </span>
-          <span className="text-gray-800 text-xs">
-            {new Date(spot.lastUpdateDate).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric'
-            })}
-          </span>
-        </div>
-      )}
+      {(() => {
+        const f = getFreshness(spot.lastUpdateDate);
+        const dotColor = f.level === 'fresh' ? 'bg-green-400' : f.level === 'aging' ? 'bg-yellow-400' : f.level === 'stale' ? 'bg-red-400' : 'bg-gray-300';
+        return (
+          <div className="mb-2 flex items-center gap-1.5">
+            <span className={`inline-block h-2 w-2 rounded-full ${dotColor}`} />
+            <span className="text-xs text-gray-500">{f.label}</span>
+          </div>
+        );
+      })()}
 
       {/* Fallback description */}
       {!spot.promotionTime && !spot.happyHourTime && !spot.promotionList && !spot.happyHourList && spot.description && (

@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useMemo, useCallback, SyntheticEvent } from 'react';
+import { useState, useMemo, useCallback, useRef, SyntheticEvent } from 'react';
 import Image from 'next/image';
 import { Spot } from '@/contexts/SpotsContext';
 import { NEAR_ME } from '@/components/AreaSelector';
 import { Activity } from '@/utils/activities';
 import { calculateDistanceMiles } from '@/utils/distance';
-import { isSpotActiveNow } from '@/utils/time-utils';
+import { isSpotActiveNow, getFreshness } from '@/utils/time-utils';
 import { toggleFavorite } from '@/utils/favorites';
 import { shareSpot } from '@/utils/share';
 import { useVenues, OperatingHours } from '@/contexts/VenuesContext';
@@ -89,6 +89,7 @@ interface SpotListViewProps {
   showFavoritesOnly?: boolean;
   onFavoritesChange?: (count: number) => void;
   onWhatsNewSelect?: (spot: Spot) => void;
+  onRefresh?: () => Promise<void>;
 }
 
 export default function SpotListView({
@@ -107,6 +108,7 @@ export default function SpotListView({
   showFavoritesOnly = false,
   onFavoritesChange,
   onWhatsNewSelect,
+  onRefresh,
 }: SpotListViewProps) {
   const { venues } = useVenues();
   const venueMap = useMemo(() => new Map(venues.map(v => [v.id, v])), [venues]);
@@ -119,6 +121,38 @@ export default function SpotListView({
     } catch { return new Set(); }
   });
   const [shareToastId, setShareToastId] = useState<number | null>(null);
+  const [pullDistance, setPullDistance] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const touchStartY = useRef(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const PULL_THRESHOLD = 60;
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (scrollRef.current && scrollRef.current.scrollTop === 0) {
+      touchStartY.current = e.touches[0].clientY;
+    }
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!scrollRef.current || scrollRef.current.scrollTop > 0 || isRefreshing) return;
+    const dy = e.touches[0].clientY - touchStartY.current;
+    if (dy > 0) {
+      setPullDistance(Math.min(dy * 0.5, 100));
+    }
+  }, [isRefreshing]);
+
+  const handleTouchEnd = useCallback(async () => {
+    if (pullDistance >= PULL_THRESHOLD && onRefresh && !isRefreshing) {
+      setIsRefreshing(true);
+      setPullDistance(PULL_THRESHOLD);
+      try { await onRefresh(); } finally {
+        setIsRefreshing(false);
+        setPullDistance(0);
+      }
+    } else {
+      setPullDistance(0);
+    }
+  }, [pullDistance, onRefresh, isRefreshing]);
 
   const setShareToast = useCallback((id: number) => {
     setShareToastId(id);
@@ -152,6 +186,8 @@ export default function SpotListView({
         activeNow: isSpotActiveNow(spot),
         openStatus: venue ? getOpenStatus(venue.operatingHours) : null,
         venueHours: venue?.operatingHours ?? null,
+        venueAddress: venue?.address ?? null,
+        venuePhone: venue?.phone ?? null,
         fav: favIds.has(spot.id),
       };
     });
@@ -299,9 +335,31 @@ export default function SpotListView({
         })()
       }
 
+      {/* Pull-to-refresh indicator */}
+      {pullDistance > 0 && (
+        <div
+          className="flex items-center justify-center overflow-hidden transition-all"
+          style={{ height: pullDistance }}
+        >
+          {isRefreshing ? (
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-teal-500" />
+          ) : (
+            <span className={`text-xs font-medium ${pullDistance >= PULL_THRESHOLD ? 'text-teal-600' : 'text-gray-400'}`}>
+              {pullDistance >= PULL_THRESHOLD ? 'Release to refresh' : 'Pull to refresh'}
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Scrollable card list */}
-      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
-        {sortedSpots.map(({ spot, distance, activeNow, openStatus, venueHours, fav }) => {
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto px-3 py-2 space-y-2"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {sortedSpots.map(({ spot, distance, activeNow, openStatus, venueHours, venueAddress, venuePhone, fav }) => {
           const cfg = getActivityConfig(spot.type);
           const emoji = cfg?.emoji || '📍';
           const color = cfg?.color || '#0d9488';
@@ -383,6 +441,17 @@ export default function SpotListView({
                       {spot.description}
                     </p>
                   )}
+
+                  {(() => {
+                    const f = getFreshness(spot.lastUpdateDate);
+                    const dotColor = f.level === 'fresh' ? 'bg-green-400' : f.level === 'aging' ? 'bg-yellow-400' : f.level === 'stale' ? 'bg-red-400' : 'bg-gray-300';
+                    return (
+                      <span className="mt-0.5 inline-flex items-center gap-1 text-[10px] text-gray-400">
+                        <span className={`inline-block h-1.5 w-1.5 rounded-full ${dotColor}`} />
+                        {f.label}
+                      </span>
+                    );
+                  })()}
                 </div>
 
                 {/* Right side: active, time, distance, fav */}
@@ -455,6 +524,39 @@ export default function SpotListView({
                           <div key={i} className="text-xs text-gray-700 leading-snug">{part}</div>
                         ))}
                       </div>
+                    </div>
+                  )}
+
+                  {/* Address & Phone */}
+                  {(venueAddress || venuePhone) && (
+                    <div className="flex flex-col gap-0.5">
+                      {venueAddress && (
+                        <a
+                          href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(venueAddress)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex items-start gap-1.5 text-xs text-gray-600 hover:text-teal-700 transition-colors"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 flex-shrink-0 mt-0.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          <span className="leading-snug">{venueAddress.replace(/, United States$/, '')}</span>
+                        </a>
+                      )}
+                      {venuePhone && (
+                        <a
+                          href={`tel:${venuePhone}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-teal-700 transition-colors"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                          </svg>
+                          {venuePhone}
+                        </a>
+                      )}
                     </div>
                   )}
 
