@@ -473,6 +473,7 @@ export default function Home() {
         activities={activities}
         venueCount={venues.length}
         loading={spotsLoading}
+        userLocation={userLocation}
         onSelectActivity={handleLandingSelect}
         onSearch={handleLandingSearch}
       />

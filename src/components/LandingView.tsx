@@ -26,12 +26,13 @@ interface LandingViewProps {
   activities: Activity[];
   venueCount: number;
   loading: boolean;
+  userLocation: { lat: number; lng: number } | null;
   onSelectActivity: (activity: SpotType) => void;
   onSearch: () => void;
 }
 
 export default function LandingView({
-  spots, activities, venueCount, loading, onSelectActivity, onSearch,
+  spots, activities, venueCount, loading, userLocation, onSelectActivity, onSearch,
 }: LandingViewProps) {
   const activityMap = useMemo(() => {
     const m = new Map<string, { emoji: string; color: string }>();
@@ -50,13 +51,24 @@ export default function LandingView({
 
   const activeCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    for (const spot of spots) {
+    let pool = spots.filter(s => s.lat !== 0 || s.lng !== 0);
+    if (userLocation) {
+      pool = pool
+        .map(s => ({
+          s,
+          d: (s.lat - userLocation.lat) ** 2 + (s.lng - userLocation.lng) ** 2,
+        }))
+        .sort((a, b) => a.d - b.d)
+        .slice(0, 100)
+        .map(x => x.s);
+    }
+    for (const spot of pool) {
       if (isSpotActiveNow(spot)) {
         counts[spot.type] = (counts[spot.type] || 0) + 1;
       }
     }
     return counts;
-  }, [spots]);
+  }, [spots, userLocation]);
 
   const visibleGroups = useMemo(() => {
     return LANDING_GROUP_ORDER
