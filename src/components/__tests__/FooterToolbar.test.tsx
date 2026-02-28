@@ -99,10 +99,10 @@ jest.mock('@/components/SuggestActivityModal', () => {
   return MockSuggestActivityModal;
 });
 
-jest.mock('@/components/WelcomeOverlay', () => {
-  const MockWelcome = () => null;
-  MockWelcome.displayName = 'WelcomeOverlay';
-  return { __esModule: true, default: MockWelcome, hasSeenWelcome: () => true };
+jest.mock('@/components/LandingView', () => {
+  const MockLanding = () => null;
+  MockLanding.displayName = 'LandingView';
+  return { __esModule: true, default: MockLanding };
 });
 
 jest.mock('@/components/MoreMenu', () => {
@@ -144,6 +144,14 @@ jest.mock('@/components/SpotListView', () => {
 });
 
 import Home from '@/app/page';
+
+beforeAll(() => {
+  Object.defineProperty(window, 'location', {
+    value: { search: '?activity=Happy%20Hour', pathname: '/', href: 'http://localhost/?activity=Happy%20Hour' },
+    writable: true,
+  });
+  window.history.replaceState = jest.fn();
+});
 
 describe('Page Layout — Footer Toolbar', () => {
   beforeEach(() => jest.clearAllMocks());

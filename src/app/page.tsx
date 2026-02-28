@@ -16,8 +16,8 @@ import SuggestActivityModal from '@/components/SuggestActivityModal';
 import SearchBar from '@/components/SearchBar';
 import ReportSpotModal from '@/components/ReportSpotModal';
 import SpotListView, { SortMode } from '@/components/SpotListView';
-import WelcomeOverlay, { hasSeenWelcome } from '@/components/WelcomeOverlay';
 import MoreMenu from '@/components/MoreMenu';
+import LandingView from '@/components/LandingView';
 import { useVenues } from '@/contexts/VenuesContext';
 import { useActivities } from '@/contexts/ActivitiesContext';
 import { compressImageForUpload } from '@/utils/image';
@@ -68,6 +68,7 @@ export default function Home() {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [savedCount, setSavedCount] = useState(0);
+  const [showLanding, setShowLanding] = useState(true);
   const { venues, refreshVenues } = useVenues();
   const { activities } = useActivities();
 
@@ -131,12 +132,12 @@ export default function Home() {
     const activityParam = params.get('activity');
     if (spotId) {
       pendingDeepLink.current = spotId;
+      setShowLanding(false);
     } else if (activityParam) {
       setSelectedActivity(activityParam as SpotType);
       setViewMode('list');
+      setShowLanding(false);
       window.history.replaceState({}, '', window.location.pathname);
-    } else if (!hasSeenWelcome()) {
-      setViewMode('list');
     }
   }, []);
 
@@ -448,6 +449,36 @@ export default function Home() {
     );
   }, [healthStatus]);
 
+  const handleLandingSelect = (activity: SpotType) => {
+    setSelectedActivity(activity);
+    setViewMode('list');
+    setShowLanding(false);
+    const hasTimeData = activity === 'Happy Hour' || activity === 'Brunch' || activity === 'Live Music';
+    setListSortMode(hasTimeData ? 'activityActive' : (userLocation ? 'nearest' : 'alpha'));
+    trackActivityFilter(activity);
+  };
+
+  const handleLandingSearch = () => {
+    setSelectedArea(NEAR_ME);
+    setSelectedActivity(ALL_VENUES);
+    setShowLanding(false);
+    setViewMode('list');
+    setIsSearchOpen(true);
+  };
+
+  if (showLanding) {
+    return (
+      <LandingView
+        spots={spots}
+        activities={activities}
+        venueCount={venues.length}
+        loading={spotsLoading}
+        onSelectActivity={handleLandingSelect}
+        onSearch={handleLandingSearch}
+      />
+    );
+  }
+
   return (
     <div className="relative h-dvh w-screen overflow-hidden">
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:bg-teal-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-md focus:top-2 focus:left-2">
@@ -455,9 +486,12 @@ export default function Home() {
       </a>
       <header className="fixed top-0 left-0 right-0 z-50 bg-black/70 backdrop-blur-md safe-area-top" role="banner">
         <div className="flex h-10 items-center justify-between px-4">
-          <h1 className="text-sm font-bold text-white drop-shadow-lg tracking-tight leading-none">
+          <button
+            onClick={() => setShowLanding(true)}
+            className="text-sm font-bold text-white drop-shadow-lg tracking-tight leading-none hover:text-teal-200 transition-colors"
+          >
             Charleston Finds &amp; Deals
-          </h1>
+          </button>
           <button
             onClick={() => setIsAboutOpen(true)}
             className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-all"
@@ -771,13 +805,6 @@ export default function Home() {
           showToast('Report submitted — thank you for helping improve our data!', 'success');
         }}
         spot={reportingSpot}
-      />
-
-      <WelcomeOverlay
-        spots={spots}
-        onComplete={() => {
-          if (!deepLinkActive.current) setViewMode('list');
-        }}
       />
     </div>
   );
