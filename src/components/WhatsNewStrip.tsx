@@ -17,6 +17,7 @@ export default function WhatsNewStrip({ spots, activities, onSelect }: WhatsNewS
     if (typeof window === 'undefined') return false;
     return sessionStorage.getItem(SESSION_KEY) === '1';
   });
+  const [expanded, setExpanded] = useState(false);
 
   if (dismissed || spots.length === 0) return null;
 
@@ -25,12 +26,33 @@ export default function WhatsNewStrip({ spots, activities, onSelect }: WhatsNewS
     setDismissed(true);
   };
 
+  if (!expanded) {
+    return (
+      <button
+        onClick={() => setExpanded(true)}
+        className="flex w-full items-center gap-2 border-b border-amber-100 bg-amber-50/60 px-4 py-2 text-left transition-colors hover:bg-amber-50"
+      >
+        <span className="text-amber-500 text-sm">&#9660;</span>
+        <span className="flex-1 text-xs font-semibold text-amber-700">
+          See the new venues in Charleston!
+        </span>
+        <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-600">
+          {spots.length}
+        </span>
+      </button>
+    );
+  }
+
   return (
     <div className="border-b border-gray-200 bg-white">
       <div className="flex items-center justify-between px-4 pt-2 pb-1">
-        <span className="text-[11px] font-bold uppercase tracking-wide text-gray-500">
+        <button
+          onClick={() => setExpanded(false)}
+          className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-gray-500 hover:text-gray-700 transition-colors"
+        >
+          <span className="text-amber-500 text-[10px]">&#9650;</span>
           What&apos;s New
-        </span>
+        </button>
         <button
           onClick={dismiss}
           className="p-1 text-gray-400 hover:text-gray-600 transition-colors"

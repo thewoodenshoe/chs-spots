@@ -469,7 +469,7 @@ export default function Home() {
           </button>
         </div>
 
-        <div className="flex flex-row items-stretch gap-2 px-4 pb-2">
+        <div className="flex flex-row items-stretch gap-2 px-4 pb-1.5">
           <div className="flex-1 min-w-0">
             <AreaSelector
               selectedArea={selectedArea}
@@ -492,7 +492,7 @@ export default function Home() {
       <main
         id="main-content"
         className="h-full w-full"
-        style={{ paddingTop: '110px', paddingBottom: '72px' }}
+        style={{ paddingTop: '96px', paddingBottom: '64px' }}
       >
         {spotsLoading ? (
           <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-gray-50">
@@ -583,7 +583,7 @@ export default function Home() {
             />
           </div>
         )}
-        <div className="flex h-[56px] items-stretch justify-around px-2">
+        <div className="flex h-[48px] items-stretch justify-around px-2">
           <button
             onClick={() => {
               if (isSearchOpen) {

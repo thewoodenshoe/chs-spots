@@ -223,7 +223,7 @@ describe('Page Layout — Default view', () => {
   it('main container has padding for header and footer', () => {
     render(<Home />);
     const main = screen.getByRole('main');
-    expect(main.style.paddingTop).toBe('110px');
-    expect(main.style.paddingBottom).toBe('72px');
+    expect(main.style.paddingTop).toBe('96px');
+    expect(main.style.paddingBottom).toBe('64px');
   });
 });

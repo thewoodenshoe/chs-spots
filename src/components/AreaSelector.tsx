@@ -113,7 +113,7 @@ export default function AreaSelector({ selectedArea, onAreaChange, onMapRecenter
     <div className="relative w-full" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-center gap-2 rounded-full bg-gray-800 px-4 py-3 min-h-[48px] text-sm font-semibold text-white shadow-lg transition-all hover:bg-gray-700 hover:shadow-xl active:scale-95 touch-manipulation focus:outline-none focus:ring-2 focus:ring-gray-500/50"
+        className="flex w-full items-center justify-center gap-2 rounded-full bg-gray-800 px-4 py-2 min-h-[40px] text-sm font-semibold text-white shadow-lg transition-all hover:bg-gray-700 hover:shadow-xl active:scale-95 touch-manipulation focus:outline-none focus:ring-2 focus:ring-gray-500/50"
         aria-label="Select area"
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 flex-shrink-0 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

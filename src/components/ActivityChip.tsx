@@ -12,7 +12,7 @@ interface ActivityChipProps {
 
 export default function ActivityChip({ activity, spotCount, emoji, onClick }: ActivityChipProps) {
   const Component = onClick ? 'button' : 'div';
-  const baseClasses = 'flex w-full items-center justify-center gap-2 rounded-full bg-teal-600 px-4 py-3 min-h-[48px] text-sm font-semibold text-white shadow-lg transition-all hover:bg-teal-700 hover:shadow-xl active:scale-95 touch-manipulation';
+  const baseClasses = 'flex w-full items-center justify-center gap-2 rounded-full bg-teal-600 px-4 py-2 min-h-[40px] text-sm font-semibold text-white shadow-lg transition-all hover:bg-teal-700 hover:shadow-xl active:scale-95 touch-manipulation';
   const clickableClasses = onClick ? 'cursor-pointer' : '';
 
   return (
