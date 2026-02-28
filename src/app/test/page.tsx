@@ -73,8 +73,8 @@ export default function TestLanding() {
         </div>
       </header>
 
-      <main className="px-4 pt-6 pb-24 max-w-lg mx-auto">
-        <div className="text-center mb-6">
+      <main className="px-3 pt-5 pb-8 max-w-lg mx-auto">
+        <div className="text-center mb-5">
           <p className="text-sm text-gray-500">What are you looking for?</p>
         </div>
 
@@ -83,13 +83,13 @@ export default function TestLanding() {
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-teal-500" />
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-5">
             {visibleGroups.map((group) => (
               <div key={group.label}>
-                <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400 px-1">
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400 px-0.5">
                   {group.label}
                 </p>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-4 gap-2">
                   {group.activities.map((name) => {
                     const config = activityMap.get(name);
                     const emoji = config?.emoji || '⭐';
@@ -101,27 +101,27 @@ export default function TestLanding() {
                       <button
                         key={name}
                         onClick={() => handleSelect(name)}
-                        className="flex flex-col items-center gap-2 rounded-2xl border-2 border-gray-100 bg-white p-5 shadow-sm transition-all hover:border-teal-300 hover:shadow-md active:scale-95 touch-manipulation"
+                        className="flex flex-col items-center gap-1 rounded-xl border border-gray-100 bg-white px-1 py-3 shadow-sm transition-all hover:border-teal-300 hover:shadow-md active:scale-95 touch-manipulation"
                       >
                         <span
-                          className="flex h-14 w-14 items-center justify-center rounded-2xl text-3xl"
+                          className="flex h-10 w-10 items-center justify-center rounded-xl text-xl"
                           style={{ backgroundColor: `${color}15` }}
                         >
                           {emoji}
                         </span>
-                        <span className="text-sm font-semibold text-gray-800 text-center leading-tight">
+                        <span className="text-[11px] font-semibold text-gray-800 text-center leading-tight">
                           {name}
                         </span>
-                        <span className="text-xs text-gray-400">
-                          {count} spot{count !== 1 ? 's' : ''}
+                        <span className="text-[10px] text-gray-400">
+                          {count}
                         </span>
                         {active > 0 && (
-                          <span className="flex items-center gap-1 text-[10px] font-semibold text-green-600">
+                          <span className="flex items-center gap-0.5 text-[9px] font-semibold text-green-600">
                             <span className="relative flex h-1.5 w-1.5">
                               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
                               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-green-500" />
                             </span>
-                            {active} active now
+                            {active}
                           </span>
                         )}
                       </button>
@@ -131,44 +131,26 @@ export default function TestLanding() {
               </div>
             ))}
 
-            <button
-              onClick={() => handleSelect(ALL_VENUES)}
-              className="flex w-full items-center gap-4 rounded-2xl border-2 border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-teal-300 hover:shadow-md active:scale-95 touch-manipulation"
-            >
-              <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gray-100 text-2xl">
-                📍
-              </span>
-              <div className="text-left">
-                <span className="text-sm font-semibold text-gray-800">All Venues</span>
-                <p className="text-xs text-gray-400">{venues.length} places in Charleston</p>
-              </div>
-            </button>
+            <div>
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400 px-0.5">
+                Everything
+              </p>
+              <button
+                onClick={() => handleSelect(ALL_VENUES)}
+                className="flex w-full items-center gap-3 rounded-xl border border-gray-100 bg-white px-3 py-3 shadow-sm transition-all hover:border-teal-300 hover:shadow-md active:scale-95 touch-manipulation"
+              >
+                <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gray-100 text-xl">
+                  📍
+                </span>
+                <div className="text-left">
+                  <span className="text-[11px] font-semibold text-gray-800">All Venues</span>
+                  <p className="text-[10px] text-gray-400">{venues.length} places</p>
+                </div>
+              </button>
+            </div>
           </div>
         )}
       </main>
-
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-black/70 backdrop-blur-md safe-area-bottom">
-        <div className="flex h-[56px] items-stretch justify-around px-2">
-          <button
-            onClick={() => router.push('/')}
-            className="flex flex-1 flex-col items-center justify-center gap-0.5 text-white/70 hover:text-white transition-all"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-            </svg>
-            <span className="text-[10px] font-medium leading-tight">Map</span>
-          </button>
-          <button
-            onClick={() => router.push('/')}
-            className="flex flex-1 flex-col items-center justify-center gap-0.5 text-white/70 hover:text-white transition-all"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-            </svg>
-            <span className="text-[10px] font-medium leading-tight">List</span>
-          </button>
-        </div>
-      </nav>
     </div>
   );
 }
