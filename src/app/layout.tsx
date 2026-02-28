@@ -32,8 +32,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/api/og-image",
-        width: 960,
-        height: 960,
+        width: 1024,
+        height: 1024,
         alt: "Charleston Finds — Discover the best of Charleston",
         type: "image/jpeg",
       },
