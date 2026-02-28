@@ -23,7 +23,7 @@ import { useActivities } from '@/contexts/ActivitiesContext';
 import { compressImageForUpload } from '@/utils/image';
 import { getAreaFromCoordinates } from '@/utils/area';
 import { getFavoriteIds } from '@/utils/favorites';
-import { useFilteredSpots, useVenueAreaMap, useSpotCounts } from '@/hooks/useSpotFiltering';
+import { useFilteredSpots, useVenueAreaMap, useSpotCounts, useVenueSearchResults, ALL_VENUES } from '@/hooks/useSpotFiltering';
 
 const MapComponent = dynamic(() => import('@/components/MapComponent'), {
   ssr: false,
@@ -63,6 +63,8 @@ export default function Home() {
   const pendingDeepLink = useRef<string | null>(null);
   const deepLinkActive = useRef(false);
   const [deepLinkSpotId, setDeepLinkSpotId] = useState<number | null>(null);
+  const preSearchArea = useRef<Area | null>(null);
+  const preSearchActivity = useRef<SpotType | null>(null);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [savedCount, setSavedCount] = useState(0);
@@ -236,6 +238,8 @@ export default function Home() {
   const filteredSpots = useFilteredSpots({
     spots, selectedArea, selectedActivity, searchQuery, userLocation, venueAreaById,
   });
+
+  const venueResults = useVenueSearchResults(venues, searchQuery, spots, userLocation, selectedActivity);
 
   useEffect(() => {
     if (deepLinkActive.current || pendingDeepLink.current) return;
@@ -470,7 +474,12 @@ export default function Home() {
             />
           </div>
           <div className="flex-1 min-w-0">
-            <ActivityChip activity={selectedActivity} spotCount={spotsLoading ? undefined : filteredSpots.length} emoji={activities.find(a => a.name === selectedActivity)?.emoji} onClick={handleFilter} />
+            <ActivityChip
+              activity={selectedActivity}
+              spotCount={spotsLoading ? undefined : (selectedActivity === ALL_VENUES ? filteredSpots.length + venueResults.length : filteredSpots.length)}
+              emoji={selectedActivity === ALL_VENUES ? '📍' : activities.find(a => a.name === selectedActivity)?.emoji}
+              onClick={handleFilter}
+            />
           </div>
         </div>
       </header>
@@ -513,6 +522,7 @@ export default function Home() {
             userLocation={userLocation}
             selectedArea={selectedArea}
             selectedActivity={selectedActivity}
+            venueResults={venueResults}
             sortMode={listSortMode}
             onSortChange={(m) => { setListSortMode(m); trackSortMode(m); }}
             onSpotSelect={(spot) => {
@@ -545,18 +555,42 @@ export default function Home() {
           <div className="px-3 pt-2">
             <SearchBar
               value={searchQuery}
-              onChange={(v) => setSearchQuery(v)}
+              onChange={(v) => {
+                const wasSearching = searchQuery.trim().length >= 2;
+                const willSearch = v.trim().length >= 2;
+                if (willSearch && !wasSearching) {
+                  preSearchArea.current = selectedArea;
+                  preSearchActivity.current = selectedActivity;
+                  setSelectedArea(NEAR_ME);
+                  setSelectedActivity(ALL_VENUES);
+                  setListSortMode(userLocation ? 'nearest' : 'alpha');
+                } else if (!willSearch && wasSearching && preSearchArea.current) {
+                  setSelectedArea(preSearchArea.current);
+                  setSelectedActivity(preSearchActivity.current || 'Happy Hour');
+                  preSearchArea.current = null;
+                  preSearchActivity.current = null;
+                }
+                setSearchQuery(v);
+              }}
               onSearchCommit={(v) => { if (v.length >= 2) trackSearchFilter(v); }}
-              placeholder="Search spots..."
-              resultCount={isSearching ? filteredSpots.length : undefined}
+              placeholder="Search venues..."
+              resultCount={isSearching ? filteredSpots.length + venueResults.length : undefined}
             />
           </div>
         )}
         <div className="flex h-[56px] items-stretch justify-around px-2">
           <button
             onClick={() => {
+              if (isSearchOpen) {
+                setSearchQuery('');
+                if (preSearchArea.current) {
+                  setSelectedArea(preSearchArea.current);
+                  setSelectedActivity(preSearchActivity.current || 'Happy Hour');
+                  preSearchArea.current = null;
+                  preSearchActivity.current = null;
+                }
+              }
               setIsSearchOpen(!isSearchOpen);
-              if (isSearchOpen) setSearchQuery('');
             }}
             className={`flex flex-1 flex-col items-center justify-center gap-0.5 transition-all active:scale-95 touch-manipulation ${
               isSearchOpen ? 'text-teal-400' : 'text-white/70 hover:text-white'
@@ -648,6 +682,7 @@ export default function Home() {
         onClose={() => setIsFilterOpen(false)}
         selectedActivity={selectedActivity}
         spotCounts={spotCountsByActivity}
+        venueCount={venues.length}
         onActivityChange={(activity: SpotType) => {
           clearDeepLink();
           setSelectedActivity(activity);

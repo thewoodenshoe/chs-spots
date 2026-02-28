@@ -1,9 +1,13 @@
 import { useMemo } from 'react';
 import { Spot } from '@/contexts/SpotsContext';
+import { Venue } from '@/contexts/VenuesContext';
 import { NEAR_ME } from '@/components/AreaSelector';
 import { getAreaFromCoordinates } from '@/utils/area';
+import { calculateDistanceMiles } from '@/utils/distance';
 
-const AREA_BYPASS_ACTIVITIES = ['Recently Opened', 'Coming Soon'];
+export const ALL_VENUES = 'All Venues';
+
+const AREA_BYPASS_ACTIVITIES = ['Recently Opened', 'Coming Soon', ALL_VENUES];
 
 interface FilterParams {
   spots: Spot[];
@@ -14,23 +18,21 @@ interface FilterParams {
   venueAreaById: Map<string, string>;
 }
 
-/**
- * Filters spots by area, activity, and search query.
- * Near Me mode sorts by distance and caps at 30 results.
- */
 export function useFilteredSpots({
   spots, selectedArea, selectedActivity, searchQuery, userLocation, venueAreaById,
 }: FilterParams): Spot[] {
   const isNearMe = selectedArea === NEAR_ME;
+  const isAllVenues = selectedActivity === ALL_VENUES;
   const isAreaBypass = AREA_BYPASS_ACTIVITIES.includes(selectedActivity);
 
   return useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
     let results = spots.filter((spot) => {
       if (spot.lat === 0 && spot.lng === 0) return false;
-      const activityMatch = spot.type === selectedActivity;
+      const activityMatch = isAllVenues || spot.type === selectedActivity;
       if (query) {
-        const searchMatch = spot.title.toLowerCase().includes(query) || (spot.description || '').toLowerCase().includes(query);
+        const searchMatch = spot.title.toLowerCase().includes(query)
+          || (spot.description || '').toLowerCase().includes(query);
         return activityMatch && searchMatch;
       }
       if (isNearMe || isAreaBypass) return activityMatch;
@@ -46,11 +48,64 @@ export function useFilteredSpots({
         const db = (b.lat - userLocation.lat) ** 2 + (b.lng - userLocation.lng) ** 2;
         return da - db;
       });
-      results = results.slice(0, 30);
+      results = results.slice(0, 50);
     }
 
     return results;
-  }, [spots, selectedArea, selectedActivity, venueAreaById, searchQuery, isNearMe, isAreaBypass, userLocation]);
+  }, [spots, selectedArea, selectedActivity, venueAreaById, searchQuery, isNearMe, isAllVenues, isAreaBypass, userLocation]);
+}
+
+export interface VenueSearchResult {
+  venue: Venue;
+  distance: number | null;
+  activityTypes: string[];
+}
+
+export function useVenueSearchResults(
+  venues: Venue[],
+  searchQuery: string,
+  spots: Spot[],
+  userLocation: { lat: number; lng: number } | null,
+  selectedActivity: string,
+): VenueSearchResult[] {
+  return useMemo(() => {
+    const query = searchQuery.toLowerCase().trim();
+    const isAllVenuesBrowse = selectedActivity === ALL_VENUES;
+    if (query.length < 2 && !isAllVenuesBrowse) return [];
+
+    const spotVenueIds = new Set(spots.map(s => s.venueId).filter(Boolean));
+    const venueActivityMap = new Map<string, Set<string>>();
+    for (const s of spots) {
+      if (!s.venueId) continue;
+      const set = venueActivityMap.get(s.venueId) || new Set();
+      set.add(s.type);
+      venueActivityMap.set(s.venueId, set);
+    }
+
+    const matched = venues.filter(v => {
+      if (v.lat === 0 && v.lng === 0) return false;
+      if (spotVenueIds.has(v.id)) return false;
+      if (query) return v.name.toLowerCase().includes(query);
+      return true;
+    });
+
+    const results: VenueSearchResult[] = matched.map(v => ({
+      venue: v,
+      distance: userLocation
+        ? calculateDistanceMiles(userLocation.lat, userLocation.lng, v.lat, v.lng)
+        : null,
+      activityTypes: Array.from(venueActivityMap.get(v.id) || []),
+    }));
+
+    results.sort((a, b) => {
+      if (a.distance !== null && b.distance !== null) return a.distance - b.distance;
+      if (a.distance !== null) return -1;
+      if (b.distance !== null) return 1;
+      return a.venue.name.localeCompare(b.venue.name);
+    });
+
+    return results.slice(0, 50);
+  }, [venues, searchQuery, spots, userLocation, selectedActivity]);
 }
 
 /**

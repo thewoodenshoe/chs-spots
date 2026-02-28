@@ -12,6 +12,8 @@ import { shareSpot } from '@/utils/share';
 import { useVenues, OperatingHours } from '@/contexts/VenuesContext';
 import { getOpenStatus } from '@/utils/active-status';
 import WhatsNewStrip from '@/components/WhatsNewStrip';
+import VenueCard from '@/components/VenueCard';
+import { ALL_VENUES, VenueSearchResult } from '@/hooks/useSpotFiltering';
 
 export type SortMode = 'alpha' | 'activityActive' | 'venueOpen' | 'nearest';
 
@@ -80,6 +82,7 @@ interface SpotListViewProps {
   userLocation: { lat: number; lng: number } | null;
   selectedArea: string;
   selectedActivity: string;
+  venueResults?: VenueSearchResult[];
   sortMode: SortMode;
   onSortChange: (mode: SortMode) => void;
   onSpotSelect: (spot: Spot) => void;
@@ -99,6 +102,7 @@ export default function SpotListView({
   userLocation,
   selectedArea,
   selectedActivity,
+  venueResults = [],
   sortMode,
   onSortChange,
   onSpotSelect,
@@ -113,6 +117,7 @@ export default function SpotListView({
   const { venues } = useVenues();
   const venueMap = useMemo(() => new Map(venues.map(v => [v.id, v])), [venues]);
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [expandedVenueId, setExpandedVenueId] = useState<string | null>(null);
   const [favIds, setFavIds] = useState<Set<number>>(() => {
     if (typeof window === 'undefined') return new Set();
     try {
@@ -224,13 +229,15 @@ export default function SpotListView({
   const getActivityConfig = (type: string) =>
     activities.find((a) => a.name === type);
 
-  if (spots.length === 0) {
+  const isAllVenues = selectedActivity === ALL_VENUES;
+
+  if (spots.length === 0 && venueResults.length === 0) {
     return (
       <div className="flex h-full items-center justify-center px-6">
         <div className="text-center max-w-xs">
           <div className="text-4xl mb-3">🔍</div>
           <p className="text-base font-semibold text-gray-800">
-            No {selectedActivity} {selectedArea === NEAR_ME ? 'nearby' : `in ${selectedArea}`} yet
+            {isAllVenues ? 'No venues found' : `No ${selectedActivity} ${selectedArea === NEAR_ME ? 'nearby' : `in ${selectedArea}`} yet`}
           </p>
           <p className="mt-1 text-sm text-gray-500">
             {selectedActivity === 'Recently Opened' || selectedActivity === 'Coming Soon'
@@ -259,7 +266,7 @@ export default function SpotListView({
       <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2">
         <div className="flex items-center gap-2">
           <span className="text-xs font-medium text-gray-500">
-            {sortedSpots.length} spot{sortedSpots.length !== 1 ? 's' : ''}
+            {sortedSpots.length + venueResults.length} result{sortedSpots.length + venueResults.length !== 1 ? 's' : ''}
           </span>
           {showFavoritesOnly && (
             <span className="flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-600">
@@ -293,7 +300,7 @@ export default function SpotListView({
       {/* Active Now banner */}
       {(() => {
         const TIME_ACTIVITIES = new Set(['Happy Hour', 'Brunch', 'Live Music']);
-        if (!TIME_ACTIVITIES.has(selectedActivity)) return null;
+        if (isAllVenues || !TIME_ACTIVITIES.has(selectedActivity)) return null;
         const activeCount = spots.filter(s => isSpotActiveNow(s)).length;
         if (activeCount === 0) return null;
         return (
@@ -319,6 +326,7 @@ export default function SpotListView({
 
       {/* What's New strip */}
       {allSpots && onWhatsNewSelect
+        && !isAllVenues
         && selectedActivity !== 'Recently Opened'
         && selectedActivity !== 'Coming Soon'
         && (() => {
@@ -657,6 +665,28 @@ export default function SpotListView({
             </div>
           );
         })}
+
+        {venueResults.length > 0 && (
+          <>
+            {sortedSpots.length > 0 && (
+              <div className="flex items-center gap-2 pt-3 pb-1 px-1">
+                <div className="h-px flex-1 bg-gray-200" />
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                  Venues ({venueResults.length})
+                </span>
+                <div className="h-px flex-1 bg-gray-200" />
+              </div>
+            )}
+            {venueResults.map((vr) => (
+              <VenueCard
+                key={vr.venue.id}
+                result={vr}
+                isExpanded={expandedVenueId === vr.venue.id}
+                onToggle={() => setExpandedVenueId(expandedVenueId === vr.venue.id ? null : vr.venue.id)}
+              />
+            ))}
+          </>
+        )}
       </div>
     </div>
   );

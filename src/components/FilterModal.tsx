@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useMemo } from 'react';
 import { useActivities } from '@/contexts/ActivitiesContext';
+import { ALL_VENUES } from '@/hooks/useSpotFiltering';
 
 export type SpotType = string;
 export type Area = string;
@@ -12,6 +13,7 @@ interface FilterModalProps {
   selectedActivity: SpotType;
   onActivityChange: (activity: SpotType) => void;
   spotCounts?: Record<string, number>;
+  venueCount?: number;
 }
 
 export interface ActivityGroup {
@@ -23,6 +25,7 @@ export const ACTIVITY_GROUPS: ActivityGroup[] = [
   { label: "What's Happening", activities: ['Happy Hour', 'Brunch', 'Live Music'] },
   { label: 'Explore', activities: ['Coffee Shops', 'Rooftop Bars', 'Dog-Friendly', 'Landmarks & Attractions'] },
   { label: "What's New", activities: ['Recently Opened', 'Coming Soon'] },
+  { label: 'Everything', activities: [ALL_VENUES] },
 ];
 
 export default function FilterModal({
@@ -31,6 +34,7 @@ export default function FilterModal({
   selectedActivity,
   onActivityChange,
   spotCounts = {},
+  venueCount = 0,
 }: FilterModalProps) {
   const { activities } = useActivities();
   const modalRef = useRef<HTMLDivElement>(null);
@@ -46,6 +50,7 @@ export default function FilterModal({
       .map(group => ({
         ...group,
         activities: group.activities.filter(name => {
+          if (name === ALL_VENUES) return true;
           const config = activityMap.get(name);
           if (!config) return false;
           const count = spotCounts[name] ?? 0;
@@ -116,8 +121,11 @@ export default function FilterModal({
               <div className="space-y-2">
                 {group.activities.map((name) => {
                   const config = activityMap.get(name);
+                  const isAllVenues = name === ALL_VENUES;
                   const isSelected = selectedActivity === name;
-                  const count = spotCounts[name] ?? 0;
+                  const count = isAllVenues ? venueCount : (spotCounts[name] ?? 0);
+                  const emoji = isAllVenues ? '📍' : (config?.emoji || '⭐');
+                  const color = isAllVenues ? '#6b7280' : (config?.color || '#6366f1');
                   return (
                     <button
                       key={name}
@@ -130,9 +138,9 @@ export default function FilterModal({
                     >
                       <span
                         className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-lg"
-                        style={{ backgroundColor: `${config?.color || '#6366f1'}18` }}
+                        style={{ backgroundColor: `${color}18` }}
                       >
-                        {config?.emoji || '⭐'}
+                        {emoji}
                       </span>
                       <span className="ml-3 flex-1 text-left text-base font-medium text-gray-800">
                         {name}
