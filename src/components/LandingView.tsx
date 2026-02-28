@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Spot } from '@/contexts/SpotsContext';
 import { Activity } from '@/utils/activities';
 import { ACTIVITY_GROUPS, SpotType } from '@/components/FilterModal';
@@ -40,6 +40,12 @@ export default function LandingView({
     return m;
   }, [activities]);
 
+  const [clockTick, setClockTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setClockTick(t => t + 1), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
   const spotCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const spot of spots) {
@@ -68,7 +74,7 @@ export default function LandingView({
       }
     }
     return counts;
-  }, [spots, userLocation]);
+  }, [spots, userLocation, clockTick]);
 
   const visibleGroups = useMemo(() => {
     return LANDING_GROUP_ORDER

@@ -171,14 +171,19 @@ export function getFreshness(
 }
 
 export function isSpotActiveNow(spot: Spot): boolean {
+  const raw = spot.promotionTime || spot.happyHourTime || '';
+  const now = getEasternNow();
+  const allowedDays = parseDays(raw);
+
+  // If activity is restricted to specific days and today is not one of them, never active
+  if (allowedDays !== null && !allowedDays.includes(now.getDay())) {
+    return false;
+  }
+
   const start = getSpotStartMinutes(spot);
   const end = getSpotEndMinutes(spot);
 
   if (start !== null && end !== null) {
-    const raw = spot.promotionTime || spot.happyHourTime || '';
-    const now = getEasternNow();
-    const allowedDays = parseDays(raw);
-    if (allowedDays !== null && !allowedDays.includes(now.getDay())) return false;
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
     return end >= start
       ? nowMinutes >= start && nowMinutes <= end
