@@ -28,11 +28,10 @@ function log(msg) {
   fs.appendFileSync(logPath, `[${ts}] ${msg}\n`);
 }
 
+// dotenv is optional — env vars may already be set by the shell or PM2
 try {
   require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') });
-} catch (e) {
-  try { require('dotenv').config(); } catch (_) {}
-}
+} catch { /* dotenv not installed in production; env vars set by PM2 */ }
 
 const { webSearch, getApiKey } = require('./utils/llm-client');
 

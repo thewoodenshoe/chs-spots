@@ -1,4 +1,4 @@
-/* eslint-disable */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports, @typescript-eslint/no-unused-vars, react-hooks/rules-of-hooks -- test mocks require dynamic imports, any types, and hook calls outside components */
 // Set API key BEFORE importing MapComponent (constant is evaluated at module load)
 process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY = 'test-api-key';
 

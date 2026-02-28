@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any -- Telegram API payloads are untyped JSON */
 import { answerCallbackQuery, editMessage } from './telegram';
 import { spots, activitiesDb, venues, ideas, getDb } from './db';
 import { invalidate } from './cache';

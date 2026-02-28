@@ -208,7 +208,8 @@ export default function Home() {
     }
     navigator.geolocation.getCurrentPosition(
       (pos) => applyUserPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => { setSelectedArea(FALLBACK_AREA); },
+      () => { setSelectedArea(FALLBACK_AREA); }, // Permission denied or unavailable
+      { timeout: 10000 },
     );
   }, [areaCenters]);
 
@@ -217,7 +218,7 @@ export default function Home() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => applyUserPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude }, true),
-        () => { /* denied */ },
+        () => { /* Geo permission denied or timed out — retain existing area */ },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
       );
     }
@@ -231,7 +232,7 @@ export default function Home() {
         applyUserPosition(userPos);
         setMapCenter({ lat: userPos.lat, lng: userPos.lng, zoom: 14 });
       },
-      () => { /* denied */ },
+      () => { /* Geo permission denied or timed out — no action */ },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 },
     );
   };
@@ -669,8 +670,12 @@ export default function Home() {
 
           <button
             onClick={() => {
-              setShowFavoritesOnly(true);
-              setViewMode('list');
+              if (showFavoritesOnly) {
+                setShowFavoritesOnly(false);
+              } else {
+                setShowFavoritesOnly(true);
+                setViewMode('list');
+              }
             }}
             className={`relative flex flex-1 flex-col items-center justify-center gap-0.5 transition-all active:scale-95 touch-manipulation ${
               showFavoritesOnly

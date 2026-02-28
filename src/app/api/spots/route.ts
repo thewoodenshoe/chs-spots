@@ -1,19 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any -- SpotRow transformation maps DB columns to camelCase */
 import { NextResponse } from 'next/server';
 import { sendApprovalRequest } from '@/lib/telegram';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import { isAdminRequest } from '@/lib/auth';
 import { createSpotSchema, parseOrError } from '@/lib/validations';
 import { spots, venues, type SpotRow, type VenueRow } from '@/lib/db';
-import { getCache, setCache, invalidate } from '@/lib/cache';
+import { getCache, setCache, invalidate, safeJsonParse } from '@/lib/cache';
 
 const SPOTS_CACHE_KEY = 'api:spots';
 const SPOTS_TTL = 30_000;
-
-function safeJsonParse(value: string): unknown {
-  try { return JSON.parse(value); }
-  catch { return undefined; }
-}
 
 function transformSpot(spot: SpotRow, venueMap: Map<string, VenueRow>) {
   const venue = spot.venue_id ? venueMap.get(spot.venue_id) : undefined;

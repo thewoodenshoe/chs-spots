@@ -29,15 +29,6 @@ function formatTime12(t: string): string {
   return m ? `${h12}:${String(m).padStart(2, '0')}${ampm}` : `${h12}${ampm}`;
 }
 
-function formatTodayHours(hours: OperatingHours | null): string | null {
-  if (!hours) return null;
-  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
-  const day = DAY_KEYS[now.getDay()];
-  const entry = hours[day];
-  if (!entry || entry === 'closed') return 'Closed today';
-  return `${formatTime12(entry.open)} - ${formatTime12(entry.close)}`;
-}
-
 function formatFullWeekHours(hours: OperatingHours | null): { day: string; hours: string; isToday: boolean }[] {
   if (!hours) return [];
   const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
@@ -123,7 +114,7 @@ export default function SpotListView({
     try {
       const raw = localStorage.getItem('chs-finds-favorites');
       return raw ? new Set(JSON.parse(raw) as number[]) : new Set();
-    } catch { return new Set(); }
+    } catch { return new Set(); } // Corrupted localStorage — start fresh
   });
   const [shareToastId, setShareToastId] = useState<number | null>(null);
   const [pullDistance, setPullDistance] = useState(0);

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any -- Telegram webhook payloads have deeply nested untyped JSON */
 import { NextResponse } from 'next/server';
 import { answerCallbackQuery } from '@/lib/telegram';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';

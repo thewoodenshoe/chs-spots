@@ -32,11 +32,10 @@ function log(msg) {
 
 // ── Environment ─────────────────────────────────────────────────
 
+// dotenv is optional — env vars may already be set by the shell or PM2
 try {
   require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') });
-} catch (e) {
-  try { require('dotenv').config(); } catch (_) {}
-}
+} catch { /* dotenv not installed in production; env vars set by PM2 */ }
 
 const GOOGLE_MAPS_API_KEY =
   process.env.GOOGLE_PLACES_SERVER_KEY ||

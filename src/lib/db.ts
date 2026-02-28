@@ -10,7 +10,7 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any -- better-sqlite3 returns untyped row objects */
 
 let _db: Database.Database | null = null;
 

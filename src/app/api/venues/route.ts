@@ -1,14 +1,9 @@
 import { NextResponse } from 'next/server';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import { venues } from '@/lib/db';
-import { getCache, setCache } from '@/lib/cache';
+import { getCache, setCache, safeJsonParse } from '@/lib/cache';
 
-const VENUES_TTL = 300_000; // 5 minutes
-
-function safeJsonParse(value: string): unknown {
-  try { return JSON.parse(value); }
-  catch { return null; }
-}
+const VENUES_TTL = 300_000;
 
 export async function GET(request: Request) {
   const ip = getClientIp(request);

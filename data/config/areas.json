@@ -3,8 +3,63 @@
     "name": "Daniel Island",
     "displayName": "Daniel Island",
     "description": "Quiet planned community. Upscale dining, golf & marina vibes",
-    "center": {
-      "lat": 32.862,
-      "lng": -79.908
-    },
-    "radius
+    "center": { "lat": 32.862, "lng": -79.908 },
+    "radiusMeters": 8000,
+    "bounds": { "south": 32.82, "west": -79.96, "north": 32.89, "east": -79.88 },
+    "zipCodes": ["29492"]
+  },
+  {
+    "name": "Mount Pleasant",
+    "displayName": "Mount Pleasant",
+    "description": "Broad coverage including Shem Creek, family-friendly dining",
+    "center": { "lat": 32.795, "lng": -79.875 },
+    "radiusMeters": 12000,
+    "bounds": { "south": 32.75, "west": -80.0, "north": 32.9, "east": -79.8 },
+    "zipCodes": ["29464", "29466"]
+  },
+  {
+    "name": "Downtown Charleston",
+    "displayName": "Downtown Charleston",
+    "description": "Historic downtown peninsula. King St, Upper King, the Market & beyond",
+    "center": { "lat": 32.776, "lng": -79.931 },
+    "radiusMeters": 5000,
+    "bounds": { "south": 32.76, "west": -79.96, "north": 32.79, "east": -79.91 },
+    "zipCodes": ["29401", "29403"]
+  },
+  {
+    "name": "Sullivan's & IOP",
+    "displayName": "Sullivan's & IOP",
+    "description": "Beach communities on the barrier islands. Casual seafood & sunsets",
+    "center": { "lat": 32.773, "lng": -79.82 },
+    "radiusMeters": 5000,
+    "bounds": { "south": 32.75, "west": -79.87, "north": 32.8, "east": -79.77 },
+    "zipCodes": ["29482", "29451"]
+  },
+  {
+    "name": "North Charleston",
+    "displayName": "North Charleston",
+    "description": "Park Circle, Tanger Outlets, growing craft brewery & food scene",
+    "center": { "lat": 32.888, "lng": -80.006 },
+    "radiusMeters": 10000,
+    "bounds": { "south": 32.82, "west": -80.1, "north": 32.95, "east": -79.9 },
+    "zipCodes": ["29405", "29418", "29420"]
+  },
+  {
+    "name": "West Ashley",
+    "displayName": "West Ashley",
+    "description": "West of the Ashley River. Avondale, local favorites & hidden gems",
+    "center": { "lat": 32.785, "lng": -80.04 },
+    "radiusMeters": 8000,
+    "bounds": { "south": 32.72, "west": -80.1, "north": 32.85, "east": -79.95 },
+    "zipCodes": ["29407", "29414", "29415"]
+  },
+  {
+    "name": "James Island",
+    "displayName": "James Island",
+    "description": "Residential island south of downtown. Laid-back bars & eateries",
+    "center": { "lat": 32.737, "lng": -79.965 },
+    "radiusMeters": 10000,
+    "bounds": { "south": 32.7, "west": -79.98, "north": 32.75, "east": -79.9 },
+    "zipCodes": ["29412"]
+  }
+]

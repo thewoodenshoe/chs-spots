@@ -38,3 +38,9 @@ export function invalidatePrefix(prefix: string): void {
 export function clearAll(): void {
   store.clear();
 }
+
+export function safeJsonParse(value: string | null | undefined): unknown {
+  if (!value) return undefined;
+  try { return JSON.parse(value); }
+  catch { return undefined; }
+}

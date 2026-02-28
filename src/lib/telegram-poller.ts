@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any -- Telegram API responses are untyped JSON */
 /**
  * Telegram Polling Background Service
  *
@@ -115,24 +115,24 @@ export async function startTelegramPolling(intervalMs = 5000): Promise<void> {
 
   const pollingEnabled = process.env.TELEGRAM_POLLING_ENABLED === 'true';
   if (!pollingEnabled) {
-    console.log('[Telegram] Polling disabled (set TELEGRAM_POLLING_ENABLED=true to enable).');
+    process.stdout.write('[Telegram] Polling disabled (set TELEGRAM_POLLING_ENABLED=true to enable)\n');
     return;
   }
 
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) {
-    console.log('[Telegram] No TELEGRAM_BOT_TOKEN set, polling disabled.');
+    process.stdout.write('[Telegram] No TELEGRAM_BOT_TOKEN set, polling disabled\n');
     return;
   }
 
   try {
     await fetchWithTimeout(`https://api.telegram.org/bot${token}/deleteWebhook`, {}, 10000);
-    console.log('[Telegram] Cleared any active webhook');
+    process.stdout.write('[Telegram] Cleared any active webhook\n');
   } catch {
-    console.warn('[Telegram] Could not clear webhook, continuing anyway');
+    process.stderr.write('[Telegram] Could not clear webhook, continuing anyway\n');
   }
 
-  console.log(`[Telegram] Polling started (every ${intervalMs / 1000}s)`);
+  process.stdout.write(`[Telegram] Polling started (every ${intervalMs / 1000}s)\n`);
   intervalId = setInterval(pollOnce, intervalMs);
 
   pollOnce();
@@ -142,6 +142,6 @@ export function stopTelegramPolling(): void {
   if (intervalId) {
     clearInterval(intervalId);
     intervalId = null;
-    console.log('[Telegram] Polling stopped.');
+    process.stdout.write('[Telegram] Polling stopped\n');
   }
 }

@@ -5,9 +5,7 @@ function getIds(): Set<number> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? new Set(JSON.parse(raw) as number[]) : new Set();
-  } catch {
-    return new Set();
-  }
+  } catch { return new Set(); } // Corrupted localStorage — start fresh
 }
 
 function persist(ids: Set<number>) {
