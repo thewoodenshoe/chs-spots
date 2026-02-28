@@ -289,7 +289,7 @@ export default function SpotListView({
           >
             <option value="alpha">A &ndash; Z</option>
             {['Happy Hour', 'Brunch', 'Live Music'].includes(selectedActivity) && (
-              <option value="activityActive">Activity Active</option>
+              <option value="activityActive">{selectedActivity} Active</option>
             )}
             <option value="venueOpen">Open Now</option>
             {userLocation && <option value="nearest">Nearest</option>}
