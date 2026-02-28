@@ -12,7 +12,8 @@ A live map for discovering Charleston, SC — happy hours, brunch, live music, r
 - **Auto-detects your location** and defaults to the nearest area (falls back to Downtown if outside Charleston)
 - **Nightly ETL pipeline** scrapes ~1,000 venue websites, diffs content, and uses Grok (xAI) to extract happy hour and brunch specials — only processing venues that changed
 - **Nightly opening discovery** finds recently opened and coming soon restaurants via RSS feeds + Grok web search
-- **Weekly live music discovery** via Grok web search
+- **Daily live music events** refreshed at 3 PM via Grok web search (tonight's performers, times)
+- **Weekly live music venue discovery** via Grok web search
 - **Community submissions** — anyone can add spots; admin approves via Telegram
 - **Open/Closed status** — operating hours extracted from venue websites, shown on cards and map pins
 - **Share any spot** via deep link
@@ -81,7 +82,8 @@ chs-spots/
 │   │   ├── generate-report.js       # Daily analytics + pipeline report
 │   │   ├── run-nightly-pipeline.sh  # Cron: ETL + report (3 AM)
 │   │   ├── run-nightly-openings.sh  # Cron: opening discovery (2 AM)
-│   │   ├── run-weekly-live-music.sh # Cron: live music (Wed 4 AM)
+│   │   ├── run-daily-live-music.sh  # Cron: event refresh (3 PM daily)
+│   │   ├── run-weekly-live-music.sh # Cron: venue discovery (Wed 4 AM)
 │   │   ├── run-biweekly-seed.sh     # Cron: venue discovery (1 AM)
 │   │   └── run-monthly-hours.sh     # Cron: operating hours refresh
 │   ├── utils/
@@ -107,7 +109,8 @@ chs-spots/
 | 1:00 AM | Venue discovery (Google Places) | `run-biweekly-seed.sh` |
 | 2:00 AM | Opening discovery (RSS + Grok) | `run-nightly-openings.sh` |
 | 3:00 AM | ETL pipeline + daily report | `run-nightly-pipeline.sh` |
-| 4:00 AM Wed | Live music discovery | `run-weekly-live-music.sh` |
+| 3:00 PM | Live music event refresh (Grok web search) | `run-daily-live-music.sh` |
+| 4:00 AM Wed | Live music venue discovery | `run-weekly-live-music.sh` |
 | Monthly | Operating hours refresh | `run-monthly-hours.sh` |
 
 **ETL flow:** Download HTML → merge → trim → diff → extract via Grok (only changed venues) → create spots → generate report. Typical daily cost: 5–15 LLM calls.
