@@ -176,6 +176,9 @@ export default function SpotInfoWindow({ spot, activities, onEdit, onReport, onC
             <div className="flex items-center gap-1.5 mb-1.5">
               <span className={`inline-block h-2 w-2 rounded-full ${dotColor}`} />
               <span className="text-[11px] text-gray-500">{f.label}</span>
+              {spot.type === 'Live Music' && (
+                <span className="text-[10px] text-gray-400 ml-1">· Events daily at 3pm</span>
+              )}
             </div>
           );
         })()}

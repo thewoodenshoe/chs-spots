@@ -324,6 +324,10 @@ export default function SpotListView({
         );
       })()}
 
+      {selectedActivity === 'Live Music' && !isAllVenues && (
+        <div className="px-4 py-1 text-[10px] text-gray-400 text-right">Events updated daily at 3pm</div>
+      )}
+
       {/* What's New strip */}
       {allSpots && onWhatsNewSelect
         && !isAllVenues
