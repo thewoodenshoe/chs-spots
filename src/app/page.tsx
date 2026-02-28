@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useState, useEffect, useMemo, useRef } from 'react';
-import FilterModal, { Area, SpotType } from '@/components/FilterModal';
+import FilterModal, { ACTIVITY_GROUPS, Area, SpotType } from '@/components/FilterModal';
 import SubmissionModal from '@/components/SubmissionModal';
 import EditSpotModal from '@/components/EditSpotModal';
 import AreaSelector, { getAreaCentersSync, NEAR_ME } from '@/components/AreaSelector';
@@ -23,7 +23,8 @@ import { useActivities } from '@/contexts/ActivitiesContext';
 import { compressImageForUpload } from '@/utils/image';
 import { getAreaFromCoordinates } from '@/utils/area';
 import { getFavoriteIds } from '@/utils/favorites';
-import { useFilteredSpots, useVenueAreaMap, useSpotCounts, useVenueSearchResults, ALL_VENUES } from '@/hooks/useSpotFiltering';
+import { useFilteredSpots, useVenueAreaMap, useSpotCounts, useVenueSearchResults, filterSpotsForList, ALL_VENUES } from '@/hooks/useSpotFiltering';
+import { isSpotActiveNow } from '@/utils/time-utils';
 
 const MapComponent = dynamic(() => import('@/components/MapComponent'), {
   ssr: false,
@@ -239,6 +240,24 @@ export default function Home() {
 
   const venueAreaById = useVenueAreaMap(venues);
   const isSearching = searchQuery.trim().length >= 2;
+
+  const [clockTick, setClockTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setClockTick((t) => t + 1), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const landingActiveCounts = useMemo(() => {
+    const activityNames = ACTIVITY_GROUPS.flatMap((g) => g.activities).filter((a) => a !== ALL_VENUES);
+    const counts: Record<string, number> = {};
+    for (const activity of activityNames) {
+      const filtered = filterSpotsForList(
+        spots, selectedArea, activity, '', userLocation, venueAreaById,
+      );
+      counts[activity] = filtered.filter((s) => isSpotActiveNow(s)).length;
+    }
+    return counts;
+  }, [spots, selectedArea, userLocation, venueAreaById, clockTick]);
 
   const spotCountsByActivity = useSpotCounts(spots);
 
@@ -476,6 +495,7 @@ export default function Home() {
         venueCount={venues.length}
         loading={spotsLoading}
         userLocation={userLocation}
+        activeCounts={landingActiveCounts}
         onSelectActivity={handleLandingSelect}
         onSearch={handleLandingSearch}
       />

@@ -66,7 +66,8 @@ jest.mock('next/dynamic', () => () => {
 jest.mock('@/components/FilterModal', () => {
   const MockFilterModal = () => null;
   MockFilterModal.displayName = 'FilterModal';
-  return MockFilterModal;
+  const { ACTIVITY_GROUPS } = jest.requireActual('@/components/FilterModal');
+  return { __esModule: true, default: MockFilterModal, ACTIVITY_GROUPS };
 });
 
 jest.mock('@/components/SubmissionModal', () => {
