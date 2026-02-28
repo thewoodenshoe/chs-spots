@@ -1,4 +1,5 @@
 import type { OperatingHours } from '@/contexts/VenuesContext';
+import { formatTime12 } from '@/utils/format-hours';
 
 const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 
@@ -67,12 +68,12 @@ export function getOpenStatus(hours: OperatingHours | null | undefined): {
     return {
       isOpen: true,
       label: closingSoon ? 'Closing soon' : 'Open',
-      closesAt: formatTime(entry.close),
+      closesAt: formatTime12(entry.close),
     };
   }
 
   if (nowMin < open) {
-    return { isOpen: false, label: 'Closed', opensAt: formatTime(entry.open) };
+    return { isOpen: false, label: 'Closed', opensAt: formatTime12(entry.open) };
   }
 
   const nextOpen = findNextOpen(hours, day);
@@ -86,15 +87,8 @@ function findNextOpen(hours: OperatingHours, currentDay: string): string | null 
     const entry = hours[nextDay];
     if (entry && entry !== 'closed') {
       const dayLabel = i === 1 ? 'tomorrow' : nextDay.charAt(0).toUpperCase() + nextDay.slice(1);
-      return `${dayLabel} ${formatTime(entry.open)}`;
+      return `${dayLabel} ${formatTime12(entry.open)}`;
     }
   }
   return null;
-}
-
-function formatTime(time24: string): string {
-  const [h, m] = time24.split(':').map(Number);
-  const ampm = h >= 12 ? 'pm' : 'am';
-  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
-  return m ? `${h12}:${String(m).padStart(2, '0')}${ampm}` : `${h12}${ampm}`;
 }

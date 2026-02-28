@@ -1,44 +1,21 @@
 'use client';
 
-import { useState, useMemo, useCallback, useRef, SyntheticEvent } from 'react';
-import Image from 'next/image';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import { Spot } from '@/contexts/SpotsContext';
 import { NEAR_ME } from '@/components/AreaSelector';
 import { Activity } from '@/utils/activities';
 import { calculateDistanceMiles } from '@/utils/distance';
-import { isSpotActiveNow, getFreshness } from '@/utils/time-utils';
+import { isSpotActiveNow } from '@/utils/time-utils';
 import { toggleFavorite } from '@/utils/favorites';
 import { shareSpot } from '@/utils/share';
-import { useVenues, OperatingHours } from '@/contexts/VenuesContext';
+import { useVenues } from '@/contexts/VenuesContext';
 import { getOpenStatus } from '@/utils/active-status';
 import WhatsNewStrip from '@/components/WhatsNewStrip';
 import VenueCard from '@/components/VenueCard';
+import SpotDetailSections from '@/components/SpotDetailSections';
 import { ALL_VENUES, VenueSearchResult } from '@/hooks/useSpotFiltering';
 
 export type SortMode = 'alpha' | 'activityActive' | 'venueOpen' | 'nearest';
-
-const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
-const DAY_LABELS: Record<string, string> = {
-  sun: 'Sun', mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat',
-};
-
-function formatTime12(t: string): string {
-  const [h, m] = t.split(':').map(Number);
-  const ampm = h >= 12 ? 'pm' : 'am';
-  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
-  return m ? `${h12}:${String(m).padStart(2, '0')}${ampm}` : `${h12}${ampm}`;
-}
-
-function formatFullWeekHours(hours: OperatingHours | null): { day: string; hours: string; isToday: boolean }[] {
-  if (!hours) return [];
-  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
-  const todayIdx = now.getDay();
-  return DAY_KEYS.map((key, idx) => {
-    const entry = hours[key];
-    const h = !entry || entry === 'closed' ? 'Closed' : `${formatTime12(entry.open)} - ${formatTime12(entry.close)}`;
-    return { day: DAY_LABELS[key], hours: h, isToday: idx === todayIdx };
-  });
-}
 
 const SUB_TAG_RULES: [RegExp, string][] = [
   [/\bDog Park\b/i, 'Dog Park'],
@@ -369,7 +346,6 @@ export default function SpotListView({
           const promoTime = spot.promotionTime || spot.happyHourTime;
           const promoList = spot.promotionList ?? spot.happyHourList ?? [];
           const isExpanded = expandedId === spot.id;
-          const timeParts = promoTime ? promoTime.split(/\s*[•]\s*/).filter(Boolean) : [];
 
           return (
             <div
@@ -468,145 +444,17 @@ export default function SpotListView({
               {/* ── Expanded detail ── */}
               {isExpanded && (
                 <div className="border-t border-gray-100 px-4 pb-3 pt-2">
-
-                  {/* ─── Section 1: Activity ─── */}
-                  {(promoTime || promoList.length > 0 || spot.description) && (
-                    <div className="space-y-1.5">
-                      {promoTime && (
-                        <div>
-                          <div className="text-xs font-bold text-gray-700 mb-0.5">{spot.type}</div>
-                          {timeParts.map((part, i) => (
-                            <div key={i} className="text-xs text-gray-700 leading-snug">{part}</div>
-                          ))}
-                        </div>
-                      )}
-
-                      {promoList.length > 0 && (
-                        <div>
-                          <div className="text-xs font-bold text-gray-700 mb-0.5">Specials</div>
-                          {promoList.map((item, i) => {
-                            const m = item.match(/^\[([^\]]+)\]\s*(.*)/);
-                            const label = m ? m[1] : null;
-                            const text = m ? m[2] : item;
-                            if (!text.trim()) return null;
-                            return (
-                              <div key={i} className="text-xs text-gray-600">
-                                {label && <span className="font-semibold text-gray-700">{label}: </span>}
-                                {text}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-
-                      {!promoTime && promoList.length === 0 && spot.description && (
-                        <p className="text-xs text-gray-600">{spot.description}</p>
-                      )}
-
-                      {spot.sourceUrl && (
-                        <a
-                          href={spot.sourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="inline-flex items-center gap-1 text-xs font-medium text-teal-600 hover:text-teal-800 transition-colors"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                          </svg>
-                          Visit website
-                        </a>
-                      )}
-                    </div>
-                  )}
-
-                  {/* ─── Section 2: Venue Info ─── */}
-                  {(venuePhone || venueAddress || venueHours) && (
-                    <div className="mt-3 border-t border-gray-100 pt-2">
-                      <div className="text-xs font-bold text-gray-700 mb-1">Venue Info</div>
-                      <div className="space-y-1">
-                        {venuePhone && (
-                          <a
-                            href={`tel:${venuePhone}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-teal-700 transition-colors"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                            </svg>
-                            {venuePhone}
-                          </a>
-                        )}
-                        {venueAddress && (
-                          <a
-                            href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(venueAddress)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="flex items-start gap-1.5 text-xs text-gray-600 hover:text-teal-700 transition-colors"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 flex-shrink-0 mt-0.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <span className="leading-snug">{venueAddress.replace(/, United States$/, '')}</span>
-                          </a>
-                        )}
-                        {venueHours && (
-                          <div className="pt-1">
-                            <div className="text-xs font-bold text-gray-700 mb-0.5">Opening Hours</div>
-                            {formatFullWeekHours(venueHours).map(({ day, hours: h, isToday }) => (
-                              <div key={day} className={`text-xs leading-snug flex gap-2 ${isToday ? 'text-gray-900 font-semibold' : 'text-gray-500'}`}>
-                                <span className="w-8">{day}</span>
-                                <span>{h}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* ─── Section 3: Listing Details ─── */}
-                  <div className="mt-3 border-t border-gray-100 pt-2">
-                    <div className="text-xs font-bold text-gray-700 mb-1.5">Listing</div>
-
-                    {(() => {
-                      const f = getFreshness(spot.lastVerifiedDate, spot.lastUpdateDate);
-                      const dotColor = f.level === 'fresh' ? 'bg-green-400' : f.level === 'aging' ? 'bg-yellow-400' : f.level === 'stale' ? 'bg-red-400' : 'bg-gray-300';
-                      return (
-                        <div className="flex items-center gap-1.5 mb-2">
-                          <span className={`inline-block h-2 w-2 rounded-full ${dotColor}`} />
-                          <span className="text-[11px] text-gray-500">{f.label}</span>
-                        </div>
-                      );
-                    })()}
-
-                    <div className="flex items-center gap-1.5 mb-2">
-                      <span
-                        className="rounded-full px-2 py-0.5 text-[10px] font-semibold text-white"
-                        style={{ backgroundColor: color }}
-                      >
-                        {emoji} {spot.type}
-                      </span>
-                    </div>
-
-                    {spot.photoUrl && (
-                      <div className="relative h-28 w-full overflow-hidden rounded-lg mb-2">
-                        <Image
-                          src={spot.photoUrl}
-                          alt={spot.title}
-                          fill
-                          className="object-cover"
-                          unoptimized
-                          onError={(e: SyntheticEvent<HTMLImageElement>) => {
-                            e.currentTarget.parentElement!.style.display = 'none';
-                          }}
-                        />
-                      </div>
-                    )}
-
-                    <div className="flex flex-wrap items-center gap-2">
+                  <SpotDetailSections
+                    spot={spot}
+                    venuePhone={venuePhone}
+                    venueAddress={venueAddress}
+                    venueHours={venueHours}
+                    venueWebsite={spot.venueId ? venueMap.get(spot.venueId)?.website : undefined}
+                    activityEmoji={emoji}
+                    activityColor={color}
+                  >
+                    {/* ─── Actions ─── */}
+                    <div className="flex flex-wrap items-center gap-2 mt-3">
                       <button
                         onClick={(e) => { e.stopPropagation(); onSpotSelect(spot); }}
                         className="flex items-center gap-1 rounded-full bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-700 hover:bg-teal-100 transition-colors"
@@ -654,7 +502,7 @@ export default function SpotListView({
                         </button>
                       )}
                     </div>
-                  </div>
+                  </SpotDetailSections>
                 </div>
               )}
             </div>
