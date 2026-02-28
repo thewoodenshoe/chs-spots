@@ -4,7 +4,8 @@ import { sendApprovalRequest } from '@/lib/telegram';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import { isAdminRequest } from '@/lib/auth';
 import { createSpotSchema, parseOrError } from '@/lib/validations';
-import { spots, venues, type SpotRow, type VenueRow, findMatchingVenue } from '@/lib/db';
+import { spots, venues, type SpotRow, type VenueRow } from '@/lib/db';
+import { findMatchingVenue } from '@/lib/venue-match';
 import { getCache, setCache, invalidate, safeJsonParse } from '@/lib/cache';
 
 const SPOTS_CACHE_KEY = 'api:spots';
@@ -95,68 +96,77 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
     const spotData = parsed.data;
+    const activityType = spotData.type || spotData.activity || 'Happy Hour';
 
-    const venueMatch = findMatchingVenue(spotData.title, spotData.lat, spotData.lng);
-    // #region agent log
-    fetch('http://127.0.0.1:7797/ingest/f95b46c4-3bbe-423c-a8a9-731e1ea9bf61',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'890281'},body:JSON.stringify({sessionId:'890281',location:'api/spots/route.ts:POST',message:'venue-match-result',data:{title:spotData.title,lat:spotData.lat,lng:spotData.lng,match:venueMatch},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
+    let resolvedVenueId: string | null = null;
+    let resolvedArea: string | null = spotData.area || null;
+    let venueName: string | null = null;
 
-    const matchedVenueId = venueMatch?.venueId || null;
-    const matchedArea = matchedVenueId
-      ? (venues.getById(matchedVenueId) as any)?.area || spotData.area || null
-      : spotData.area || null;
+    if (spotData.venueId) {
+      const venue = venues.getById(spotData.venueId);
+      if (!venue) {
+        return NextResponse.json({ error: 'Venue not found' }, { status: 400 });
+      }
+      if (spots.existsForVenue(spotData.venueId, activityType)) {
+        return NextResponse.json(
+          { error: `This venue already has a ${activityType} listing` },
+          { status: 409 },
+        );
+      }
+      resolvedVenueId = venue.id;
+      resolvedArea = venue.area || resolvedArea;
+      venueName = venue.name;
+    } else if (spotData.lat != null && spotData.lng != null) {
+      const venueMatch = findMatchingVenue(spotData.title, spotData.lat, spotData.lng);
+      if (venueMatch) {
+        resolvedVenueId = venueMatch.venueId;
+        venueName = venueMatch.venueName;
+        const matchedVenue = venues.getById(venueMatch.venueId);
+        resolvedArea = matchedVenue?.area || resolvedArea;
+      }
+    }
 
     const newId = spots.insert({
-      title: spotData.title,
+      title: spotData.venueId ? (venueName || spotData.title) : spotData.title,
       submitterName: spotData.submitterName,
       description: spotData.description || '',
-      type: spotData.type || spotData.activity || 'Happy Hour',
+      type: activityType,
       photoUrl: spotData.photoUrl,
       source: 'manual',
       status: 'pending',
       submittedAt: new Date().toISOString(),
-      lat: spotData.lat,
-      lng: spotData.lng,
-      area: matchedArea,
-      venueId: matchedVenueId,
+      lat: spotData.lat ?? null,
+      lng: spotData.lng ?? null,
+      area: resolvedArea,
+      venueId: resolvedVenueId,
     });
 
-    const newSpot = {
-      id: newId,
-      title: spotData.title,
-      submitterName: spotData.submitterName,
-      description: spotData.description || '',
-      lat: spotData.lat,
-      lng: spotData.lng,
-      activity: spotData.type || spotData.activity || 'Happy Hour',
-      type: spotData.type || spotData.activity || 'Happy Hour',
-      photoUrl: spotData.photoUrl,
-      area: matchedArea,
-      source: 'manual',
-      status: 'pending',
-      submittedAt: new Date().toISOString(),
-      venueId: matchedVenueId,
-    };
-
-    const matchLabel = venueMatch
-      ? `\n🔗 Matched venue: ${venueMatch.venueName} (${venueMatch.distance}m, score=${venueMatch.score.toFixed(2)})`
+    const venueLabel = resolvedVenueId
+      ? `\n🔗 Venue: ${venueName} (${resolvedVenueId.slice(0, 20)}…)`
       : '';
 
     try {
       await sendApprovalRequest({
         id: newId,
-        title: newSpot.title,
-        type: newSpot.type,
-        lat: newSpot.lat,
-        lng: newSpot.lng,
-        description: `By: ${newSpot.submitterName}\n${newSpot.description}${matchLabel}`,
+        title: spotData.venueId ? (venueName || spotData.title) : spotData.title,
+        type: activityType,
+        lat: spotData.lat ?? 0,
+        lng: spotData.lng ?? 0,
+        description: `By: ${spotData.submitterName}\n${spotData.description || ''}${venueLabel}`,
       });
     } catch (telegramError) {
       console.warn('Telegram notification failed (spot still saved):', telegramError);
     }
 
     invalidate(SPOTS_CACHE_KEY);
-    return NextResponse.json(newSpot, { status: 201 });
+    return NextResponse.json({
+      id: newId,
+      title: spotData.venueId ? (venueName || spotData.title) : spotData.title,
+      type: activityType,
+      venueId: resolvedVenueId,
+      area: resolvedArea,
+      status: 'pending',
+    }, { status: 201 });
   } catch (error) {
     console.error('Error adding spot:', error);
     return NextResponse.json(

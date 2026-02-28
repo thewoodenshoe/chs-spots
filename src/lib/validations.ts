@@ -5,13 +5,17 @@ export const createSpotSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
   submitterName: z.string().max(100, 'Name too long').default('Anonymous'),
   description: z.string().max(2000, 'Description too long').default(''),
-  lat: z.number().min(-90).max(90),
-  lng: z.number().min(-180).max(180),
+  lat: z.number().min(-90).max(90).optional(),
+  lng: z.number().min(-180).max(180).optional(),
   type: z.string().max(50).default('Happy Hour'),
   activity: z.string().max(50).optional(),
   photoUrl: z.string().max(1_500_000, 'Photo too large').optional(),
   area: z.string().max(100).optional(),
-});
+  venueId: z.string().max(200).optional(),
+}).refine(
+  (data) => data.venueId || (data.lat != null && data.lng != null),
+  { message: 'Either venueId or lat/lng coordinates are required' },
+);
 
 /** Schema for updating a spot (PUT /api/spots/[id]) */
 export const updateSpotSchema = z.object({

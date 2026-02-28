@@ -6,6 +6,7 @@ export interface Activity {
   emoji: string;
   color: string;
   communityDriven?: boolean;
+  venueRequired?: boolean;
 }
 
 const DEFAULT_ACTIVITIES: Activity[] = [
@@ -28,6 +29,7 @@ export function loadActivities(): Activity[] {
         emoji: r.emoji || '⭐',
         color: r.color || '#6366f1',
         ...(r.community_driven ? { communityDriven: true } : {}),
+        venueRequired: r.venue_required !== 0,
       }));
       return cachedActivities;
     }

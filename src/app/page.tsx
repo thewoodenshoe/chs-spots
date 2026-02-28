@@ -317,9 +317,10 @@ export default function Home() {
     submitterName: string;
     description: string;
     type: SpotType;
-    lat: number;
-    lng: number;
+    lat?: number;
+    lng?: number;
     photo?: File;
+    venueId?: string;
   }) => {
     try {
       let photoUrl: string | undefined;
@@ -328,13 +329,14 @@ export default function Home() {
       }
 
       await addSpot({
-        lat: data.lat,
-        lng: data.lng,
+        lat: data.lat ?? 0,
+        lng: data.lng ?? 0,
         title: data.title,
         submitterName: data.submitterName,
         description: data.description,
         type: data.type,
         photoUrl,
+        venueId: data.venueId,
       });
 
       setPinLocation(null);
@@ -454,8 +456,7 @@ export default function Home() {
     setSelectedActivity(activity);
     setViewMode('list');
     setShowLanding(false);
-    const hasTimeData = activity === 'Happy Hour' || activity === 'Brunch' || activity === 'Live Music';
-    setListSortMode(hasTimeData ? 'activityActive' : (userLocation ? 'nearest' : 'alpha'));
+    setListSortMode('activityActive');
     trackActivityFilter(activity);
   };
 
@@ -732,8 +733,7 @@ export default function Home() {
           clearDeepLink();
           setSelectedActivity(activity);
           trackActivityFilter(activity);
-          const hasTimeData = activity === 'Happy Hour' || activity === 'Brunch' || activity === 'Live Music';
-          setListSortMode(hasTimeData ? 'activityActive' : (userLocation ? 'nearest' : 'alpha'));
+          setListSortMode('activityActive');
         }}
       />
 
@@ -743,6 +743,7 @@ export default function Home() {
           setIsSubmissionOpen(false);
         }}
         pinLocation={pinLocation}
+        userLocation={userLocation}
         defaultActivity={selectedActivity}
         area={selectedArea}
         onSubmit={handleSubmissionSubmit}

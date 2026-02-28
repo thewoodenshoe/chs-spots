@@ -173,21 +173,37 @@ export function getFreshness(
 export function isSpotActiveNow(spot: Spot): boolean {
   const start = getSpotStartMinutes(spot);
   const end = getSpotEndMinutes(spot);
-  if (start === null || end === null) return false;
 
-  const raw = spot.promotionTime || spot.happyHourTime || '';
+  if (start !== null && end !== null) {
+    const raw = spot.promotionTime || spot.happyHourTime || '';
+    const now = getEasternNow();
+    const allowedDays = parseDays(raw);
+    if (allowedDays !== null && !allowedDays.includes(now.getDay())) return false;
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    return end >= start
+      ? nowMinutes >= start && nowMinutes <= end
+      : nowMinutes >= start || nowMinutes <= end;
+  }
 
+  if (spot.operatingHours) {
+    return isVenueOpenNow(spot.operatingHours);
+  }
+
+  return false;
+}
+
+function isVenueOpenNow(hours: Record<string, string | { open: string; close: string }>): boolean {
+  const dayKeys = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
   const now = getEasternNow();
-
-  const allowedDays = parseDays(raw);
-  if (allowedDays !== null) {
-    if (!allowedDays.includes(now.getDay())) return false;
-  }
-
-  const nowMinutes = now.getHours() * 60 + now.getMinutes();
-
-  if (end >= start) {
-    return nowMinutes >= start && nowMinutes <= end;
-  }
-  return nowMinutes >= start || nowMinutes <= end;
+  const entry = hours[dayKeys[now.getDay()]];
+  if (!entry || entry === 'closed') return false;
+  if (typeof entry === 'string') return false;
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const [oh, om] = entry.open.split(':').map(Number);
+  const [ch, cm] = entry.close.split(':').map(Number);
+  const open = oh * 60 + (om || 0);
+  const close = ch * 60 + (cm || 0);
+  return close > open
+    ? nowMin >= open && nowMin < close
+    : nowMin >= open || nowMin < close;
 }

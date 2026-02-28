@@ -36,6 +36,7 @@ export async function GET(request: Request) {
           emoji: r.emoji,
           color: r.color,
           ...(r.community_driven ? { communityDriven: true } : {}),
+          venueRequired: r.venue_required !== 0,
         }));
       setCache(CACHE_KEY, activities, CACHE_TTL);
       return NextResponse.json(activities, { headers: { 'X-Cache': 'MISS' } });
