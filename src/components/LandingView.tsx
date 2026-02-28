@@ -1,10 +1,11 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Spot } from '@/contexts/SpotsContext';
 import { Activity } from '@/utils/activities';
 import { ACTIVITY_GROUPS, SpotType } from '@/components/FilterModal';
 import { ALL_VENUES } from '@/hooks/useSpotFiltering';
+import { isSpotActiveNow } from '@/utils/time-utils';
 
 const PASTEL_BG: Record<string, string> = {
   'Happy Hour': 'bg-amber-50 border-amber-200',
@@ -26,19 +27,24 @@ interface LandingViewProps {
   venueCount: number;
   loading: boolean;
   userLocation: { lat: number; lng: number } | null;
-  activeCounts: Record<string, number>;
   onSelectActivity: (activity: SpotType) => void;
   onSearch: () => void;
 }
 
 export default function LandingView({
-  spots, activities, venueCount, loading, userLocation, activeCounts, onSelectActivity, onSearch,
+  spots, activities, venueCount, loading, userLocation, onSelectActivity, onSearch,
 }: LandingViewProps) {
   const activityMap = useMemo(() => {
     const m = new Map<string, { emoji: string; color: string }>();
     activities.forEach(a => m.set(a.name, { emoji: a.emoji, color: a.color }));
     return m;
   }, [activities]);
+
+  const [clockTick, setClockTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setClockTick(t => t + 1), 60_000);
+    return () => clearInterval(id);
+  }, []);
 
   const spotCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -48,6 +54,27 @@ export default function LandingView({
     }
     return counts;
   }, [spots]);
+
+  const activeCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    let pool = spots.filter(s => s.lat !== 0 || s.lng !== 0);
+    if (userLocation) {
+      pool = pool
+        .map(s => ({
+          s,
+          d: (s.lat - userLocation.lat) ** 2 + (s.lng - userLocation.lng) ** 2,
+        }))
+        .sort((a, b) => a.d - b.d)
+        .slice(0, 100)
+        .map(x => x.s);
+    }
+    for (const spot of pool) {
+      if (isSpotActiveNow(spot)) {
+        counts[spot.type] = (counts[spot.type] || 0) + 1;
+      }
+    }
+    return counts;
+  }, [spots, userLocation, clockTick]);
 
   const visibleGroups = useMemo(() => {
     return LANDING_GROUP_ORDER

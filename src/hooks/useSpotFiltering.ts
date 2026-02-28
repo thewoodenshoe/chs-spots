@@ -9,50 +9,6 @@ export const ALL_VENUES = 'All Venues';
 
 const AREA_BYPASS_ACTIVITIES = ['Recently Opened', 'Coming Soon', ALL_VENUES];
 
-/**
- * Pure function: filters spots for list view (same logic as useFilteredSpots).
- * Used by both the list view and landing tile active counts.
- */
-export function filterSpotsForList(
-  spots: Spot[],
-  selectedArea: string,
-  selectedActivity: string,
-  searchQuery: string,
-  userLocation: { lat: number; lng: number } | null,
-  venueAreaById: Map<string, string>,
-): Spot[] {
-  const isNearMe = selectedArea === NEAR_ME;
-  const isAllVenues = selectedActivity === ALL_VENUES;
-  const isAreaBypass = AREA_BYPASS_ACTIVITIES.includes(selectedActivity);
-  const query = searchQuery.toLowerCase().trim();
-
-  let results = spots.filter((spot) => {
-    if (spot.lat === 0 && spot.lng === 0) return false;
-    const activityMatch = isAllVenues || spot.type === selectedActivity;
-    if (query) {
-      const searchMatch = spot.title.toLowerCase().includes(query)
-        || (spot.description || '').toLowerCase().includes(query);
-      return activityMatch && searchMatch;
-    }
-    if (isNearMe || isAreaBypass) return activityMatch;
-    const spotArea = spot.area
-      || (spot.venueId ? venueAreaById.get(spot.venueId) : undefined)
-      || getAreaFromCoordinates(spot.lat, spot.lng);
-    return spotArea === selectedArea && activityMatch;
-  });
-
-  if (isNearMe && userLocation && !query) {
-    results.sort((a, b) => {
-      const da = (a.lat - userLocation.lat) ** 2 + (a.lng - userLocation.lng) ** 2;
-      const db = (b.lat - userLocation.lat) ** 2 + (b.lng - userLocation.lng) ** 2;
-      return da - db;
-    });
-    results = results.slice(0, 50);
-  }
-
-  return results;
-}
-
 interface FilterParams {
   spots: Spot[];
   selectedArea: string;
@@ -65,10 +21,38 @@ interface FilterParams {
 export function useFilteredSpots({
   spots, selectedArea, selectedActivity, searchQuery, userLocation, venueAreaById,
 }: FilterParams): Spot[] {
-  return useMemo(
-    () => filterSpotsForList(spots, selectedArea, selectedActivity, searchQuery, userLocation, venueAreaById),
-    [spots, selectedArea, selectedActivity, searchQuery, userLocation, venueAreaById],
-  );
+  const isNearMe = selectedArea === NEAR_ME;
+  const isAllVenues = selectedActivity === ALL_VENUES;
+  const isAreaBypass = AREA_BYPASS_ACTIVITIES.includes(selectedActivity);
+
+  return useMemo(() => {
+    const query = searchQuery.toLowerCase().trim();
+    let results = spots.filter((spot) => {
+      if (spot.lat === 0 && spot.lng === 0) return false;
+      const activityMatch = isAllVenues || spot.type === selectedActivity;
+      if (query) {
+        const searchMatch = spot.title.toLowerCase().includes(query)
+          || (spot.description || '').toLowerCase().includes(query);
+        return activityMatch && searchMatch;
+      }
+      if (isNearMe || isAreaBypass) return activityMatch;
+      const spotArea = spot.area
+        || (spot.venueId ? venueAreaById.get(spot.venueId) : undefined)
+        || getAreaFromCoordinates(spot.lat, spot.lng);
+      return spotArea === selectedArea && activityMatch;
+    });
+
+    if (isNearMe && userLocation && !query) {
+      results.sort((a, b) => {
+        const da = (a.lat - userLocation.lat) ** 2 + (a.lng - userLocation.lng) ** 2;
+        const db = (b.lat - userLocation.lat) ** 2 + (b.lng - userLocation.lng) ** 2;
+        return da - db;
+      });
+      results = results.slice(0, 50);
+    }
+
+    return results;
+  }, [spots, selectedArea, selectedActivity, venueAreaById, searchQuery, isNearMe, isAllVenues, isAreaBypass, userLocation]);
 }
 
 export interface VenueSearchResult {
