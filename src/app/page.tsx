@@ -128,8 +128,13 @@ export default function Home() {
 
     const params = new URLSearchParams(window.location.search);
     const spotId = params.get('spot');
+    const activityParam = params.get('activity');
     if (spotId) {
       pendingDeepLink.current = spotId;
+    } else if (activityParam) {
+      setSelectedActivity(activityParam as SpotType);
+      setViewMode('list');
+      window.history.replaceState({}, '', window.location.pathname);
     } else if (!hasSeenWelcome()) {
       setViewMode('list');
     }
