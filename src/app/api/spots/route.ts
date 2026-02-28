@@ -4,7 +4,7 @@ import { sendApprovalRequest } from '@/lib/telegram';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import { isAdminRequest } from '@/lib/auth';
 import { createSpotSchema, parseOrError } from '@/lib/validations';
-import { spots, venues, type SpotRow, type VenueRow } from '@/lib/db';
+import { spots, venues, type SpotRow, type VenueRow, findMatchingVenue } from '@/lib/db';
 import { getCache, setCache, invalidate, safeJsonParse } from '@/lib/cache';
 
 const SPOTS_CACHE_KEY = 'api:spots';
@@ -96,6 +96,16 @@ export async function POST(request: Request) {
     }
     const spotData = parsed.data;
 
+    const venueMatch = findMatchingVenue(spotData.title, spotData.lat, spotData.lng);
+    // #region agent log
+    fetch('http://127.0.0.1:7797/ingest/f95b46c4-3bbe-423c-a8a9-731e1ea9bf61',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'890281'},body:JSON.stringify({sessionId:'890281',location:'api/spots/route.ts:POST',message:'venue-match-result',data:{title:spotData.title,lat:spotData.lat,lng:spotData.lng,match:venueMatch},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
+
+    const matchedVenueId = venueMatch?.venueId || null;
+    const matchedArea = matchedVenueId
+      ? (venues.getById(matchedVenueId) as any)?.area || spotData.area || null
+      : spotData.area || null;
+
     const newId = spots.insert({
       title: spotData.title,
       submitterName: spotData.submitterName,
@@ -107,7 +117,8 @@ export async function POST(request: Request) {
       submittedAt: new Date().toISOString(),
       lat: spotData.lat,
       lng: spotData.lng,
-      area: spotData.area || null,
+      area: matchedArea,
+      venueId: matchedVenueId,
     });
 
     const newSpot = {
@@ -120,11 +131,16 @@ export async function POST(request: Request) {
       activity: spotData.type || spotData.activity || 'Happy Hour',
       type: spotData.type || spotData.activity || 'Happy Hour',
       photoUrl: spotData.photoUrl,
-      area: spotData.area,
+      area: matchedArea,
       source: 'manual',
       status: 'pending',
       submittedAt: new Date().toISOString(),
+      venueId: matchedVenueId,
     };
+
+    const matchLabel = venueMatch
+      ? `\n🔗 Matched venue: ${venueMatch.venueName} (${venueMatch.distance}m, score=${venueMatch.score.toFixed(2)})`
+      : '';
 
     try {
       await sendApprovalRequest({
@@ -133,7 +149,7 @@ export async function POST(request: Request) {
         type: newSpot.type,
         lat: newSpot.lat,
         lng: newSpot.lng,
-        description: `By: ${newSpot.submitterName}\n${newSpot.description}`,
+        description: `By: ${newSpot.submitterName}\n${newSpot.description}${matchLabel}`,
       });
     } catch (telegramError) {
       console.warn('Telegram notification failed (spot still saved):', telegramError);
