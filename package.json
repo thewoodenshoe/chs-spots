@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "admin": "node scripts/serve-admin.js",
     "dev": "next dev",
     "build": "next build",
     "build:server": "bash scripts/build-production.sh",

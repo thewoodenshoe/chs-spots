@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Spots Admin</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; margin: 1rem 2rem; background: #1e293b; color: #e2e8f0; }
+    h1 { font-size: 1.25rem; margin-bottom: 1rem; }
+    .search { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; }
+    .search select, .search input { padding: 0.4rem 0.6rem; border-radius: 4px; border: 1px solid #475569; background: #334155; color: #e2e8f0; }
+    .search input { min-width: 160px; }
+    button { padding: 0.4rem 0.8rem; border-radius: 4px; border: 1px solid #0d9488; background: #0d9488; color: #fff; cursor: pointer; font-weight: 500; }
+    button:hover { background: #0f766e; }
+    button.secondary { background: #334155; border-color: #475569; }
+    button.secondary:hover { background: #475569; }
+    .message { margin: 0.5rem 0; padding: 0.5rem; border-radius: 4px; font-size: 0.9rem; }
+    .message.error { background: #7f1d1d; color: #fecaca; }
+    .message.success { background: #14532d; color: #bbf7d0; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 0.5rem; }
+    th, td { padding: 0.35rem 0.5rem; text-align: left; border-bottom: 1px solid #334155; }
+    th { background: #334155; font-weight: 600; }
+    tr:hover { background: #334155; }
+    tr.edit-mode td { background: #1e3a5f; }
+    .results { overflow-x: auto; max-height: 60vh; overflow-y: auto; }
+    .edit-panel { margin: 1rem 0; padding: 1rem; background: #334155; border-radius: 6px; max-width: 800px; }
+    .edit-panel h3 { margin: 0 0 0.75rem 0; font-size: 1rem; }
+    .edit-row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; }
+    .edit-row label { min-width: 140px; font-size: 0.85rem; color: #94a3b8; }
+    .edit-row input, .edit-row textarea { flex: 1; min-width: 200px; padding: 0.35rem 0.5rem; border-radius: 4px; border: 1px solid #475569; background: #1e293b; color: #e2e8f0; }
+    .edit-row textarea { min-height: 60px; resize: vertical; }
+    .edit-actions { margin-top: 0.75rem; display: flex; gap: 0.5rem; }
+    .clickable { cursor: pointer; }
+    .empty { color: #64748b; font-style: italic; padding: 2rem; }
+  </style>
+</head>
+<body>
+  <h1>Spots Admin</h1>
+  <div class="search">
+    <select id="field">
+      <option value="id">id</option>
+      <option value="title">title</option>
+      <option value="type">type</option>
+      <option value="area">area</option>
+      <option value="venue_id">venue_id</option>
+      <option value="status">status</option>
+      <option value="source">source</option>
+      <option value="description">description</option>
+      <option value="promotion_time">promotion_time</option>
+      <option value="source_url">source_url</option>
+      <option value="submitter_name">submitter_name</option>
+    </select>
+    <input type="text" id="value" placeholder="Value (use % for partial match)" />
+    <button id="search">Search</button>
+  </div>
+  <div id="message"></div>
+  <div class="results">
+    <div id="table-wrap"></div>
+  </div>
+
+  <script>
+    const fieldEl = document.getElementById('field');
+    const valueEl = document.getElementById('value');
+    const searchBtn = document.getElementById('search');
+    const messageEl = document.getElementById('message');
+    const tableWrap = document.getElementById('table-wrap');
+
+    function showMessage(text, type) {
+      messageEl.textContent = text;
+      messageEl.className = 'message ' + (type || '');
+      messageEl.style.display = text ? 'block' : 'none';
+    }
+
+    function showError(err) {
+      showMessage(typeof err === 'string' ? err : (err?.error || JSON.stringify(err)), 'error');
+    }
+
+    function showSuccess(msg) {
+      showMessage(msg, 'success');
+    }
+
+    const COLS = ['id', 'venue_id', 'title', 'type', 'source', 'status', 'description', 'promotion_time', 'promotion_list', 'source_url', 'submitter_name', 'manual_override', 'photo_url', 'last_update_date', 'pending_edit', 'pending_delete', 'submitted_at', 'edited_at', 'lat', 'lng', 'area', 'created_at', 'updated_at'];
+    const EDITABLE = ['venue_id', 'title', 'type', 'source', 'status', 'description', 'promotion_time', 'promotion_list', 'source_url', 'submitter_name', 'manual_override', 'photo_url', 'last_update_date', 'lat', 'lng', 'area'];
+
+    function renderTable(rows) {
+      if (!rows || rows.length === 0) {
+        tableWrap.innerHTML = '<div class="empty">No results</div>';
+        return;
+      }
+      let html = '<table><thead><tr>';
+      for (const c of COLS) {
+        html += '<th>' + c + '</th>';
+      }
+      html += '<th></th></tr></thead><tbody>';
+      for (const row of rows) {
+        html += '<tr data-id="' + row.id + '" class="clickable">';
+        for (const c of COLS) {
+          const v = row[c];
+          const s = v == null ? '' : (typeof v === 'object' ? JSON.stringify(v) : String(v));
+          const short = s.length > 60 ? s.slice(0, 57) + '…' : s;
+          html += '<td title="' + (s || '').replace(/"/g, '&quot;') + '">' + (short || '—') + '</td>';
+        }
+        html += '<td><button class="secondary edit-btn" data-id="' + row.id + '">Edit</button></td></tr>';
+      }
+      html += '</tbody></table>';
+      tableWrap.innerHTML = html;
+
+      tableWrap.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => { e.stopPropagation(); openEdit(Number(btn.dataset.id), rows); });
+      });
+    }
+
+    let editPanel = null;
+
+    function openEdit(id, rows) {
+      const row = rows.find(r => r.id === id) || rows.find(r => Number(r.id) === id);
+      if (!row) return;
+      if (editPanel) editPanel.remove();
+      editPanel = document.createElement('div');
+      editPanel.className = 'edit-panel';
+      editPanel.innerHTML = '<h3>Edit spot #' + id + '</h3>';
+      for (const c of EDITABLE) {
+        const val = row[c];
+        const v = val == null ? '' : (typeof val === 'object' ? JSON.stringify(val) : String(val));
+        const isTextarea = c === 'description' || c === 'promotion_list' || c === 'pending_edit';
+        editPanel.innerHTML += '<div class="edit-row"><label>' + c + '</label>' +
+          (isTextarea ? '<textarea data-field="' + c + '">' + v + '</textarea>' : '<input data-field="' + c + '" value="' + (v || '').replace(/"/g, '&quot;') + '" />') +
+          '</div>';
+      }
+      editPanel.innerHTML += '<div class="edit-actions"><button id="save-edit">Update</button><button class="secondary" id="cancel-edit">Cancel</button></div>';
+      tableWrap.parentElement.insertBefore(editPanel, tableWrap.nextSibling);
+
+      document.getElementById('save-edit').onclick = async () => {
+        const payload = { id };
+        for (const el of editPanel.querySelectorAll('[data-field]')) {
+          payload[el.dataset.field] = el.value || null;
+        }
+        if (payload.lat !== null && payload.lat !== undefined) payload.lat = parseFloat(payload.lat) || null;
+        if (payload.lng !== null && payload.lng !== undefined) payload.lng = parseFloat(payload.lng) || null;
+        if (payload.manual_override !== undefined) payload.manual_override = (payload.manual_override === '1' || payload.manual_override === 1) ? 1 : 0;
+        try {
+          const res = await fetch('/api/update', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+          const data = await res.json();
+          if (!res.ok) throw data;
+          showSuccess('Updated spot #' + id);
+          editPanel.remove();
+          editPanel = null;
+          const idx = rows.findIndex(r => r.id === id || Number(r.id) === id);
+          if (idx >= 0) rows[idx] = data.row;
+          renderTable(rows);
+        } catch (e) {
+          showError(e);
+        }
+      };
+      document.getElementById('cancel-edit').onclick = () => { editPanel.remove(); editPanel = null; showMessage(''); };
+    }
+
+    searchBtn.addEventListener('click', async () => {
+      const field = fieldEl.value;
+      const value = valueEl.value.trim();
+      if (!value) { showError('Enter a value'); return; }
+      showMessage('');
+      try {
+        const res = await fetch('/api/query', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ field, value }) });
+        const data = await res.json();
+        if (!res.ok) throw data;
+        renderTable(data.rows || []);
+        if (!data.rows || data.rows.length === 0) showMessage('No results', '');
+      } catch (e) {
+        showError(e);
+      }
+    });
+
+    valueEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') searchBtn.click(); });
+  </script>
+</body>
+</html>

@@ -46,6 +46,7 @@ npm run dev
 npm run dev          # Start local dev server
 npx jest --no-cache  # Run all tests (41 suites, 564 tests)
 npm run build        # Production build
+npm run admin        # Local admin UI: query/update spots (http://localhost:3456)
 ```
 
 ## Environment Variables
@@ -78,6 +79,8 @@ chs-spots/
 │   ├── discover-live-music.js       # Weekly: find live music events
 │   ├── run-incremental-pipeline.js  # Orchestrates nightly ETL
 │   ├── seed-venues.js               # Google Places venue seeding
+│   ├── admin.html                   # Local admin UI (query/update spots)
+│   ├── serve-admin.js               # Serves admin UI at localhost:3456
 │   ├── ops/
 │   │   ├── generate-report.js       # Daily analytics + pipeline report
 │   │   ├── run-nightly-pipeline.sh  # Cron: ETL + report (3 AM)
