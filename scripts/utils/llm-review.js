@@ -9,7 +9,7 @@
 const { chat, extractJsonArray } = require('./llm-client');
 
 const BATCH_SIZE = 10;
-const AUTO_APPLY_THRESHOLD = 85;
+const AUTO_APPLY_THRESHOLD = 80;
 
 const SYSTEM_PROMPT = `You are a data quality reviewer for a Charleston, SC restaurant deals app.
 
@@ -41,6 +41,7 @@ function buildUserPrompt(entries) {
     index: i, venue: e.venue,
     type: e.type || e.activityType,
     label: e.label, times: e.times || 'N/A', days: e.days || 'N/A',
+    specials: e.specials || [],
     flags: e.flags || e.confidenceFlags,
     heuristicScore: e.effectiveConfidence,
     llmOriginalScore: e.llmConfidence || e.confidence,

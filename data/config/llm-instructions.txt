@@ -45,10 +45,24 @@ You MUST classify every entry into exactly one of these activity types:
 4. Standardize days: "Monday-Friday", "Daily", "Weekdays", "Tue-Thu", etc.
 5. If multiple promotions exist, return each as a separate entry with the correct activityType.
 6. Confidence score (0–100):
-   - 90–100: Explicit promotion name + clear days/times/specials with prices
-   - 70–89: Strong match (clear time + discount, just missing some detail)
-   - 40–69: Partial/inferred (time range + deal language but vague)
-   - 10–39: Very weak/ambiguous
+   - 90–100: Explicit promotion with clear days, times, and priced specials
+   - 85–95: Time-limited deal with strong indicators (dollar prices, "half off", "wells", "drafts", "bar only", specific drink names) even if the phrase "happy hour" doesn't appear literally
+   - 70–84: Clear time + discount or food deal, minor details missing
+   - 40–69: Partial/inferred, vague language, no prices
+   - 10–39: Very weak/ambiguous, likely just regular hours
+
+   Score HIGHER (85+) when:
+   - Specials include dollar-sign pricing ($5, $3, etc.)
+   - Indirect alcohol language like "half off wine", "1/2 price drafts", "$5 wells", "house liquors"
+   - "Bar only", "bar and lounge", "dine-in only" context for a time-windowed deal
+   - Multiple specific items with prices listed
+   - Named promotions like "Wine Wednesday", "Mug Night", "Industry Night"
+
+   Score LOWER (below 70) when:
+   - No prices or deal language mentioned at all
+   - Looks like regular operating hours without discounts
+   - Only vague language like "specials available" with no details
+   - Market, café, or bakery service windows without drink discounts
 7. Always include confidence_score_rationale explaining the score.
 8. Output ONLY valid JSON — no explanation text before or after.
 

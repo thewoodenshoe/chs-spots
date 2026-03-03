@@ -123,6 +123,10 @@ function validateEntry(entry) {
     }
   }
 
+  if (entry.confidence >= 80 && flags.length <= 1) {
+    score += 5;
+  }
+
   score = Math.max(0, Math.min(100, score));
 
   let action = 'keep';
