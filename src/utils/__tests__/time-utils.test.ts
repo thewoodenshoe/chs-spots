@@ -205,6 +205,62 @@ describe('time-utils', () => {
       };
       expect(isSpotActiveNow(spot)).toBe(false);
     });
+
+    it('plural day name "Sundays": active on Sunday', () => {
+      jest.setSystemTime(new Date('2026-03-01T18:00:00Z')); // Sunday 1pm ET
+      const spot: Spot = {
+        id: 5105,
+        lat: 32.78,
+        lng: -79.93,
+        title: 'Container Bar',
+        description: 'Brunch every Sunday',
+        type: 'Brunch',
+        promotionTime: '1pm-4pm • Sundays',
+      };
+      expect(isSpotActiveNow(spot)).toBe(true);
+    });
+
+    it('plural day name "Sundays": inactive on Tuesday', () => {
+      jest.setSystemTime(new Date('2026-03-03T18:00:00Z')); // Tuesday 1pm ET
+      const spot: Spot = {
+        id: 5105,
+        lat: 32.78,
+        lng: -79.93,
+        title: 'Container Bar',
+        description: 'Brunch every Sunday',
+        type: 'Brunch',
+        promotionTime: '1pm-4pm • Sundays',
+      };
+      expect(isSpotActiveNow(spot)).toBe(false);
+    });
+
+    it('specific calendar date: inactive when not that date', () => {
+      jest.setSystemTime(new Date('2026-03-03T16:00:00Z')); // Tuesday 11am ET
+      const spot: Spot = {
+        id: 4872,
+        lat: 32.78,
+        lng: -79.93,
+        title: 'Bay Street Biergarten',
+        description: 'Mother\'s Day brunch',
+        type: 'Brunch',
+        promotionTime: '11am-11pm • Sunday May 10, 2026',
+      };
+      expect(isSpotActiveNow(spot)).toBe(false);
+    });
+
+    it('specific calendar date: active on that exact date', () => {
+      jest.setSystemTime(new Date('2026-05-10T16:00:00Z')); // May 10 2026, 12pm ET
+      const spot: Spot = {
+        id: 4872,
+        lat: 32.78,
+        lng: -79.93,
+        title: 'Bay Street Biergarten',
+        description: 'Mother\'s Day brunch',
+        type: 'Brunch',
+        promotionTime: '11am-11pm • Sunday May 10, 2026',
+      };
+      expect(isSpotActiveNow(spot)).toBe(true);
+    });
   });
 
   describe('getSpotStartMinutes and getSpotEndMinutes', () => {

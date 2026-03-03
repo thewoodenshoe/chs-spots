@@ -72,22 +72,54 @@ export function extractCompactTime(spot: Spot): string | null {
   return null;
 }
 
+function getEasternNow(): Date {
+  return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
+}
+
 const DAY_PATTERNS: Record<string, number[]> = {
   'daily': [0, 1, 2, 3, 4, 5, 6],
   'everyday': [0, 1, 2, 3, 4, 5, 6],
   'weekdays': [1, 2, 3, 4, 5],
   'weekends': [0, 6],
-  'sunday': [0], 'sun': [0],
-  'monday': [1], 'mon': [1],
-  'tuesday': [2], 'tue': [2], 'tues': [2],
-  'wednesday': [3], 'wed': [3], 'weds': [3],
-  'thursday': [4], 'thu': [4], 'thur': [4], 'thurs': [4],
-  'friday': [5], 'fri': [5],
-  'saturday': [6], 'sat': [6],
+  'sunday': [0], 'sundays': [0], 'sun': [0],
+  'monday': [1], 'mondays': [1], 'mon': [1],
+  'tuesday': [2], 'tuesdays': [2], 'tue': [2], 'tues': [2],
+  'wednesday': [3], 'wednesdays': [3], 'wed': [3], 'weds': [3],
+  'thursday': [4], 'thursdays': [4], 'thu': [4], 'thur': [4], 'thurs': [4],
+  'friday': [5], 'fridays': [5], 'fri': [5],
+  'saturday': [6], 'saturdays': [6], 'sat': [6],
 };
+
+const MONTH_MAP: Record<string, number> = {
+  january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
+  july: 6, august: 7, september: 8, october: 9, november: 10, december: 11,
+};
+
+// Detects specific calendar dates like "Sunday May 10, 2026" or "May 10".
+// Returns [dayOfWeek] if today matches, [] if not — never null.
+function parseSpecificCalendarDate(text: string): number[] | null {
+  const monthRe = /\b(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})\b/i;
+  const m = text.match(monthRe);
+  if (!m) return null;
+
+  const month = MONTH_MAP[m[1].toLowerCase()];
+  const day = parseInt(m[2], 10);
+  const yearMatch = text.match(/\b(20\d{2})\b/);
+  const now = getEasternNow();
+  const year = yearMatch ? parseInt(yearMatch[1], 10) : now.getFullYear();
+
+  if (now.getMonth() === month && now.getDate() === day && now.getFullYear() === year) {
+    return [now.getDay()];
+  }
+  return [];
+}
 
 function parseDayPart(dayPart: string): number[] | null {
   const lower = dayPart.toLowerCase().replace(/\s+/g, ' ');
+
+  // Specific calendar dates like "Sunday May 10, 2026" or "May 10"
+  const calendarDate = parseSpecificCalendarDate(lower);
+  if (calendarDate !== null) return calendarDate;
 
   // Check single-word matches first
   if (DAY_PATTERNS[lower]) return DAY_PATTERNS[lower];
@@ -141,10 +173,6 @@ function parseDays(raw: string): number[] | null {
   if (beforeTime) return parseDayPart(beforeTime);
 
   return null;
-}
-
-function getEasternNow(): Date {
-  return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
 }
 
 export type FreshnessLevel = 'fresh' | 'aging' | 'stale' | 'unknown';
