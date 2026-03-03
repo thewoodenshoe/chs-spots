@@ -63,7 +63,7 @@
 
   <div class="search">
     <select id="field"></select>
-    <input type="text" id="value" placeholder="Search value (use % for partial match)" />
+    <input type="text" id="value" placeholder="Search value (partial match, e.g. kings)" />
     <button id="search">Search</button>
   </div>
   <div id="message" class="message"></div>
@@ -82,7 +82,7 @@ let activeTab = 'spots';
 let lastRows = [];
 
 const SPOT_FIELDS = {
-  search: ['id', 'title', 'type', 'area', 'venue_id', 'status', 'source', 'description', 'promotion_time', 'source_url', 'submitter_name', 'finding_approved'],
+  search: ['title', 'id', 'type', 'area', 'venue_id', 'status', 'source', 'description', 'promotion_time', 'source_url', 'submitter_name', 'finding_approved'],
   display: ['id', 'venue_id', 'title', 'type', 'area', 'status', 'source', 'promotion_time', 'description', 'source_url', 'manual_override', 'finding_approved', 'finding_rationale', 'last_update_date', 'lat', 'lng', 'created_at', 'updated_at'],
   editGroups: {
     'Core': ['title', 'type', 'area', 'status', 'source'],
@@ -96,7 +96,7 @@ const SPOT_FIELDS = {
 };
 
 const VENUE_FIELDS = {
-  search: ['id', 'name', 'address', 'area', 'website', 'phone'],
+  search: ['name', 'id', 'address', 'area', 'website', 'phone'],
   display: ['id', 'name', 'address', 'area', 'website', 'phone', 'lat', 'lng', 'operating_hours', 'hours_source', 'created_at', 'updated_at'],
   editGroups: {
     'Core': ['name', 'address', 'area', 'website', 'phone'],
@@ -227,7 +227,7 @@ function openEdit(id) {
     }
 
     try {
-      const res = await fetch('/api/update', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const res = await fetch('api/update', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       const data = await res.json();
       if (!res.ok) throw data;
       showSuccess(`Updated ${activeTab === 'venues' ? 'venue' : 'spot'} #${id}`);
@@ -252,7 +252,7 @@ searchBtn.addEventListener('click', async () => {
   try {
     const body = { field, value };
     if (activeTab === 'venues') body.table = 'venues';
-    const res = await fetch('/api/query', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const res = await fetch('api/query', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     const data = await res.json();
     if (!res.ok) throw data;
     renderTable(data.rows || []);

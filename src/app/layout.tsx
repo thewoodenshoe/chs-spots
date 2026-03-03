@@ -20,13 +20,27 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const seoDescription = "Discover over 1,000 Charleston, SC venues updated daily — happy hours, brunches, live music, newly opened restaurants, coffee shops, and more. Verified from venue sites and curated by locals.";
+
 export const metadata: Metadata = {
-  title: "Charleston Finds",
-  description: "Live deals and hidden gems in Charleston, SC — verified from venue sites and curated by locals.",
+  title: {
+    default: "Charleston Finds — Happy Hours, Brunches, Live Music & Deals",
+    template: "%s | Charleston Finds",
+  },
+  description: seoDescription,
+  keywords: [
+    "Charleston SC happy hours", "Charleston brunch", "Charleston live music",
+    "Charleston deals", "Charleston restaurants", "Charleston coffee shops",
+    "Charleston new restaurants", "Charleston nightlife", "Charleston food deals",
+    "things to do in Charleston SC",
+  ],
   metadataBase: new URL("https://chsfinds.com"),
+  alternates: {
+    canonical: "https://chsfinds.com",
+  },
   openGraph: {
-    title: "Charleston Finds",
-    description: "Live deals and hidden gems in Charleston, SC — verified from venue sites and curated by locals.",
+    title: "Charleston Finds — Happy Hours, Brunches, Live Music & Deals",
+    description: seoDescription,
     url: "https://chsfinds.com",
     siteName: "Charleston Finds",
     type: "website",
@@ -43,8 +57,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Charleston Finds",
-    description: "Live deals and hidden gems in Charleston, SC — verified from venue sites and curated by locals.",
+    title: "Charleston Finds — Happy Hours, Brunches, Live Music & Deals",
+    description: seoDescription,
     images: ["/api/og-image"],
   },
   icons: {

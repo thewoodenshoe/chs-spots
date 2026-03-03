@@ -150,9 +150,10 @@ const server = http.createServer(async (req, res) => {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
-  const pathname = (req.url || '/').split('?')[0];
+  const raw = (req.url || '/').split('?')[0];
+  const pathname = raw.replace(/^\/admin/, '') || '/';
 
-  if (pathname === '/' && req.method === 'GET') {
+  if ((pathname === '/' || pathname === '/admin/') && req.method === 'GET') {
     try { sendHtml(res, fs.readFileSync(HTML_PATH, 'utf8')); }
     catch { sendJson(res, { error: 'admin.html not found' }, 500); }
     return;

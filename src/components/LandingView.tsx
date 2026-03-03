@@ -100,7 +100,7 @@ export default function LandingView({
         </h1>
         <p className="mt-1.5 text-sm text-teal-100 text-center animate-fade-in-delay">
           {loading
-            ? 'Live deals and hidden gems in Charleston, SC'
+            ? 'Over 1,000 venues updated daily for happy hours, brunches, live music, new openings & more'
             : `${totalSpots} deals updated nightly from ${venueCount} venues`}
         </p>
 
