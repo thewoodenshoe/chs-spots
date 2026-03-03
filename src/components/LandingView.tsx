@@ -57,21 +57,19 @@ export default function LandingView({
 
   const activeCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    let pool = spots.filter(s => s.lat !== 0 || s.lng !== 0);
-    if (userLocation) {
-      pool = pool
-        .map(s => ({
-          s,
-          d: (s.lat - userLocation.lat) ** 2 + (s.lng - userLocation.lng) ** 2,
-        }))
-        .sort((a, b) => a.d - b.d)
-        .slice(0, 100)
-        .map(x => x.s);
-    }
-    for (const spot of pool) {
-      if (isSpotActiveNow(spot)) {
-        counts[spot.type] = (counts[spot.type] || 0) + 1;
+    const valid = spots.filter(s => s.lat !== 0 || s.lng !== 0);
+    const types = new Set(valid.map(s => s.type));
+    for (const type of types) {
+      let typeSpots = valid.filter(s => s.type === type);
+      if (userLocation) {
+        typeSpots = typeSpots
+          .map(s => ({ s, d: (s.lat - userLocation.lat) ** 2 + (s.lng - userLocation.lng) ** 2 }))
+          .sort((a, b) => a.d - b.d)
+          .slice(0, 50)
+          .map(x => x.s);
       }
+      const active = typeSpots.filter(s => isSpotActiveNow(s)).length;
+      if (active > 0) counts[type] = active;
     }
     return counts;
   }, [spots, userLocation, clockTick]);
