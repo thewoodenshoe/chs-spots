@@ -99,7 +99,9 @@ export default function LandingView({
           Charleston Finds & Deals
         </h1>
         <p className="mt-1.5 text-sm text-teal-100 text-center animate-fade-in-delay">
-          {totalSpots} deals updated nightly from {venueCount} venues
+          {loading
+            ? 'Live deals and hidden gems in Charleston, SC'
+            : `${totalSpots} deals updated nightly from ${venueCount} venues`}
         </p>
 
         <div className="mt-4 flex w-full items-center gap-3 rounded-xl bg-white/15 backdrop-blur-sm px-4 py-3 text-sm transition-all hover:bg-white/25 animate-fade-in-delay-2">
@@ -119,7 +121,7 @@ export default function LandingView({
       </header>
 
       <main className="px-4 pt-5 pb-8 max-w-lg mx-auto">
-        {loading ? (
+        {loading || spots.length === 0 ? (
           <div className="flex justify-center py-16">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-teal-500" />
           </div>

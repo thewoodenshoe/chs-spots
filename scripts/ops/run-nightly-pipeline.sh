@@ -67,6 +67,11 @@ else
   echo "Pipeline FAILED with exit code $PIPELINE_EXIT at $(date)" >> "$LOG_FILE"
 fi
 
+# Enrich venues with missing attributes (website, address, phone)
+echo "--- Enriching venue data ---" >> "$LOG_FILE"
+node scripts/enrich-venues.js >> "$LOG_FILE" 2>&1 || true
+echo "Venue enrichment finished at $(date)" >> "$LOG_FILE"
+
 # Generate and send daily report (runs REGARDLESS of pipeline outcome)
 echo "--- Generating daily report ---" >> "$LOG_FILE"
 node scripts/ops/generate-report.js --send-telegram >> "$LOG_FILE" 2>&1 || true

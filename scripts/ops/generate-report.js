@@ -489,22 +489,21 @@ function getPipelineData() {
     }
   } catch (e) { debugLog('data', e); }
 
-  // 2. Discovery spots needing review (no area, no website, suspect location)
+  // 2. Discovery spots needing review (only critical issues — no coordinates, no area)
   try {
     const discoverySpots = [...result.recentlyOpenedSpots, ...result.comingSoonSpots];
     for (const s of discoverySpots) {
       if (s.finding_approved) continue;
       const issues = [];
-      if (!s.area || s.area === 'Unknown') issues.push('no area assigned');
-      if (!s.source_url) issues.push('no website found');
       if (!s.lat || !s.lng) issues.push('no coordinates');
+      if (!s.area || s.area === 'Unknown') issues.push('no area assigned');
       if (issues.length > 0) {
         result.actions.push({
-          severity: 'medium',
+          severity: issues.includes('no coordinates') ? 'medium' : 'low',
           category: 'Discovery Review',
           title: `${s.title} (${s.area || 'no area'})`,
           detail: `Issues: ${issues.join(', ')}`,
-          instruction: `Verify on Google Maps. To delete: reply to the Telegram bot with /delete ${s.id}\nOr acknowledge: set finding_approved=1 in admin.`,
+          instruction: `Verify on Google Maps. To approve: /approve ${s.id}\nTo delete: /delete ${s.id}`,
         });
       }
     }
@@ -604,19 +603,24 @@ function getPipelineData() {
       const database = db.getDb();
       for (const f of result.confidenceFlagged) {
         // Skip findings whose matching spot has been acknowledged
+        let matchingSpotId = null;
         if (f.venueId) {
           const matchingSpot = database.prepare(
-            "SELECT finding_approved FROM spots WHERE venue_id = ? AND type = ? AND finding_approved = 1 LIMIT 1",
+            "SELECT id, finding_approved FROM spots WHERE venue_id = ? AND type = ? ORDER BY id DESC LIMIT 1",
           ).get(f.venueId, f.type);
-          if (matchingSpot) continue;
+          if (matchingSpot?.finding_approved) continue;
+          if (matchingSpot) matchingSpotId = matchingSpot.id;
         }
         const llmNote = f.llmReasoning ? ` LLM says: "${f.llmReasoning}" (confidence: ${f.llmReviewConfidence})` : '';
+        const spotRef = matchingSpotId ? `#${matchingSpotId}` : f.venue;
         result.actions.push({
           severity: 'medium',
           category: 'Confidence Review',
           title: `${f.venue} [${f.type}] — confidence ${f.effectiveConfidence}/${f.llmConfidence}`,
           detail: `Flags: ${f.flags.join(', ')}. Times: ${f.times || 'N/A'}, Days: ${f.days || 'N/A'}, Label: "${f.label || ''}"${llmNote}`,
-          instruction: `Review if this ${f.type} is genuine. If wrong, exclude via Telegram: /delete <spotId>\nOr acknowledge: set finding_approved=1 in admin.`,
+          instruction: matchingSpotId
+            ? `To approve: /approve ${matchingSpotId}\nTo delete: /delete ${matchingSpotId}`
+            : `Review if this ${f.type} is genuine. Search in admin by venue name.`,
         });
       }
       if (result.confidenceRejected.length > 0) {

@@ -174,12 +174,30 @@ export async function handleTextCommand(text: string, chatId: string | number): 
     await send([
       `📖 *Charleston Finds — Bot Commands*`,
       ``,
+      `/approve <id> — Approve a finding (suppress from report)`,
+      `/delete <id> — Delete a spot (adds venue to watchlist)`,
+      `/info <id> — Show full spot details`,
       `/idea <text> — Save an idea to the backlog`,
       `/ideas — List all open ideas`,
-      `/info <id> — Show full spot details`,
-      `/delete <id> — Delete a spot (adds venue to watchlist)`,
       `/help — Show this message`,
     ].join('\n'));
+    return true;
+  }
+
+  const approveMatch = text.match(/^\/approve\s+(\d+)$/i);
+  if (approveMatch) {
+    const spotId = parseInt(approveMatch[1], 10);
+    const spot = spots.getById(spotId);
+    if (!spot) {
+      await send(`❓ Spot #${spotId} not found.`);
+      return true;
+    }
+    spots.update(spotId, {
+      finding_approved: 1,
+      finding_rationale: 'Approved via /approve command',
+      last_update_date: new Date().toISOString().split('T')[0],
+    });
+    await send(`✅ *Approved finding*: ${spot.title} (ID: ${spotId})\n\nThis spot will no longer appear in report warnings.`);
     return true;
   }
 
