@@ -460,12 +460,16 @@ export default function Home() {
     trackActivityFilter(activity);
   };
 
-  const handleLandingSearch = () => {
+  const handleLandingSearch = (initialQuery?: string) => {
     setSelectedArea(NEAR_ME);
     setSelectedActivity(ALL_VENUES);
     setShowLanding(false);
     setViewMode('list');
     setIsSearchOpen(true);
+    if (initialQuery) {
+      setSearchQuery(initialQuery);
+      setListSortMode(userLocation ? 'nearest' : 'alpha');
+    }
   };
 
   if (showLanding) {

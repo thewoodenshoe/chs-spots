@@ -28,7 +28,7 @@ interface LandingViewProps {
   loading: boolean;
   userLocation: { lat: number; lng: number } | null;
   onSelectActivity: (activity: SpotType) => void;
-  onSearch: () => void;
+  onSearch: (initialQuery?: string) => void;
 }
 
 export default function LandingView({
@@ -102,15 +102,20 @@ export default function LandingView({
           {totalSpots} deals updated nightly from {venueCount} venues
         </p>
 
-        <button
-          onClick={onSearch}
-          className="mt-4 flex w-full items-center gap-3 rounded-xl bg-white/15 backdrop-blur-sm px-4 py-3 text-sm text-teal-100 transition-all hover:bg-white/25 active:scale-[0.98] touch-manipulation animate-fade-in-delay-2"
-        >
+        <div className="mt-4 flex w-full items-center gap-3 rounded-xl bg-white/15 backdrop-blur-sm px-4 py-3 text-sm transition-all hover:bg-white/25 animate-fade-in-delay-2">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 flex-shrink-0 text-teal-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          Search venues, deals, happy hours...
-        </button>
+          <input
+            type="text"
+            placeholder="Search venues, deals, happy hours..."
+            className="w-full bg-transparent text-teal-100 placeholder-teal-200/60 outline-none"
+            onFocus={() => onSearch()}
+            onChange={(e) => {
+              if (e.target.value) onSearch(e.target.value);
+            }}
+          />
+        </div>
       </header>
 
       <main className="px-4 pt-5 pb-8 max-w-lg mx-auto">

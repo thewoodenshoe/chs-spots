@@ -203,6 +203,7 @@ function isVenueOpenNow(hours: Record<string, string | { open: string; close: st
   const entry = hours[dayKeys[now.getDay()]];
   if (!entry || entry === 'closed') return false;
   if (typeof entry === 'string') return false;
+  if (!entry.open || !entry.close) return false;
   const nowMin = now.getHours() * 60 + now.getMinutes();
   const [oh, om] = entry.open.split(':').map(Number);
   const [ch, cm] = entry.close.split(':').map(Number);

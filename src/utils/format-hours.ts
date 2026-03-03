@@ -26,6 +26,7 @@ export function formatFullWeekHours(hours: OperatingHours | null): DayHours[] {
     const entry = hours[key];
     const h = !entry || entry === 'closed'
       ? 'Closed'
+      : (!entry.open || !entry.close) ? 'Hours unavailable'
       : `${formatTime12(entry.open)} – ${formatTime12(entry.close)}`;
     return { day: DAY_LABELS[key], hours: h, isToday: idx === todayIdx };
   });

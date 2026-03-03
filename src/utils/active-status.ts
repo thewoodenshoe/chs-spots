@@ -22,6 +22,7 @@ export function isOpenNow(hours: OperatingHours | null | undefined): boolean {
   const day = todayKey();
   const entry = hours[day];
   if (!entry || entry === 'closed') return false;
+  if (!entry.open || !entry.close) return false;
 
   const now = getEasternNow();
   const nowMin = now.getHours() * 60 + now.getMinutes();
@@ -49,6 +50,10 @@ export function getOpenStatus(hours: OperatingHours | null | undefined): {
   if (!entry || entry === 'closed') {
     const nextOpen = findNextOpen(hours, day);
     return { isOpen: false, label: 'Closed', opensAt: nextOpen || undefined };
+  }
+
+  if (!entry.open || !entry.close) {
+    return { isOpen: false, label: '' };
   }
 
   const now = getEasternNow();
@@ -85,7 +90,7 @@ function findNextOpen(hours: OperatingHours, currentDay: string): string | null 
   for (let i = 1; i <= 7; i++) {
     const nextDay = DAY_KEYS[(idx + i) % 7];
     const entry = hours[nextDay];
-    if (entry && entry !== 'closed') {
+    if (entry && entry !== 'closed' && entry.open) {
       const dayLabel = i === 1 ? 'tomorrow' : nextDay.charAt(0).toUpperCase() + nextDay.slice(1);
       return `${dayLabel} ${formatTime12(entry.open)}`;
     }
