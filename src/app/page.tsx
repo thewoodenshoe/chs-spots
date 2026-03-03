@@ -359,6 +359,9 @@ export default function Home() {
     lng: number;
     photoUrl?: string;
     photo?: File;
+    promotionTime?: string;
+    promotionList?: string[];
+    sourceUrl?: string;
   }) => {
     try {
       let photoUrl: string | undefined = data.photoUrl;
@@ -374,6 +377,9 @@ export default function Home() {
         description: data.description,
         type: data.type,
         photoUrl,
+        promotionTime: data.promotionTime,
+        promotionList: data.promotionList,
+        sourceUrl: data.sourceUrl,
       });
 
       setEditPinLocation(null);

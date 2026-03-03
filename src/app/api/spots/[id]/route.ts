@@ -83,7 +83,7 @@ export async function PUT(
     }
 
     if (isAdminRequest(request)) {
-      spots.update(spotId, {
+      const adminUpdate: Record<string, unknown> = {
         title: spotData.title,
         description: spotData.description || '',
         type: spotData.type || spotData.activity || existing.type || 'Happy Hour',
@@ -93,14 +93,18 @@ export async function PUT(
         lng: spotData.lng,
         area: spotData.area ?? existing.area,
         ...(existing.source === 'automated' ? { manualOverride: 1 } : {}),
-      });
+      };
+      if (spotData.promotionTime !== undefined) adminUpdate.promotion_time = spotData.promotionTime;
+      if (spotData.promotionList !== undefined) adminUpdate.promotion_list = JSON.stringify(spotData.promotionList);
+      if (spotData.sourceUrl !== undefined) adminUpdate.source_url = spotData.sourceUrl;
 
+      spots.update(spotId, adminUpdate);
       invalidate('api:spots');
       const updated = spots.getById(spotId);
       return NextResponse.json(updated, { status: 200 });
     }
 
-    const pendingEdit = {
+    const pendingEdit: Record<string, unknown> = {
       title: spotData.title,
       description: spotData.description || '',
       lat: spotData.lat,
@@ -110,6 +114,9 @@ export async function PUT(
       area: spotData.area !== undefined ? spotData.area : null,
       submittedAt: new Date().toISOString(),
     };
+    if (spotData.promotionTime !== undefined) pendingEdit.promotionTime = spotData.promotionTime;
+    if (spotData.promotionList !== undefined) pendingEdit.promotionList = spotData.promotionList;
+    if (spotData.sourceUrl !== undefined) pendingEdit.sourceUrl = spotData.sourceUrl;
 
     spots.update(spotId, { pendingEdit });
 
@@ -117,10 +124,13 @@ export async function PUT(
     if (pendingEdit.title !== existing.title) changes.push(`Title: ${existing.title} → ${pendingEdit.title}`);
     if (pendingEdit.type !== existing.type) changes.push(`Type: ${existing.type} → ${pendingEdit.type}`);
     if (pendingEdit.description !== (existing.description || '')) changes.push('Description changed');
+    if (pendingEdit.promotionTime && pendingEdit.promotionTime !== existing.promotion_time) changes.push(`When: ${pendingEdit.promotionTime}`);
+    if (pendingEdit.promotionList) changes.push('Deals list updated');
+    if (pendingEdit.sourceUrl && pendingEdit.sourceUrl !== existing.source_url) changes.push('Source link updated');
     const oldLat = existing.lat ?? 0;
     const oldLng = existing.lng ?? 0;
     if (pendingEdit.lat !== oldLat || pendingEdit.lng !== oldLng) {
-      changes.push(`Location: ${oldLat.toFixed(4)},${oldLng.toFixed(4)} → ${pendingEdit.lat.toFixed(4)},${pendingEdit.lng.toFixed(4)}`);
+      changes.push(`Location moved`);
     }
     if (changes.length === 0) changes.push('(minor changes)');
 
@@ -128,10 +138,10 @@ export async function PUT(
       await sendEditApproval({
         id: spotId,
         title: existing.title,
-        type: pendingEdit.type,
+        type: pendingEdit.type as string,
         changes,
-        lat: pendingEdit.lat,
-        lng: pendingEdit.lng,
+        lat: pendingEdit.lat as number,
+        lng: pendingEdit.lng as number,
       });
     } catch (e) {
       console.warn('Telegram notification failed:', e);

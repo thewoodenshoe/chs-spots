@@ -27,6 +27,9 @@ export const updateSpotSchema = z.object({
   activity: z.string().max(50).optional(),
   photoUrl: z.string().max(1_500_000, 'Photo too large').optional(),
   area: z.string().max(100).optional(),
+  promotionTime: z.string().max(200).optional(),
+  promotionList: z.array(z.string().max(500)).max(20).optional(),
+  sourceUrl: z.string().max(2000).optional(),
 });
 
 /** Schema for feedback submissions (POST /api/feedback) */

@@ -125,6 +125,9 @@ export async function handleEditAction(action: string, spotId: number, cq: any, 
   if (edit.lat != null) updates.lat = edit.lat;
   if (edit.lng != null) updates.lng = edit.lng;
   if (edit.area != null) updates.area = edit.area;
+  if (edit.promotionTime !== undefined) updates.promotion_time = edit.promotionTime;
+  if (edit.promotionList !== undefined) updates.promotion_list = JSON.stringify(edit.promotionList);
+  if (edit.sourceUrl !== undefined) updates.source_url = edit.sourceUrl;
   if (spot.source === 'automated') updates.manual_override = 1;
   spots.update(spotId, updates);
   invalidate('api:spots');
@@ -174,11 +177,14 @@ export async function handleTextCommand(text: string, chatId: string | number): 
     await send([
       `📖 *Charleston Finds — Bot Commands*`,
       ``,
-      `/approve <id> — Approve a finding (suppress from report)`,
-      `/delete <id> — Delete a spot (adds venue to watchlist)`,
-      `/info <id> — Show full spot details`,
-      `/idea <text> — Save an idea to the backlog`,
-      `/ideas — List all open ideas`,
+      `/approve <id> — Approve a finding`,
+      `/delete <id> — Delete a spot`,
+      `/info <id> — Spot details`,
+      `/stats — Database summary`,
+      `/recent — Last 10 added spots`,
+      `/search <text> — Search spots by title`,
+      `/idea <text> — Save an idea`,
+      `/ideas — List open ideas`,
       `/help — Show this message`,
     ].join('\n'));
     return true;
@@ -273,6 +279,61 @@ export async function handleTextCommand(text: string, chatId: string | number): 
       `🗺 [View on Map](${mapLink})`,
     ].filter(Boolean);
     await send(lines.join('\n'));
+    return true;
+  }
+
+  if (text === '/stats') {
+    const db = getDb();
+    const totalSpots = db.prepare('SELECT COUNT(*) as c FROM spots WHERE status = ?').get('approved') as any;
+    const totalVenues = db.prepare('SELECT COUNT(*) as c FROM venues').get() as any;
+    const byType = db.prepare("SELECT type, COUNT(*) as c FROM spots WHERE status = 'approved' GROUP BY type ORDER BY c DESC").all() as any[];
+    const pending = db.prepare("SELECT COUNT(*) as c FROM spots WHERE status = 'pending'").get() as any;
+    const watchlistCount = db.prepare('SELECT COUNT(*) as c FROM watchlist').get() as any;
+    const typeLines = byType.map((r: any) => `  ${r.type}: ${r.c}`).join('\n');
+    await send([
+      `📊 *Database Stats*`,
+      ``,
+      `✅ Approved spots: ${totalSpots.c}`,
+      `🏢 Venues: ${totalVenues.c}`,
+      `⏳ Pending: ${pending.c}`,
+      `🚫 Watchlist: ${watchlistCount.c}`,
+      ``,
+      `*By type:*`,
+      typeLines,
+    ].join('\n'));
+    return true;
+  }
+
+  if (text === '/recent') {
+    const db = getDb();
+    const recent = db.prepare("SELECT id, title, type, area, created_at FROM spots WHERE status = 'approved' ORDER BY id DESC LIMIT 10").all() as any[];
+    if (recent.length === 0) {
+      await send('No approved spots found.');
+      return true;
+    }
+    const lines = recent.map((s: any) => {
+      const date = s.created_at ? new Date(s.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '?';
+      return `#${s.id} — ${s.title} (${s.type}, ${s.area || 'N/A'}) _${date}_`;
+    });
+    await send(`🆕 *Last 10 Spots*\n\n${lines.join('\n\n')}`);
+    return true;
+  }
+
+  const searchMatch = text.match(/^\/search\s+(.+)$/i);
+  if (searchMatch) {
+    const query = searchMatch[1].trim();
+    if (query.length < 2) {
+      await send('Search query must be at least 2 characters.');
+      return true;
+    }
+    const db = getDb();
+    const results = db.prepare("SELECT id, title, type, area, status FROM spots WHERE title LIKE ? ORDER BY id DESC LIMIT 10").all(`%${query}%`) as any[];
+    if (results.length === 0) {
+      await send(`🔍 No spots found matching "${query}".`);
+      return true;
+    }
+    const lines = results.map((s: any) => `#${s.id} — ${s.title} (${s.type}, ${s.status})`);
+    await send(`🔍 *Search: "${query}"* (${results.length} result${results.length > 1 ? 's' : ''})\n\n${lines.join('\n')}`);
     return true;
   }
 

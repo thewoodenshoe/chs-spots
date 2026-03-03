@@ -22,6 +22,9 @@ interface EditSpotModalProps {
     lng: number;
     photoUrl?: string;
     photo?: File;
+    promotionTime?: string;
+    promotionList?: string[];
+    sourceUrl?: string;
   }) => Promise<void>;
   onDelete?: (id: number) => Promise<void>;
 }
@@ -46,6 +49,9 @@ export default function EditSpotModal({
   
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [promotionTime, setPromotionTime] = useState('');
+  const [deals, setDeals] = useState('');
+  const [sourceUrl, setSourceUrl] = useState('');
   const [selectedActivity, setSelectedActivity] = useState(defaultActivityName);
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -62,13 +68,13 @@ export default function EditSpotModal({
     if (spot && isOpen) {
        
       setTitle(spot.title);
-       
       setDescription(spot.description || '');
-       
+      setPromotionTime(spot.promotionTime || spot.happyHourTime || '');
+      const list = spot.promotionList || spot.happyHourList || [];
+      setDeals(Array.isArray(list) ? list.join('\n') : '');
+      setSourceUrl(spot.sourceUrl || '');
       setSelectedActivity(spot.type);
-       
       setPhotoPreview(spot.photoUrl || null);
-       
       setSelectedPhoto(null);
     }
   }, [spot, isOpen]);
@@ -173,6 +179,7 @@ export default function EditSpotModal({
 
     setIsSubmitting(true);
     try {
+      const dealLines = deals.split('\n').map(l => l.trim()).filter(Boolean);
       await onSubmit({
         id: spot.id,
         title: title.trim(),
@@ -182,6 +189,9 @@ export default function EditSpotModal({
         lng: pinLocation.lng,
         photo: selectedPhoto || undefined,
         photoUrl: selectedPhoto ? undefined : spot.photoUrl,
+        promotionTime: promotionTime.trim() || undefined,
+        promotionList: dealLines.length > 0 ? dealLines : undefined,
+        sourceUrl: sourceUrl.trim() || undefined,
       });
       handleClose();
     } catch (error) {
@@ -366,6 +376,51 @@ export default function EditSpotModal({
                 placeholder="Tell us about this spot..."
                 rows={3}
                 className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-base text-gray-800 placeholder-gray-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 resize-none"
+              />
+            </div>
+
+            {/* When — Promotion Time */}
+            <div className="mb-4">
+              <label className="mb-1 block text-sm font-semibold text-gray-700">
+                When
+              </label>
+              <p className="mb-1.5 text-xs text-gray-400">When is this deal active?</p>
+              <input
+                type="text"
+                value={promotionTime}
+                onChange={(e) => setPromotionTime(e.target.value)}
+                placeholder="e.g. 4pm-7pm • Mon-Fri"
+                className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-base text-gray-800 placeholder-gray-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+              />
+            </div>
+
+            {/* Deals — one per line */}
+            <div className="mb-4">
+              <label className="mb-1 block text-sm font-semibold text-gray-700">
+                Deals
+              </label>
+              <p className="mb-1.5 text-xs text-gray-400">One deal per line</p>
+              <textarea
+                value={deals}
+                onChange={(e) => setDeals(e.target.value)}
+                placeholder={"e.g.\n$5 margaritas\n$3 draft beer\nHalf-price appetizers"}
+                rows={3}
+                className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-base text-gray-800 placeholder-gray-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 resize-none"
+              />
+            </div>
+
+            {/* Source URL */}
+            <div className="mb-4">
+              <label className="mb-1 block text-sm font-semibold text-gray-700">
+                Source link
+              </label>
+              <p className="mb-1.5 text-xs text-gray-400">Where did you find this info?</p>
+              <input
+                type="url"
+                value={sourceUrl}
+                onChange={(e) => setSourceUrl(e.target.value)}
+                placeholder="https://..."
+                className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-base text-gray-800 placeholder-gray-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
               />
             </div>
 
