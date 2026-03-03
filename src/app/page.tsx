@@ -1,7 +1,12 @@
+import type { Metadata } from 'next';
 import { spots, venues, activitiesDb, areasDb, type SpotRow, type VenueRow } from '@/lib/db';
 import Link from 'next/link';
 import HomeClient from './HomeClient';
 import { slugify } from '@/utils/seo-helpers';
+
+export const metadata: Metadata = {
+  alternates: { canonical: 'https://chsfinds.com' },
+};
 
 function transformSpot(spot: SpotRow, venueMap: Map<string, VenueRow>) {
   const venue = spot.venue_id ? venueMap.get(spot.venue_id) : undefined;

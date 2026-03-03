@@ -20,12 +20,17 @@ export async function generateMetadata(
     ? `${spot.description.slice(0, 150)}${spot.description.length > 150 ? '...' : ''}`
     : `${spot.type} at ${spot.title} in ${area}, Charleston SC. Verified from venue sites.`;
 
+  const canonical = `https://chsfinds.com/spots/${id}`;
+
   return {
     title,
     description: desc,
+    keywords: [spot.title, spot.type, area, `${spot.type} ${area}`, 'Charleston SC'],
+    alternates: { canonical },
     openGraph: {
       title,
       description: desc,
+      url: canonical,
       type: 'article',
       ...(spot.photo_url && !spot.photo_url.startsWith('data:')
         ? { images: [{ url: spot.photo_url }] }

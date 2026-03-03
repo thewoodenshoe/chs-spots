@@ -34,9 +34,6 @@ export const metadata: Metadata = {
     "things to do in Charleston SC",
   ],
   metadataBase: new URL("https://chsfinds.com"),
-  alternates: {
-    canonical: "https://chsfinds.com",
-  },
   openGraph: {
     title: "Charleston Finds — Happy Hours, Brunches, Live Music & Deals",
     description: seoDescription,

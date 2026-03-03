@@ -17,12 +17,21 @@ export async function generateMetadata(
   const title = `${venue.name} — ${area}, Charleston SC`;
   const desc = `Find deals, happy hours, brunch, live music and more at ${venue.name} in ${area}. Verified from venue sites, updated nightly.`;
 
+  const canonical = `https://chsfinds.com/venues/${encodeURIComponent(id)}`;
+
+  const venueSpots = spots.getAll({ visibleOnly: true })
+    .filter(s => s.venue_id === id);
+  const spotTypes = [...new Set(venueSpots.map(s => s.type))];
+
   return {
     title,
     description: desc,
+    keywords: [venue.name, area, 'Charleston SC', ...spotTypes],
+    alternates: { canonical },
     openGraph: {
       title,
       description: desc,
+      url: canonical,
       type: 'website',
       ...(venue.photo_url && !venue.photo_url.startsWith('data:')
         ? { images: [{ url: venue.photo_url }] }

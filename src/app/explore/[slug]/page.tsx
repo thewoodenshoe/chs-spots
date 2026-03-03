@@ -73,12 +73,17 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const parsed = parseSlug(slug);
   if (!parsed) return { title: 'Not Found' };
+  const canonical = `https://chsfinds.com/explore/${slug}`;
+
   return {
     title: `Best ${parsed.activity} in ${parsed.area} — Charleston Finds`,
     description: `Discover the best ${parsed.activity.toLowerCase()} spots in ${parsed.area}, Charleston SC. Verified from venue sites and curated by locals.`,
+    keywords: [parsed.activity, parsed.area, 'Charleston SC', `best ${parsed.activity.toLowerCase()}`],
+    alternates: { canonical },
     openGraph: {
       title: `Best ${parsed.activity} in ${parsed.area}`,
       description: `Discover the best ${parsed.activity.toLowerCase()} spots in ${parsed.area}, Charleston SC.`,
+      url: canonical,
     },
   };
 }
