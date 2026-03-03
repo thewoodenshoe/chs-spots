@@ -23,8 +23,8 @@ export interface ActivityGroup {
 
 export const ACTIVITY_GROUPS: ActivityGroup[] = [
   { label: "What's Happening", activities: ['Happy Hour', 'Brunch', 'Live Music'] },
-  { label: 'Explore', activities: ['Coffee Shops', 'Rooftop Bars', 'Dog-Friendly', 'Landmarks & Attractions'] },
-  { label: "What's New", activities: ['Recently Opened', 'Coming Soon'] },
+  { label: 'Discover', activities: ['Recently Opened', 'Coming Soon', 'Landmarks & Attractions'] },
+  { label: 'Explore', activities: ['Coffee Shops', 'Rooftop Bars', 'Dog-Friendly'] },
   { label: 'Everything', activities: [ALL_VENUES] },
 ];
 

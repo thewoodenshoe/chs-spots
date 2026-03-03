@@ -19,7 +19,7 @@ const PASTEL_BG: Record<string, string> = {
   'Coming Soon': 'bg-yellow-50 border-yellow-200',
 };
 
-const LANDING_GROUP_ORDER = ["What's Happening", "What's New", 'Explore'];
+const LANDING_GROUP_ORDER = ["What's Happening", 'Discover', 'Explore'];
 
 interface LandingViewProps {
   spots: Spot[];
@@ -132,7 +132,7 @@ export default function LandingView({
                 <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-gray-400 px-0.5">
                   {group.label}
                 </p>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-3 gap-2.5">
                   {group.activities.map((name) => {
                     const config = activityMap.get(name);
                     const emoji = config?.emoji || '⭐';

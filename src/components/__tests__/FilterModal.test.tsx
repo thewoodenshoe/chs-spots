@@ -72,7 +72,7 @@ describe('FilterModal', () => {
     render(<FilterModal {...defaultProps} spotCounts={countsWithNew} />);
 
     expect(screen.getByText('Recently Opened')).toBeInTheDocument();
-    expect(screen.getByText("What's New")).toBeInTheDocument();
+    expect(screen.getByText('Discover')).toBeInTheDocument();
   });
 
   it('calls onActivityChange and closes menu when an activity is clicked', () => {
@@ -107,6 +107,12 @@ describe('FilterModal', () => {
     expect(screen.getByText('Coffee Shops')).toBeInTheDocument();
     expect(screen.getByText('Rooftop Bars')).toBeInTheDocument();
     expect(screen.getByText('Dog-Friendly')).toBeInTheDocument();
+  });
+
+  it('shows Discover group with landmarks', () => {
+    render(<FilterModal {...defaultProps} spotCounts={{ ...spotCounts, 'Landmarks & Attractions': 12, 'Recently Opened': 1, 'Coming Soon': 1 }} />);
+
+    expect(screen.getByText('Discover')).toBeInTheDocument();
     expect(screen.getByText('Landmarks & Attractions')).toBeInTheDocument();
   });
 

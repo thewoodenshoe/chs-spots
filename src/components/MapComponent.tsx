@@ -74,10 +74,10 @@ export default function MapComponent({
   const [showOnlyActivityActive, setShowOnlyActivityActive] = useState(false);
 
   const whatsHappening = ACTIVITY_GROUPS.find(g => g.label === "What's Happening");
-  const whatsNew = ACTIVITY_GROUPS.find(g => g.label === "What's New");
+  const discover = ACTIVITY_GROUPS.find(g => g.label === 'Discover');
   const isWhatsHappening = whatsHappening?.activities.includes(selectedActivity) ?? false;
-  const isWhatsNew = whatsNew?.activities.includes(selectedActivity) ?? false;
-  const showVenueOpenToggle = !isWhatsNew;
+  const isDiscover = discover?.activities.includes(selectedActivity) ?? false;
+  const showVenueOpenToggle = !isDiscover;
   const showActivityToggle = isWhatsHappening;
 
   const venueMap = useMemo(() => {
