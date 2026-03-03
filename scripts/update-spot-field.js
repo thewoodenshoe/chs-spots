@@ -8,7 +8,7 @@
 const path = require('path');
 const Database = require('better-sqlite3');
 
-const dbPath = process.env.DB_PATH || path.resolve(process.cwd(), 'data', 'chs-spots.db');
+const dbPath = process.env.DB_PATH || path.resolve(__dirname, '..', 'data', 'chs-spots.db');
 const db = new Database(dbPath);
 
 const [id, field, ...valueParts] = process.argv.slice(2);
@@ -19,7 +19,11 @@ if (!id || !field || value === undefined) {
   process.exit(1);
 }
 
-const allowedFields = ['promotion_time', 'title', 'description', 'source_url', 'area'];
+const allowedFields = [
+  'promotion_time', 'title', 'description', 'source_url', 'area',
+  'type', 'status', 'manual_override', 'photo_url', 'promotion_list',
+  'finding_approved', 'finding_rationale', 'lat', 'lng',
+];
 if (!allowedFields.includes(field)) {
   console.error('Allowed fields:', allowedFields.join(', '));
   process.exit(1);
@@ -31,6 +35,7 @@ if (!existing) {
   process.exit(1);
 }
 
-db.prepare(`UPDATE spots SET ${field} = ?, updated_at = datetime('now') WHERE id = ?`).run(value, id);
-console.log('Updated spot', id, '|', field, '=', value);
+const today = new Date().toISOString().split('T')[0];
+db.prepare(`UPDATE spots SET ${field} = ?, last_update_date = ?, updated_at = datetime('now') WHERE id = ?`).run(value, today, id);
+console.log('Updated spot', id, '|', field, '=', value, '| last_update_date =', today);
 db.close();

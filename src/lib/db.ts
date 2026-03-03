@@ -91,6 +91,9 @@ function runMigrations(db: Database.Database) {
   if (!actColNames.has('hidden')) db.prepare("ALTER TABLE activities ADD COLUMN hidden INTEGER DEFAULT 0").run();
   if (!actColNames.has('venue_required')) db.prepare("ALTER TABLE activities ADD COLUMN venue_required INTEGER DEFAULT 1").run();
 
+  if (!spotColNames.has('finding_approved')) db.prepare("ALTER TABLE spots ADD COLUMN finding_approved INTEGER DEFAULT 0").run();
+  if (!spotColNames.has('finding_rationale')) db.prepare("ALTER TABLE spots ADD COLUMN finding_rationale TEXT").run();
+
   const venueCols = db.prepare("PRAGMA table_info(venues)").all() as { name: string }[];
   const venueColNames = new Set(venueCols.map(c => c.name));
   if (!venueColNames.has('phone')) db.prepare("ALTER TABLE venues ADD COLUMN phone TEXT").run();

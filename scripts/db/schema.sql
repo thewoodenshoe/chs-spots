@@ -46,6 +46,8 @@ CREATE TABLE IF NOT EXISTS spots (
   lat REAL,
   lng REAL,
   area TEXT,
+  finding_approved INTEGER DEFAULT 0,
+  finding_rationale TEXT,
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now'))
 );
