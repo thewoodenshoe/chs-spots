@@ -57,7 +57,11 @@
     .auto-note { font-size: 0.72rem; color: #64748b; margin-left: 8px; }
     .changes-note { font-size: 0.72rem; color: #eab308; margin-left: 4px; font-weight: 600; }
     .save-ok { font-size: 0.72rem; color: #86efac; margin-left: 8px; font-weight: 600; }
-    .help-tip { display: inline-block; width: 14px; height: 14px; line-height: 14px; text-align: center; font-size: 9px; font-weight: 700; border-radius: 50%; background: #334155; color: #94a3b8; cursor: help; flex-shrink: 0; }
+    .help-tip { display: inline-block; width: 14px; height: 14px; line-height: 14px; text-align: center; font-size: 9px; font-weight: 700; border-radius: 50%; background: #334155; color: #94a3b8; cursor: pointer; flex-shrink: 0; position: relative; }
+    .help-tip:hover { background: #475569; color: #e2e8f0; }
+    .help-popup { position: absolute; left: 20px; top: -4px; background: #334155; border: 1px solid #475569; border-radius: 6px; padding: 6px 10px; font-size: 0.72rem; font-weight: 400; color: #e2e8f0; white-space: pre-line; line-height: 1.5; z-index: 10; min-width: 240px; max-width: 340px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); pointer-events: auto; }
+    .help-popup::before { content: ''; position: absolute; left: -6px; top: 8px; border: 6px solid transparent; border-right-color: #475569; border-left: none; }
+    .field-hint { font-size: 0.68rem; color: #64748b; font-style: italic; margin-top: 2px; }
     .empty { color: #64748b; font-style: italic; padding: 2rem; text-align: center; }
 
     .review-list { max-width: 900px; }
@@ -136,22 +140,31 @@ const SEARCH_ENUMS = {
 };
 
 const FIELD_HELP = {
-  promotion_time: 'Format: "4pm-7pm \u2022 Mon-Fri" or "11am-3pm \u2022 Saturday, Sunday".\nUse bullet (\u2022) between time and days.',
-  promotion_list: 'JSON array of deal items, e.g.:\n["$5 margaritas", "$3 draft beer", "Half-price apps"]',
-  operating_hours: 'JSON object keyed by day, e.g.:\n{"monday": {"open": "11:00", "close": "22:00"}, "tuesday": "closed"}',
+  promotion_time: 'Format: "4pm-7pm \u2022 Mon-Fri" or "11am-3pm \u2022 Saturday, Sunday".\nUse bullet (\u2022) to separate time from days.',
+  promotion_list: 'One deal per line.\nE.g.:\n$5 margaritas\n$3 draft beer\nHalf-price appetizers',
+  operating_hours: 'JSON object keyed by day, e.g.:\n{"monday": {"open": "11:00", "close": "22:00"},\n "tuesday": "closed"}',
   source_url: 'URL where this deal was found. Used for verification.',
   finding_approved: '1 = approved (suppresses report warnings).\n0 = not yet reviewed.',
-  finding_rationale: 'Why this finding was approved or flagged. Free text.',
-  manual_override: '1 = prevents automated pipeline from modifying this spot.',
-  description: 'Visible to users. Keep concise: what the deal is and when.',
+  finding_rationale: 'Why this finding was approved or flagged.',
+  manual_override: '1 = prevents the automated pipeline from modifying this spot.',
+  description: 'Visible to users on the website.\nKeep concise: what the deal/venue is and when.',
   last_update_date: 'Auto-set on save. Shows when data was last verified.',
   photo_url: 'Direct URL to an image. Prefer venue-hosted images.',
   hours_source: 'Where hours data came from: "google", "website", "manual", etc.',
-  pending_edit: 'JSON of pending user-submitted edit (auto-populated).',
+  pending_edit: 'Pending user-submitted edit (auto-populated, do not edit manually).',
   area: 'Charleston neighborhood. Must match a known area name.',
 };
 
-const JSON_FIELDS = ['promotion_list', 'pending_edit', 'operating_hours'];
+const FIELD_PLACEHOLDERS = {
+  promotion_time: 'e.g. 4pm-7pm \u2022 Mon-Fri',
+  promotion_list: 'One deal per line, e.g.:\n$5 margaritas\n$3 draft beer\nHalf-price appetizers',
+  description: 'What the deal is and when it applies...',
+  source_url: 'https://...',
+  finding_rationale: 'Reason for approval or flag...',
+};
+
+const LIST_FIELDS = ['promotion_list'];
+const JSON_FIELDS = ['pending_edit', 'operating_hours'];
 
 const SPOT_FIELDS = {
   search: ['title', 'id', 'type', 'area', 'venue_id', 'status', 'source', 'description', 'promotion_time', 'source_url', 'submitter_name', 'finding_approved'],
@@ -290,6 +303,23 @@ function renderTable(rows) {
 }
 
 function isJsonField(f) { return JSON_FIELDS.includes(f); }
+function isListField(f) { return LIST_FIELDS.includes(f); }
+
+function jsonArrayToLines(val) {
+  if (!val) return '';
+  try {
+    const arr = typeof val === 'string' ? JSON.parse(val) : val;
+    if (Array.isArray(arr)) return arr.join('\n');
+  } catch {}
+  return typeof val === 'string' ? val : '';
+}
+
+function linesToJsonArray(text) {
+  if (!text || !text.trim()) return null;
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  return JSON.stringify(lines);
+}
+
 function validateJson(str) {
   if (!str || str.trim() === '') return { ok: true, val: null };
   try { JSON.parse(str); return { ok: true, val: str }; }
@@ -340,7 +370,12 @@ function openEdit(id, opts = {}) {
     html += `<div class="edit-section"><div class="edit-section-title">${section}</div><div class="field-grid">`;
     for (const f of fields) {
       const val = row[f];
-      const v = val == null ? '' : (typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val));
+      let v;
+      if (isListField(f)) {
+        v = jsonArrayToLines(val);
+      } else {
+        v = val == null ? '' : (typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val));
+      }
       editOriginals[f] = v;
 
       const isTextarea = ['description', 'promotion_list', 'pending_edit', 'operating_hours', 'finding_rationale'].includes(f);
@@ -349,10 +384,12 @@ function openEdit(id, opts = {}) {
       const ro = isReadonly ? ' readonly' : '';
       const label = f.replace(/^_venue_/, 'venue ');
       const help = FIELD_HELP[f];
-      const helpHtml = help ? ` <span class="help-tip" title="${esc(help)}">?</span>` : '';
+      const helpHtml = help ? ` <span class="help-tip" data-help="${esc(help)}">?</span>` : '';
       const jsonTag = isJsonField(f) ? ' <span style="font-size:0.6rem;color:#64748b">JSON</span>' : '';
+      const listTag = isListField(f) ? ' <span style="font-size:0.6rem;color:#64748b">one per line</span>' : '';
+      const ph = FIELD_PLACEHOLDERS[f] ? ` placeholder="${esc(FIELD_PLACEHOLDERS[f])}"` : '';
 
-      html += `<div class="edit-row"><label>${label}${helpHtml}${jsonTag}</label>`;
+      html += `<div class="edit-row"><label>${label}${helpHtml}${jsonTag}${listTag}</label>`;
       if (isToggle && !isReadonly) {
         html += `<select data-field="${f}"><option value="0"${v !== '1' ? ' selected' : ''}>0 (No)</option><option value="1"${v === '1' ? ' selected' : ''}>1 (Yes)</option></select>`;
       } else if (enumOpts && !isReadonly) {
@@ -364,9 +401,10 @@ function openEdit(id, opts = {}) {
         }
         html += '</select>';
       } else if (isTextarea) {
-        html += `<textarea data-field="${f}"${ro} rows="${isJsonField(f) ? 5 : 2}">${esc(v)}</textarea>`;
+        const rows = isListField(f) ? 4 : (isJsonField(f) ? 5 : 2);
+        html += `<textarea data-field="${f}"${ro} rows="${rows}"${ph}>${esc(v)}</textarea>`;
       } else {
-        html += `<input data-field="${f}" value="${esc(v)}"${ro} />`;
+        html += `<input data-field="${f}" value="${esc(v)}"${ro}${ph} />`;
       }
       html += '</div>';
     }
@@ -388,6 +426,21 @@ function openEdit(id, opts = {}) {
   editContainer.querySelectorAll('[data-field]').forEach(el => {
     el.addEventListener('input', trackDirty);
     el.addEventListener('change', trackDirty);
+  });
+
+  editContainer.querySelectorAll('.help-tip').forEach(tip => {
+    tip.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const existing = tip.querySelector('.help-popup');
+      if (existing) { existing.remove(); return; }
+      document.querySelectorAll('.help-popup').forEach(p => p.remove());
+      const popup = document.createElement('div');
+      popup.className = 'help-popup';
+      popup.textContent = tip.dataset.help;
+      tip.appendChild(popup);
+      const close = (ev) => { if (!tip.contains(ev.target)) { popup.remove(); document.removeEventListener('click', close); } };
+      setTimeout(() => document.addEventListener('click', close), 0);
+    });
   });
 
   editContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -434,6 +487,12 @@ async function doSave(id) {
 
   if (changedCount === 0) { showError('No changes to save'); return; }
 
+  for (const f of LIST_FIELDS) {
+    if (payload[f] !== undefined) {
+      payload[f] = linesToJsonArray(payload[f]);
+    }
+  }
+
   if (editTable === 'spots' || editTable !== 'venues') {
     if (payload.lat != null) payload.lat = parseFloat(payload.lat) || null;
     if (payload.lng != null) payload.lng = parseFloat(payload.lng) || null;
@@ -459,7 +518,12 @@ async function doSave(id) {
 
     if (data.row) {
       for (const [k, v] of Object.entries(data.row)) {
-        const val = v == null ? '' : (typeof v === 'object' ? JSON.stringify(v, null, 2) : String(v));
+        let val;
+        if (isListField(k)) {
+          val = jsonArrayToLines(v);
+        } else {
+          val = v == null ? '' : (typeof v === 'object' ? JSON.stringify(v, null, 2) : String(v));
+        }
         editOriginals[k] = val;
         const el = editContainer.querySelector(`[data-field="${k}"]`);
         if (el && !el.readOnly) {
