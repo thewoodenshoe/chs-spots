@@ -12,15 +12,22 @@
     .search { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.75rem; }
     .search select, .search input { padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid #475569; background: #1e293b; color: #e2e8f0; font-size: 0.85rem; }
     .search input { min-width: 200px; flex: 1; max-width: 400px; }
+    .search .value-select { min-width: 200px; flex: 1; max-width: 400px; }
     .tab-bar { display: flex; gap: 2px; margin-bottom: 0.75rem; }
-    .tab-btn { padding: 6px 14px; border: 1px solid #334155; background: #1e293b; color: #94a3b8; cursor: pointer; font-size: 0.8rem; font-weight: 600; border-radius: 6px 6px 0 0; }
+    .tab-btn { padding: 6px 14px; border: 1px solid #334155; background: #1e293b; color: #94a3b8; cursor: pointer; font-size: 0.8rem; font-weight: 600; border-radius: 6px 6px 0 0; position: relative; }
     .tab-btn.active { background: #334155; color: #0d9488; border-bottom-color: #334155; }
+    .tab-badge { position: absolute; top: -4px; right: -4px; min-width: 16px; height: 16px; line-height: 16px; text-align: center; font-size: 0.6rem; font-weight: 700; background: #ef4444; color: #fff; border-radius: 99px; padding: 0 4px; }
 
     button { padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid #0d9488; background: #0d9488; color: #fff; cursor: pointer; font-weight: 600; font-size: 0.8rem; }
     button:hover:not(:disabled) { background: #0f766e; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
     button.secondary { background: #1e293b; border-color: #475569; color: #94a3b8; }
     button.secondary:hover:not(:disabled) { background: #334155; }
+    button.sm { padding: 2px 8px; font-size: 0.72rem; }
+    button.approve { background: #14532d; border-color: #16a34a; }
+    button.approve:hover { background: #166534; }
+    button.danger { background: #7f1d1d; border-color: #991b1b; }
+    button.danger:hover { background: #991b1b; }
 
     .message { margin: 0.5rem 0; padding: 0.5rem 0.75rem; border-radius: 6px; font-size: 0.85rem; display: none; }
     .message.error { background: #7f1d1d; color: #fecaca; display: block; }
@@ -51,8 +58,32 @@
     .changes-note { font-size: 0.72rem; color: #eab308; margin-left: 4px; font-weight: 600; }
     .save-ok { font-size: 0.72rem; color: #86efac; margin-left: 8px; font-weight: 600; }
     .help-tip { display: inline-block; width: 14px; height: 14px; line-height: 14px; text-align: center; font-size: 9px; font-weight: 700; border-radius: 50%; background: #334155; color: #94a3b8; cursor: help; flex-shrink: 0; }
-    .json-hint { font-size: 0.68rem; color: #ef4444; margin-top: 1px; grid-column: 1 / -1; padding-left: 144px; }
     .empty { color: #64748b; font-style: italic; padding: 2rem; text-align: center; }
+
+    .review-list { max-width: 900px; }
+    .review-group { margin-bottom: 1.5rem; }
+    .review-group-header { font-size: 0.8rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px; }
+    .review-count { font-size: 0.7rem; background: #334155; color: #94a3b8; padding: 1px 8px; border-radius: 99px; }
+    .review-card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 0.5rem; cursor: pointer; transition: border-color 0.15s; }
+    .review-card:hover { border-color: #0d9488; }
+    .review-card.expanded { border-color: #0d9488; }
+    .review-card-header { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .review-title { font-size: 0.85rem; font-weight: 600; color: #e2e8f0; }
+    .review-type { font-size: 0.68rem; background: #334155; color: #94a3b8; padding: 1px 6px; border-radius: 4px; }
+    .review-area { font-size: 0.68rem; color: #64748b; }
+    .sev { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .sev-high { background: #ef4444; }
+    .sev-medium { background: #f59e0b; }
+    .sev-low { background: #64748b; }
+    .review-reason { margin-top: 0.5rem; font-size: 0.78rem; color: #94a3b8; line-height: 1.5; white-space: pre-line; padding: 0.5rem 0.75rem; background: #0f172a; border-radius: 6px; border-left: 3px solid #475569; }
+    .review-reason.sev-border-high { border-left-color: #ef4444; }
+    .review-reason.sev-border-medium { border-left-color: #f59e0b; }
+    .review-reason.sev-border-low { border-left-color: #64748b; }
+    .review-actions { margin-top: 0.5rem; display: flex; gap: 0.5rem; align-items: center; }
+    .review-id { font-size: 0.68rem; color: #64748b; }
+    .loading-spinner { display: flex; justify-content: center; padding: 3rem; }
+    .loading-spinner::after { content: ''; width: 24px; height: 24px; border: 3px solid #334155; border-top-color: #0d9488; border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
@@ -61,35 +92,51 @@
   <div class="tab-bar">
     <div class="tab-btn active" data-tab="spots">Spots</div>
     <div class="tab-btn" data-tab="venues">Venues</div>
+    <div class="tab-btn" data-tab="review">Needs Review <span class="tab-badge" id="review-badge" style="display:none"></span></div>
   </div>
 
-  <div class="search">
+  <div id="search-bar" class="search">
     <select id="field"></select>
     <input type="text" id="value" placeholder="Search value (partial match, e.g. kings)" />
+    <select id="value-select" class="value-select" style="display:none"></select>
     <button id="search">Search</button>
   </div>
   <div id="message" class="message"></div>
-  <div class="results"><div id="table-wrap"></div></div>
+  <div id="content-area">
+    <div class="results"><div id="table-wrap"></div></div>
+  </div>
   <div id="edit-container"></div>
 
 <script>
 const fieldEl = document.getElementById('field');
 const valueEl = document.getElementById('value');
+const valueSelectEl = document.getElementById('value-select');
 const searchBtn = document.getElementById('search');
+const searchBar = document.getElementById('search-bar');
 const messageEl = document.getElementById('message');
 const tableWrap = document.getElementById('table-wrap');
+const contentArea = document.getElementById('content-area');
 const editContainer = document.getElementById('edit-container');
+const reviewBadge = document.getElementById('review-badge');
 
 let activeTab = 'spots';
 let lastRows = [];
 let editOriginals = {};
+let reviewItems = [];
 
 const SPOT_TYPES = ['Happy Hour', 'Brunch', 'Live Music', 'Coffee Shops', 'Rooftop Bars', 'Dog-Friendly', 'Landmarks & Attractions', 'Recently Opened', 'Coming Soon'];
 const SPOT_STATUSES = ['approved', 'pending', 'rejected', 'deleted'];
 const SPOT_SOURCES = ['llm', 'manual', 'google', 'yelp', 'user_submitted', 'web_scrape'];
 
+const SEARCH_ENUMS = {
+  type: SPOT_TYPES,
+  status: SPOT_STATUSES,
+  source: SPOT_SOURCES,
+  finding_approved: ['0', '1'],
+};
+
 const FIELD_HELP = {
-  promotion_time: 'Format: "4pm-7pm • Mon-Fri" or "11am-3pm • Saturday, Sunday".\nUse bullet (•) between time and days.',
+  promotion_time: 'Format: "4pm-7pm \u2022 Mon-Fri" or "11am-3pm \u2022 Saturday, Sunday".\nUse bullet (\u2022) between time and days.',
   promotion_list: 'JSON array of deal items, e.g.:\n["$5 margaritas", "$3 draft beer", "Half-price apps"]',
   operating_hours: 'JSON object keyed by day, e.g.:\n{"monday": {"open": "11:00", "close": "22:00"}, "tuesday": "closed"}',
   source_url: 'URL where this deal was found. Used for verification.',
@@ -142,19 +189,47 @@ function showSuccess(msg) { showMessage(msg, 'success'); }
 function populateFieldDropdown() {
   const cfg = getConfig();
   fieldEl.innerHTML = cfg.search.map(f => `<option value="${f}">${f}</option>`).join('');
+  updateValueInput();
 }
+
+function updateValueInput() {
+  const field = fieldEl.value;
+  const enumOpts = SEARCH_ENUMS[field];
+  if (enumOpts) {
+    valueEl.style.display = 'none';
+    valueSelectEl.style.display = '';
+    valueSelectEl.innerHTML = enumOpts.map(o => `<option value="${o}">${o}</option>`).join('');
+  } else {
+    valueEl.style.display = '';
+    valueSelectEl.style.display = 'none';
+  }
+}
+
+function getSearchValue() {
+  const field = fieldEl.value;
+  return SEARCH_ENUMS[field] ? valueSelectEl.value : valueEl.value.trim();
+}
+
+fieldEl.addEventListener('change', updateValueInput);
 
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     activeTab = btn.dataset.tab;
-    populateFieldDropdown();
-    tableWrap.innerHTML = '';
-    editContainer.innerHTML = '';
     valueEl.value = '';
     messageEl.className = 'message';
+    editContainer.innerHTML = '';
     lastRows = [];
+
+    if (activeTab === 'review') {
+      searchBar.style.display = 'none';
+      loadReviewItems();
+    } else {
+      searchBar.style.display = '';
+      contentArea.innerHTML = '<div class="results"><div id="table-wrap"></div></div>';
+      populateFieldDropdown();
+    }
   });
 });
 
@@ -182,8 +257,9 @@ function isTimestamp(col) {
 function renderTable(rows) {
   lastRows = rows;
   editContainer.innerHTML = '';
+  const tw = document.getElementById('table-wrap') || tableWrap;
   if (!rows || rows.length === 0) {
-    tableWrap.innerHTML = '<div class="empty">No results. Try a different search field or broader term.</div>';
+    tw.innerHTML = '<div class="empty">No results. Try a different search field or broader term.</div>';
     return;
   }
   const cols = getConfig().display;
@@ -199,22 +275,21 @@ function renderTable(rows) {
       const s = v == null ? '' : (typeof v === 'object' ? JSON.stringify(v) : String(v));
       const display = isTsCol ? fmtTs(s) : (s.length > 50 ? s.slice(0, 47) + '...' : s);
       const cls = isTsCol ? ' class="ts"' : '';
-      html += `<td${cls} title="${esc(s)}">${display || '<span style="color:#475569">—</span>'}</td>`;
+      html += `<td${cls} title="${esc(s)}">${display || '<span style="color:#475569">\u2014</span>'}</td>`;
     }
-    html += `<td><button class="secondary edit-btn" data-id="${esc(rid)}">Edit</button></td></tr>`;
+    html += `<td><button class="secondary sm edit-btn" data-id="${esc(rid)}">Edit</button></td></tr>`;
   }
   html += '</tbody></table>';
-  tableWrap.innerHTML = html;
-  tableWrap.querySelectorAll('.edit-btn').forEach(btn => {
+  tw.innerHTML = html;
+  tw.querySelectorAll('.edit-btn').forEach(btn => {
     btn.addEventListener('click', (e) => { e.stopPropagation(); openEdit(btn.dataset.id); });
   });
-  tableWrap.querySelectorAll('tr[data-id]').forEach(tr => {
+  tw.querySelectorAll('tr[data-id]').forEach(tr => {
     tr.addEventListener('click', () => openEdit(tr.dataset.id));
   });
 }
 
 function isJsonField(f) { return JSON_FIELDS.includes(f); }
-
 function validateJson(str) {
   if (!str || str.trim() === '') return { ok: true, val: null };
   try { JSON.parse(str); return { ok: true, val: str }; }
@@ -235,9 +310,8 @@ function trackDirty() {
     const f = el.dataset.field;
     const orig = editOriginals[f] ?? '';
     const cur = el.value ?? '';
-    const changed = orig !== cur;
-    el.classList.toggle('dirty', changed);
-    if (changed) count++;
+    el.classList.toggle('dirty', orig !== cur);
+    if (orig !== cur) count++;
   }
   const note = editContainer.querySelector('.changes-note');
   if (note) note.textContent = count > 0 ? `${count} field${count > 1 ? 's' : ''} changed` : '';
@@ -246,13 +320,20 @@ function trackDirty() {
   return count;
 }
 
-function openEdit(id) {
-  const row = lastRows.find(r => String(r.id) === String(id));
+function openEdit(id, opts = {}) {
+  const row = opts.row || lastRows.find(r => String(r.id) === String(id));
   if (!row) return;
+  const editTable = opts.table || activeTab;
 
   editOriginals = {};
-  const cfg = getConfig();
-  let html = `<div class="edit-panel"><h3>Edit ${activeTab === 'venues' ? 'Venue' : 'Spot'} #${esc(id)}<span class="auto-note">id: ${esc(row.venue_id || id)}</span></h3>`;
+  const cfg = editTable === 'venues' ? VENUE_FIELDS : SPOT_FIELDS;
+  let html = `<div class="edit-panel">`;
+
+  if (opts.reviewContext) {
+    html += `<div class="review-reason sev-border-${opts.reviewContext.severity}" style="margin-bottom:0.75rem"><strong>${esc(opts.reviewContext.category)}</strong>: ${esc(opts.reviewContext.reason)}</div>`;
+  }
+
+  html += `<h3>Edit ${editTable === 'venues' ? 'Venue' : 'Spot'} #${esc(id)}</h3>`;
 
   for (const [section, fields] of Object.entries(cfg.editGroups)) {
     const isReadonly = section.includes('read-only');
@@ -301,6 +382,8 @@ function openEdit(id) {
   </div></div>`;
 
   editContainer.innerHTML = html;
+  editContainer.dataset.editTable = editTable;
+  editContainer.dataset.editId = id;
 
   editContainer.querySelectorAll('[data-field]').forEach(el => {
     el.addEventListener('input', trackDirty);
@@ -319,6 +402,7 @@ function openEdit(id) {
 async function doSave(id) {
   const saveBtn = document.getElementById('save-edit');
   const saveOk = document.getElementById('save-ok');
+  const editTable = editContainer.dataset.editTable || activeTab;
   if (saveOk) saveOk.textContent = '';
 
   for (const f of JSON_FIELDS) {
@@ -335,7 +419,7 @@ async function doSave(id) {
   }
 
   const payload = { id };
-  if (activeTab === 'venues') payload._table = 'venues';
+  if (editTable === 'venues') payload._table = 'venues';
   let changedCount = 0;
 
   for (const el of editContainer.querySelectorAll('[data-field]')) {
@@ -350,7 +434,7 @@ async function doSave(id) {
 
   if (changedCount === 0) { showError('No changes to save'); return; }
 
-  if (activeTab === 'spots') {
+  if (editTable === 'spots' || editTable !== 'venues') {
     if (payload.lat != null) payload.lat = parseFloat(payload.lat) || null;
     if (payload.lng != null) payload.lng = parseFloat(payload.lng) || null;
     if (payload.manual_override !== undefined) payload.manual_override = payload.manual_override === '1' ? 1 : 0;
@@ -371,7 +455,7 @@ async function doSave(id) {
 
     const idx = lastRows.findIndex(r => String(r.id) === String(id));
     if (idx >= 0 && data.row) lastRows[idx] = { ...lastRows[idx], ...data.row };
-    renderTable(lastRows);
+    if (activeTab !== 'review') renderTable(lastRows);
 
     if (data.row) {
       for (const [k, v] of Object.entries(data.row)) {
@@ -385,8 +469,8 @@ async function doSave(id) {
       }
     }
 
-    showSuccess(`Updated ${activeTab === 'venues' ? 'venue' : 'spot'} #${id} (${changedCount} field${changedCount > 1 ? 's' : ''})`);
-    if (saveOk) saveOk.textContent = '✓ Saved';
+    showSuccess(`Updated ${editTable === 'venues' ? 'venue' : 'spot'} #${id} (${changedCount} field${changedCount > 1 ? 's' : ''})`);
+    if (saveOk) saveOk.textContent = '\u2713 Saved';
     setTimeout(() => { if (saveOk) saveOk.textContent = ''; }, 4000);
     trackDirty();
   } catch (e) {
@@ -396,9 +480,129 @@ async function doSave(id) {
   }
 }
 
+// ── Needs Review Tab ──
+
+async function loadReviewItems() {
+  contentArea.innerHTML = '<div class="loading-spinner"></div>';
+  editContainer.innerHTML = '';
+  try {
+    const res = await fetch('api/needs-review');
+    const data = await res.json();
+    reviewItems = data.items || [];
+    reviewBadge.textContent = reviewItems.length;
+    reviewBadge.style.display = reviewItems.length > 0 ? '' : 'none';
+    renderReviewList(reviewItems);
+  } catch (e) {
+    contentArea.innerHTML = `<div class="empty">Failed to load review items: ${esc(e.message || e)}</div>`;
+  }
+}
+
+function renderReviewList(items) {
+  if (items.length === 0) {
+    contentArea.innerHTML = '<div class="empty">No items need review. All clear!</div>';
+    return;
+  }
+
+  const groups = {};
+  for (const item of items) {
+    if (!groups[item.category]) groups[item.category] = [];
+    groups[item.category].push(item);
+  }
+
+  const sevOrder = { high: 0, medium: 1, low: 2 };
+  let html = '<div class="review-list">';
+  for (const [cat, catItems] of Object.entries(groups)) {
+    catItems.sort((a, b) => (sevOrder[a.severity] ?? 9) - (sevOrder[b.severity] ?? 9));
+    html += `<div class="review-group">`;
+    html += `<div class="review-group-header">${esc(cat)} <span class="review-count">${catItems.length}</span></div>`;
+    for (let i = 0; i < catItems.length; i++) {
+      const item = catItems[i];
+      const uid = `${cat}-${i}`;
+      html += `<div class="review-card" data-uid="${uid}" data-cat="${esc(cat)}" data-idx="${i}">`;
+      html += `<div class="review-card-header">`;
+      html += `<span class="sev sev-${item.severity}"></span>`;
+      html += `<span class="review-title">${esc(item.title)}</span>`;
+      html += `<span class="review-type">${esc(item.type)}</span>`;
+      if (item.area) html += `<span class="review-area">${esc(item.area)}</span>`;
+      if (item.spotId) html += `<span class="review-id">#${item.spotId}</span>`;
+      else if (item.venueId) html += `<span class="review-id">${esc(item.venueId)}</span>`;
+      html += `</div>`;
+      html += `<div class="review-reason sev-border-${item.severity}">${esc(item.reason)}</div>`;
+      html += `<div class="review-actions">`;
+      if (item.spot || item.venue) {
+        html += `<button class="secondary sm review-edit-btn" data-uid="${uid}">Edit</button>`;
+      }
+      if (item.spotId) {
+        html += `<button class="approve sm review-approve-btn" data-spot-id="${item.spotId}">Approve</button>`;
+      }
+      html += `</div>`;
+      html += `</div>`;
+    }
+    html += `</div>`;
+  }
+  html += '</div>';
+  contentArea.innerHTML = html;
+
+  contentArea.querySelectorAll('.review-edit-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const uid = btn.dataset.uid;
+      const card = btn.closest('.review-card');
+      const cat = card.dataset.cat;
+      const idx = parseInt(card.dataset.idx, 10);
+      const groups2 = {};
+      for (const item of reviewItems) {
+        if (!groups2[item.category]) groups2[item.category] = [];
+        groups2[item.category].push(item);
+      }
+      const item = groups2[cat]?.[idx];
+      if (!item) return;
+      const row = item.spot || item.venue;
+      const tbl = item.table || 'spots';
+      openEdit(row.id, { row, table: tbl, reviewContext: { category: item.category, severity: item.severity, reason: item.reason } });
+    });
+  });
+
+  contentArea.querySelectorAll('.review-approve-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const spotId = btn.dataset.spotId;
+      btn.disabled = true;
+      btn.textContent = '...';
+      try {
+        const res = await fetch('api/update', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: parseInt(spotId, 10), finding_approved: 1, finding_rationale: 'Approved via admin review' }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw data;
+        btn.textContent = 'Approved';
+        btn.className = 'sm secondary';
+        const card = btn.closest('.review-card');
+        if (card) card.style.opacity = '0.4';
+        showSuccess(`Spot #${spotId} approved`);
+      } catch (err) {
+        showError(err);
+        btn.disabled = false;
+        btn.textContent = 'Approve';
+      }
+    });
+  });
+}
+
+// Fetch review count on page load
+fetch('api/needs-review').then(r => r.json()).then(data => {
+  const count = data.items?.length || 0;
+  reviewBadge.textContent = count;
+  reviewBadge.style.display = count > 0 ? '' : 'none';
+}).catch(() => {});
+
+// ── Search ──
+
 searchBtn.addEventListener('click', async () => {
   const field = fieldEl.value;
-  const value = valueEl.value.trim();
+  const value = getSearchValue();
   if (!value) { showError('Enter a search value'); return; }
   messageEl.className = 'message';
   searchBtn.disabled = true;
@@ -417,6 +621,7 @@ searchBtn.addEventListener('click', async () => {
 });
 
 valueEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') searchBtn.click(); });
+valueSelectEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') searchBtn.click(); });
 
 document.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key === 's') {

@@ -13,6 +13,8 @@ const fs = require('fs');
 process.env.DB_PATH = process.env.DB_PATH || path.resolve(__dirname, '..', 'data', 'chs-spots.db');
 const db = require('./utils/db');
 
+const { reportingPath } = require('./utils/data-dir');
+
 const PORT = process.env.ADMIN_PORT || 3456;
 const BIND = process.env.ADMIN_BIND || '0.0.0.0';
 const HTML_PATH = path.join(__dirname, 'admin.html');
@@ -144,6 +146,120 @@ function handleUpdate(body) {
   return { success: true, row: updated, table: 'spots' };
 }
 
+function handleNeedsReview() {
+  const database = db.getDb();
+  const items = [];
+
+  // 1. Discovery Review — Recently Opened / Coming Soon spots missing data
+  const discoverySpots = database.prepare(
+    "SELECT * FROM spots WHERE type IN ('Recently Opened', 'Coming Soon') AND status = 'approved' AND (finding_approved IS NULL OR finding_approved = 0) ORDER BY id DESC"
+  ).all();
+  for (const s of discoverySpots) {
+    const issues = [];
+    if (!s.lat || !s.lng) issues.push('no coordinates');
+    if (!s.area || s.area === 'Unknown') issues.push('no area assigned');
+    if (issues.length === 0) continue;
+    const venue = s.venue_id ? database.prepare('SELECT name, address, website, phone, operating_hours FROM venues WHERE id = ?').get(s.venue_id) : null;
+    if (venue) { s._venue_name = venue.name; s._venue_address = venue.address; s._venue_website = venue.website; s._venue_phone = venue.phone; s._venue_hours = venue.operating_hours; }
+    items.push({
+      category: 'Discovery Review',
+      severity: issues.includes('no coordinates') ? 'high' : 'medium',
+      reason: `Missing: ${issues.join(', ')}. Verify on Google Maps and fill in location data.`,
+      spotId: s.id,
+      title: s.title,
+      type: s.type,
+      area: s.area || 'Unknown',
+      spot: s,
+      table: 'spots',
+    });
+  }
+
+  // 2. Data Quality — approved spots with no area
+  const noAreaSpots = database.prepare(
+    "SELECT * FROM spots WHERE (area IS NULL OR area = '' OR area = 'Unknown') AND status = 'approved' AND source = 'llm' AND type IN ('Happy Hour', 'Brunch', 'Live Music') AND (finding_approved IS NULL OR finding_approved = 0) ORDER BY id DESC LIMIT 20"
+  ).all();
+  for (const s of noAreaSpots) {
+    const venue = s.venue_id ? database.prepare('SELECT name, address, website, phone, operating_hours FROM venues WHERE id = ?').get(s.venue_id) : null;
+    if (venue) { s._venue_name = venue.name; s._venue_address = venue.address; s._venue_website = venue.website; s._venue_phone = venue.phone; s._venue_hours = venue.operating_hours; }
+    items.push({
+      category: 'Data Quality',
+      severity: 'low',
+      reason: `No area assigned. This spot won't appear in area filters. Assign the correct Charleston neighborhood.`,
+      spotId: s.id,
+      title: s.title,
+      type: s.type,
+      area: 'Unknown',
+      spot: s,
+      table: 'spots',
+    });
+  }
+
+  // 3. Confidence Review — from confidence-review.json
+  try {
+    const reviewPath = reportingPath('confidence-review.json');
+    if (fs.existsSync(reviewPath)) {
+      const review = JSON.parse(fs.readFileSync(reviewPath, 'utf8'));
+      const flagged = review.flagged || [];
+      for (const f of flagged) {
+        let matchingSpot = null;
+        if (f.venueId) {
+          matchingSpot = database.prepare(
+            "SELECT * FROM spots WHERE venue_id = ? AND type = ? ORDER BY id DESC LIMIT 1"
+          ).get(f.venueId, f.type);
+          if (matchingSpot?.finding_approved) continue;
+        }
+        if (matchingSpot) {
+          const venue = matchingSpot.venue_id ? database.prepare('SELECT name, address, website, phone, operating_hours FROM venues WHERE id = ?').get(matchingSpot.venue_id) : null;
+          if (venue) { matchingSpot._venue_name = venue.name; matchingSpot._venue_address = venue.address; matchingSpot._venue_website = venue.website; matchingSpot._venue_phone = venue.phone; matchingSpot._venue_hours = venue.operating_hours; }
+        }
+        const llmNote = f.llmReasoning ? ` LLM says: "${f.llmReasoning}" (confidence: ${f.llmReviewConfidence})` : '';
+        items.push({
+          category: 'Confidence Review',
+          severity: 'medium',
+          reason: `Low confidence score (${f.effectiveConfidence}/${f.llmConfidence}). Flags: ${f.flags.join(', ')}. Times: ${f.times || 'N/A'}, Days: ${f.days || 'N/A'}.${llmNote}\nIs this ${f.type} genuine? Approve to keep, delete to remove.`,
+          spotId: matchingSpot?.id || null,
+          title: f.venue,
+          type: f.type,
+          area: matchingSpot?.area || '',
+          spot: matchingSpot || null,
+          table: 'spots',
+        });
+      }
+    }
+  } catch (e) { /* confidence-review.json may not exist yet */ }
+
+  // 4. Venues with incomplete data (no website, address, or phone)
+  const incompleteVenues = database.prepare(`
+    SELECT v.* FROM venues v
+    INNER JOIN spots s ON s.venue_id = v.id AND s.status = 'approved'
+    WHERE (v.website IS NULL OR v.website = '') OR (v.address IS NULL OR v.address = '') OR (v.phone IS NULL OR v.phone = '')
+    GROUP BY v.id
+    ORDER BY COUNT(s.id) DESC
+    LIMIT 20
+  `).all();
+  for (const v of incompleteVenues) {
+    const missing = [];
+    if (!v.website) missing.push('website');
+    if (!v.address) missing.push('address');
+    if (!v.phone) missing.push('phone');
+    items.push({
+      category: 'Venue Data',
+      severity: 'low',
+      reason: `Missing: ${missing.join(', ')}. This venue has approved spots but incomplete info.`,
+      spotId: null,
+      venueId: v.id,
+      title: v.name,
+      type: 'venue',
+      area: v.area || '',
+      spot: null,
+      venue: v,
+      table: 'venues',
+    });
+  }
+
+  return { items, counts: { total: items.length, high: items.filter(i => i.severity === 'high').length, medium: items.filter(i => i.severity === 'medium').length, low: items.filter(i => i.severity === 'low').length } };
+}
+
 const server = http.createServer(async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
@@ -170,6 +286,12 @@ const server = http.createServer(async (req, res) => {
     const body = await parseBody(req);
     const result = handleUpdate(body);
     sendJson(res, result, result.error ? 400 : 200);
+    return;
+  }
+
+  if (pathname === '/api/needs-review' && req.method === 'GET') {
+    const result = handleNeedsReview();
+    sendJson(res, result);
     return;
   }
 
