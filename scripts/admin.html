@@ -411,8 +411,13 @@ function openEdit(id, opts = {}) {
     html += '</div></div>';
   }
 
+  const approveBtn = editTable === 'spots'
+    ? `<button class="approve" id="approve-finding">Approve Finding</button>`
+    : '';
+
   html += `<div class="edit-actions">
     <button id="save-edit" disabled>Save Changes</button>
+    ${approveBtn}
     <button class="secondary" id="cancel-edit">Cancel</button>
     <span class="changes-note"></span>
     <span class="auto-note">updated_at and last_update_date set automatically</span>
@@ -450,6 +455,31 @@ function openEdit(id, opts = {}) {
     editContainer.innerHTML = '';
     showMessage('', '');
   };
+
+  const approveEl = document.getElementById('approve-finding');
+  if (approveEl) {
+    approveEl.onclick = async () => {
+      approveEl.disabled = true;
+      approveEl.textContent = 'Approving…';
+      try {
+        const res = await fetch('api/update', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ table: 'spots', id: parseInt(id, 10), finding_approved: 1, finding_rationale: 'Approved via admin detail panel' }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw data;
+        approveEl.textContent = 'Approved ✓';
+        approveEl.classList.add('secondary');
+        approveEl.classList.remove('approve');
+        showSuccess(`Spot #${id} finding approved`);
+      } catch (err) {
+        showError(err);
+        approveEl.disabled = false;
+        approveEl.textContent = 'Approve Finding';
+      }
+    };
+  }
 }
 
 async function doSave(id) {
