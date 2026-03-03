@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 
-export const dynamic = 'force-dynamic';
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
@@ -67,6 +66,7 @@ export const metadata: Metadata = {
     ],
     apple: "/apple-touch-icon.png",
   },
+  manifest: "/manifest.json",
   robots: {
     index: true,
     follow: true,
@@ -87,8 +87,27 @@ export default function RootLayout({
   const umamiWebsiteId = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
   const umamiHost = process.env.NEXT_PUBLIC_UMAMI_HOST || '/u';
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Charleston Finds',
+    url: 'https://chsfinds.com',
+    description: seoDescription,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: 'https://chsfinds.com/?search={search_term_string}',
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
   return (
     <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

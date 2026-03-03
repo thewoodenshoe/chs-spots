@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Spot } from '@/contexts/SpotsContext';
 import { Activity } from '@/utils/activities';
 
@@ -36,7 +37,7 @@ export default function WhatsNewStrip({ spots, activities, onSelect }: WhatsNewS
         <span className="flex-1 text-xs font-semibold text-amber-700">
           See the new venues in Charleston!
         </span>
-        <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-600">
+        <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[11px] font-bold text-amber-600">
           {spots.length}
         </span>
       </button>
@@ -50,7 +51,7 @@ export default function WhatsNewStrip({ spots, activities, onSelect }: WhatsNewS
           onClick={() => setExpanded(false)}
           className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-gray-500 hover:text-gray-700 transition-colors"
         >
-          <span className="text-amber-500 text-[10px]">&#9650;</span>
+          <span className="text-amber-500 text-[11px]">&#9650;</span>
           What&apos;s New
         </button>
         <button
@@ -73,18 +74,20 @@ export default function WhatsNewStrip({ spots, activities, onSelect }: WhatsNewS
               onClick={() => onSelect(spot)}
               className="flex-shrink-0 w-[140px] rounded-xl overflow-hidden border border-gray-100 bg-gray-50 hover:bg-gray-100 transition-colors active:scale-[0.97] touch-manipulation text-left"
             >
-              {spot.photoUrl ? (
-                <img
-                  src={spot.photoUrl}
-                  alt={spot.title}
-                  className="h-20 w-full object-cover"
-                  onError={(e) => {
-                    const el = e.currentTarget;
-                    el.style.display = 'none';
-                    const next = el.nextElementSibling as HTMLElement;
-                    if (next) next.style.display = 'flex';
-                  }}
-                />
+              {spot.photoUrl && !spot.photoUrl.startsWith('data:') ? (
+                <div className="relative h-20 w-full">
+                  <Image
+                    src={spot.photoUrl}
+                    alt={spot.title}
+                    fill
+                    className="object-cover"
+                    sizes="140px"
+                    onError={(e) => {
+                      const container = e.currentTarget.parentElement as HTMLElement;
+                      container.style.display = 'none';
+                    }}
+                  />
+                </div>
               ) : null}
               <div
                 className={`${spot.photoUrl ? 'hidden' : 'flex'} h-20 w-full items-center justify-center text-2xl`}
@@ -95,7 +98,7 @@ export default function WhatsNewStrip({ spots, activities, onSelect }: WhatsNewS
               <div className="p-2">
                 <div className="text-[11px] font-semibold text-gray-900 truncate">{spot.title}</div>
                 <div className="flex items-center gap-1 mt-0.5">
-                  <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold ${
+                  <span className={`rounded-full px-1.5 py-0.5 text-[11px] font-bold ${
                     isComingSoon
                       ? 'bg-amber-100 text-amber-700'
                       : 'bg-green-100 text-green-700'
@@ -103,7 +106,7 @@ export default function WhatsNewStrip({ spots, activities, onSelect }: WhatsNewS
                     {isComingSoon ? 'Soon' : 'New'}
                   </span>
                   {spot.area && (
-                    <span className="text-[9px] text-gray-400 truncate">{spot.area}</span>
+                    <span className="text-[11px] text-gray-400 truncate">{spot.area}</span>
                   )}
                 </div>
               </div>

@@ -124,7 +124,7 @@ export default function VenuePicker({
                   </div>
                   <div className="flex flex-col items-end flex-shrink-0 gap-0.5">
                     {venue.distance != null && (
-                      <span className="text-[10px] text-gray-400 font-medium">
+                      <span className="text-[11px] text-gray-400 font-medium">
                         {formatDistance(venue.distance)}
                       </span>
                     )}

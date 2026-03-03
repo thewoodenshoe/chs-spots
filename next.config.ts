@@ -34,6 +34,16 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
 
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: '**.googleapis.com' },
+      { protocol: 'https', hostname: '**.gstatic.com' },
+      { protocol: 'https', hostname: '**.ggpht.com' },
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
+      { protocol: 'https', hostname: 'maps.google.com' },
+    ],
+  },
+
   async headers() {
     return [
       {

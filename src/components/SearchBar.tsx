@@ -65,7 +65,7 @@ export default function SearchBar({ value, onChange, onSearchCommit, placeholder
         className="h-10 w-full rounded-full border border-white/20 bg-white/10 pl-9 pr-20 text-sm text-white placeholder-gray-300 backdrop-blur-sm focus:border-teal-400 focus:bg-white/15 focus:outline-none transition-all"
       />
       {isSearching && resultCount !== undefined && (
-        <span className="absolute right-10 top-1/2 -translate-y-1/2 text-[10px] font-medium text-teal-300 whitespace-nowrap pointer-events-none" aria-live="polite">
+        <span className="absolute right-10 top-1/2 -translate-y-1/2 text-[11px] font-medium text-teal-300 whitespace-nowrap pointer-events-none" aria-live="polite">
           {resultCount} found
         </span>
       )}

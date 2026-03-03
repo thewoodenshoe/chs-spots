@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 export interface Spot {
   id: number;
   lat: number;
@@ -77,8 +77,7 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
     setIsAdmin(checkAdminMode());
   }, []);
 
-  // Load spots from API on mount
-  const loadSpots = async () => {
+  const loadSpots = useCallback(async () => {
     try {
       const secret = getAdminSecret();
       const url = secret ? `/api/spots?admin=${encodeURIComponent(secret)}` : '/api/spots';
@@ -97,17 +96,17 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadSpots();
-  }, []);
+  }, [loadSpots]);
 
-  const refreshSpots = async () => {
+  const refreshSpots = useCallback(async () => {
     await loadSpots();
-  };
+  }, [loadSpots]);
 
-  const addSpot = async (spotData: Omit<Spot, 'id'>) => {
+  const addSpot = useCallback(async (spotData: Omit<Spot, 'id'>) => {
     try {
       const response = await fetch('/api/spots', {
         method: 'POST',
@@ -157,9 +156,9 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
       console.error('Error adding spot:', error);
       throw error;
     }
-  };
+  }, [refreshSpots]);
 
-  const updateSpot = async (spotData: Spot): Promise<{ pending: boolean }> => {
+  const updateSpot = useCallback(async (spotData: Spot): Promise<{ pending: boolean }> => {
     try {
       const response = await fetch(`/api/spots/${spotData.id}`, {
         method: 'PUT',
@@ -193,9 +192,9 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
       console.error('Error updating spot:', error);
       throw error;
     }
-  };
+  }, [refreshSpots]);
 
-  const deleteSpot = async (id: number): Promise<{ pending: boolean }> => {
+  const deleteSpot = useCallback(async (id: number): Promise<{ pending: boolean }> => {
     try {
       const response = await fetch(`/api/spots/${id}`, {
         method: 'DELETE',
@@ -228,10 +227,14 @@ export function SpotsProvider({ children }: { children: ReactNode }) {
       console.error('Error deleting spot:', error);
       throw error;
     }
-  };
+  }, [refreshSpots]);
+
+  const value = useMemo(() => ({
+    spots, addSpot, updateSpot, deleteSpot, refreshSpots, loading, isAdmin,
+  }), [spots, addSpot, updateSpot, deleteSpot, refreshSpots, loading, isAdmin]);
 
   return (
-    <SpotsContext.Provider value={{ spots, addSpot, updateSpot, deleteSpot, refreshSpots, loading, isAdmin }}>
+    <SpotsContext.Provider value={value}>
       {children}
     </SpotsContext.Provider>
   );

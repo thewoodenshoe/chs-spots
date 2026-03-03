@@ -57,16 +57,16 @@ export default function EditSpotModal({
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [pinLocation, setPinLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [sheetHeight, setSheetHeight] = useState(220);
+  const [sheetHeight, setSheetHeight] = useState(
+    typeof window !== 'undefined' ? Math.round(window.innerHeight * 0.65) : 500
+  );
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [startY, setStartY] = useState(0);
   const [startHeight, setStartHeight] = useState(0);
 
-  // Initialize form with spot data
   useEffect(() => {
     if (spot && isOpen) {
-       
       setTitle(spot.title);
       setDescription(spot.description || '');
       setPromotionTime(spot.promotionTime || spot.happyHourTime || '');
@@ -76,6 +76,7 @@ export default function EditSpotModal({
       setSelectedActivity(spot.type);
       setPhotoPreview(spot.photoUrl || null);
       setSelectedPhoto(null);
+      setSheetHeight(Math.round(window.innerHeight * 0.65));
     }
   }, [spot, isOpen]);
 
@@ -270,9 +271,9 @@ export default function EditSpotModal({
           ref={handleRef}
           onMouseDown={startDrag}
           onTouchStart={startDrag}
-          className="flex cursor-grab active:cursor-grabbing justify-center pt-2 pb-1 touch-none"
+          className="flex cursor-grab active:cursor-grabbing justify-center pt-3 pb-2 touch-none select-none"
         >
-          <div className="h-1 w-12 rounded-full bg-gray-300" />
+          <div className="h-1.5 w-14 rounded-full bg-gray-400" />
         </div>
 
         {/* Resize Handle (desktop only) */}

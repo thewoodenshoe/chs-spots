@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { Spot } from '@/contexts/SpotsContext';
 import { OperatingHours } from '@/contexts/VenuesContext';
 import { getFreshness } from '@/utils/time-utils';
@@ -180,18 +181,18 @@ export default function SpotDetailSections({
               <span className={`inline-block h-2 w-2 rounded-full ${dotColor}`} />
               <span className="text-[11px] text-gray-500">{f.label}</span>
               {spot.type === 'Live Music' && (
-                <span className="text-[10px] text-gray-400 ml-1">· Events daily at 3pm</span>
+                <span className="text-[11px] text-gray-400 ml-1">· Events daily at 3pm</span>
               )}
             </div>
           );
         })()}
 
         <div className="flex items-center gap-1.5 mb-2">
-          <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold text-white" style={{ backgroundColor: activityColor }}>
+          <span className="rounded-full px-2 py-0.5 text-[11px] font-semibold text-white" style={{ backgroundColor: activityColor }}>
             {activityEmoji} {spot.type}
           </span>
           {spot.source === 'manual' && spot.submitterName && (
-            <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-600">
+            <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-600">
               by {spot.submitterName}
             </span>
           )}
@@ -199,12 +200,18 @@ export default function SpotDetailSections({
 
         {spot.photoUrl ? (
           <div className="relative h-28 w-full overflow-hidden rounded-lg mb-2 bg-gray-100">
-            <img
-              src={spot.photoUrl}
-              alt={spot.title}
-              className="h-full w-full object-cover"
-              onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }}
-            />
+            {spot.photoUrl.startsWith('data:') ? (
+              // eslint-disable-next-line @next/next/no-img-element -- data URI preview
+              <img src={spot.photoUrl} alt={spot.title} className="h-full w-full object-cover" />
+            ) : (
+              <Image
+                src={spot.photoUrl}
+                alt={spot.title}
+                fill
+                className="object-cover"
+                onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }}
+              />
+            )}
           </div>
         ) : (
           <div className="flex items-center justify-center h-20 w-full rounded-lg bg-gray-50 border border-dashed border-gray-200 mb-2">

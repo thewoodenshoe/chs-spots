@@ -62,7 +62,7 @@ export default function VenueCard({ result, isExpanded, onToggle }: VenueCardPro
           <div className="flex items-center gap-2">
             <span className="font-semibold text-gray-900 text-sm truncate">{venue.name}</span>
             {venue.area && (
-              <span className="flex-shrink-0 rounded-full bg-teal-50 px-1.5 py-0.5 text-[10px] font-medium text-teal-600">
+              <span className="flex-shrink-0 rounded-full bg-teal-50 px-1.5 py-0.5 text-[11px] font-medium text-teal-600">
                 {venue.area}
               </span>
             )}
@@ -77,7 +77,7 @@ export default function VenueCard({ result, isExpanded, onToggle }: VenueCardPro
               {activityTypes.map(type => (
                 <span
                   key={type}
-                  className="rounded-full px-1.5 py-0.5 text-[9px] font-semibold text-white"
+                  className="rounded-full px-1.5 py-0.5 text-[11px] font-semibold text-white"
                   style={{ backgroundColor: ACTIVITY_COLORS[type] || '#6366f1' }}
                 >
                   {type}
@@ -89,7 +89,7 @@ export default function VenueCard({ result, isExpanded, onToggle }: VenueCardPro
 
         <div className="flex flex-col items-end gap-1 flex-shrink-0">
           {openStatus && openStatus.label && (
-            <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap ${
+            <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ${
               openStatus.isOpen ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'
             }`}>
               {openStatus.label === 'Closing soon'
@@ -98,7 +98,7 @@ export default function VenueCard({ result, isExpanded, onToggle }: VenueCardPro
             </span>
           )}
           {distance !== null && (
-            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-600 whitespace-nowrap">
+            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600 whitespace-nowrap">
               {distance < 0.1 ? '<0.1 mi' : distance < 10 ? `${distance.toFixed(1)} mi` : `${Math.round(distance)} mi`}
             </span>
           )}

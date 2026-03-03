@@ -652,7 +652,7 @@ export default function Home() {
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <span className="text-[10px] font-medium leading-tight">Search</span>
+            <span className="text-[11px] font-medium leading-tight">Search</span>
           </button>
 
           <button
@@ -676,7 +676,7 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
               </svg>
             )}
-            <span className="text-[10px] font-medium leading-tight">{viewMode === 'map' ? 'List' : 'Map'}</span>
+            <span className="text-[11px] font-medium leading-tight">{viewMode === 'map' ? 'List' : 'Map'}</span>
           </button>
 
           <button
@@ -700,12 +700,12 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
               {savedCount > 0 && (
-                <span className="absolute -top-1.5 -right-2.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
+                <span className="absolute -top-1.5 -right-2.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
                   {savedCount}
                 </span>
               )}
             </div>
-            <span className="text-[10px] font-medium leading-tight">Saved</span>
+            <span className="text-[11px] font-medium leading-tight">Saved</span>
           </button>
 
           <div className="relative flex flex-1 flex-col items-center justify-center">
@@ -719,7 +719,7 @@ export default function Home() {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
               </svg>
-              <span className="text-[10px] font-medium leading-tight">More</span>
+              <span className="text-[11px] font-medium leading-tight">More</span>
             </button>
             <MoreMenu
               isOpen={isMoreMenuOpen}

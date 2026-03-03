@@ -23,7 +23,7 @@ export default function ActivityChip({ activity, spotCount, emoji, onClick }: Ac
       {emoji && <span className="flex-shrink-0 text-base leading-none">{emoji}</span>}
       <span className="truncate">{activity}</span>
       {spotCount !== undefined && (
-        <span className="flex-shrink-0 rounded-full bg-white/20 px-1.5 py-0.5 text-[10px] font-bold leading-none">
+        <span className="flex-shrink-0 rounded-full bg-white/20 px-1.5 py-0.5 text-[11px] font-bold leading-none">
           {spotCount}
         </span>
       )}

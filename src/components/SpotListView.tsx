@@ -237,7 +237,7 @@ export default function SpotListView({
             {sortedSpots.length + venueResults.length} result{sortedSpots.length + venueResults.length !== 1 ? 's' : ''}
           </span>
           {showFavoritesOnly && (
-            <span className="flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-600">
+            <span className="flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-semibold text-red-600">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
@@ -286,14 +286,14 @@ export default function SpotListView({
             </span>
             {activeCount} active right now
             {sortMode !== 'activityActive' && (
-              <span className="ml-auto text-[10px] text-green-500">Tap to sort</span>
+              <span className="ml-auto text-[11px] text-green-500">Tap to sort</span>
             )}
           </button>
         );
       })()}
 
       {selectedActivity === 'Live Music' && !isAllVenues && (
-        <div className="px-4 py-1 text-[10px] text-gray-400 text-right">Events updated daily at 3pm</div>
+        <div className="px-4 py-1 text-[11px] text-gray-400 text-right">Events updated daily at 3pm</div>
       )}
 
       {/* What's New strip */}
@@ -368,18 +368,18 @@ export default function SpotListView({
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-gray-900 text-sm truncate">{spot.title}</span>
                     {(isSearching || selectedArea === NEAR_ME) && spot.area && (
-                      <span className="flex-shrink-0 rounded-full bg-teal-50 px-1.5 py-0.5 text-[10px] font-medium text-teal-600">
+                      <span className="flex-shrink-0 rounded-full bg-teal-50 px-1.5 py-0.5 text-[11px] font-medium text-teal-600">
                         {spot.area}
                       </span>
                     )}
                     {MIXED_ACTIVITIES.has(spot.type) && (() => {
                       const tag = getSubTag(spot.title);
                       return tag ? (
-                        <span className="flex-shrink-0 rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500">{tag}</span>
+                        <span className="flex-shrink-0 rounded-full bg-gray-100 px-1.5 py-0.5 text-[11px] font-medium text-gray-500">{tag}</span>
                       ) : null;
                     })()}
                     {spot.status === 'pending' && (
-                      <span className="flex-shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">Pending</span>
+                      <span className="flex-shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[11px] font-semibold text-amber-800">Pending</span>
                     )}
                   </div>
 
@@ -406,12 +406,12 @@ export default function SpotListView({
 
                 <div className="flex flex-col items-end gap-1 flex-shrink-0">
                   {activeNow && (
-                    <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700 whitespace-nowrap animate-pulse">
+                    <span className="rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-bold text-green-700 whitespace-nowrap animate-pulse">
                       Active Now
                     </span>
                   )}
                   {!activeNow && openStatus && openStatus.label && (
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap ${
+                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ${
                       openStatus.isOpen ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'
                     }`}>
                       {openStatus.label === 'Closing soon'
@@ -420,10 +420,17 @@ export default function SpotListView({
                     </span>
                   )}
                   {distance !== null && (
-                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-600 whitespace-nowrap">
+                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600 whitespace-nowrap">
                       {distance < 0.1 ? '<0.1 mi' : distance < 10 ? `${distance.toFixed(1)} mi` : `${Math.round(distance)} mi`}
                     </span>
                   )}
+                  {spot.lastUpdateDate && (() => {
+                    const days = Math.floor((Date.now() - new Date(spot.lastUpdateDate).getTime()) / 86400000);
+                    const label = days === 0 ? 'Verified today' : days === 1 ? 'Verified 1d ago' : days <= 14 ? `Verified ${days}d ago` : null;
+                    return label ? (
+                      <span className="text-[11px] text-gray-400 whitespace-nowrap">{label}</span>
+                    ) : null;
+                  })()}
                   <div className="flex items-center gap-1">
                     <button
                       onClick={(e) => { e.stopPropagation(); handleToggleFavorite(spot.id); }}
@@ -514,7 +521,7 @@ export default function SpotListView({
             {sortedSpots.length > 0 && (
               <div className="flex items-center gap-2 pt-3 pb-1 px-1">
                 <div className="h-px flex-1 bg-gray-200" />
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
                   Venues ({venueResults.length})
                 </span>
                 <div className="h-px flex-1 bg-gray-200" />

@@ -1,0 +1,21 @@
+{
+  "name": "Charleston Finds",
+  "short_name": "CHS Finds",
+  "description": "Happy hours, brunches, live music & deals in Charleston, SC — updated daily",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d9488",
+  "theme_color": "#0d9488",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

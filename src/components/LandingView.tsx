@@ -94,30 +94,39 @@ export default function LandingView({
 
   return (
     <div className="relative h-dvh w-screen overflow-y-auto overscroll-contain bg-gray-50/80">
-      <header className="bg-gradient-to-br from-teal-700 to-teal-800 px-5 pt-10 pb-6 safe-area-top">
-        <h1 className="text-xl font-bold text-white tracking-tight text-center animate-fade-in">
-          Charleston Finds & Deals
+      <header className="bg-gradient-to-br from-teal-700 via-teal-800 to-cyan-900 px-5 pt-10 pb-7 safe-area-top">
+        <h1 className="text-2xl font-bold text-white tracking-tight text-center animate-fade-in">
+          Charleston Finds
         </h1>
-        <p className="mt-1.5 text-sm text-teal-100 text-center animate-fade-in-delay">
+        <p className="mt-2 text-sm text-teal-100 text-center animate-fade-in-delay leading-relaxed">
           {loading
-            ? 'Over 1,000 venues updated daily for happy hours, brunches, live music, new openings & more'
-            : `${totalSpots} deals updated nightly from ${venueCount} venues`}
+            ? 'Happy hours, brunches, live music, new openings & more — updated daily'
+            : `${totalSpots} deals from ${venueCount} venues, updated nightly`}
         </p>
 
-        <div className="mt-4 flex w-full items-center gap-3 rounded-xl bg-white/15 backdrop-blur-sm px-4 py-3 text-sm transition-all hover:bg-white/25 animate-fade-in-delay-2">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 flex-shrink-0 text-teal-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <div className="mt-4 flex w-full items-center gap-3 rounded-xl bg-white/15 backdrop-blur-sm px-4 py-3.5 text-sm transition-all hover:bg-white/25 animate-fade-in-delay-2">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 flex-shrink-0 text-teal-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
             type="text"
             placeholder="Search venues, deals, happy hours..."
-            className="w-full bg-transparent text-teal-100 placeholder-teal-200/60 outline-none"
+            aria-label="Search Charleston venues and deals"
+            className="w-full bg-transparent text-white placeholder-teal-200/70 outline-none"
             onFocus={() => onSearch()}
             onChange={(e) => {
               if (e.target.value) onSearch(e.target.value);
             }}
           />
         </div>
+
+        {!loading && (
+          <div className="mt-3 flex justify-center gap-4 text-xs text-teal-200/80 animate-fade-in-delay-2">
+            <span>Verified from venue sites</span>
+            <span className="text-teal-400/50">·</span>
+            <span>Curated by locals</span>
+          </div>
+        )}
       </header>
 
       <main className="px-4 pt-5 pb-8 max-w-lg mx-auto">
@@ -129,7 +138,7 @@ export default function LandingView({
           <div className="space-y-5">
             {visibleGroups.map((group, gi) => (
               <section key={group.label} className="animate-fade-in-up" style={{ animationDelay: `${gi * 80}ms` }}>
-                <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-gray-400 px-0.5">
+                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-400 px-0.5">
                   {group.label}
                 </p>
                 <div className="grid grid-cols-3 gap-2.5">
@@ -147,12 +156,12 @@ export default function LandingView({
                         className={`flex flex-col items-center gap-1 rounded-xl border px-1 py-3 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 active:scale-95 touch-manipulation ${pastel}`}
                       >
                         <span className="text-2xl leading-none">{emoji}</span>
-                        <span className="text-[11px] font-semibold text-gray-800 text-center leading-tight">
+                        <span className="text-xs font-semibold text-gray-800 text-center leading-tight">
                           {name}
                         </span>
-                        <span className="text-[10px] text-gray-400 font-medium">{count}</span>
+                        <span className="text-[11px] text-gray-400 font-medium">{count}</span>
                         {active > 0 && (
-                          <span className="flex items-center gap-0.5 text-[9px] font-bold text-green-600">
+                          <span className="flex items-center gap-0.5 text-[11px] font-bold text-green-600">
                             <span className="relative flex h-1.5 w-1.5">
                               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
                               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-green-500" />
@@ -168,7 +177,7 @@ export default function LandingView({
             ))}
 
             <section className="animate-fade-in-up" style={{ animationDelay: `${visibleGroups.length * 80}ms` }}>
-              <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-gray-400 px-0.5">
+              <p className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-400 px-0.5">
                 Everything
               </p>
               <button
@@ -177,8 +186,8 @@ export default function LandingView({
               >
                 <span className="text-xl">📍</span>
                 <div className="text-left flex-1">
-                  <span className="text-[11px] font-semibold text-gray-800">All Venues</span>
-                  <p className="text-[10px] text-gray-400">{venueCount} places in Charleston</p>
+                  <span className="text-xs font-semibold text-gray-800">All Venues</span>
+                  <p className="text-[11px] text-gray-400">{venueCount} places in Charleston</p>
                 </div>
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
