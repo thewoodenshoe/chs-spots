@@ -7,7 +7,7 @@
  * Design: pure functions, no side effects, fully testable.
  */
 
-const ALCOHOL_KEYWORDS = /\b(beer|wine|cocktail|drink|pint|well|margarita|mimosa|sangria|spritz|mule|martini|bourbon|whiskey|vodka|tequila|rum|gin|draft|tap|pour|seltzer|highball|negroni|aperol|bellini|prosecco|champagne|cider|ale|lager|ipa|stout|pilsner)\b/i;
+const ALCOHOL_KEYWORDS = /\b(beer|wine|cocktail|drink|pint|well|margarita|mimosa|sangria|spritz|mule|martini|bourbon|whiskey|vodka|tequila|rum|gin|draft|tap|pour|seltzer|highball|negroni|aperol|bellini|prosecco|champagne|cider|ale|lager|ipa|stout|pilsner|liquor|fernet|marg|shot|old fashioned|manhattan|frosé|rosé|bar only|bar area|dine.in|half.off|half.price|1\/2 price)\b/i;
 
 const NON_HH_LABEL_KEYWORDS = /\b(market|mercato|cafe|café|coffee|bakery|breakfast|pastry|pastries|deli|lunch combo|lunch special)\b/i;
 
@@ -68,10 +68,15 @@ function validateEntry(entry) {
     // Rule 2: No alcohol keywords in specials → probably not a drink deal
     const specialsText = (entry.specials || []).join(' ');
     const labelText = entry.label || '';
-    const allText = `${labelText} ${specialsText}`;
+    const allText = `${labelText} ${specialsText} ${entry.times || ''}`;
     if (!ALCOHOL_KEYWORDS.test(allText)) {
       flags.push('no-alcohol-keywords');
-      score -= 20;
+      score -= 10;
+    }
+
+    // Boost: specials with $ prices are strong indicators of a real deal
+    if (entry.specials && entry.specials.some(s => /\$\d/.test(s))) {
+      score += 10;
     }
 
     // Rule 3: Label contains market/cafe/breakfast keywords
@@ -107,12 +112,12 @@ function validateEntry(entry) {
   }
 
   if (type === 'Brunch') {
-    // Brunch heuristics: less strict, but flag if no brunch-related content
     const specialsText = (entry.specials || []).join(' ');
     const labelText = entry.label || '';
-    const allText = `${labelText} ${specialsText} ${entry.days || ''}`;
+    const allText = `${labelText} ${specialsText} ${entry.days || ''} ${entry.times || ''}`;
 
-    if (!/brunch/i.test(allText) && !/\b(mimosa|bloody mary|bellini|benedic)/i.test(allText)) {
+    const hasBrunchSignal = /brunch|mimosa|bloody mary|bellini|benedic|french toast|pancake|omelet|eggs|waffle|breakfast/i.test(allText);
+    if (!hasBrunchSignal) {
       flags.push('no-brunch-keywords');
       score -= 10;
     }
