@@ -8,15 +8,18 @@ A live map for discovering Charleston, SC — happy hours, brunch, live music, r
 
 ## What It Does
 
-- **Interactive map + list view** with 7 Charleston neighborhoods and 7 activity types
+- **Interactive map + list view** with 8 Charleston neighborhoods and 9 activity types
+- **Server-rendered pages** — homepage, individual spot/venue pages, and explore pages all render real data for SEO
 - **Auto-detects your location** and defaults to the nearest area (falls back to Downtown if outside Charleston)
 - **Nightly ETL pipeline** scrapes ~1,000 venue websites, diffs content, and uses Grok (xAI) to extract happy hour and brunch specials — only processing venues that changed
 - **Nightly opening discovery** finds recently opened and coming soon restaurants via RSS feeds + Grok web search
 - **Daily live music events** refreshed at 3 PM via Grok web search (tonight's performers, times)
 - **Weekly live music venue discovery** via Grok web search
-- **Community submissions** — anyone can add spots; admin approves via Telegram
+- **Venue data enrichment** — fills in missing address, phone, website via LLM + Google API
+- **Community submissions** — anyone can add or edit spots; admin approves via Telegram
 - **Open/Closed status** — operating hours extracted from venue websites, shown on cards and map pins
 - **Share any spot** via deep link
+- **PWA-ready** — installable to home screen via manifest.json
 
 ## Tech Stack
 
@@ -26,9 +29,9 @@ A live map for discovering Charleston, SC — happy hours, brunch, live music, r
 | Map | Google Maps JavaScript API |
 | Database | SQLite (better-sqlite3) |
 | AI extraction | Grok API (xAI) — extraction + web search |
-| Admin | Telegram Bot API |
+| Admin | Telegram Bot API + local web admin UI |
 | Analytics | Umami (self-hosted) |
-| Hosting | Ubuntu server, PM2, rsync deploys |
+| Hosting | Ubuntu server, PM2, Nginx, rsync deploys |
 
 ## Quick Start
 
@@ -44,7 +47,7 @@ npm run dev
 
 ```bash
 npm run dev          # Start local dev server
-npx jest --no-cache  # Run all tests (41 suites, 564 tests)
+npx jest --no-cache  # Run all tests (45 suites, 603 tests)
 npm run build        # Production build
 npm run admin        # Local admin UI: query/update spots (http://localhost:3456)
 ```
@@ -60,16 +63,93 @@ npm run admin        # Local admin UI: query/update spots (http://localhost:3456
 | `TELEGRAM_ADMIN_CHAT_ID` | Admin Telegram chat ID |
 | `ADMIN_API_KEY` | Admin auth key for edit/delete |
 
+## Pages & Routes
+
+### Public Pages (SSR)
+
+| Route | Description |
+|-------|-------------|
+| `/` | Homepage — server-rendered activity grid with real spot counts, featured deals, explore links. Client-side SPA mounts on top for interactivity. |
+| `/spots/[id]` | Individual spot detail page — title, deals, promotion times, venue info, hours, map link, JSON-LD (LocalBusiness + BreadcrumbList). |
+| `/venues/[id]` | Venue detail page — all associated spots, hours, contact info, JSON-LD with OfferCatalog schema. |
+| `/explore/[slug]` | Area + activity pages (e.g., `/explore/happy-hour-in-downtown-charleston`) — SSG with FAQ schema, editorial content, internal links. |
+| `/privacy` | Privacy policy. |
+
+### API Routes
+
+| Route | Method | Description |
+|-------|--------|-------------|
+| `/api/spots` | GET | List all approved spots (supports `?type=` and `?area=` filters) |
+| `/api/spots` | POST | Submit a new spot (community or admin) |
+| `/api/spots/[id]` | PUT | Update a spot (admin: direct update; user: creates pending edit for Telegram approval) |
+| `/api/spots/[id]` | DELETE | Delete a spot (admin: immediate; user: creates pending delete for approval) |
+| `/api/spots/report` | POST | Report a spot issue |
+| `/api/venues` | GET | List all venues |
+| `/api/venues/search` | GET | Search venues by name (`?q=`) |
+| `/api/activities` | GET | List all activity types |
+| `/api/activities/suggest` | POST | Suggest a new activity type |
+| `/api/areas` | GET | List all area names |
+| `/api/areas/config` | GET | Area config with center coordinates and zoom levels |
+| `/api/health` | GET | Server health check (spot/venue counts, disk, env) |
+| `/api/og-image` | GET | Dynamic OpenGraph image generation |
+| `/api/feedback` | POST | Submit general feedback |
+| `/api/telegram/webhook` | POST | Telegram bot webhook (handles commands and inline callbacks) |
+| `/api/telegram/poll` | GET | Telegram long-polling fallback |
+
+### SEO Assets
+
+| Route | Description |
+|-------|-------------|
+| `/sitemap.xml` | Dynamic sitemap — homepage, explore pages, all approved spots, venues with active deals |
+| `/robots.txt` | Allows all crawlers on `/`, blocks `/api/` |
+| `/manifest.json` | PWA manifest for home screen installation |
+
+## Telegram Bot Commands
+
+| Command | Description |
+|---------|-------------|
+| `/help` | Show all available commands |
+| `/approve <spotId>` | Mark a spot's finding as approved (stops repeat flagging in reports) |
+| `/delete <spotId>` | Delete a spot |
+| `/info <spotId>` | Show full details for a spot |
+| `/stats` | Database summary (spot/venue counts, breakdowns) |
+| `/recent` | Show last 10 added spots |
+| `/search <query>` | Search spots by title |
+| `/idea <text>` | Submit a feature idea |
+| `/ideas` | List all submitted ideas |
+
+The bot also handles inline callbacks for approving/denying community submissions, edit proposals, delete requests, and activity suggestions.
+
+## Admin UI
+
+Local web interface at `http://localhost:3456/admin/` (or via Nginx proxy on the server). Managed by PM2 alongside the main app.
+
+- **Spots tab** — search by title, filter by status dropdown, edit all fields inline
+- **Venues tab** — search by name, edit address/phone/website/hours
+- **Needs Review tab** — shows flagged items from the daily report logic (discovery, data quality, confidence), with severity and explanation of why each item was flagged
+- Promotion list editing via one-item-per-line textarea (stored as JSON)
+- Help tooltips for format-sensitive fields (promotion_time, etc.)
+- Dirty field tracking with visual save indicators
+
 ## Project Structure
 
 ```
 chs-spots/
 ├── src/
-│   ├── app/            # Next.js pages + API routes
-│   ├── components/     # Map, modals, list view, filters
-│   ├── contexts/       # React contexts (spots, venues, activities)
-│   ├── lib/            # DAL (db.ts), Telegram, rate-limit, cache
-│   └── utils/          # Active status, time, distance, favorites
+│   ├── app/                 # Next.js pages + API routes
+│   │   ├── page.tsx         # Homepage (server component, SSR)
+│   │   ├── HomeClient.tsx   # Homepage client-side SPA
+│   │   ├── spots/[id]/      # Individual spot pages (SSR)
+│   │   ├── venues/[id]/     # Individual venue pages (SSR)
+│   │   ├── explore/[slug]/  # Area + activity pages (SSG)
+│   │   ├── privacy/         # Privacy policy
+│   │   ├── sitemap.ts       # Dynamic sitemap
+│   │   ├── robots.ts        # Robots.txt
+│   │   └── api/             # REST API routes
+│   ├── components/          # Map, modals, list view, filters, cards
+│   ├── contexts/            # React contexts (spots, venues, activities)
+│   ├── lib/                 # DAL (db.ts), Telegram, rate-limit, cache
+│   └── utils/               # Active status, time, distance, favorites, SEO helpers
 ├── scripts/
 │   ├── download-raw-html.js         # Step 1: Download venue websites
 │   ├── extract-promotions.js        # Step 2: LLM extraction via Grok
@@ -77,13 +157,14 @@ chs-spots/
 │   ├── extract-hours.js             # Operating hours extraction (3-tier)
 │   ├── discover-openings.js         # Nightly: find new/coming restaurants
 │   ├── discover-live-music.js       # Weekly: find live music events
+│   ├── enrich-venues.js             # Fill missing venue data via LLM + Google
 │   ├── run-incremental-pipeline.js  # Orchestrates nightly ETL
 │   ├── seed-venues.js               # Google Places venue seeding
-│   ├── admin.html                   # Local admin UI (query/update spots)
-│   ├── serve-admin.js               # Serves admin UI at localhost:3456
+│   ├── admin.html                   # Local admin UI
+│   ├── serve-admin.js               # Admin server (port 3456)
 │   ├── ops/
 │   │   ├── generate-report.js       # Daily analytics + pipeline report
-│   │   ├── run-nightly-pipeline.sh  # Cron: ETL + report (3 AM)
+│   │   ├── run-nightly-pipeline.sh  # Cron: ETL + enrichment + report (3 AM)
 │   │   ├── run-nightly-openings.sh  # Cron: opening discovery (2 AM)
 │   │   ├── run-daily-live-music.sh  # Cron: event refresh (3 PM daily)
 │   │   ├── run-weekly-live-music.sh # Cron: venue discovery (Wed 4 AM)
@@ -100,9 +181,10 @@ chs-spots/
 │   ├── chs-spots.db    # SQLite database (gitignored)
 │   ├── config/         # Areas, activities, LLM prompts, watchlist
 │   └── seeds/          # Activity seed data (JSON)
-├── e2e/                # Playwright E2E tests
-├── logs/               # Structured pipeline logs
-└── public/spots/       # Spot photos
+├── ecosystem.config.cjs  # PM2 config (chs-spots + chs-admin)
+├── e2e/                  # Playwright E2E tests
+├── logs/                 # Structured pipeline logs
+└── public/               # Static assets, spot photos, PWA manifest
 ```
 
 ## Nightly Pipeline
@@ -111,12 +193,21 @@ chs-spots/
 |------|-----|--------|
 | 1:00 AM | Venue discovery (Google Places) | `run-biweekly-seed.sh` |
 | 2:00 AM | Opening discovery (RSS + Grok) | `run-nightly-openings.sh` |
-| 3:00 AM | ETL pipeline + daily report | `run-nightly-pipeline.sh` |
+| 3:00 AM | ETL pipeline + venue enrichment + daily report | `run-nightly-pipeline.sh` |
 | 3:00 PM | Live music event refresh (Grok web search) | `run-daily-live-music.sh` |
 | 4:00 AM Wed | Live music venue discovery | `run-weekly-live-music.sh` |
 | Monthly | Operating hours refresh | `run-monthly-hours.sh` |
 
-**ETL flow:** Download HTML → merge → trim → diff → extract via Grok (only changed venues) → create spots → generate report. Typical daily cost: 5–15 LLM calls.
+**ETL flow:** Download HTML → merge → trim → diff → extract via Grok (only changed venues) → enrich missing venue data → create spots → generate report → send Telegram summary. Typical daily cost: 5–15 LLM calls.
+
+## SEO
+
+- Server-rendered homepage with real spot data (counts, featured deals, explore links)
+- Individual `/spots/[id]` and `/venues/[id]` pages with unique metadata, JSON-LD (LocalBusiness, BreadcrumbList, OfferCatalog), and canonical URLs
+- Explore pages with FAQ schema, editorial content, and `generateStaticParams` for SSG
+- Dynamic sitemap including all approved spots and venues with active deals
+- Per-page canonical URLs, keywords, and OpenGraph metadata
+- WebSite schema with SearchAction on root layout
 
 ## Deployment
 
@@ -124,5 +215,11 @@ chs-spots/
 npm run build
 rsync -avz .next/ ubuntu:~/projects/chs-spots/.next/
 rsync -avz --exclude node_modules --exclude .next --exclude data --exclude .env.local ./ ubuntu:~/projects/chs-spots/
+rsync -avz scripts/ ubuntu:~/projects/chs-spots/scripts/
 ssh ubuntu "cd ~/projects/chs-spots && pm2 restart chs-spots"
+ssh ubuntu "curl -s http://localhost:3000/api/health"
 ```
+
+PM2 manages two processes via `ecosystem.config.cjs`:
+- `chs-spots` — Next.js production server (port 3000)
+- `chs-admin` — Admin UI server (port 3456, LAN-only via Nginx)
