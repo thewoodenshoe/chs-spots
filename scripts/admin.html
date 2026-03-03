@@ -414,10 +414,14 @@ function openEdit(id, opts = {}) {
   const approveBtn = editTable === 'spots'
     ? `<button class="approve" id="approve-finding">Approve Finding</button>`
     : '';
+  const deleteBtn = editTable === 'spots'
+    ? `<button class="danger" id="delete-spot">Delete Spot</button>`
+    : '';
 
   html += `<div class="edit-actions">
     <button id="save-edit" disabled>Save Changes</button>
     ${approveBtn}
+    ${deleteBtn}
     <button class="secondary" id="cancel-edit">Cancel</button>
     <span class="changes-note"></span>
     <span class="auto-note">updated_at and last_update_date set automatically</span>
@@ -477,6 +481,28 @@ function openEdit(id, opts = {}) {
         showError(err);
         approveEl.disabled = false;
         approveEl.textContent = 'Approve Finding';
+      }
+    };
+  }
+
+  const deleteEl = document.getElementById('delete-spot');
+  if (deleteEl) {
+    deleteEl.onclick = async () => {
+      if (!confirm(`Delete spot #${id}? This cannot be undone.`)) return;
+      deleteEl.disabled = true;
+      deleteEl.textContent = 'Deleting…';
+      try {
+        const res = await fetch(`api/delete?id=${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (!res.ok) throw data;
+        editContainer.innerHTML = '';
+        showSuccess(`Spot #${id} deleted`);
+        if (activeTab === 'review') loadReviewItems();
+        else searchBtn.click();
+      } catch (err) {
+        showError(err);
+        deleteEl.disabled = false;
+        deleteEl.textContent = 'Delete Spot';
       }
     };
   }
@@ -628,6 +654,7 @@ function renderReviewList(items) {
       }
       if (item.spotId) {
         html += `<button class="approve sm review-approve-btn" data-spot-id="${item.spotId}">Approve</button>`;
+        html += `<button class="danger sm review-delete-btn" data-spot-id="${item.spotId}">Delete</button>`;
       }
       html += `</div>`;
       html += `</div>`;
@@ -680,6 +707,31 @@ function renderReviewList(items) {
         showError(err);
         btn.disabled = false;
         btn.textContent = 'Approve';
+      }
+    });
+  });
+
+  contentArea.querySelectorAll('.review-delete-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const spotId = btn.dataset.spotId;
+      if (!confirm(`Delete spot #${spotId}? This cannot be undone.`)) return;
+      btn.disabled = true;
+      btn.textContent = '...';
+      try {
+        const res = await fetch(`api/delete?id=${spotId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (!res.ok) throw data;
+        btn.textContent = 'Deleted';
+        btn.className = 'sm secondary';
+        const card = btn.closest('.review-card');
+        if (card) { card.style.opacity = '0.4'; card.style.textDecoration = 'line-through'; }
+        if (editContainer.dataset.editId === spotId) editContainer.innerHTML = '';
+        showSuccess(`Spot #${spotId} deleted`);
+      } catch (err) {
+        showError(err);
+        btn.disabled = false;
+        btn.textContent = 'Delete';
       }
     });
   });

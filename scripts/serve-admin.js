@@ -289,6 +289,17 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (pathname === '/api/delete' && req.method === 'DELETE') {
+    const id = parseInt(url.searchParams.get('id'), 10);
+    if (!id) { sendJson(res, { error: 'Missing id' }, 400); return; }
+    const database = db.getDb();
+    const existing = database.prepare('SELECT id FROM spots WHERE id = ?').get(id);
+    if (!existing) { sendJson(res, { error: `Spot #${id} not found` }, 404); return; }
+    database.prepare('DELETE FROM spots WHERE id = ?').run(id);
+    sendJson(res, { ok: true, deleted: id });
+    return;
+  }
+
   if (pathname === '/api/needs-review' && req.method === 'GET') {
     const result = handleNeedsReview();
     sendJson(res, result);
