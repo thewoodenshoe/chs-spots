@@ -9,7 +9,7 @@ function cleanNum(n: string): string {
 }
 
 const TIME_RANGE_RE =
-  /(\d{1,2}(?::\d{2})?)\s*(am|pm)?\s*[-–]\s*(\d{1,2}(?::\d{2})?)\s*(am|pm)/i;
+  /(\d{1,2}(?::\d{2})?)\s*(am|pm)?\s*(?:[-–]|\bto\b)\s*(\d{1,2}(?::\d{2})?)\s*(am|pm)/i;
 
 function parseToMinutes(timeStr: string, ampm: string): number {
   let h = parseInt(timeStr);
@@ -86,17 +86,14 @@ const DAY_PATTERNS: Record<string, number[]> = {
   'saturday': [6], 'sat': [6],
 };
 
-function parseDays(raw: string): number[] | null {
-  const dayPart = raw.split('•').slice(1).join('•').trim();
-  if (!dayPart) return null;
-
+function parseDayPart(dayPart: string): number[] | null {
   const lower = dayPart.toLowerCase().replace(/\s+/g, ' ');
 
   // Check single-word matches first
   if (DAY_PATTERNS[lower]) return DAY_PATTERNS[lower];
 
-  // Range: "Monday-Friday", "Tue-Sat"
-  const rangeMatch = lower.match(/^(\w+)\s*[-–—to]+\s*(\w+)$/);
+  // Range: "Monday-Friday", "Tue-Sat", "Monday to Friday"
+  const rangeMatch = lower.match(/^(\w+)\s*(?:[-–—]|\bto\b)\s*(\w+)$/);
   if (rangeMatch) {
     const startDay = DAY_PATTERNS[rangeMatch[1]];
     const endDay = DAY_PATTERNS[rangeMatch[2]];
@@ -128,6 +125,22 @@ function parseDays(raw: string): number[] | null {
   }
 
   return collected.length > 0 ? collected : null;
+}
+
+function parseDays(raw: string): number[] | null {
+  // Standard bullet format: "3pm-5pm • Mon-Fri"
+  const bulletPart = raw.split('•').slice(1).join('•').trim();
+  if (bulletPart) return parseDayPart(bulletPart);
+
+  // Natural language format: "daily from 3pm to 5pm", "Monday to Friday from 4pm to 7pm"
+  // Extract the part before "from <time>" or before the first standalone time reference
+  const beforeTime = raw
+    .replace(/\s*\bfrom\s+\d{1,2}(?::\d{2})?\s*(?:am|pm).*$/i, '')
+    .replace(/\s*\d{1,2}(?::\d{2})?\s*(?:am|pm).*$/i, '')
+    .trim();
+  if (beforeTime) return parseDayPart(beforeTime);
+
+  return null;
 }
 
 function getEasternNow(): Date {

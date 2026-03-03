@@ -1,146 +1,186 @@
 #!/usr/bin/env node
 /**
- * enrich-venues.js — Fill in missing venue attributes (website, address, phone)
+ * Bulk-enrich venues missing website and/or phone using Grok web search.
  *
- * Finds venues with incomplete data and uses LLM to look them up.
- * Designed to run as part of the nightly pipeline (low volume, cheap).
+ * Usage:
+ *   node scripts/enrich-venues.js [--dry-run] [--limit N] [--batch-size N]
  *
- * Usage: node scripts/enrich-venues.js [--dry-run]
+ * Requires GROK_API_KEY (or XAI_API_KEY) in environment.
  */
 
-const path = require('path');
-const fs = require('fs');
-
-process.env.DB_PATH = process.env.DB_PATH || path.resolve(__dirname, '..', 'data', 'chs-spots.db');
 const db = require('./utils/db');
-const { chat, getApiKey } = require('./utils/llm-client');
+const { webSearch, requireApiKey, extractJsonArray } = require('./utils/llm-client');
 
-const LOG_PATH = path.join(__dirname, '..', 'logs', 'enrich-venues.log');
-const logStream = (() => {
-  try {
-    const dir = path.dirname(LOG_PATH);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    return fs.createWriteStream(LOG_PATH, { flags: 'a' });
-  } catch { return null; }
-})();
+const args = process.argv.slice(2);
+const DRY_RUN = args.includes('--dry-run');
+const LIMIT = parseInt(args.find((_, i, a) => a[i - 1] === '--limit') || '0', 10) || Infinity;
+const BATCH_SIZE = parseInt(args.find((_, i, a) => a[i - 1] === '--batch-size') || '10', 10);
+const DELAY_MS = 3000;
 
-function log(msg) {
-  const line = `[${new Date().toISOString()}] ${msg}`;
-  console.log(msg);
-  if (logStream) logStream.write(line + '\n');
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function buildPrompt(venues) {
+  const items = venues.map((v, i) => ({
+    index: i,
+    name: v.name,
+    address: v.address || 'N/A',
+    area: v.area || 'N/A',
+    needsWebsite: !v.website,
+    needsPhone: !v.phone,
+  }));
+
+  return `I need you to find contact information for these venues in Charleston, SC.
+
+For each venue, search the web and return:
+- "website": the venue's official website URL. If it's a landmark, park, beach access, or public place without its own website, find the best relevant page (e.g. a tourism board page, city page, or well-known guide page about that place). Only use "n/a" if absolutely nothing relevant exists.
+- "phone": the venue's phone number in (XXX) XXX-XXXX format. If it's a landmark, public beach, park, or attraction that genuinely has no phone number, use "n/a".
+
+Return a JSON array with one object per venue:
+[
+  { "index": 0, "website": "https://...", "phone": "(843) 555-1234" },
+  { "index": 1, "website": "https://...", "phone": "n/a" }
+]
+
+Only include fields the venue is missing (check needsWebsite / needsPhone).
+Do NOT invent URLs — only return URLs you found via web search.
+
+Venues to look up:
+${JSON.stringify(items, null, 2)}`;
 }
 
-const DRY_RUN = process.argv.includes('--dry-run');
-const BATCH_SIZE = 10;
+async function processBatch(batch, batchNum, totalBatches) {
+  const label = `Batch ${batchNum}/${totalBatches} (${batch.length} venues)`;
+  console.log(`\n🔍 ${label}...`);
+  batch.forEach(v => console.log(`   - ${v.name} (${v.area}) [need: ${!v.website ? 'url' : ''}${!v.phone ? ' phone' : ''}]`));
 
-async function main() {
-  log('=== enrich-venues.js START ===');
+  const result = await webSearch({
+    prompt: buildPrompt(batch),
+    timeoutMs: 180000,
+    log: console.log,
+  });
 
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    log('No GROK_API_KEY set, skipping enrichment');
-    return;
+  if (!result) {
+    console.log(`   ❌ ${label}: no response from Grok`);
+    return { updated: 0, skipped: batch.length, errors: [] };
+  }
+
+  // Grok web search embeds citation annotations like [[1]](url) inside JSON values — strip them
+  const cleaned = result.content.replace(/\[\[\d+\]\]\([^)]*\)/g, '');
+  let items = extractJsonArray(cleaned);
+  if (!Array.isArray(items)) {
+    items = result.parsed;
+  }
+  if (!Array.isArray(items)) {
+    console.log(`   ❌ ${label}: could not parse JSON from response`);
+    console.log(`   Raw: ${result.content.slice(0, 300)}`);
+    return { updated: 0, skipped: batch.length, errors: [] };
   }
 
   const database = db.getDb();
+  let updated = 0;
+  const errors = [];
 
-  const incomplete = database.prepare(`
-    SELECT v.id, v.name, v.address, v.website, v.phone, v.lat, v.lng, v.area
-    FROM venues v
-    INNER JOIN spots s ON s.venue_id = v.id AND s.status = 'approved'
-    WHERE (v.website IS NULL OR v.website = '')
-       OR (v.address IS NULL OR v.address = '')
-       OR (v.phone IS NULL OR v.phone = '')
-    GROUP BY v.id
-    ORDER BY COUNT(s.id) DESC
-    LIMIT 30
-  `).all();
-
-  log(`Found ${incomplete.length} venues with missing attributes`);
-  if (incomplete.length === 0) {
-    log('=== enrich-venues.js COMPLETE (nothing to do) ===');
-    return;
-  }
-
-  let enriched = 0;
-  for (let i = 0; i < incomplete.length; i += BATCH_SIZE) {
-    const batch = incomplete.slice(i, i + BATCH_SIZE);
-    const missing = batch.map(v => ({
-      id: v.id,
-      name: v.name,
-      address: v.address || null,
-      website: v.website || null,
-      phone: v.phone || null,
-      area: v.area || null,
-      lat: v.lat, lng: v.lng,
-      needs: [
-        !v.website ? 'website' : null,
-        !v.address ? 'address' : null,
-        !v.phone ? 'phone' : null,
-      ].filter(Boolean),
-    }));
-
-    log(`  Batch ${Math.floor(i / BATCH_SIZE) + 1}: ${missing.map(m => m.name).join(', ')}`);
-
-    const result = await chat({
-      messages: [
-        {
-          role: 'system',
-          content: `You are a Charleston, SC local business data expert. Given venues with missing attributes, look up the correct information.
-
-Return ONLY a JSON array. For each venue, return:
-{"index": <0-based>, "website": "<url or null>", "address": "<full address or null>", "phone": "<phone or null>"}
-
-Only fill in fields that were requested (listed in "needs"). Use null if you cannot find the information.
-For websites, return the venue's own website (not Facebook/Yelp/Google). Include https://.
-For addresses, use full street address with city/state.
-For phone, use format (xxx) xxx-xxxx.`,
-        },
-        { role: 'user', content: JSON.stringify(missing) },
-      ],
-      temperature: 0.1,
-      timeoutMs: 45000,
-      retries: 1,
-      apiKey,
-      log,
-    });
-
-    if (!result?.parsed || !Array.isArray(result.parsed)) {
-      log(`  LLM returned no usable data for this batch`);
+  for (const item of items) {
+    const venue = batch[item.index];
+    if (!venue) {
+      errors.push(`Invalid index ${item.index}`);
       continue;
     }
 
-    for (const r of result.parsed) {
-      if (typeof r.index !== 'number' || r.index < 0 || r.index >= missing.length) continue;
-      const venue = missing[r.index];
-      const updates = {};
-      if (r.website && venue.needs.includes('website')) updates.website = r.website;
-      if (r.address && venue.needs.includes('address')) updates.address = r.address;
-      if (r.phone && venue.needs.includes('phone')) updates.phone = r.phone;
+    const sets = [];
+    const vals = [];
 
-      if (Object.keys(updates).length === 0) continue;
-
-      if (DRY_RUN) {
-        log(`  [DRY RUN] Would update ${venue.name}: ${JSON.stringify(updates)}`);
-      } else {
-        const setClauses = Object.keys(updates).map(k => `${k} = @${k}`);
-        setClauses.push("updated_at = datetime('now')");
-        database.prepare(
-          `UPDATE venues SET ${setClauses.join(', ')} WHERE id = @id`
-        ).run({ ...updates, id: venue.id });
-        log(`  Updated ${venue.name}: ${Object.keys(updates).join(', ')}`);
+    if (item.website && !venue.website) {
+      const url = item.website.trim();
+      if (url !== 'n/a' && url.startsWith('http')) {
+        sets.push('website = ?');
+        vals.push(url);
+      } else if (url === 'n/a') {
+        sets.push('website = ?');
+        vals.push('n/a');
       }
-      enriched++;
+    }
+
+    if (item.phone && !venue.phone) {
+      const ph = item.phone.trim();
+      sets.push('phone = ?');
+      vals.push(ph);
+    }
+
+    if (sets.length === 0) continue;
+
+    sets.push('updated_at = ?');
+    vals.push(new Date().toISOString());
+    vals.push(venue.id);
+
+    if (DRY_RUN) {
+      console.log(`   [DRY] ${venue.name}: ${sets.join(', ')} → ${vals.slice(0, -1).join(', ')}`);
+      updated++;
+    } else {
+      try {
+        database.prepare(`UPDATE venues SET ${sets.join(', ')} WHERE id = ?`).run(...vals);
+        console.log(`   ✅ ${venue.name}: ${sets.filter(s => !s.startsWith('updated_at')).join(', ')}`);
+        updated++;
+      } catch (err) {
+        errors.push(`${venue.name}: ${err.message}`);
+      }
     }
   }
 
-  log(`Enriched ${enriched} venue(s)${DRY_RUN ? ' (dry run)' : ''}`);
-  log('=== enrich-venues.js COMPLETE ===');
-  if (logStream) logStream.end();
+  return { updated, skipped: batch.length - items.length, errors };
+}
+
+async function main() {
+  requireApiKey('enrich-venues');
+  const database = db.getDb();
+
+  const venues = database.prepare(`
+    SELECT id, name, address, area, website, phone
+    FROM venues
+    WHERE (website IS NULL OR website = '') OR (phone IS NULL OR phone = '')
+    ORDER BY area, name
+  `).all();
+
+  const toProcess = venues.slice(0, LIMIT);
+  console.log(`\n📋 Found ${venues.length} venues needing enrichment`);
+  console.log(`   Processing: ${toProcess.length} | Batch size: ${BATCH_SIZE} | Dry run: ${DRY_RUN}`);
+
+  const batches = [];
+  for (let i = 0; i < toProcess.length; i += BATCH_SIZE) {
+    batches.push(toProcess.slice(i, i + BATCH_SIZE));
+  }
+
+  let totalUpdated = 0;
+  let totalSkipped = 0;
+  let totalErrors = [];
+
+  for (let i = 0; i < batches.length; i++) {
+    const result = await processBatch(batches[i], i + 1, batches.length);
+    totalUpdated += result.updated;
+    totalSkipped += result.skipped;
+    totalErrors = totalErrors.concat(result.errors);
+
+    if (i < batches.length - 1) {
+      console.log(`   ⏳ Waiting ${DELAY_MS / 1000}s before next batch...`);
+      await sleep(DELAY_MS);
+    }
+  }
+
+  console.log(`\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+  console.log(`✅ Done! Updated: ${totalUpdated} | Skipped: ${totalSkipped} | Errors: ${totalErrors.length}`);
+  if (totalErrors.length > 0) {
+    console.log(`\nErrors:`);
+    totalErrors.forEach(e => console.log(`   ⚠️  ${e}`));
+  }
+
+  const remaining = database.prepare(`
+    SELECT COUNT(*) as c FROM venues
+    WHERE (website IS NULL OR website = '') OR (phone IS NULL OR phone = '')
+  `).get();
+  console.log(`\n📊 Remaining venues needing data: ${remaining.c}`);
 }
 
 main().catch(err => {
-  log(`ERROR: ${err.message}`);
-  if (logStream) logStream.end();
+  console.error('Fatal error:', err);
   process.exit(1);
 });
