@@ -143,7 +143,7 @@ jest.mock('@/components/SpotListView', () => {
   return { __esModule: true, default: MockSpotListView };
 });
 
-import Home from '@/app/page';
+import Home from '@/app/HomeClient';
 
 beforeAll(() => {
   Object.defineProperty(window, 'location', {
