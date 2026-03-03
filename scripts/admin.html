@@ -8,7 +8,6 @@
     * { box-sizing: border-box; }
     body { font-family: system-ui, sans-serif; margin: 0; padding: 1rem 2rem; background: #0f172a; color: #e2e8f0; }
     h1 { font-size: 1.3rem; margin-bottom: 0.75rem; color: #0d9488; }
-    h2 { font-size: 1rem; margin: 1.25rem 0 0.5rem; color: #94a3b8; border-bottom: 1px solid #334155; padding-bottom: 4px; }
 
     .search { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.75rem; }
     .search select, .search input { padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid #475569; background: #1e293b; color: #e2e8f0; font-size: 0.85rem; }
@@ -18,10 +17,10 @@
     .tab-btn.active { background: #334155; color: #0d9488; border-bottom-color: #334155; }
 
     button { padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid #0d9488; background: #0d9488; color: #fff; cursor: pointer; font-weight: 600; font-size: 0.8rem; }
-    button:hover { background: #0f766e; }
+    button:hover:not(:disabled) { background: #0f766e; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
     button.secondary { background: #1e293b; border-color: #475569; color: #94a3b8; }
-    button.secondary:hover { background: #334155; }
-    button.danger { background: #7f1d1d; border-color: #991b1b; }
+    button.secondary:hover:not(:disabled) { background: #334155; }
 
     .message { margin: 0.5rem 0; padding: 0.5rem 0.75rem; border-radius: 6px; font-size: 0.85rem; display: none; }
     .message.error { background: #7f1d1d; color: #fecaca; display: block; }
@@ -31,25 +30,28 @@
     table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
     th, td { padding: 4px 6px; text-align: left; border-bottom: 1px solid #1e293b; white-space: nowrap; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
     th { background: #334155; font-weight: 600; position: sticky; top: 0; z-index: 1; color: #94a3b8; }
-    tr:hover { background: #1e293b; }
+    tr:hover { background: #1e293b; cursor: pointer; }
     tr.selected { background: #164e63; }
+    td.ts { font-variant-numeric: tabular-nums; font-size: 0.7rem; color: #94a3b8; }
 
     .edit-panel { margin: 1rem 0; padding: 1rem 1.25rem; background: #1e293b; border: 1px solid #334155; border-radius: 8px; max-width: 900px; }
-    .edit-panel h3 { margin: 0 0 0.75rem 0; font-size: 1rem; color: #0d9488; }
+    .edit-panel h3 { margin: 0 0 0.75rem 0; font-size: 1rem; color: #0d9488; display: flex; align-items: center; gap: 8px; }
     .edit-section { margin-bottom: 1rem; }
     .edit-section-title { font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem; }
     .field-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 6px 16px; }
     .edit-row { display: flex; gap: 0.5rem; align-items: flex-start; }
-    .edit-row label { min-width: 140px; font-size: 0.8rem; color: #94a3b8; padding-top: 6px; flex-shrink: 0; }
-    .edit-row input, .edit-row textarea, .edit-row select { flex: 1; min-width: 160px; padding: 5px 8px; border-radius: 4px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; font-size: 0.8rem; font-family: inherit; }
+    .edit-row label { min-width: 140px; font-size: 0.8rem; color: #94a3b8; padding-top: 6px; flex-shrink: 0; display: flex; align-items: center; gap: 4px; }
+    .edit-row input, .edit-row textarea, .edit-row select { flex: 1; min-width: 160px; padding: 5px 8px; border-radius: 4px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; font-size: 0.8rem; font-family: inherit; transition: border-color 0.15s; }
     .edit-row textarea { min-height: 50px; resize: vertical; }
-    .edit-row input:read-only { opacity: 0.5; cursor: not-allowed; }
-    .edit-actions { margin-top: 0.75rem; display: flex; gap: 0.5rem; align-items: center; }
+    .edit-row input:read-only, .edit-row textarea:read-only { opacity: 0.5; cursor: not-allowed; }
+    .edit-row .dirty { border-color: #eab308 !important; background: #1a1a0a; }
+    .edit-row .json-error { border-color: #ef4444 !important; background: #1a0a0a; }
+    .edit-actions { margin-top: 0.75rem; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
     .auto-note { font-size: 0.72rem; color: #64748b; margin-left: 8px; }
-    .badge { display: inline-block; font-size: 0.65rem; padding: 1px 6px; border-radius: 9999px; font-weight: 600; margin-left: 4px; }
-    .badge-ok { background: #14532d; color: #86efac; }
-    .badge-warn { background: #78350f; color: #fcd34d; }
-    .count-badge { font-size: 0.75rem; color: #64748b; margin-left: 8px; }
+    .changes-note { font-size: 0.72rem; color: #eab308; margin-left: 4px; font-weight: 600; }
+    .save-ok { font-size: 0.72rem; color: #86efac; margin-left: 8px; font-weight: 600; }
+    .help-tip { display: inline-block; width: 14px; height: 14px; line-height: 14px; text-align: center; font-size: 9px; font-weight: 700; border-radius: 50%; background: #334155; color: #94a3b8; cursor: help; flex-shrink: 0; }
+    .json-hint { font-size: 0.68rem; color: #ef4444; margin-top: 1px; grid-column: 1 / -1; padding-left: 144px; }
     .empty { color: #64748b; font-style: italic; padding: 2rem; text-align: center; }
   </style>
 </head>
@@ -80,6 +82,29 @@ const editContainer = document.getElementById('edit-container');
 
 let activeTab = 'spots';
 let lastRows = [];
+let editOriginals = {};
+
+const SPOT_TYPES = ['Happy Hour', 'Brunch', 'Live Music', 'Coffee Shops', 'Rooftop Bars', 'Dog-Friendly', 'Landmarks & Attractions', 'Recently Opened', 'Coming Soon'];
+const SPOT_STATUSES = ['approved', 'pending', 'rejected', 'deleted'];
+const SPOT_SOURCES = ['llm', 'manual', 'google', 'yelp', 'user_submitted', 'web_scrape'];
+
+const FIELD_HELP = {
+  promotion_time: 'Format: "4pm-7pm • Mon-Fri" or "11am-3pm • Saturday, Sunday".\nUse bullet (•) between time and days.',
+  promotion_list: 'JSON array of deal items, e.g.:\n["$5 margaritas", "$3 draft beer", "Half-price apps"]',
+  operating_hours: 'JSON object keyed by day, e.g.:\n{"monday": {"open": "11:00", "close": "22:00"}, "tuesday": "closed"}',
+  source_url: 'URL where this deal was found. Used for verification.',
+  finding_approved: '1 = approved (suppresses report warnings).\n0 = not yet reviewed.',
+  finding_rationale: 'Why this finding was approved or flagged. Free text.',
+  manual_override: '1 = prevents automated pipeline from modifying this spot.',
+  description: 'Visible to users. Keep concise: what the deal is and when.',
+  last_update_date: 'Auto-set on save. Shows when data was last verified.',
+  photo_url: 'Direct URL to an image. Prefer venue-hosted images.',
+  hours_source: 'Where hours data came from: "google", "website", "manual", etc.',
+  pending_edit: 'JSON of pending user-submitted edit (auto-populated).',
+  area: 'Charleston neighborhood. Must match a known area name.',
+};
+
+const JSON_FIELDS = ['promotion_list', 'pending_edit', 'operating_hours'];
 
 const SPOT_FIELDS = {
   search: ['title', 'id', 'type', 'area', 'venue_id', 'status', 'source', 'description', 'promotion_time', 'source_url', 'submitter_name', 'finding_approved'],
@@ -127,6 +152,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     populateFieldDropdown();
     tableWrap.innerHTML = '';
     editContainer.innerHTML = '';
+    valueEl.value = '';
     messageEl.className = 'message';
     lastRows = [];
   });
@@ -136,11 +162,28 @@ populateFieldDropdown();
 
 function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
+function fmtTs(v) {
+  if (!v) return '';
+  try {
+    const d = new Date(v.includes('T') ? v : v + 'T00:00:00');
+    if (isNaN(d)) return v;
+    const mo = String(d.getMonth() + 1).padStart(2, '0');
+    const dy = String(d.getDate()).padStart(2, '0');
+    const hr = String(d.getHours()).padStart(2, '0');
+    const mn = String(d.getMinutes()).padStart(2, '0');
+    return `${mo}/${dy} ${hr}:${mn}`;
+  } catch { return v; }
+}
+
+function isTimestamp(col) {
+  return ['created_at', 'updated_at', 'submitted_at', 'edited_at', 'hours_updated_at', 'last_update_date'].includes(col);
+}
+
 function renderTable(rows) {
   lastRows = rows;
   editContainer.innerHTML = '';
   if (!rows || rows.length === 0) {
-    tableWrap.innerHTML = '<div class="empty">No results</div>';
+    tableWrap.innerHTML = '<div class="empty">No results. Try a different search field or broader term.</div>';
     return;
   }
   const cols = getConfig().display;
@@ -148,13 +191,15 @@ function renderTable(rows) {
   for (const c of cols) html += `<th>${c}</th>`;
   html += '<th></th></tr></thead><tbody>';
   for (const row of rows) {
-    const rid = activeTab === 'venues' ? row.id : row.id;
+    const rid = row.id;
     html += `<tr data-id="${esc(rid)}">`;
     for (const c of cols) {
       const v = row[c];
+      const isTsCol = isTimestamp(c);
       const s = v == null ? '' : (typeof v === 'object' ? JSON.stringify(v) : String(v));
-      const short = s.length > 50 ? s.slice(0, 47) + '...' : s;
-      html += `<td title="${esc(s)}">${short || '<span style="color:#475569">-</span>'}</td>`;
+      const display = isTsCol ? fmtTs(s) : (s.length > 50 ? s.slice(0, 47) + '...' : s);
+      const cls = isTsCol ? ' class="ts"' : '';
+      html += `<td${cls} title="${esc(s)}">${display || '<span style="color:#475569">—</span>'}</td>`;
     }
     html += `<td><button class="secondary edit-btn" data-id="${esc(rid)}">Edit</button></td></tr>`;
   }
@@ -163,31 +208,82 @@ function renderTable(rows) {
   tableWrap.querySelectorAll('.edit-btn').forEach(btn => {
     btn.addEventListener('click', (e) => { e.stopPropagation(); openEdit(btn.dataset.id); });
   });
+  tableWrap.querySelectorAll('tr[data-id]').forEach(tr => {
+    tr.addEventListener('click', () => openEdit(tr.dataset.id));
+  });
+}
+
+function isJsonField(f) { return JSON_FIELDS.includes(f); }
+
+function validateJson(str) {
+  if (!str || str.trim() === '') return { ok: true, val: null };
+  try { JSON.parse(str); return { ok: true, val: str }; }
+  catch (e) { return { ok: false, err: e.message }; }
+}
+
+function getEnumOptions(field) {
+  if (field === 'type') return SPOT_TYPES;
+  if (field === 'status') return SPOT_STATUSES;
+  if (field === 'source') return SPOT_SOURCES;
+  return null;
+}
+
+function trackDirty() {
+  let count = 0;
+  for (const el of editContainer.querySelectorAll('[data-field]')) {
+    if (el.readOnly || el.closest('.edit-section')?.querySelector('.edit-section-title')?.textContent?.includes('read-only')) continue;
+    const f = el.dataset.field;
+    const orig = editOriginals[f] ?? '';
+    const cur = el.value ?? '';
+    const changed = orig !== cur;
+    el.classList.toggle('dirty', changed);
+    if (changed) count++;
+  }
+  const note = editContainer.querySelector('.changes-note');
+  if (note) note.textContent = count > 0 ? `${count} field${count > 1 ? 's' : ''} changed` : '';
+  const saveBtn = document.getElementById('save-edit');
+  if (saveBtn) saveBtn.disabled = count === 0;
+  return count;
 }
 
 function openEdit(id) {
   const row = lastRows.find(r => String(r.id) === String(id));
   if (!row) return;
 
+  editOriginals = {};
   const cfg = getConfig();
-  let html = `<div class="edit-panel"><h3>Edit ${activeTab === 'venues' ? 'venue' : 'spot'} #${esc(id)}</h3>`;
+  let html = `<div class="edit-panel"><h3>Edit ${activeTab === 'venues' ? 'Venue' : 'Spot'} #${esc(id)}<span class="auto-note">id: ${esc(row.venue_id || id)}</span></h3>`;
 
   for (const [section, fields] of Object.entries(cfg.editGroups)) {
     const isReadonly = section.includes('read-only');
     html += `<div class="edit-section"><div class="edit-section-title">${section}</div><div class="field-grid">`;
     for (const f of fields) {
       const val = row[f];
-      const v = val == null ? '' : (typeof val === 'object' ? JSON.stringify(val) : String(val));
+      const v = val == null ? '' : (typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val));
+      editOriginals[f] = v;
+
       const isTextarea = ['description', 'promotion_list', 'pending_edit', 'operating_hours', 'finding_rationale'].includes(f);
       const isToggle = ['manual_override', 'finding_approved', 'pending_delete'].includes(f);
+      const enumOpts = !isReadonly ? getEnumOptions(f) : null;
       const ro = isReadonly ? ' readonly' : '';
       const label = f.replace(/^_venue_/, 'venue ');
+      const help = FIELD_HELP[f];
+      const helpHtml = help ? ` <span class="help-tip" title="${esc(help)}">?</span>` : '';
+      const jsonTag = isJsonField(f) ? ' <span style="font-size:0.6rem;color:#64748b">JSON</span>' : '';
 
-      html += `<div class="edit-row"><label>${label}</label>`;
+      html += `<div class="edit-row"><label>${label}${helpHtml}${jsonTag}</label>`;
       if (isToggle && !isReadonly) {
         html += `<select data-field="${f}"><option value="0"${v !== '1' ? ' selected' : ''}>0 (No)</option><option value="1"${v === '1' ? ' selected' : ''}>1 (Yes)</option></select>`;
+      } else if (enumOpts && !isReadonly) {
+        const hasVal = enumOpts.includes(v);
+        html += `<select data-field="${f}">`;
+        if (!hasVal && v) html += `<option value="${esc(v)}" selected>${esc(v)}</option>`;
+        for (const opt of enumOpts) {
+          html += `<option value="${esc(opt)}"${opt === v ? ' selected' : ''}>${esc(opt)}</option>`;
+        }
+        html += '</select>';
       } else if (isTextarea) {
-        html += `<textarea data-field="${f}"${ro}>${esc(v)}</textarea>`;
+        html += `<textarea data-field="${f}"${ro} rows="${isJsonField(f) ? 5 : 2}">${esc(v)}</textarea>`;
       } else {
         html += `<input data-field="${f}" value="${esc(v)}"${ro} />`;
       }
@@ -197,51 +293,107 @@ function openEdit(id) {
   }
 
   html += `<div class="edit-actions">
-    <button id="save-edit">Save Changes</button>
+    <button id="save-edit" disabled>Save Changes</button>
     <button class="secondary" id="cancel-edit">Cancel</button>
-    <span class="auto-note">last_update_date is set automatically on save</span>
+    <span class="changes-note"></span>
+    <span class="auto-note">updated_at and last_update_date set automatically</span>
+    <span class="save-ok" id="save-ok"></span>
   </div></div>`;
 
   editContainer.innerHTML = html;
 
-  document.getElementById('save-edit').onclick = async () => {
-    const payload = { id };
-    if (activeTab === 'venues') payload._table = 'venues';
+  editContainer.querySelectorAll('[data-field]').forEach(el => {
+    el.addEventListener('input', trackDirty);
+    el.addEventListener('change', trackDirty);
+  });
 
-    for (const el of editContainer.querySelectorAll('[data-field]')) {
-      if (el.readOnly) continue;
-      const f = el.dataset.field;
-      const v = el.tagName === 'SELECT' ? el.value : el.value;
-      payload[f] = v || null;
-    }
+  editContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    if (activeTab === 'spots') {
-      if (payload.lat != null) payload.lat = parseFloat(payload.lat) || null;
-      if (payload.lng != null) payload.lng = parseFloat(payload.lng) || null;
-      if (payload.manual_override !== undefined) payload.manual_override = payload.manual_override === '1' ? 1 : 0;
-      if (payload.finding_approved !== undefined) payload.finding_approved = payload.finding_approved === '1' ? 1 : 0;
-      if (payload.pending_delete !== undefined) payload.pending_delete = payload.pending_delete === '1' ? 1 : 0;
-    } else {
-      if (payload.lat != null) payload.lat = parseFloat(payload.lat) || null;
-      if (payload.lng != null) payload.lng = parseFloat(payload.lng) || null;
-    }
-
-    try {
-      const res = await fetch('api/update', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-      const data = await res.json();
-      if (!res.ok) throw data;
-      showSuccess(`Updated ${activeTab === 'venues' ? 'venue' : 'spot'} #${id}`);
-      editContainer.innerHTML = '';
-      const idx = lastRows.findIndex(r => String(r.id) === String(id));
-      if (idx >= 0 && data.row) lastRows[idx] = { ...lastRows[idx], ...data.row };
-      renderTable(lastRows);
-    } catch (e) { showError(e); }
-  };
-
+  document.getElementById('save-edit').onclick = () => doSave(id);
   document.getElementById('cancel-edit').onclick = () => {
     editContainer.innerHTML = '';
     showMessage('', '');
   };
+}
+
+async function doSave(id) {
+  const saveBtn = document.getElementById('save-edit');
+  const saveOk = document.getElementById('save-ok');
+  if (saveOk) saveOk.textContent = '';
+
+  for (const f of JSON_FIELDS) {
+    const el = editContainer.querySelector(`[data-field="${f}"]`);
+    if (!el || el.readOnly) continue;
+    el.classList.remove('json-error');
+    const result = validateJson(el.value);
+    if (!result.ok) {
+      el.classList.add('json-error');
+      showError(`Invalid JSON in "${f}": ${result.err}`);
+      el.focus();
+      return;
+    }
+  }
+
+  const payload = { id };
+  if (activeTab === 'venues') payload._table = 'venues';
+  let changedCount = 0;
+
+  for (const el of editContainer.querySelectorAll('[data-field]')) {
+    if (el.readOnly || el.closest('.edit-section')?.querySelector('.edit-section-title')?.textContent?.includes('read-only')) continue;
+    const f = el.dataset.field;
+    const orig = editOriginals[f] ?? '';
+    const cur = el.value ?? '';
+    if (orig === cur) continue;
+    payload[f] = cur || null;
+    changedCount++;
+  }
+
+  if (changedCount === 0) { showError('No changes to save'); return; }
+
+  if (activeTab === 'spots') {
+    if (payload.lat != null) payload.lat = parseFloat(payload.lat) || null;
+    if (payload.lng != null) payload.lng = parseFloat(payload.lng) || null;
+    if (payload.manual_override !== undefined) payload.manual_override = payload.manual_override === '1' ? 1 : 0;
+    if (payload.finding_approved !== undefined) payload.finding_approved = payload.finding_approved === '1' ? 1 : 0;
+    if (payload.pending_delete !== undefined) payload.pending_delete = payload.pending_delete === '1' ? 1 : 0;
+  } else {
+    if (payload.lat != null) payload.lat = parseFloat(payload.lat) || null;
+    if (payload.lng != null) payload.lng = parseFloat(payload.lng) || null;
+  }
+
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving...';
+
+  try {
+    const res = await fetch('api/update', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (!res.ok) throw data;
+
+    const idx = lastRows.findIndex(r => String(r.id) === String(id));
+    if (idx >= 0 && data.row) lastRows[idx] = { ...lastRows[idx], ...data.row };
+    renderTable(lastRows);
+
+    if (data.row) {
+      for (const [k, v] of Object.entries(data.row)) {
+        const val = v == null ? '' : (typeof v === 'object' ? JSON.stringify(v, null, 2) : String(v));
+        editOriginals[k] = val;
+        const el = editContainer.querySelector(`[data-field="${k}"]`);
+        if (el && !el.readOnly) {
+          el.value = val;
+          el.classList.remove('dirty');
+        }
+      }
+    }
+
+    showSuccess(`Updated ${activeTab === 'venues' ? 'venue' : 'spot'} #${id} (${changedCount} field${changedCount > 1 ? 's' : ''})`);
+    if (saveOk) saveOk.textContent = '✓ Saved';
+    setTimeout(() => { if (saveOk) saveOk.textContent = ''; }, 4000);
+    trackDirty();
+  } catch (e) {
+    showError(e);
+  } finally {
+    saveBtn.textContent = 'Save Changes';
+  }
 }
 
 searchBtn.addEventListener('click', async () => {
@@ -249,6 +401,8 @@ searchBtn.addEventListener('click', async () => {
   const value = valueEl.value.trim();
   if (!value) { showError('Enter a search value'); return; }
   messageEl.className = 'message';
+  searchBtn.disabled = true;
+  searchBtn.textContent = 'Searching...';
   try {
     const body = { field, value };
     if (activeTab === 'venues') body.table = 'venues';
@@ -259,9 +413,18 @@ searchBtn.addEventListener('click', async () => {
     if (data.rows && data.rows.length > 0) showSuccess(`${data.rows.length} result(s)`);
     else showMessage('No results found', '');
   } catch (e) { showError(e); }
+  finally { searchBtn.disabled = false; searchBtn.textContent = 'Search'; }
 });
 
 valueEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') searchBtn.click(); });
+
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    const saveBtn = document.getElementById('save-edit');
+    if (saveBtn && !saveBtn.disabled) saveBtn.click();
+  }
+});
 </script>
 </body>
 </html>
