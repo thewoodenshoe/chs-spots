@@ -1,9 +1,6 @@
 import type { MetadataRoute } from 'next';
-import { areasDb, activitiesDb } from '@/lib/db';
-
-function slugify(s: string): string {
-  return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-}
+import { areasDb, activitiesDb, spots, venues } from '@/lib/db';
+import { slugify } from '@/utils/seo-helpers';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const entries: MetadataRoute.Sitemap = [
@@ -32,6 +29,32 @@ export default function sitemap(): MetadataRoute.Sitemap {
           lastModified: new Date(),
           changeFrequency: 'weekly',
           priority: 0.7,
+        });
+      }
+    }
+
+    const allSpots = spots.getAll({ visibleOnly: true });
+    for (const spot of allSpots) {
+      entries.push({
+        url: `https://chsfinds.com/spots/${spot.id}`,
+        lastModified: spot.last_update_date ? new Date(spot.last_update_date) : new Date(spot.updated_at),
+        changeFrequency: 'weekly',
+        priority: 0.6,
+      });
+    }
+
+    const allVenues = venues.getAll();
+    const spotsByVenue = new Map<string, boolean>();
+    for (const s of allSpots) {
+      if (s.venue_id) spotsByVenue.set(s.venue_id, true);
+    }
+    for (const v of allVenues) {
+      if (spotsByVenue.has(v.id)) {
+        entries.push({
+          url: `https://chsfinds.com/venues/${encodeURIComponent(v.id)}`,
+          lastModified: new Date(v.updated_at),
+          changeFrequency: 'weekly',
+          priority: 0.5,
         });
       }
     }

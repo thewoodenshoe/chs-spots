@@ -3,10 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { spots, venues, areasDb, activitiesDb, type SpotRow, type VenueRow } from '@/lib/db';
-
-function slugify(s: string): string {
-  return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-}
+import { slugify } from '@/utils/seo-helpers';
 
 function parseSlug(slug: string): { area: string; activity: string } | null {
   const areas = areasDb.getNames();
@@ -151,7 +148,7 @@ export default async function ExplorePage({ params }: { params: Promise<{ slug: 
       '@type': 'ListItem',
       position: i + 1,
       name: s.title,
-      url: `https://chsfinds.com/?spot=${s.id}`,
+      url: `https://chsfinds.com/spots/${s.id}`,
     })),
   } : null;
 
@@ -186,7 +183,7 @@ export default async function ExplorePage({ params }: { params: Promise<{ slug: 
           {areaSpots.map(spot => (
             <li key={spot.id}>
               <Link
-                href={`/?spot=${spot.id}`}
+                href={`/spots/${spot.id}`}
                 className="flex gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow"
               >
                 {spot.photoUrl && !spot.photoUrl.startsWith('data:') && (

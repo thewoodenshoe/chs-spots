@@ -1,10 +1,7 @@
 import { spots, venues, activitiesDb, areasDb, type SpotRow, type VenueRow } from '@/lib/db';
 import Link from 'next/link';
 import HomeClient from './HomeClient';
-
-function slugify(s: string): string {
-  return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-}
+import { slugify } from '@/utils/seo-helpers';
 
 function transformSpot(spot: SpotRow, venueMap: Map<string, VenueRow>) {
   const venue = spot.venue_id ? venueMap.get(spot.venue_id) : undefined;
@@ -75,7 +72,9 @@ export default function HomePage() {
         <ul className="space-y-3 mb-8">
           {featured.map(s => (
             <li key={s.id} className="border-b border-gray-100 pb-2">
-              <h3 className="font-semibold text-sm">{s.title}</h3>
+              <Link href={`/spots/${s.id}`} className="hover:text-teal-600">
+                <h3 className="font-semibold text-sm">{s.title}</h3>
+              </Link>
               <p className="text-xs text-gray-500">
                 {s.type} in {s.area}
                 {s.promotionTime ? ` · ${s.promotionTime}` : ''}
