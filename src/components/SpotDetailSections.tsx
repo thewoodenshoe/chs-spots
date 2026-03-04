@@ -43,8 +43,8 @@ export default function SpotDetailSections({
   activityColor,
   children,
 }: SpotDetailSectionsProps) {
-  const promoTime = spot.promotionTime || spot.happyHourTime;
-  const promoList = spot.promotionList ?? spot.happyHourList ?? [];
+  const promoTime = spot.promotionTime;
+  const promoList = spot.promotionList ?? [];
   const timeParts = promoTime ? promoTime.split(/\s*[•]\s*/).filter(Boolean) : [];
   const hasActivityData = !!(promoTime || promoList.length > 0 || spot.description);
   const hasVenue = !!spot.venueId;

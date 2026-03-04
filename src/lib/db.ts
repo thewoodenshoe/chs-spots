@@ -39,7 +39,9 @@ function ensureCoreTables(db: Database.Database) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       venue_id TEXT, title TEXT NOT NULL, type TEXT NOT NULL DEFAULT 'Happy Hour',
       source TEXT NOT NULL DEFAULT 'manual', status TEXT NOT NULL DEFAULT 'approved',
-      description TEXT, promotion_time TEXT, promotion_list TEXT, source_url TEXT,
+      description TEXT, promotion_time TEXT, promotion_list TEXT,
+      time_start TEXT, time_end TEXT, days TEXT, specific_date TEXT,
+      source_url TEXT,
       submitter_name TEXT, manual_override INTEGER DEFAULT 0, photo_url TEXT,
       last_update_date TEXT, pending_edit TEXT, pending_delete INTEGER DEFAULT 0,
       submitted_at TEXT, edited_at TEXT,
@@ -93,6 +95,10 @@ function runMigrations(db: Database.Database) {
 
   if (!spotColNames.has('finding_approved')) db.prepare("ALTER TABLE spots ADD COLUMN finding_approved INTEGER DEFAULT 0").run();
   if (!spotColNames.has('finding_rationale')) db.prepare("ALTER TABLE spots ADD COLUMN finding_rationale TEXT").run();
+  if (!spotColNames.has('time_start')) db.prepare("ALTER TABLE spots ADD COLUMN time_start TEXT").run();
+  if (!spotColNames.has('time_end')) db.prepare("ALTER TABLE spots ADD COLUMN time_end TEXT").run();
+  if (!spotColNames.has('days')) db.prepare("ALTER TABLE spots ADD COLUMN days TEXT").run();
+  if (!spotColNames.has('specific_date')) db.prepare("ALTER TABLE spots ADD COLUMN specific_date TEXT").run();
 
   const venueCols = db.prepare("PRAGMA table_info(venues)").all() as { name: string }[];
   const venueColNames = new Set(venueCols.map(c => c.name));
@@ -114,6 +120,10 @@ export interface SpotRow {
   description: string | null;
   promotion_time: string | null;
   promotion_list: string | null;
+  time_start: string | null;
+  time_end: string | null;
+  days: string | null;
+  specific_date: string | null;
   source_url: string | null;
   submitter_name: string | null;
   manual_override: number;
@@ -216,11 +226,13 @@ export const spots = {
   insert(s: Record<string, any>): number {
     const info = getDb().prepare(`
       INSERT INTO spots (venue_id, title, type, source, status, description,
-        promotion_time, promotion_list, source_url, submitter_name,
+        promotion_time, promotion_list, time_start, time_end, days, specific_date,
+        source_url, submitter_name,
         manual_override, photo_url, last_update_date, pending_edit,
         pending_delete, submitted_at, edited_at, lat, lng, area, updated_at)
       VALUES (@venue_id, @title, @type, @source, @status, @description,
-        @promotion_time, @promotion_list, @source_url, @submitter_name,
+        @promotion_time, @promotion_list, @time_start, @time_end, @days, @specific_date,
+        @source_url, @submitter_name,
         @manual_override, @photo_url, @last_update_date, @pending_edit,
         @pending_delete, @submitted_at, @edited_at, @lat, @lng, @area, datetime('now'))
     `).run({
@@ -232,6 +244,10 @@ export const spots = {
       description: s.description || null,
       promotion_time: s.promotionTime || s.promotion_time || null,
       promotion_list: s.promotionList ? JSON.stringify(s.promotionList) : (s.promotion_list || null),
+      time_start: s.timeStart || s.time_start || null,
+      time_end: s.timeEnd || s.time_end || null,
+      days: s.days || null,
+      specific_date: s.specificDate || s.specific_date || null,
       source_url: s.sourceUrl || s.source_url || null,
       submitter_name: s.submitterName || s.submitter_name || null,
       manual_override: s.manualOverride ? 1 : 0,
@@ -256,6 +272,7 @@ export const spots = {
     const ALLOWED_COLUMNS = new Set([
       'title', 'description', 'type', 'source', 'status',
       'promotion_time', 'promotion_list', 'source_url',
+      'time_start', 'time_end', 'days', 'specific_date',
       'submitter_name', 'manual_override', 'photo_url',
       'last_update_date', 'pending_edit', 'pending_delete',
       'submitted_at', 'edited_at', 'lat', 'lng', 'area', 'venue_id',

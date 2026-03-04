@@ -16,6 +16,7 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const db = require('./utils/db');
+const { parseTimeRange, parseDayPart } = require('./utils/time-parse');
 
 const logDir = path.join(__dirname, '..', 'logs');
 if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
@@ -193,6 +194,9 @@ async function main() {
     }
 
     const promoTime = buildPromotionTime(dayAbbr, event.startTime, event.endTime);
+    const { timeStart, timeEnd } = parseTimeRange(promoTime);
+    const dayNums = parseDayPart(dayAbbr);
+    const daysStr = dayNums ? dayNums.sort((a, b) => a - b).join(',') : null;
 
     if (updatedSpotIds.has(spot.id)) {
       log(`[refresh-live-music] MULTI-SHOW: ${spot.title} already updated (${event.performer})`);
@@ -212,8 +216,8 @@ async function main() {
       log(`[refresh-live-music] DRY RUN: ${spot.title} → "${promoTime}" (${event.performer})`);
     } else {
       database.prepare(
-        "UPDATE spots SET promotion_time = ?, description = ?, updated_at = datetime('now') WHERE id = ?"
-      ).run(promoTime, desc, spot.id);
+        "UPDATE spots SET promotion_time = ?, time_start = ?, time_end = ?, days = ?, description = ?, updated_at = datetime('now') WHERE id = ?"
+      ).run(promoTime, timeStart, timeEnd, daysStr, desc, spot.id);
       log(`[refresh-live-music] UPDATED: ${spot.title} → "${promoTime}" (${event.performer})`);
     }
 
@@ -228,7 +232,7 @@ async function main() {
       if (updatedSpotIds.has(spot.id)) continue;
       if (spot.promotion_time && /•\s*(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s*$/i.test(spot.promotion_time)) {
         database.prepare(
-          "UPDATE spots SET promotion_time = NULL, updated_at = datetime('now') WHERE id = ?"
+          "UPDATE spots SET promotion_time = NULL, time_start = NULL, time_end = NULL, days = NULL, updated_at = datetime('now') WHERE id = ?"
         ).run(spot.id);
         cleared++;
       }

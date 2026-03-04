@@ -61,12 +61,19 @@ describe('DAL: spots', () => {
       source: 'automated',
       status: 'approved',
       promotion_time: 'Mon-Fri 4-6pm',
+      time_start: '16:00',
+      time_end: '18:00',
+      days: '1,2,3,4,5',
     });
     expect(id).toBeGreaterThan(0);
 
     const spot = db.spots.getById(id);
     expect(spot.title).toBe('Happy Hour at Test Bar');
     expect(spot.promotion_time).toBe('Mon-Fri 4-6pm');
+    expect(spot.time_start).toBe('16:00');
+    expect(spot.time_end).toBe('18:00');
+    expect(spot.days).toBe('1,2,3,4,5');
+    expect(spot.specific_date).toBeNull();
   });
 
   test('update spot fields', () => {

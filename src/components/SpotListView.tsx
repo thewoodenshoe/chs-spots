@@ -343,8 +343,8 @@ export default function SpotListView({
           const cfg = getActivityConfig(spot.type);
           const emoji = cfg?.emoji || '📍';
           const color = cfg?.color || '#0d9488';
-          const promoTime = spot.promotionTime || spot.happyHourTime;
-          const promoList = spot.promotionList ?? spot.happyHourList ?? [];
+          const promoTime = spot.promotionTime;
+          const promoList = spot.promotionList ?? [];
           const isExpanded = expandedId === spot.id;
 
           return (

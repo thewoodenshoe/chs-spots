@@ -69,8 +69,8 @@ export default function EditSpotModal({
     if (spot && isOpen) {
       setTitle(spot.title);
       setDescription(spot.description || '');
-      setPromotionTime(spot.promotionTime || spot.happyHourTime || '');
-      const list = spot.promotionList || spot.happyHourList || [];
+      setPromotionTime(spot.promotionTime || '');
+      const list = spot.promotionList || [];
       setDeals(Array.isArray(list) ? list.join('\n') : '');
       setSourceUrl(spot.sourceUrl || '');
       setSelectedActivity(spot.type);

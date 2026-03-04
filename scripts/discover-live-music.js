@@ -16,6 +16,7 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const db = require('./utils/db');
+const { parsePromotionTime } = require('./utils/time-parse');
 
 // ── Logging ─────────────────────────────────────────────────────
 
@@ -279,6 +280,7 @@ async function main() {
 
     const area = venue.area || (existingVenue?.area) || 'Downtown Charleston';
 
+    const parsed = parsePromotionTime(venue.schedule);
     const spotId = db.spots.insert({
       venue_id: existingVenue?.id || null,
       title: venue.name,
@@ -287,6 +289,9 @@ async function main() {
       status: 'approved',
       description: venue.description,
       promotion_time: venue.schedule,
+      time_start: parsed.timeStart,
+      time_end: parsed.timeEnd,
+      days: parsed.days,
       source_url: venue.website,
       lat,
       lng,

@@ -1,309 +1,182 @@
-import { isSpotActiveNow, getSpotStartMinutes, getSpotEndMinutes } from '../time-utils';
+import { isSpotActiveNow, getSpotStartMinutes, getSpotEndMinutes, extractCompactTime } from '../time-utils';
 import type { Spot } from '@/contexts/SpotsContext';
+
+function makeSpot(overrides: Partial<Spot> = {}): Spot {
+  return {
+    id: 1, lat: 32.7, lng: -79.9, title: 'Test Spot',
+    description: '', type: 'Happy Hour', ...overrides,
+  };
+}
 
 describe('time-utils', () => {
   describe('isSpotActiveNow', () => {
-    beforeEach(() => {
-      jest.useFakeTimers();
-    });
+    beforeEach(() => jest.useFakeTimers());
+    afterEach(() => jest.useRealTimers());
 
-    afterEach(() => {
-      jest.useRealTimers();
-    });
-
-    it('returns false when promotion is Wednesday-only and today is Thursday, even if venue would be open', () => {
+    it('returns false when day restriction excludes today', () => {
       jest.setSystemTime(new Date('2026-02-26T22:00:00Z')); // Thursday 5pm ET
-      const spot: Spot = {
-        id: 1,
-        lat: 32.7,
-        lng: -79.9,
-        title: 'Southern Roots Smokehouse',
-        description: 'Happy hour Wednesday',
-        type: 'Happy Hour',
-        promotionTime: 'Happy Hour • Wednesday',
-        operatingHours: {
-          sun: 'closed',
-          mon: { open: '11:00', close: '22:00' },
-          tue: { open: '11:00', close: '22:00' },
-          wed: { open: '11:00', close: '22:00' },
-          thu: { open: '11:00', close: '22:00' },
-          fri: { open: '11:00', close: '22:00' },
-          sat: { open: '11:00', close: '22:00' },
-        },
-      };
+      const spot = makeSpot({ days: [3], timeStart: '11:00', timeEnd: '22:00' }); // Wed only
       expect(isSpotActiveNow(spot)).toBe(false);
     });
 
-    it('returns true when promotion is Wednesday-only and today is Wednesday and venue is open', () => {
+    it('returns true when day matches and time is within range', () => {
       jest.setSystemTime(new Date('2026-02-25T22:00:00Z')); // Wednesday 5pm ET
-      const spot: Spot = {
-        id: 1,
-        lat: 32.7,
-        lng: -79.9,
-        title: 'Southern Roots Smokehouse',
-        description: 'Happy hour Wednesday',
-        type: 'Happy Hour',
-        promotionTime: 'Happy Hour • Wednesday',
-        operatingHours: {
-          sun: 'closed',
-          mon: { open: '11:00', close: '22:00' },
-          tue: { open: '11:00', close: '22:00' },
-          wed: { open: '11:00', close: '22:00' },
-          thu: { open: '11:00', close: '22:00' },
-          fri: { open: '11:00', close: '22:00' },
-          sat: { open: '11:00', close: '22:00' },
-        },
-      };
+      const spot = makeSpot({ days: [3], timeStart: '16:00', timeEnd: '18:00' }); // Wed 4-6pm
       expect(isSpotActiveNow(spot)).toBe(true);
     });
 
-    it('respects time window: active Wednesday 5pm for 4pm-6pm', () => {
-      jest.setSystemTime(new Date('2026-02-25T22:00:00Z')); // Wednesday 5pm ET
-      const spot: Spot = {
-        id: 1,
-        lat: 32.7,
-        lng: -79.9,
-        title: 'Test Bar',
-        description: 'Happy hour 4-6pm',
-        type: 'Happy Hour',
-        promotionTime: '4pm-6pm • Wednesday',
-      };
-      expect(isSpotActiveNow(spot)).toBe(true);
-    });
-
-    it('respects time window: inactive Wednesday 3pm for 4pm-6pm', () => {
+    it('returns false when day matches but before time range', () => {
       jest.setSystemTime(new Date('2026-02-25T20:00:00Z')); // Wednesday 3pm ET
-      const spot: Spot = {
-        id: 1,
-        lat: 32.7,
-        lng: -79.9,
-        title: 'Test Bar',
-        description: 'Happy hour 4-6pm',
-        type: 'Happy Hour',
-        promotionTime: '4pm-6pm • Wednesday',
-      };
+      const spot = makeSpot({ days: [3], timeStart: '16:00', timeEnd: '18:00' });
       expect(isSpotActiveNow(spot)).toBe(false);
     });
 
-    it('respects time window: inactive Thursday 5pm for 4pm-6pm Wednesday', () => {
+    it('returns false when time matches but wrong day', () => {
       jest.setSystemTime(new Date('2026-02-26T22:00:00Z')); // Thursday 5pm ET
-      const spot: Spot = {
-        id: 1,
-        lat: 32.7,
-        lng: -79.9,
-        title: 'Test Bar',
-        description: 'Happy hour 4-6pm',
-        type: 'Happy Hour',
-        promotionTime: '4pm-6pm • Wednesday',
-      };
+      const spot = makeSpot({ days: [3], timeStart: '16:00', timeEnd: '18:00' });
       expect(isSpotActiveNow(spot)).toBe(false);
     });
 
-    it('uses operating hours fallback when no day restriction and no parseable time', () => {
-      jest.setSystemTime(new Date('2026-02-25T22:00:00Z')); // Wednesday 5pm ET (within 11-22)
-      const spot: Spot = {
-        id: 1,
-        lat: 32.7,
-        lng: -79.9,
-        title: 'Daily Specials Spot',
-        description: 'Daily specials',
-        type: 'Happy Hour',
-        promotionTime: 'Daily specials',
+    it('daily spot (no days restriction): active within time range', () => {
+      jest.setSystemTime(new Date('2026-03-03T20:30:00Z')); // Tuesday 3:30pm ET
+      const spot = makeSpot({ timeStart: '15:00', timeEnd: '17:00' });
+      expect(isSpotActiveNow(spot)).toBe(true);
+    });
+
+    it('daily spot (no days restriction): inactive before time range', () => {
+      jest.setSystemTime(new Date('2026-03-03T19:09:00Z')); // Tuesday 2:09pm ET
+      const spot = makeSpot({ timeStart: '15:00', timeEnd: '17:00' });
+      expect(isSpotActiveNow(spot)).toBe(false);
+    });
+
+    it('daily spot (no days restriction): inactive after time range', () => {
+      jest.setSystemTime(new Date('2026-03-03T22:30:00Z')); // Tuesday 5:30pm ET
+      const spot = makeSpot({ timeStart: '15:00', timeEnd: '17:00' });
+      expect(isSpotActiveNow(spot)).toBe(false);
+    });
+
+    it('Mon-Fri restriction: active on Wednesday', () => {
+      jest.setSystemTime(new Date('2026-02-25T22:00:00Z')); // Wednesday 5pm ET
+      const spot = makeSpot({ days: [1, 2, 3, 4, 5], timeStart: '16:00', timeEnd: '19:00' });
+      expect(isSpotActiveNow(spot)).toBe(true);
+    });
+
+    it('Mon-Fri restriction: inactive on Saturday', () => {
+      jest.setSystemTime(new Date('2026-02-28T22:00:00Z')); // Saturday 5pm ET
+      const spot = makeSpot({ days: [1, 2, 3, 4, 5], timeStart: '16:00', timeEnd: '19:00' });
+      expect(isSpotActiveNow(spot)).toBe(false);
+    });
+
+    it('Mon-Fri restriction: inactive before time range', () => {
+      jest.setSystemTime(new Date('2026-02-25T20:00:00Z')); // Wednesday 3pm ET
+      const spot = makeSpot({ days: [1, 2, 3, 4, 5], timeStart: '16:00', timeEnd: '19:00' });
+      expect(isSpotActiveNow(spot)).toBe(false);
+    });
+
+    it('specific date: active on that exact date within time', () => {
+      jest.setSystemTime(new Date('2026-05-10T16:00:00Z')); // May 10 2026, 12pm ET
+      const spot = makeSpot({ specificDate: '2026-05-10', timeStart: '11:00', timeEnd: '23:00' });
+      expect(isSpotActiveNow(spot)).toBe(true);
+    });
+
+    it('specific date: inactive on a different date', () => {
+      jest.setSystemTime(new Date('2026-03-03T16:00:00Z')); // March 3
+      const spot = makeSpot({ specificDate: '2026-05-10', timeStart: '11:00', timeEnd: '23:00' });
+      expect(isSpotActiveNow(spot)).toBe(false);
+    });
+
+    it('overnight span (e.g. 22:00-02:00): active at 11pm', () => {
+      jest.setSystemTime(new Date('2026-02-26T04:00:00Z')); // Wed 11pm ET
+      const spot = makeSpot({ timeStart: '22:00', timeEnd: '02:00' });
+      expect(isSpotActiveNow(spot)).toBe(true);
+    });
+
+    it('overnight span (e.g. 22:00-02:00): active at 1am', () => {
+      jest.setSystemTime(new Date('2026-02-26T06:00:00Z')); // Thu 1am ET
+      const spot = makeSpot({ timeStart: '22:00', timeEnd: '02:00' });
+      expect(isSpotActiveNow(spot)).toBe(true);
+    });
+
+    it('overnight span (e.g. 22:00-02:00): inactive at 3am', () => {
+      jest.setSystemTime(new Date('2026-02-26T08:00:00Z')); // Thu 3am ET
+      const spot = makeSpot({ timeStart: '22:00', timeEnd: '02:00' });
+      expect(isSpotActiveNow(spot)).toBe(false);
+    });
+
+    it('falls back to operating hours when no structured time data', () => {
+      jest.setSystemTime(new Date('2026-02-25T22:00:00Z')); // Wednesday 5pm ET
+      const spot = makeSpot({
         operatingHours: {
-          sun: { open: '10:00', close: '22:00' },
-          mon: { open: '10:00', close: '22:00' },
-          tue: { open: '10:00', close: '22:00' },
-          wed: { open: '10:00', close: '22:00' },
-          thu: { open: '10:00', close: '22:00' },
-          fri: { open: '10:00', close: '22:00' },
+          sun: 'closed', mon: { open: '10:00', close: '22:00' },
+          tue: { open: '10:00', close: '22:00' }, wed: { open: '10:00', close: '22:00' },
+          thu: { open: '10:00', close: '22:00' }, fri: { open: '10:00', close: '22:00' },
           sat: { open: '10:00', close: '22:00' },
         },
-      };
+      });
       expect(isSpotActiveNow(spot)).toBe(true);
     });
 
-    it('natural language "daily from 3pm to 5pm": inactive before 3pm', () => {
-      jest.setSystemTime(new Date('2026-03-03T19:09:00Z')); // Tuesday 2:09pm ET
-      const spot: Spot = {
-        id: 4893,
-        lat: 32.88,
-        lng: -79.97,
-        title: 'Jackrabbit Filly',
-        description: 'Daily snacks and drink specials',
-        type: 'Happy Hour',
-        promotionTime: 'daily from 3pm to 5pm',
-      };
+    it('returns false when no time data and no operating hours', () => {
+      jest.setSystemTime(new Date('2026-02-25T22:00:00Z'));
+      const spot = makeSpot({});
       expect(isSpotActiveNow(spot)).toBe(false);
-    });
-
-    it('natural language "daily from 3pm to 5pm": active at 3:30pm', () => {
-      jest.setSystemTime(new Date('2026-03-03T20:30:00Z')); // Tuesday 3:30pm ET
-      const spot: Spot = {
-        id: 4893,
-        lat: 32.88,
-        lng: -79.97,
-        title: 'Jackrabbit Filly',
-        description: 'Daily snacks and drink specials',
-        type: 'Happy Hour',
-        promotionTime: 'daily from 3pm to 5pm',
-      };
-      expect(isSpotActiveNow(spot)).toBe(true);
-    });
-
-    it('natural language "daily from 3pm to 5pm": inactive after 5pm', () => {
-      jest.setSystemTime(new Date('2026-03-03T22:30:00Z')); // Tuesday 5:30pm ET
-      const spot: Spot = {
-        id: 4893,
-        lat: 32.88,
-        lng: -79.97,
-        title: 'Jackrabbit Filly',
-        description: 'Daily snacks and drink specials',
-        type: 'Happy Hour',
-        promotionTime: 'daily from 3pm to 5pm',
-      };
-      expect(isSpotActiveNow(spot)).toBe(false);
-    });
-
-    it('natural language "Monday to Friday from 4pm to 7pm": active Wed 5pm', () => {
-      jest.setSystemTime(new Date('2026-02-25T22:00:00Z')); // Wednesday 5pm ET
-      const spot: Spot = {
-        id: 5001,
-        lat: 32.78,
-        lng: -79.93,
-        title: 'Pearlz Oyster Bar',
-        description: 'Happy hour Mon-Fri',
-        type: 'Happy Hour',
-        promotionTime: 'Monday to Friday from 4pm to 7pm',
-      };
-      expect(isSpotActiveNow(spot)).toBe(true);
-    });
-
-    it('natural language "Monday to Friday from 4pm to 7pm": inactive Sat 5pm', () => {
-      jest.setSystemTime(new Date('2026-02-28T22:00:00Z')); // Saturday 5pm ET
-      const spot: Spot = {
-        id: 5001,
-        lat: 32.78,
-        lng: -79.93,
-        title: 'Pearlz Oyster Bar',
-        description: 'Happy hour Mon-Fri',
-        type: 'Happy Hour',
-        promotionTime: 'Monday to Friday from 4pm to 7pm',
-      };
-      expect(isSpotActiveNow(spot)).toBe(false);
-    });
-
-    it('natural language "Monday to Friday from 4pm to 7pm": inactive Wed 3pm', () => {
-      jest.setSystemTime(new Date('2026-02-25T20:00:00Z')); // Wednesday 3pm ET
-      const spot: Spot = {
-        id: 5001,
-        lat: 32.78,
-        lng: -79.93,
-        title: 'Pearlz Oyster Bar',
-        description: 'Happy hour Mon-Fri',
-        type: 'Happy Hour',
-        promotionTime: 'Monday to Friday from 4pm to 7pm',
-      };
-      expect(isSpotActiveNow(spot)).toBe(false);
-    });
-
-    it('plural day name "Sundays": active on Sunday', () => {
-      jest.setSystemTime(new Date('2026-03-01T18:00:00Z')); // Sunday 1pm ET
-      const spot: Spot = {
-        id: 5105,
-        lat: 32.78,
-        lng: -79.93,
-        title: 'Container Bar',
-        description: 'Brunch every Sunday',
-        type: 'Brunch',
-        promotionTime: '1pm-4pm • Sundays',
-      };
-      expect(isSpotActiveNow(spot)).toBe(true);
-    });
-
-    it('plural day name "Sundays": inactive on Tuesday', () => {
-      jest.setSystemTime(new Date('2026-03-03T18:00:00Z')); // Tuesday 1pm ET
-      const spot: Spot = {
-        id: 5105,
-        lat: 32.78,
-        lng: -79.93,
-        title: 'Container Bar',
-        description: 'Brunch every Sunday',
-        type: 'Brunch',
-        promotionTime: '1pm-4pm • Sundays',
-      };
-      expect(isSpotActiveNow(spot)).toBe(false);
-    });
-
-    it('specific calendar date: inactive when not that date', () => {
-      jest.setSystemTime(new Date('2026-03-03T16:00:00Z')); // Tuesday 11am ET
-      const spot: Spot = {
-        id: 4872,
-        lat: 32.78,
-        lng: -79.93,
-        title: 'Bay Street Biergarten',
-        description: 'Mother\'s Day brunch',
-        type: 'Brunch',
-        promotionTime: '11am-11pm • Sunday May 10, 2026',
-      };
-      expect(isSpotActiveNow(spot)).toBe(false);
-    });
-
-    it('specific calendar date: active on that exact date', () => {
-      jest.setSystemTime(new Date('2026-05-10T16:00:00Z')); // May 10 2026, 12pm ET
-      const spot: Spot = {
-        id: 4872,
-        lat: 32.78,
-        lng: -79.93,
-        title: 'Bay Street Biergarten',
-        description: 'Mother\'s Day brunch',
-        type: 'Brunch',
-        promotionTime: '11am-11pm • Sunday May 10, 2026',
-      };
-      expect(isSpotActiveNow(spot)).toBe(true);
     });
   });
 
-  describe('getSpotStartMinutes and getSpotEndMinutes', () => {
-    it('parses 4pm-6pm range', () => {
-      const spot: Spot = {
-        id: 1,
-        lat: 0,
-        lng: 0,
-        title: 'Test',
-        description: '',
-        type: 'Happy Hour',
-        promotionTime: '4pm-6pm • Wednesday',
-      };
-      expect(getSpotStartMinutes(spot)).toBe(16 * 60);
-      expect(getSpotEndMinutes(spot)).toBe(18 * 60);
+  describe('getSpotStartMinutes / getSpotEndMinutes', () => {
+    it('returns minutes from timeStart/timeEnd', () => {
+      const spot = makeSpot({ timeStart: '16:00', timeEnd: '18:00' });
+      expect(getSpotStartMinutes(spot)).toBe(960);
+      expect(getSpotEndMinutes(spot)).toBe(1080);
     });
 
-    it('parses "daily from 3pm to 5pm" correctly', () => {
-      const spot: Spot = {
-        id: 1,
-        lat: 0,
-        lng: 0,
-        title: 'Test',
-        description: '',
-        type: 'Happy Hour',
-        promotionTime: 'daily from 3pm to 5pm',
-      };
-      expect(getSpotStartMinutes(spot)).toBe(15 * 60); // 3pm = 900 min
-      expect(getSpotEndMinutes(spot)).toBe(17 * 60);   // 5pm = 1020 min
+    it('returns null when fields are missing', () => {
+      const spot = makeSpot({});
+      expect(getSpotStartMinutes(spot)).toBeNull();
+      expect(getSpotEndMinutes(spot)).toBeNull();
     });
 
-    it('parses "Monday to Friday from 4pm to 7pm" correctly', () => {
-      const spot: Spot = {
-        id: 1,
-        lat: 0,
-        lng: 0,
-        title: 'Test',
-        description: '',
-        type: 'Happy Hour',
-        promotionTime: 'Monday to Friday from 4pm to 7pm',
-      };
-      expect(getSpotStartMinutes(spot)).toBe(16 * 60); // 4pm = 960 min
-      expect(getSpotEndMinutes(spot)).toBe(19 * 60);   // 7pm = 1140 min
+    it('handles midnight correctly', () => {
+      const spot = makeSpot({ timeStart: '00:00', timeEnd: '02:00' });
+      expect(getSpotStartMinutes(spot)).toBe(0);
+      expect(getSpotEndMinutes(spot)).toBe(120);
+    });
+  });
+
+  describe('extractCompactTime', () => {
+    it('formats a normal time range', () => {
+      const spot = makeSpot({ timeStart: '16:00', timeEnd: '19:00' });
+      expect(extractCompactTime(spot)).toBe('4pm-7pm');
+    });
+
+    it('formats time with minutes', () => {
+      const spot = makeSpot({ timeStart: '16:30', timeEnd: '19:30' });
+      expect(extractCompactTime(spot)).toBe('4:30pm-7:30pm');
+    });
+
+    it('returns All day for 00:00-23:59', () => {
+      const spot = makeSpot({ timeStart: '00:00', timeEnd: '23:59' });
+      expect(extractCompactTime(spot)).toBe('All day');
+    });
+
+    it('returns null when no timeStart', () => {
+      const spot = makeSpot({});
+      expect(extractCompactTime(spot)).toBeNull();
+    });
+
+    it('returns just start when no timeEnd', () => {
+      const spot = makeSpot({ timeStart: '16:00' });
+      expect(extractCompactTime(spot)).toBe('4pm');
+    });
+
+    it('handles 12pm (noon) correctly', () => {
+      const spot = makeSpot({ timeStart: '12:00', timeEnd: '14:00' });
+      expect(extractCompactTime(spot)).toBe('12pm-2pm');
+    });
+
+    it('handles 12am (midnight) correctly', () => {
+      const spot = makeSpot({ timeStart: '00:00', timeEnd: '02:00' });
+      expect(extractCompactTime(spot)).toBe('12am-2am');
     });
   });
 });

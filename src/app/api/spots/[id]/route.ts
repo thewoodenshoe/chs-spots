@@ -96,6 +96,10 @@ export async function PUT(
       };
       if (spotData.promotionTime !== undefined) adminUpdate.promotion_time = spotData.promotionTime;
       if (spotData.promotionList !== undefined) adminUpdate.promotion_list = JSON.stringify(spotData.promotionList);
+      if (spotData.timeStart !== undefined) adminUpdate.time_start = spotData.timeStart || null;
+      if (spotData.timeEnd !== undefined) adminUpdate.time_end = spotData.timeEnd || null;
+      if (spotData.days !== undefined) adminUpdate.days = Array.isArray(spotData.days) ? spotData.days.join(',') : (spotData.days || null);
+      if (spotData.specificDate !== undefined) adminUpdate.specific_date = spotData.specificDate || null;
       if (spotData.sourceUrl !== undefined) adminUpdate.source_url = spotData.sourceUrl;
 
       spots.update(spotId, adminUpdate);

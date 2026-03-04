@@ -12,12 +12,12 @@ export interface Spot {
   photoUrl?: string;
   source?: 'manual' | 'automated';
   status?: 'pending' | 'approved' | 'denied';
-  // Structured promotion fields (generic)
   promotionTime?: string;
   promotionList?: string[];
-  // Legacy happy hour fields (backwards compat)
-  happyHourTime?: string;
-  happyHourList?: string[];
+  timeStart?: string;
+  timeEnd?: string;
+  days?: number[];
+  specificDate?: string;
   sourceUrl?: string;
   lastUpdateDate?: string;
   lastVerifiedDate?: string;

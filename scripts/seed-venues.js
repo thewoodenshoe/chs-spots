@@ -177,7 +177,8 @@ const VENUE_TYPES = [
   'brewery',
   'night_club',
   'wine_bar',
-  'breakfast'
+  'breakfast',
+  'brunch'
 ];
 
 // Known venues per area that should be found via explicit name-based search
@@ -282,7 +283,7 @@ function isAlcoholServingVenue(result) {
   
   // Must have restaurant, bar, cafe, night_club, brewery, wine_bar, breakfast, OR lodging (hotel with bar/restaurant)
   const hasFoodOrLodgingType = primaryTypes.some(type => 
-    ['restaurant', 'bar', 'cafe', 'night_club', 'brewery', 'wine_bar', 'breakfast', 'lodging'].includes(type)
+    ['restaurant', 'bar', 'cafe', 'night_club', 'brewery', 'wine_bar', 'breakfast', 'lodging', 'brunch'].includes(type)
   );
   
   if (!hasFoodOrLodgingType) {

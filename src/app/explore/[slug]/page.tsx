@@ -52,7 +52,7 @@ function transformSpot(spot: SpotRow, venueMap: Map<string, VenueRow>) {
     lat: venue?.lat ?? spot.lat ?? 0,
     lng: venue?.lng ?? spot.lng ?? 0,
     photoUrl: spot.photo_url || venue?.photo_url || null,
-    happyHourTime: spot.promotion_time || null,
+    promotionTime: spot.promotion_time || null,
     area: venue?.area || spot.area || null,
   };
 }
@@ -202,8 +202,8 @@ export default async function ExplorePage({ params }: { params: Promise<{ slug: 
                 )}
                 <div className="min-w-0 flex-1">
                   <h2 className="font-semibold text-gray-900 text-sm truncate">{spot.title}</h2>
-                  {spot.happyHourTime && (
-                    <p className="text-xs text-teal-600 mt-0.5">{spot.happyHourTime}</p>
+                  {spot.promotionTime && (
+                    <p className="text-xs text-teal-600 mt-0.5">{spot.promotionTime}</p>
                   )}
                   {spot.description && (
                     <p className="text-xs text-gray-500 mt-1 line-clamp-2">{spot.description}</p>

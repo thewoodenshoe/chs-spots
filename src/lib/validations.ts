@@ -29,6 +29,10 @@ export const updateSpotSchema = z.object({
   area: z.string().max(100).optional(),
   promotionTime: z.string().max(200).optional(),
   promotionList: z.array(z.string().max(500)).max(20).optional(),
+  timeStart: z.string().max(5).optional(),
+  timeEnd: z.string().max(5).optional(),
+  days: z.union([z.string().max(20), z.array(z.number().min(0).max(6))]).optional(),
+  specificDate: z.string().max(10).optional(),
   sourceUrl: z.string().max(2000).optional(),
 });
 

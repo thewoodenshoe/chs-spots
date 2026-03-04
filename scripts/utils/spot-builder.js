@@ -6,6 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const { validateGoldEntries } = require('./confidence');
+const { parseTimeRange, parseDayPart } = require('./time-parse');
 
 /**
  * Normalize LLM placeholder strings to null.
@@ -53,30 +54,64 @@ function buildSpotFields(entries) {
   let promotionTime = null;
   let promotionList = [];
   let sourceUrl = null;
+  let timeStart = null;
+  let timeEnd = null;
+  let days = null;
 
   if (entries.length === 1) {
     const entry = entries[0];
     const times = normalizeField(entry.times);
-    const days = normalizeField(entry.days);
+    const entryDays = normalizeField(entry.days);
     if (times) {
-      promotionTime = days ? `${times} • ${days}` : times;
-    } else if (days) {
-      promotionTime = days;
+      promotionTime = entryDays ? `${times} • ${entryDays}` : times;
+    } else if (entryDays) {
+      promotionTime = entryDays;
     }
     promotionList = entry.specials || [];
     sourceUrl = entry.source || null;
+
+    if (times) {
+      if (/all\s*day/i.test(times)) {
+        timeStart = '00:00'; timeEnd = '23:59';
+      } else {
+        const parsed = parseTimeRange(times);
+        timeStart = parsed.timeStart;
+        timeEnd = parsed.timeEnd;
+      }
+    }
+    if (entryDays) {
+      const dayNums = parseDayPart(entryDays);
+      if (dayNums) days = dayNums.sort((a, b) => a - b).join(',');
+    }
   } else if (entries.length > 1) {
     const timeParts = [];
     const allSpecials = [];
     const sources = [];
 
+    const firstEntry = entries[0];
+    const firstTimes = normalizeField(firstEntry.times);
+    const firstDays = normalizeField(firstEntry.days);
+    if (firstTimes) {
+      if (/all\s*day/i.test(firstTimes)) {
+        timeStart = '00:00'; timeEnd = '23:59';
+      } else {
+        const parsed = parseTimeRange(firstTimes);
+        timeStart = parsed.timeStart;
+        timeEnd = parsed.timeEnd;
+      }
+    }
+    if (firstDays) {
+      const dayNums = parseDayPart(firstDays);
+      if (dayNums) days = dayNums.sort((a, b) => a - b).join(',');
+    }
+
     for (const entry of entries) {
       const times = normalizeField(entry.times);
-      const days = normalizeField(entry.days);
-      if (times || days) {
+      const entryDays = normalizeField(entry.days);
+      if (times || entryDays) {
         const label = entry.label ? `${entry.label}: ` : '';
-        const timeStr = days
-          ? `${label}${times || ''} • ${days}`.replace(/^\s*•\s*/, '')
+        const timeStr = entryDays
+          ? `${label}${times || ''} • ${entryDays}`.replace(/^\s*•\s*/, '')
           : `${label}${times}`;
         if (!timeParts.includes(timeStr)) timeParts.push(timeStr);
       }
@@ -92,7 +127,7 @@ function buildSpotFields(entries) {
     sourceUrl = sources.length > 0 ? sources[0] : null;
   }
 
-  return { promotionTime, promotionList, sourceUrl };
+  return { promotionTime, promotionList, sourceUrl, timeStart, timeEnd, days };
 }
 
 /**
@@ -148,7 +183,7 @@ function createSpotsFromGold(goldData, venueData, startId) {
   let idOffset = 0;
 
   for (const [activityType, groupEntries] of Object.entries(grouped)) {
-    const { promotionTime, promotionList, sourceUrl } = buildSpotFields(groupEntries);
+    const { promotionTime, promotionList, sourceUrl, timeStart, timeEnd, days } = buildSpotFields(groupEntries);
     if (!promotionTime && (!promotionList || promotionList.length === 0)) continue;
 
     let description = null;
@@ -166,7 +201,7 @@ function createSpotsFromGold(goldData, venueData, startId) {
       title: goldData.venueName || venueData.name || 'Unknown Venue',
       description,
       promotionTime, promotionList,
-      happyHourTime: promotionTime, happyHourList: promotionList,
+      timeStart, timeEnd, days,
       sourceUrl: sourceUrl || venueData.website || null,
       lastUpdateDate: goldData.processedAt || null,
       type: activityType,
@@ -185,7 +220,7 @@ function createSpotsFromGold(goldData, venueData, startId) {
  * Build a spot from a single entry resurrected via review approval.
  */
 function buildSpotFromEntry(entry, goldData, venueData) {
-  const { promotionTime, promotionList, sourceUrl } = buildSpotFields([entry]);
+  const { promotionTime, promotionList, sourceUrl, timeStart, timeEnd, days } = buildSpotFields([entry]);
   return {
     id: 0,
     lat: venueData.lat || venueData.geometry?.location?.lat,
@@ -193,7 +228,7 @@ function buildSpotFromEntry(entry, goldData, venueData) {
     title: goldData.venueName || venueData.name || 'Unknown Venue',
     description: formatDescription(entry),
     promotionTime, promotionList,
-    happyHourTime: promotionTime, happyHourList: promotionList,
+    timeStart, timeEnd, days,
     sourceUrl: sourceUrl || venueData.website || null,
     lastUpdateDate: goldData.processedAt || null,
     type: entry.activityType || 'Happy Hour',

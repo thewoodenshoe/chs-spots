@@ -127,6 +127,10 @@ export async function handleEditAction(action: string, spotId: number, cq: any, 
   if (edit.area != null) updates.area = edit.area;
   if (edit.promotionTime !== undefined) updates.promotion_time = edit.promotionTime;
   if (edit.promotionList !== undefined) updates.promotion_list = JSON.stringify(edit.promotionList);
+  if (edit.timeStart !== undefined) updates.time_start = edit.timeStart;
+  if (edit.timeEnd !== undefined) updates.time_end = edit.timeEnd;
+  if (edit.days !== undefined) updates.days = Array.isArray(edit.days) ? edit.days.join(',') : edit.days;
+  if (edit.specificDate !== undefined) updates.specific_date = edit.specificDate;
   if (edit.sourceUrl !== undefined) updates.source_url = edit.sourceUrl;
   if (spot.source === 'automated') updates.manual_override = 1;
   spots.update(spotId, updates);
@@ -270,7 +274,9 @@ export async function handleTextCommand(text: string, chatId: string | number): 
       `🗺 Area: ${spot.area || 'N/A'}`,
       `📍 Coords: ${spot.lat}, ${spot.lng}`,
       spot.venue_id ? `🔑 Venue ID: \`${spot.venue_id}\`` : '',
-      spot.promotion_time ? `⏰ Time: ${spot.promotion_time}` : '',
+      spot.time_start ? `⏰ Schedule: ${spot.time_start}–${spot.time_end || '?'} days=${spot.days || 'all'}` : '',
+      spot.promotion_time ? `⏰ Time (legacy): ${spot.promotion_time}` : '',
+      spot.specific_date ? `📅 Date: ${spot.specific_date}` : '',
       spot.promotion_list ? `📋 Promos: ${spot.promotion_list.substring(0, 300)}` : '',
       spot.source_url ? `🔗 URL: ${spot.source_url}` : '',
       spot.photo_url ? `🖼 Photo: ${spot.photo_url}` : '',

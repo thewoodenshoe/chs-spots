@@ -25,6 +25,7 @@ const SPOT_COLUMNS = [
   'manual_override', 'photo_url', 'last_update_date', 'pending_edit',
   'pending_delete', 'submitted_at', 'edited_at', 'lat', 'lng', 'area',
   'finding_approved', 'finding_rationale',
+  'time_start', 'time_end', 'days', 'specific_date',
   'created_at', 'updated_at',
 ];
 

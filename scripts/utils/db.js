@@ -149,11 +149,13 @@ const spots = {
     const db = getDb();
     const info = db.prepare(`
       INSERT INTO spots (venue_id, title, type, source, status, description,
-        promotion_time, promotion_list, source_url, submitter_name,
+        promotion_time, promotion_list, time_start, time_end, days, specific_date,
+        source_url, submitter_name,
         manual_override, photo_url, last_update_date, pending_edit,
         pending_delete, submitted_at, edited_at, lat, lng, area, updated_at)
       VALUES (@venue_id, @title, @type, @source, @status, @description,
-        @promotion_time, @promotion_list, @source_url, @submitter_name,
+        @promotion_time, @promotion_list, @time_start, @time_end, @days, @specific_date,
+        @source_url, @submitter_name,
         @manual_override, @photo_url, @last_update_date, @pending_edit,
         @pending_delete, @submitted_at, @edited_at, @lat, @lng, @area, datetime('now'))
     `).run({
@@ -165,6 +167,10 @@ const spots = {
       description: s.description || null,
       promotion_time: s.promotion_time || s.promotionTime || null,
       promotion_list: s.promotion_list || (s.promotionList ? JSON.stringify(s.promotionList) : null),
+      time_start: s.time_start || s.timeStart || null,
+      time_end: s.time_end || s.timeEnd || null,
+      days: s.days || null,
+      specific_date: s.specific_date || s.specificDate || null,
       source_url: s.source_url || s.sourceUrl || null,
       submitter_name: s.submitter_name || s.submitterName || null,
       manual_override: s.manual_override || s.manualOverride ? 1 : 0,
@@ -232,6 +238,7 @@ const spots = {
       db.prepare(`
         UPDATE spots SET title=@title, description=@description,
           promotion_time=@promotion_time, promotion_list=@promotion_list,
+          time_start=@time_start, time_end=@time_end, days=@days, specific_date=@specific_date,
           source_url=@source_url, photo_url=COALESCE(@photo_url, photo_url),
           last_update_date=@last_update_date, lat=@lat, lng=@lng,
           area=@area, status='approved', updated_at=datetime('now')
@@ -242,6 +249,10 @@ const spots = {
         description: s.description || null,
         promotion_time: s.promotion_time || s.promotionTime || null,
         promotion_list: s.promotion_list || (s.promotionList ? JSON.stringify(s.promotionList) : null),
+        time_start: s.time_start || s.timeStart || null,
+        time_end: s.time_end || s.timeEnd || null,
+        days: s.days || null,
+        specific_date: s.specific_date || s.specificDate || null,
         source_url: s.source_url || s.sourceUrl || null,
         photo_url: s.photo_url || s.photoUrl || null,
         last_update_date: s.last_update_date || s.lastUpdateDate || null,

@@ -140,8 +140,12 @@ const SEARCH_ENUMS = {
 };
 
 const FIELD_HELP = {
-  promotion_time: 'Format: "4pm-7pm \u2022 Mon-Fri" or "11am-3pm \u2022 Saturday, Sunday".\nUse bullet (\u2022) to separate time from days.',
+  promotion_time: 'Legacy free-text field. Prefer time_start / time_end / days instead.',
   promotion_list: 'One deal per line.\nE.g.:\n$5 margaritas\n$3 draft beer\nHalf-price appetizers',
+  time_start: '24h format HH:MM, e.g. "16:00" for 4pm.',
+  time_end: '24h format HH:MM, e.g. "19:00" for 7pm.',
+  days: 'Comma-separated day numbers: 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat.\nE.g. "1,2,3,4,5" for Mon-Fri.',
+  specific_date: 'YYYY-MM-DD for one-off events, e.g. "2026-03-15".',
   operating_hours: 'JSON object keyed by day, e.g.:\n{"monday": {"open": "11:00", "close": "22:00"},\n "tuesday": "closed"}',
   source_url: 'URL where this deal was found. Used for verification.',
   finding_approved: '1 = approved (suppresses report warnings).\n0 = not yet reviewed.',
@@ -156,7 +160,11 @@ const FIELD_HELP = {
 };
 
 const FIELD_PLACEHOLDERS = {
-  promotion_time: 'e.g. 4pm-7pm \u2022 Mon-Fri',
+  promotion_time: 'Legacy field (use time_start/time_end/days)',
+  time_start: 'e.g. 16:00',
+  time_end: 'e.g. 19:00',
+  days: 'e.g. 1,2,3,4,5',
+  specific_date: 'e.g. 2026-03-15',
   promotion_list: 'One deal per line, e.g.:\n$5 margaritas\n$3 draft beer\nHalf-price appetizers',
   description: 'What the deal is and when it applies...',
   source_url: 'https://...',
@@ -168,9 +176,10 @@ const JSON_FIELDS = ['pending_edit', 'operating_hours'];
 
 const SPOT_FIELDS = {
   search: ['title', 'id', 'type', 'area', 'venue_id', 'status', 'source', 'description', 'promotion_time', 'source_url', 'submitter_name', 'finding_approved'],
-  display: ['id', 'venue_id', 'title', 'type', 'area', 'status', 'source', 'promotion_time', 'description', 'source_url', 'manual_override', 'finding_approved', 'finding_rationale', 'last_update_date', 'lat', 'lng', 'created_at', 'updated_at'],
+  display: ['id', 'venue_id', 'title', 'type', 'area', 'status', 'source', 'time_start', 'time_end', 'days', 'specific_date', 'promotion_time', 'description', 'source_url', 'manual_override', 'finding_approved', 'finding_rationale', 'last_update_date', 'lat', 'lng', 'created_at', 'updated_at'],
   editGroups: {
     'Core': ['title', 'type', 'area', 'status', 'source'],
+    'Schedule': ['time_start', 'time_end', 'days', 'specific_date'],
     'Promotion': ['promotion_time', 'promotion_list', 'description'],
     'Links & Media': ['source_url', 'photo_url'],
     'Location': ['lat', 'lng'],
