@@ -6,6 +6,7 @@ import { Spot } from '@/contexts/SpotsContext';
 import { useActivities } from '@/contexts/ActivitiesContext';
 import { useToast } from './Toast';
 import { Pencil } from 'lucide-react';
+import { HOUR_OPTIONS } from '@/utils/time-utils';
 
 interface EditSpotModalProps {
   isOpen: boolean;
@@ -24,6 +25,10 @@ interface EditSpotModalProps {
     photo?: File;
     promotionTime?: string;
     promotionList?: string[];
+    timeStart?: string;
+    timeEnd?: string;
+    days?: number[];
+    specificDate?: string;
     sourceUrl?: string;
   }) => Promise<void>;
   onDelete?: (id: number) => Promise<void>;
@@ -49,7 +54,10 @@ export default function EditSpotModal({
   
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [promotionTime, setPromotionTime] = useState('');
+  const [timeStart, setTimeStart] = useState('');
+  const [timeEnd, setTimeEnd] = useState('');
+  const [selectedDays, setSelectedDays] = useState<number[]>([]);
+  const [specificDate, setSpecificDate] = useState('');
   const [deals, setDeals] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
   const [selectedActivity, setSelectedActivity] = useState(defaultActivityName);
@@ -69,7 +77,10 @@ export default function EditSpotModal({
     if (spot && isOpen) {
       setTitle(spot.title);
       setDescription(spot.description || '');
-      setPromotionTime(spot.promotionTime || '');
+      setTimeStart(spot.timeStart || '');
+      setTimeEnd(spot.timeEnd || '');
+      setSelectedDays(spot.days || []);
+      setSpecificDate(spot.specificDate || '');
       const list = spot.promotionList || [];
       setDeals(Array.isArray(list) ? list.join('\n') : '');
       setSourceUrl(spot.sourceUrl || '');
@@ -190,7 +201,10 @@ export default function EditSpotModal({
         lng: pinLocation.lng,
         photo: selectedPhoto || undefined,
         photoUrl: selectedPhoto ? undefined : spot.photoUrl,
-        promotionTime: promotionTime.trim() || undefined,
+        timeStart: timeStart || undefined,
+        timeEnd: timeEnd || undefined,
+        days: selectedDays.length > 0 ? selectedDays : undefined,
+        specificDate: specificDate || undefined,
         promotionList: dealLines.length > 0 ? dealLines : undefined,
         sourceUrl: sourceUrl.trim() || undefined,
       });
@@ -380,19 +394,77 @@ export default function EditSpotModal({
               />
             </div>
 
-            {/* When — Promotion Time */}
+            {/* Schedule — Time & Days */}
             <div className="mb-4">
               <label className="mb-1 block text-sm font-semibold text-gray-700">
-                When
+                Schedule
               </label>
-              <p className="mb-1.5 text-xs text-gray-400">When is this deal active?</p>
-              <input
-                type="text"
-                value={promotionTime}
-                onChange={(e) => setPromotionTime(e.target.value)}
-                placeholder="e.g. 4pm-7pm • Mon-Fri"
-                className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-base text-gray-800 placeholder-gray-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
-              />
+              <p className="mb-2 text-xs text-gray-400">When is this deal active?</p>
+
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-gray-500 mb-1">From</label>
+                  <select
+                    value={timeStart}
+                    onChange={(e) => setTimeStart(e.target.value)}
+                    className="w-full rounded-xl border-2 border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                  >
+                    <option value="">—</option>
+                    {HOUR_OPTIONS.map(o => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <span className="text-gray-400 font-medium mt-5">to</span>
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-gray-500 mb-1">To</label>
+                  <select
+                    value={timeEnd}
+                    onChange={(e) => setTimeEnd(e.target.value)}
+                    className="w-full rounded-xl border-2 border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                  >
+                    <option value="">—</option>
+                    {HOUR_OPTIONS.map(o => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="mb-3">
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">Days</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] as const).map((day, i) => {
+                    const active = selectedDays.includes(i);
+                    return (
+                      <button
+                        key={day}
+                        type="button"
+                        onClick={() => setSelectedDays(prev =>
+                          prev.includes(i) ? prev.filter(d => d !== i) : [...prev, i].sort()
+                        )}
+                        className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                          active
+                            ? 'bg-teal-500 text-white'
+                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                        }`}
+                      >
+                        {day}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Specific date (one-off events)</label>
+                <input
+                  type="date"
+                  value={specificDate}
+                  onChange={(e) => setSpecificDate(e.target.value)}
+                  className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-800 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                />
+              </div>
             </div>
 
             {/* Deals — one per line */}

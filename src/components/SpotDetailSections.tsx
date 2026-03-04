@@ -4,7 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { Spot } from '@/contexts/SpotsContext';
 import { OperatingHours } from '@/contexts/VenuesContext';
-import { getFreshness } from '@/utils/time-utils';
+import { getFreshness, formatScheduleLabel } from '@/utils/time-utils';
 import { formatFullWeekHours } from '@/utils/format-hours';
 import { formatDescription } from '@/utils/format-description';
 
@@ -43,10 +43,9 @@ export default function SpotDetailSections({
   activityColor,
   children,
 }: SpotDetailSectionsProps) {
-  const promoTime = spot.promotionTime;
+  const schedule = formatScheduleLabel(spot);
   const promoList = spot.promotionList ?? [];
-  const timeParts = promoTime ? promoTime.split(/\s*[•]\s*/).filter(Boolean) : [];
-  const hasActivityData = !!(promoTime || promoList.length > 0 || spot.description);
+  const hasActivityData = !!(schedule || promoList.length > 0 || spot.description);
   const hasVenue = !!spot.venueId;
 
   return (
@@ -55,9 +54,9 @@ export default function SpotDetailSections({
       <div className="space-y-1.5">
         <SectionHeading>{spot.type}</SectionHeading>
 
-        {promoTime && timeParts.map((part, i) => (
-          <div key={i} className="text-xs text-gray-700 leading-snug">{part}</div>
-        ))}
+        {schedule && (
+          <div className="text-xs text-gray-700 leading-snug">{schedule}</div>
+        )}
 
         {promoList.length > 0 && (
           <div>
@@ -77,7 +76,7 @@ export default function SpotDetailSections({
           </div>
         )}
 
-        {!promoTime && promoList.length === 0 && spot.description && (
+        {!schedule && promoList.length === 0 && spot.description && (
           <div>{formatDescription(spot.description)}</div>
         )}
 

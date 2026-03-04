@@ -5,7 +5,7 @@ import { Spot } from '@/contexts/SpotsContext';
 import { NEAR_ME } from '@/components/AreaSelector';
 import { Activity } from '@/utils/activities';
 import { calculateDistanceMiles } from '@/utils/distance';
-import { isSpotActiveNow } from '@/utils/time-utils';
+import { isSpotActiveNow, formatScheduleLabel } from '@/utils/time-utils';
 import { toggleFavorite } from '@/utils/favorites';
 import { shareSpot } from '@/utils/share';
 import { useVenues } from '@/contexts/VenuesContext';
@@ -343,7 +343,7 @@ export default function SpotListView({
           const cfg = getActivityConfig(spot.type);
           const emoji = cfg?.emoji || '📍';
           const color = cfg?.color || '#0d9488';
-          const promoTime = spot.promotionTime;
+          const schedule = formatScheduleLabel(spot);
           const promoList = spot.promotionList ?? [];
           const isExpanded = expandedId === spot.id;
 
@@ -383,14 +383,14 @@ export default function SpotListView({
                     )}
                   </div>
 
-                  {promoTime && (
+                  {schedule && (
                     <p className="mt-0.5 text-xs text-gray-500 truncate">
                       <span className="font-semibold text-gray-600">{spot.type}: </span>
-                      {promoTime}
+                      {schedule}
                     </p>
                   )}
 
-                  {!promoTime && spot.description && (
+                  {!schedule && spot.description && (
                     <p className="mt-0.5 text-xs text-gray-400 truncate">{spot.description}</p>
                   )}
 

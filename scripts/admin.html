@@ -398,8 +398,17 @@ function openEdit(id, opts = {}) {
       const listTag = isListField(f) ? ' <span style="font-size:0.6rem;color:#64748b">one per line</span>' : '';
       const ph = FIELD_PLACEHOLDERS[f] ? ` placeholder="${esc(FIELD_PLACEHOLDERS[f])}"` : '';
 
+      const isHourSelect = (f === 'time_start' || f === 'time_end');
       html += `<div class="edit-row"><label>${label}${helpHtml}${jsonTag}${listTag}</label>`;
-      if (isToggle && !isReadonly) {
+      if (isHourSelect && !isReadonly) {
+        html += `<select data-field="${f}"><option value="">—</option>`;
+        for (let h = 0; h < 24; h++) {
+          const hh = String(h).padStart(2, '0') + ':00';
+          const ampm = h === 0 ? '12am' : h < 12 ? h + 'am' : h === 12 ? '12pm' : (h - 12) + 'pm';
+          html += `<option value="${hh}"${v === hh ? ' selected' : ''}>${ampm}</option>`;
+        }
+        html += '</select>';
+      } else if (isToggle && !isReadonly) {
         html += `<select data-field="${f}"><option value="0"${v !== '1' ? ' selected' : ''}>0 (No)</option><option value="1"${v === '1' ? ' selected' : ''}>1 (Yes)</option></select>`;
       } else if (enumOpts && !isReadonly) {
         const hasVal = enumOpts.includes(v);

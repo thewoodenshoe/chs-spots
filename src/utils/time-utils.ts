@@ -35,6 +35,36 @@ export function extractCompactTime(spot: Spot): string | null {
   return `${start}-${end}`;
 }
 
+const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
+
+export function formatDays(days: number[] | undefined): string | null {
+  if (!days || days.length === 0) return null;
+  if (days.length === 7) return 'Daily';
+  const sorted = [...days].sort((a, b) => a - b);
+  const isWeekdays = sorted.length === 5 && sorted.every((d, i) => d === i + 1);
+  if (isWeekdays) return 'Mon–Fri';
+  const isWeekend = sorted.length === 2 && sorted[0] === 0 && sorted[1] === 6;
+  if (isWeekend) return 'Sat & Sun';
+  return sorted.map(d => DAY_NAMES[d]).join(', ');
+}
+
+export function formatScheduleLabel(spot: Spot): string | null {
+  const time = extractCompactTime(spot);
+  const days = formatDays(spot.days);
+  if (!time && !days) return spot.promotionTime || null;
+  const parts: string[] = [];
+  if (time) parts.push(time);
+  if (days) parts.push(days);
+  return parts.join(' · ');
+}
+
+export { formatAmPm };
+
+export const HOUR_OPTIONS: { value: string; label: string }[] = Array.from({ length: 24 }, (_, h) => ({
+  value: `${String(h).padStart(2, '0')}:00`,
+  label: formatAmPm(`${String(h).padStart(2, '0')}:00`),
+}));
+
 export function isSpotActiveNow(spot: Spot): boolean {
   const now = getEasternNow();
 

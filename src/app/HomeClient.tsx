@@ -361,6 +361,10 @@ export default function HomeClient() {
     photo?: File;
     promotionTime?: string;
     promotionList?: string[];
+    timeStart?: string;
+    timeEnd?: string;
+    days?: number[];
+    specificDate?: string;
     sourceUrl?: string;
   }) => {
     try {
@@ -379,6 +383,10 @@ export default function HomeClient() {
         photoUrl,
         promotionTime: data.promotionTime,
         promotionList: data.promotionList,
+        timeStart: data.timeStart,
+        timeEnd: data.timeEnd,
+        days: data.days,
+        specificDate: data.specificDate,
         sourceUrl: data.sourceUrl,
       });
 
