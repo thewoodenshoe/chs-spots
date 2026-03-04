@@ -21,19 +21,36 @@ export default function sitemap(): MetadataRoute.Sitemap {
   try {
     const areas = areasDb.getNames();
     const activities = activitiesDb.getAll().filter(a => !a.hidden).map(a => a.name);
+    const allSpots = spots.getAll({ visibleOnly: true });
+    const allVenues = venues.getAll();
+
+    const venueMap = new Map<string, (typeof allVenues)[0]>();
+    for (const v of allVenues) venueMap.set(v.id, v);
 
     for (const area of areas) {
       for (const activity of activities) {
+        const matching = allSpots.filter(s => {
+          if (s.type !== activity) return false;
+          const v = s.venue_id ? venueMap.get(s.venue_id) : undefined;
+          return (v?.area || s.area) === area;
+        });
+
+        if (matching.length === 0) continue;
+
+        const latest = matching.reduce((max, s) => {
+          const d = s.last_update_date || s.updated_at;
+          return d > max ? d : max;
+        }, '');
+
         entries.push({
           url: `https://chsfinds.com/explore/${slugify(activity)}-in-${slugify(area)}`,
-          lastModified: new Date(),
-          changeFrequency: 'weekly',
+          lastModified: latest ? new Date(latest) : new Date(),
+          changeFrequency: 'daily',
           priority: 0.7,
         });
       }
     }
 
-    const allSpots = spots.getAll({ visibleOnly: true });
     for (const spot of allSpots) {
       entries.push({
         url: `https://chsfinds.com/spots/${spot.id}`,
@@ -43,7 +60,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       });
     }
 
-    const allVenues = venues.getAll();
     const spotsByVenue = new Map<string, boolean>();
     for (const s of allSpots) {
       if (s.venue_id) spotsByVenue.set(s.venue_id, true);
