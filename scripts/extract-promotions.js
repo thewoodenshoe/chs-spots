@@ -1,519 +1,222 @@
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env.local') });
-// node-fetch v3 is ESM, but we need to handle CommonJS require
-const fetchModule = require('node-fetch');
-const fetch = typeof fetchModule === 'function' ? fetchModule : fetchModule.default;
-const crypto = require('crypto');
-const { normalizeText } = require('./utils/normalize');
 const { dataPath, configPath } = require('./utils/data-dir');
+const { updateConfigField, loadWatchlist } = require('./utils/config');
+const db = require('./utils/db');
+const { createLogger } = require('./utils/logger');
+const {
+  parseAreaFilter,
+  computeContentHashes,
+  shouldSkipVenue,
+  logCandidateHistory,
+} = require('./utils/extract-helpers');
+const { processVenue } = require('./utils/extract-venue');
 
 const SILVER_TRIMMED_DIR = dataPath('silver_trimmed', 'today');
 const SILVER_TRIMMED_INCREMENTAL_DIR = dataPath('silver_trimmed', 'incremental');
 const GOLD_DIR = dataPath('gold');
 const BULK_COMPLETE_FLAG = path.join(GOLD_DIR, '.bulk-complete');
-const INCREMENTAL_HISTORY_DIR = path.join(GOLD_DIR, 'incremental-history');
 const LLM_INSTRUCTIONS_PATH = configPath('llm-instructions.txt');
 const CONFIG_PATH = configPath('config.json');
 const LLM_CANDIDATES_HISTORY_PATH = path.join(__dirname, '../logs/llm-candidates-history.txt');
-const LOG_PATH = path.join(__dirname, '../logs/extract-promotions.log');
-const { updateConfigField, loadWatchlist } = require('./utils/config');
-const db = require('./utils/db');
 
-// Structured logging: writes to both console and log file
-const logStream = (() => {
-  try {
-    if (process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID) return null;
-    const logsDir = path.dirname(LOG_PATH);
-    if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
-    return fs.createWriteStream(LOG_PATH, { flags: 'a' });
-  } catch { return null; }
-})();
-function log(msg) {
-  const line = `[${new Date().toISOString()}] ${msg}`;
-  console.log(msg);
-  if (logStream && !logStream.destroyed) logStream.write(line + '\n');
-}
-function logError(msg) {
-  const line = `[${new Date().toISOString()}] ERROR: ${msg}`;
-  console.error(msg);
-  if (logStream && !logStream.destroyed) logStream.write(line + '\n');
-}
-
-// Ensure gold and incremental history directories exist
 if (!fs.existsSync(GOLD_DIR)) fs.mkdirSync(GOLD_DIR, { recursive: true });
-if (!fs.existsSync(INCREMENTAL_HISTORY_DIR)) fs.mkdirSync(INCREMENTAL_HISTORY_DIR, { recursive: true });
 
-const { fetchWithTimeout, CHAT_URL, DEFAULT_MODEL } = require('./utils/llm-client');
-
-function parseAreaFilter(areaFilterRaw) {
-    if (!areaFilterRaw) return null;
-    const areas = areaFilterRaw
-        .split(',')
-        .map(a => a.trim().toLowerCase())
-        .filter(Boolean);
-    return areas.length > 0 ? new Set(areas) : null;
+function loadSystemPrompt() {
+  const raw = fs.readFileSync(LLM_INSTRUCTIONS_PATH, 'utf8');
+  const marker = 'Here is the website content for';
+  const idx = raw.indexOf(marker);
+  return idx > 0 ? raw.substring(0, idx).trim() : raw.trim();
 }
 
-function hasEntriesMissingActivityType(goldData) {
-    const promotions = goldData.promotions || goldData.happyHour || {};
-    const entries = Array.isArray(promotions.entries) ? promotions.entries : [];
-    return entries.some(entry => !entry.activityType || String(entry.activityType).trim() === '');
+function loadMaxIncrementalFiles() {
+  try {
+    if (fs.existsSync(CONFIG_PATH)) {
+      const config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+      if (config.pipeline && typeof config.pipeline.maxIncrementalFiles === 'number') {
+        return config.pipeline.maxIncrementalFiles;
+      }
+    }
+  } catch (error) {
+    console.warn(`Warning: Could not read config from ${CONFIG_PATH}, using default maxIncrementalFiles=15`);
+  }
+  return 15;
+}
+
+function ensureBulkComplete() {
+  const hasBulkFlag = fs.existsSync(BULK_COMPLETE_FLAG);
+  const hasGoldFiles = fs.existsSync(GOLD_DIR) &&
+    fs.readdirSync(GOLD_DIR).filter(f => f.endsWith('.json') && f !== 'bulk-results.json').length > 0;
+
+  if (!hasBulkFlag && !hasGoldFiles) {
+    console.warn('Bulk extraction not marked as complete. Running in incremental mode requires prior bulk extraction.');
+    console.warn('Please run `npm run extract:bulk:prepare` and `npm run extract:bulk:process` first.');
+    process.exit(1);
+  }
+  if (!hasBulkFlag && hasGoldFiles) {
+    console.log('📝 Gold files found but .bulk-complete flag missing - creating flag for future runs...');
+    fs.writeFileSync(BULK_COMPLETE_FLAG, new Date().toISOString(), 'utf8');
+  }
 }
 
 async function extractHappyHours(isIncremental = false) {
-    // Access your API key as an environment variable (see README)
-    const GROK_API_KEY = process.env.GROK_API_KEY;
-    if (!GROK_API_KEY) {
-        console.error('Error: GROK_API_KEY is not set in environment variables.');
-        process.exit(1);
+  const GROK_API_KEY = process.env.GROK_API_KEY;
+  if (!GROK_API_KEY) {
+    console.error('Error: GROK_API_KEY is not set in environment variables.');
+    process.exit(1);
+  }
+
+  let systemPrompt;
+  try {
+    systemPrompt = loadSystemPrompt();
+  } catch (error) {
+    console.error(`Error reading LLM instructions from ${LLM_INSTRUCTIONS_PATH}: ${error.message}`);
+    process.exit(1);
+  }
+
+  const logger = (process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID)
+    ? { log: console.log, error: console.error, close: () => {} }
+    : createLogger('extract-promotions');
+
+  logger.log(`═══ extract-promotions.js START (${isIncremental ? 'incremental' : 'bulk'}) ═══`);
+  const metrics = { processed: 0, skipped: 0, errors: 0, watchlistSkipped: 0, found: 0, notFound: 0 };
+  const areaFilterSet = parseAreaFilter(process.env.AREA_FILTER);
+  const reprocessMissing = process.env.AUTO_REPROCESS_MISSING_ACTIVITY_TYPE !== 'false' ||
+    process.env.FORCE_REPROCESS_MISSING_ACTIVITY_TYPE === 'true';
+
+  if (areaFilterSet) console.log(`📍 AREA_FILTER active: ${Array.from(areaFilterSet).join(', ')}`);
+  if (reprocessMissing) console.log(`🔄 Missing activityType auto-reprocess enabled`);
+
+  let sourceDir = SILVER_TRIMMED_DIR;
+  if (isIncremental) {
+    if (!fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
+      console.log(`⏭️  No incremental files found in ${SILVER_TRIMMED_INCREMENTAL_DIR}`);
+      console.log(`   Incremental folder is empty - nothing to extract.`);
+      console.log(`\n✨ Skipped extraction (incremental mode - no changes)`);
+      return;
     }
-    
-    // Load LLM instructions once (system message) — xAI auto-caches identical
-    // system messages at 75% discount ($0.05/M instead of $0.20/M input tokens)
-    let systemPrompt;
+    sourceDir = SILVER_TRIMMED_INCREMENTAL_DIR;
+  }
+
+  let venueFiles = [];
+  try {
+    venueFiles = fs.readdirSync(sourceDir).filter(file => file.endsWith('.json'));
+  } catch (error) {
+    console.error(`Error reading silver_trimmed directory: ${error.message}`);
+    console.error(`Please run 'node scripts/trim-silver-html.js' first.`);
+    process.exit(1);
+  }
+
+  if (venueFiles.length === 0) {
+    if (isIncremental) {
+      console.log(`⏭️  No incremental files found in ${SILVER_TRIMMED_INCREMENTAL_DIR}`);
+      console.log(`   Incremental folder is empty - nothing to extract.`);
+      console.log(`\n✨ Skipped extraction (incremental mode - no changes)`);
+    } else {
+      console.log('No venue files found in silver_trimmed/today/ directory.');
+      console.log("Please run 'node scripts/trim-silver-html.js' first.");
+    }
+    return;
+  }
+
+  if (isIncremental) {
+    console.log(`📁 Found ${venueFiles.length} venue file(s) in incremental folder.`);
+    const maxFiles = loadMaxIncrementalFiles();
+    if (maxFiles !== -1 && venueFiles.length > maxFiles) {
+      console.error('\x1b[31m%s\x1b[0m', `ABORTING: Too many incremental files (${venueFiles.length} > ${maxFiles}). Manual review required.`);
+      updateConfigField('last_run_status', 'failed_at_extract');
+      process.exit(1);
+    }
+
+    const allVenues = db.venues.getAll();
+    const venueMap = new Map(allVenues.filter(v => v.id).map(v => [v.id, { name: v.name || 'Unknown', area: v.area || 'Unknown' }]));
+    logCandidateHistory(venueFiles, venueMap, LLM_CANDIDATES_HISTORY_PATH);
+    ensureBulkComplete();
+  }
+
+  const venueAreaMap = new Map(db.venues.getAll().filter(v => v.id).map(v => [v.id, (v.area || '').toLowerCase()]));
+  const watchlist = loadWatchlist();
+
+  for (const file of venueFiles) {
+    const venueId = path.basename(file, '.json');
+    const goldFilePath = path.join(GOLD_DIR, `${venueId}.json`);
+
+    if (watchlist.excluded.has(venueId)) { metrics.watchlistSkipped++; continue; }
+
+    let venueData;
     try {
-        const rawInstructions = fs.readFileSync(LLM_INSTRUCTIONS_PATH, 'utf8');
-        // Extract everything BEFORE the venue-specific content placeholder as the system prompt
-        const splitMarker = 'Here is the website content for';
-        const splitIdx = rawInstructions.indexOf(splitMarker);
-        systemPrompt = splitIdx > 0
-            ? rawInstructions.substring(0, splitIdx).trim()
-            : rawInstructions.trim();
+      venueData = JSON.parse(fs.readFileSync(path.join(sourceDir, file), 'utf8'));
     } catch (error) {
-        console.error(`Error reading LLM instructions from ${LLM_INSTRUCTIONS_PATH}: ${error.message}`);
-        process.exit(1);
+      console.error(`Error reading venue file ${file}: ${error.message}`);
+      continue;
     }
-    log(`═══ extract-promotions.js START (${isIncremental ? 'incremental' : 'bulk'}) ═══`);
-    const metrics = { processed: 0, skipped: 0, errors: 0, watchlistSkipped: 0, found: 0, notFound: 0 };
-    const areaFilterSet = parseAreaFilter(process.env.AREA_FILTER);
-    // Permanent safeguard: always reprocess legacy gold records that still miss activityType.
-    // This can be disabled only by explicitly setting AUTO_REPROCESS_MISSING_ACTIVITY_TYPE=false.
-    const autoReprocessMissingActivityType = process.env.AUTO_REPROCESS_MISSING_ACTIVITY_TYPE !== 'false';
-    const forceReprocessMissingActivityType = process.env.FORCE_REPROCESS_MISSING_ACTIVITY_TYPE === 'true';
-    const reprocessMissingActivityType = autoReprocessMissingActivityType || forceReprocessMissingActivityType;
+
     if (areaFilterSet) {
-        console.log(`📍 AREA_FILTER active: ${Array.from(areaFilterSet).join(', ')}`);
-    }
-    if (reprocessMissingActivityType) {
-        console.log(`🔄 Missing activityType auto-reprocess enabled`);
+      const area = (venueData.venueArea || venueAreaMap.get(venueId) || '').toLowerCase();
+      if (!areaFilterSet.has(area)) continue;
     }
 
-    // INCREMENTAL MODE: Only process venues in silver_trimmed/incremental/
-    let venueFiles = [];
-    let sourceDir = SILVER_TRIMMED_DIR;
-    
-    if (isIncremental) {
-        // Incremental mode: only process files in incremental folder
-        if (!fs.existsSync(SILVER_TRIMMED_INCREMENTAL_DIR)) {
-            console.log(`⏭️  No incremental files found in ${SILVER_TRIMMED_INCREMENTAL_DIR}`);
-            console.log(`   Incremental folder is empty - nothing to extract.`);
-            console.log(`\n✨ Skipped extraction (incremental mode - no changes)`);
-            return;
-        }
-        sourceDir = SILVER_TRIMMED_INCREMENTAL_DIR;
+    const hashes = computeContentHashes(venueData.pages);
+    const skipCheck = shouldSkipVenue(db.gold.get(venueId), hashes, reprocessMissing, venueData.venueName, venueId);
+    if (skipCheck.skip) {
+      console.log(`Skipping ${venueData.venueName} (${venueId}): No ${skipCheck.reason === 'normalized hash match' ? 'meaningful ' : ''}changes detected (${skipCheck.reason}).`);
+      continue;
     }
-    
+
+    console.log(`Processing ${venueData.venueName} (${venueId})...`);
+    venueData.venueId = venueId;
+    const result = await processVenue(venueData, systemPrompt, GROK_API_KEY, {
+      isIncremental, updateConfigField, log: logger.log, logError: logger.error,
+    });
+
+    metrics.processed++;
+    if (result.found) metrics.found++; else metrics.notFound++;
+    if (result.error) metrics.errors++;
+
+    const goldRecord = {
+      venueId, venueName: venueData.venueName,
+      promotions: result, happyHour: result,
+      sourceHash: hashes.sourceHash, normalizedSourceHash: hashes.normalizedSourceHash,
+      processedAt: new Date().toISOString(),
+    };
+
     try {
-        venueFiles = fs.readdirSync(sourceDir).filter(file => file.endsWith('.json'));
+      db.gold.upsert({
+        venue_id: venueId, venue_name: venueData.venueName, promotions: result,
+        source_hash: hashes.sourceHash, normalized_source_hash: hashes.normalizedSourceHash,
+        processed_at: goldRecord.processedAt,
+      });
     } catch (error) {
-        console.error(`Error reading silver_trimmed directory: ${error.message}`);
-        console.error(`Please run 'node scripts/trim-silver-html.js' first.`);
-        process.exit(1);
-    }
-    
-    if (venueFiles.length === 0) {
-        if (isIncremental) {
-            console.log(`⏭️  No incremental files found in ${SILVER_TRIMMED_INCREMENTAL_DIR}`);
-            console.log(`   Incremental folder is empty - nothing to extract.`);
-            console.log(`\n✨ Skipped extraction (incremental mode - no changes)`);
-        } else {
-            console.log('No venue files found in silver_trimmed/today/ directory.');
-            console.log('Please run \'node scripts/trim-silver-html.js\' first.');
-        }
-        return;
-    }
-    
-    if (isIncremental) {
-        console.log(`📁 Found ${venueFiles.length} venue file(s) in incremental folder.`);
+      console.error(`Error writing gold to DB for ${venueData.venueName}: ${error.message}`);
     }
 
-    // COST FAIL-SAFE: Check maxIncrementalFiles limit before processing
-    if (isIncremental) {
-        let maxIncrementalFiles = 15; // Default value
-        try {
-            if (fs.existsSync(CONFIG_PATH)) {
-                const configContent = fs.readFileSync(CONFIG_PATH, 'utf8');
-                const config = JSON.parse(configContent);
-                if (config.pipeline && typeof config.pipeline.maxIncrementalFiles === 'number') {
-                    maxIncrementalFiles = config.pipeline.maxIncrementalFiles;
-                }
-            }
-        } catch (error) {
-            console.warn(`Warning: Could not read config from ${CONFIG_PATH}, using default maxIncrementalFiles=15`);
-        }
-
-        // Hard abort if too many files (unless -1 means unlimited)
-        if (maxIncrementalFiles !== -1 && venueFiles.length > maxIncrementalFiles) {
-            const errorMsg = `Too many incremental files (${venueFiles.length} > ${maxIncrementalFiles}). Manual review required.`;
-            console.error('\x1b[31m%s\x1b[0m', `ABORTING: ${errorMsg}`);
-            updateConfigField('last_run_status', 'failed_at_extract');
-            process.exit(1);
-        }
+    try {
+      fs.writeFileSync(goldFilePath, JSON.stringify(goldRecord, null, 2), 'utf8');
+      console.log(`Successfully processed ${venueData.venueName} and saved to DB + ${goldFilePath}`);
+    } catch (error) {
+      console.error(`Error writing gold file for ${venueData.venueName}: ${error.message}`);
     }
 
-    // Log LLM candidates to history file (incremental mode only, after fail-safe check)
-    if (isIncremental && venueFiles.length > 0) {
-        try {
-            // Ensure logs directory exists
-            const logsDir = path.dirname(LLM_CANDIDATES_HISTORY_PATH);
-            if (!fs.existsSync(logsDir)) {
-                fs.mkdirSync(logsDir, { recursive: true });
-            }
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
 
-            // Get today's date in YYYY-MM-DD format
-            const today = new Date().toISOString().split('T')[0];
+  if (isIncremental) updateConfigField('last_run_status', 'completed_successfully');
 
-            // Load venues from database
-            const allVenues = db.venues.getAll();
-            const venueMap = new Map();
-            allVenues.forEach(venue => {
-                if (venue.id) {
-                    venueMap.set(venue.id, {
-                        name: venue.name || 'Unknown',
-                        area: venue.area || 'Unknown'
-                    });
-                }
-            });
-
-            // Build log entry for today
-            let logEntry = `date ${today}:\n`;
-            for (const file of venueFiles) {
-                const venueId = path.basename(file, '.json');
-                const venueInfo = venueMap.get(venueId) || { name: 'Unknown', area: 'Unknown' };
-                logEntry += `venueId: ${venueId}\n`;
-                logEntry += `venueName: ${venueInfo.name}\n`;
-                logEntry += `venueArea: ${venueInfo.area}\n`;
-                logEntry += '\n';
-            }
-            // Add blank line after last venue
-            logEntry += '\n';
-
-            // Append to history file
-            fs.appendFileSync(LLM_CANDIDATES_HISTORY_PATH, logEntry, 'utf8');
-        } catch (error) {
-            console.warn(`Warning: Could not write to LLM candidates history: ${error.message}`);
-            // Don't abort - logging is non-critical
-        }
-    }
-
-    // Check if bulk extraction is complete (either flag exists OR gold files exist)
-    if (isIncremental) {
-        const hasBulkCompleteFlag = fs.existsSync(BULK_COMPLETE_FLAG);
-        const hasGoldFiles = fs.existsSync(GOLD_DIR) && 
-            fs.readdirSync(GOLD_DIR).filter(f => f.endsWith('.json') && f !== 'bulk-results.json').length > 0;
-        
-        if (!hasBulkCompleteFlag && !hasGoldFiles) {
-            console.warn('Bulk extraction not marked as complete. Running in incremental mode requires prior bulk extraction.');
-            console.warn('Please run `npm run extract:bulk:prepare` and `npm run extract:bulk:process` first.');
-            process.exit(1);
-        }
-        
-        // If gold files exist but flag doesn't, create the flag for future runs
-        if (!hasBulkCompleteFlag && hasGoldFiles) {
-            console.log('📝 Gold files found but .bulk-complete flag missing - creating flag for future runs...');
-            fs.writeFileSync(BULK_COMPLETE_FLAG, new Date().toISOString(), 'utf8');
-        }
-    }
-
-    // Build venue area lookup for area filter
-    const venueAreaMap = new Map(
-        db.venues.getAll()
-            .filter(v => v.id)
-            .map(v => [v.id, (v.area || '').toLowerCase()])
-    );
-
-    const watchlist = loadWatchlist();
-    let watchlistSkipped = 0;
-
-    for (const file of venueFiles) {
-        const venueId = path.basename(file, '.json');
-        const silverFilePath = path.join(sourceDir, file);
-        const goldFilePath = path.join(GOLD_DIR, `${venueId}.json`);
-
-        if (watchlist.excluded.has(venueId)) {
-            watchlistSkipped++;
-            metrics.watchlistSkipped++;
-            continue;
-        }
-
-        let venueData;
-        try {
-            venueData = JSON.parse(fs.readFileSync(silverFilePath, 'utf8'));
-        } catch (error) {
-            console.error(`Error reading venue file ${file}: ${error.message}`);
-            continue;
-        }
-
-        // Optional area filter to target re-processing (e.g., West Ashley + Mount Pleasant)
-        if (areaFilterSet) {
-            const venueArea = (venueData.venueArea || venueAreaMap.get(venueId) || '').toLowerCase();
-            if (!areaFilterSet.has(venueArea)) {
-                continue;
-            }
-        }
-
-        // Create both raw and normalized hashes from pages content
-        // Raw hash: exact content match (legacy compatibility)
-        // Normalized hash: strips dates, tracking IDs, dynamic noise — the real change detector
-        const pagesContent = venueData.pages.map(p => p.text || p.html || '').join('\n');
-        const sourceHash = crypto.createHash('md5').update(pagesContent).digest('hex');
-        
-        const normalizedContent = venueData.pages.map(p => normalizeText(p.text || p.html || '')).join('\n');
-        const normalizedSourceHash = crypto.createHash('md5').update(normalizedContent).digest('hex');
-
-        // Check if already processed and no meaningful changes
-        // Uses normalizedSourceHash first (strips noise), falls back to raw sourceHash
-        const existingGoldRow = db.gold.get(venueId);
-        if (existingGoldRow) {
-            try {
-                const existingPromotions = typeof existingGoldRow.promotions === 'string'
-                    ? JSON.parse(existingGoldRow.promotions)
-                    : (existingGoldRow.promotions || {});
-                const missingActivityType = hasEntriesMissingActivityType({ promotions: existingPromotions });
-                const shouldForce = reprocessMissingActivityType && missingActivityType;
-                
-                // Primary check: normalized hash (ignores dates, tracking IDs, etc.)
-                if (existingGoldRow.normalized_source_hash && existingGoldRow.normalized_source_hash === normalizedSourceHash) {
-                    if (!shouldForce) {
-                        console.log(`Skipping ${venueData.venueName} (${venueId}): No meaningful changes (normalized hash match).`);
-                        continue;
-                    }
-                    console.log(`  🔄 Reprocessing ${venueData.venueName} (${venueId}) despite hash match: missing activityType in existing gold.`);
-                }
-                
-                // Fallback: raw hash (for gold rows that don't have normalized_source_hash yet)
-                if (!existingGoldRow.normalized_source_hash && existingGoldRow.source_hash === sourceHash) {
-                    if (!shouldForce) {
-                        console.log(`Skipping ${venueData.venueName} (${venueId}): No changes detected (raw hash match).`);
-                        continue;
-                    }
-                    console.log(`  🔄 Reprocessing ${venueData.venueName} (${venueId}) despite raw hash match: missing activityType in existing gold.`);
-                }
-                
-                // Content actually changed — proceed with LLM
-                console.log(`  🔄 Content changed for ${venueData.venueName} (${venueId}) — sending to LLM`);
-            } catch (error) {
-                console.warn(`Could not read existing gold data for ${venueId}, re-processing.`);
-            }
-        }
-        
-        console.log(`Processing ${venueData.venueName} (${venueId})...`);
-
-        // Build user message with venue content
-        // In incremental mode, only include pages that actually changed (if diff data available)
-        const contentPlaceholder = venueData.pages.map(p => {
-            const content = p.text || p.html || '';
-            return `URL: ${p.url}\nContent:\n${content}`;
-        }).join('\n---\n');
-        const userMessage = `Here is the website content for ${venueData.venueName} from various pages:\n---\n${contentPlaceholder}\n---\n\nReturn the JSON result with venueId "${venueId}" and venueName "${venueData.venueName}".`;
-
-        let result;
-        let retries = 3;
-        let delay = 1000; // Start with 1 second delay
-        
-        while (retries > 0) {
-            let response;
-            try {
-                response = await fetchWithTimeout(CHAT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${GROK_API_KEY}`
-                    },
-                    body: JSON.stringify({
-                        model: DEFAULT_MODEL,
-                        messages: [
-                            {
-                                role: 'system',
-                                content: systemPrompt
-                            },
-                            {
-                                role: 'user',
-                                content: userMessage
-                            }
-                        ],
-                        stream: false,
-                        max_tokens: 2048,
-                        temperature: 0.2
-                    })
-                }, 120000);
-
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    // If we get a 429 (Too Many Requests), abort immediately
-                    if (response.status === 429) {
-                        console.error(`\n❌ Rate limit exceeded (HTTP 429): ${errorData.error?.message || response.statusText}`);
-                        console.error(`   Aborting extraction. Please wait and try again later.`);
-                        console.error(`   Processed up to: ${venueData.venueName} (${venueId})`);
-                        if (isIncremental) {
-                            updateConfigField('last_run_status', 'failed_at_extract');
-                        }
-                        process.exit(1);
-                    }
-                    throw new Error(`HTTP ${response.status}: ${errorData.error?.message || response.statusText}`);
-                }
-
-                const data = await response.json();
-                const text = data.choices[0]?.message?.content || '';
-            
-                // Attempt to parse JSON, sometimes LLMs wrap it in markdown
-                const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/);
-                if (jsonMatch && jsonMatch[1]) {
-                    result = JSON.parse(jsonMatch[1]);
-                } else {
-                    // Try to extract JSON from the response text
-                    const jsonStart = text.indexOf('{');
-                    const jsonEnd = text.lastIndexOf('}') + 1;
-                    if (jsonStart !== -1 && jsonEnd > jsonStart) {
-                        result = JSON.parse(text.substring(jsonStart, jsonEnd));
-                    } else {
-                        result = JSON.parse(text); // Try parsing directly
-                    }
-                }
-
-                // Handle new format: result may have happyHour property with entries
-                // Or it may be the old format with found, times, days, etc. at top level
-                if (result.happyHour) {
-                    // New format - use as is
-                    result = result.happyHour;
-                } else if (result.found !== undefined) {
-                    // Old format - convert to new format with entries array
-                    if (result.found) {
-                        result = {
-                            found: true,
-                            entries: [{
-                                days: result.days || "Unknown",
-                                times: result.times || "Unknown",
-                                specials: result.specials || [],
-                                source: result.source || venueData.pages[0]?.url || "Unknown",
-                                confidence: result.confidence || 50,
-                                confidence_score_rationale: result.confidence < 80 ? "Converted from old format" : undefined
-                            }]
-                        };
-                    } else {
-                        result = {
-                            found: false,
-                            reason: result.reason || "No happy hour found"
-                        };
-                    }
-                }
-
-                // Success - break out of retry loop
-                break;
-                
-            } catch (error) {
-                if (error && error.name === 'AbortError') {
-                    error = new Error('LLM request timed out after 120 seconds');
-                }
-                // Check if this is a 429 error from the error message (in case it wasn't caught in response.ok check)
-                const statusCode = error.message?.match(/HTTP (\d+)/)?.[1];
-                if (statusCode === 429 || statusCode === '429') {
-                    console.error(`\n❌ Rate limit exceeded (HTTP 429): Too Many Requests`);
-                    console.error(`   Aborting extraction. Please wait and try again later.`);
-                    console.error(`   Processed up to: ${venueData.venueName} (${venueId})`);
-                    console.error(`   Error: ${error.message}`);
-                    if (isIncremental) {
-                        updateConfigField('last_run_status', 'failed_at_extract');
-                    }
-                    process.exit(1);
-                }
-                
-                retries--;
-                
-                // Other errors - retry or give up
-                if (retries > 0) {
-                    console.log(`   ⚠️  Error: ${error.message}, retrying... (${retries} retries left)`);
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    delay *= 2; // Exponential backoff
-                    continue;
-                }
-                
-                // Out of retries
-                logError(`Grok API failed for ${venueData.venueName} (${venueId}): ${error.message}`);
-                metrics.errors++;
-                result = { 
-                    found: false, 
-                    reason: `Error processing: ${error.message}`,
-                    error: error.message 
-                };
-                break;
-            }
-        }
-
-        // Add metadata to the gold record (includes both raw and normalized hashes)
-        // "promotions" is the new canonical name; "happyHour" kept for backwards compat
-        const goldRecord = {
-            venueId: venueId,
-            venueName: venueData.venueName,
-            promotions: result,
-            happyHour: result,
-            sourceHash: sourceHash,
-            normalizedSourceHash: normalizedSourceHash,
-            processedAt: new Date().toISOString()
-        };
-
-        metrics.processed++;
-        if (result.found) metrics.found++;
-        else metrics.notFound++;
-
-        try {
-            db.gold.upsert({
-                venue_id: venueId,
-                venue_name: venueData.venueName,
-                promotions: result,
-                source_hash: sourceHash,
-                normalized_source_hash: normalizedSourceHash,
-                processed_at: goldRecord.processedAt,
-            });
-        } catch (error) {
-            console.error(`Error writing gold to DB for ${venueData.venueName}: ${error.message}`);
-        }
-
-        // Dual-write to disk during transition
-        try {
-            fs.writeFileSync(goldFilePath, JSON.stringify(goldRecord, null, 2), 'utf8');
-            console.log(`Successfully processed ${venueData.venueName} and saved to DB + ${goldFilePath}`);
-        } catch (error) {
-            console.error(`Error writing gold file for ${venueData.venueName}: ${error.message}`);
-        }
-
-        // Add a small delay to avoid hitting API rate limits
-        await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-    
-    // Update status on successful completion (incremental mode only)
-    if (isIncremental) {
-        updateConfigField('last_run_status', 'completed_successfully');
-    }
-    
-    log(`═══ extract-promotions.js COMPLETE ═══`);
-    log(`  Processed: ${metrics.processed} | Skipped: ${metrics.skipped} | Errors: ${metrics.errors}`);
-    log(`  Found HH: ${metrics.found} | Not found: ${metrics.notFound} | Watchlist: ${metrics.watchlistSkipped}`);
+  logger.log(`═══ extract-promotions.js COMPLETE ═══`);
+  logger.log(`  Processed: ${metrics.processed} | Skipped: ${metrics.skipped} | Errors: ${metrics.errors}`);
+  logger.log(`  Found HH: ${metrics.found} | Not found: ${metrics.notFound} | Watchlist: ${metrics.watchlistSkipped}`);
+  logger.close();
 }
 
-// Export function for testing
 module.exports = extractHappyHours;
 
-// Main execution logic (only run if script is executed directly, not when imported)
 if (require.main === module) {
-    const isIncrementalMode = process.argv.includes('--incremental');
-
-    if (isIncrementalMode) {
-        extractHappyHours(true);
-    } else {
-        // Default to a full bulk automated run if no flags are provided
-        console.log('No mode specified. Defaulting to full automated extraction.');
-        extractHappyHours(false);
-    }
+  const isIncrementalMode = process.argv.includes('--incremental');
+  if (isIncrementalMode) {
+    extractHappyHours(true);
+  } else {
+    console.log('No mode specified. Defaulting to full automated extraction.');
+    extractHappyHours(false);
+  }
 }

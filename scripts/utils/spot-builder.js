@@ -6,17 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const { validateGoldEntries } = require('./confidence');
-const { parseTimeRange, parseDayPart } = require('./time-parse');
-
-/**
- * Normalize LLM placeholder strings to null.
- */
-function normalizeField(val) {
-  if (!val || typeof val !== 'string') return null;
-  const lower = val.trim().toLowerCase();
-  if (lower === 'not specified' || lower === 'unknown' || lower === 'n/a' || lower === '') return null;
-  return val.trim();
-}
+const { normalizeField, buildSpotFields } = require('./spot-time-fields');
 
 /**
  * Format a single entry's description for display.
@@ -25,10 +15,14 @@ function normalizeField(val) {
 function formatDescription(entry) {
   const lines = [];
 
-  if (entry.times || entry.days) {
+  const timePart = entry.times
+    || (entry.time_start && entry.time_end ? `${entry.time_start}-${entry.time_end}` : null);
+  const dayPart = entry.days || null;
+
+  if (timePart || dayPart) {
     const parts = [];
-    if (entry.times && entry.times.trim()) parts.push(entry.times.trim());
-    if (entry.days && entry.days.trim()) parts.push(entry.days.trim());
+    if (timePart) parts.push(timePart.trim ? timePart.trim() : timePart);
+    if (dayPart) parts.push(typeof dayPart === 'string' && dayPart.trim ? dayPart.trim() : String(dayPart));
     if (parts.length > 0) lines.push(parts.join(' • '));
   }
 
@@ -38,7 +32,7 @@ function formatDescription(entry) {
     }
   }
 
-  if (lines.length === 1 && entry.times && !entry.days &&
+  if (lines.length === 1 && timePart && !dayPart &&
       (!entry.specials || entry.specials.length === 0)) {
     return null;
   }
@@ -47,92 +41,6 @@ function formatDescription(entry) {
   return lines.length > 0 ? lines.join('\n') : 'Happy Hour available';
 }
 
-/**
- * Build time/specials/source fields from a group of entries.
- */
-function buildSpotFields(entries) {
-  let promotionTime = null;
-  let promotionList = [];
-  let sourceUrl = null;
-  let timeStart = null;
-  let timeEnd = null;
-  let days = null;
-
-  if (entries.length === 1) {
-    const entry = entries[0];
-    const times = normalizeField(entry.times);
-    const entryDays = normalizeField(entry.days);
-    if (times) {
-      promotionTime = entryDays ? `${times} • ${entryDays}` : times;
-    } else if (entryDays) {
-      promotionTime = entryDays;
-    }
-    promotionList = entry.specials || [];
-    sourceUrl = entry.source || null;
-
-    if (times) {
-      if (/all\s*day/i.test(times)) {
-        timeStart = '00:00'; timeEnd = '23:59';
-      } else {
-        const parsed = parseTimeRange(times);
-        timeStart = parsed.timeStart;
-        timeEnd = parsed.timeEnd;
-      }
-    }
-    if (entryDays) {
-      const dayNums = parseDayPart(entryDays);
-      if (dayNums) days = dayNums.sort((a, b) => a - b).join(',');
-    }
-  } else if (entries.length > 1) {
-    const timeParts = [];
-    const allSpecials = [];
-    const sources = [];
-
-    const firstEntry = entries[0];
-    const firstTimes = normalizeField(firstEntry.times);
-    const firstDays = normalizeField(firstEntry.days);
-    if (firstTimes) {
-      if (/all\s*day/i.test(firstTimes)) {
-        timeStart = '00:00'; timeEnd = '23:59';
-      } else {
-        const parsed = parseTimeRange(firstTimes);
-        timeStart = parsed.timeStart;
-        timeEnd = parsed.timeEnd;
-      }
-    }
-    if (firstDays) {
-      const dayNums = parseDayPart(firstDays);
-      if (dayNums) days = dayNums.sort((a, b) => a - b).join(',');
-    }
-
-    for (const entry of entries) {
-      const times = normalizeField(entry.times);
-      const entryDays = normalizeField(entry.days);
-      if (times || entryDays) {
-        const label = entry.label ? `${entry.label}: ` : '';
-        const timeStr = entryDays
-          ? `${label}${times || ''} • ${entryDays}`.replace(/^\s*•\s*/, '')
-          : `${label}${times}`;
-        if (!timeParts.includes(timeStr)) timeParts.push(timeStr);
-      }
-      if (entry.specials && Array.isArray(entry.specials)) {
-        const prefix = entries.length > 1 && entry.label ? `[${entry.label}] ` : '';
-        allSpecials.push(...entry.specials.map(s => `${prefix}${s}`));
-      }
-      if (entry.source && !sources.includes(entry.source)) sources.push(entry.source);
-    }
-
-    promotionTime = timeParts.length > 0 ? timeParts.join(', ') : null;
-    promotionList = allSpecials;
-    sourceUrl = sources.length > 0 ? sources[0] : null;
-  }
-
-  return { promotionTime, promotionList, sourceUrl, timeStart, timeEnd, days };
-}
-
-/**
- * Resolve the photo URL for a spot, verifying the file exists on disk.
- */
 function resolvePhotoUrl(venueData) {
   if (!venueData.photoUrl) return undefined;
   if (venueData.photoUrl.startsWith('/')) {
@@ -163,9 +71,10 @@ function createSpotsFromGold(goldData, venueData, startId) {
 
   entries = entries.filter(entry => {
     const times = entry.times && entry.times !== 'Not specified' ? entry.times : null;
+    const hasStructuredTimes = entry.time_start || entry.time_end;
     const days = entry.days && entry.days !== 'Not specified' ? entry.days : null;
     const specials = entry.specials && Array.isArray(entry.specials) && entry.specials.length > 0 ? entry.specials : null;
-    return times || days || specials;
+    return times || hasStructuredTimes || days || specials;
   });
 
   const validation = validateGoldEntries(entries);
@@ -216,9 +125,6 @@ function createSpotsFromGold(goldData, venueData, startId) {
   return { spots, flagged: validation.flagged, rejected: validation.rejected };
 }
 
-/**
- * Build a spot from a single entry resurrected via review approval.
- */
 function buildSpotFromEntry(entry, goldData, venueData) {
   const { promotionTime, promotionList, sourceUrl, timeStart, timeEnd, days } = buildSpotFields([entry]);
   return {

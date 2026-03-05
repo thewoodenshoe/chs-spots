@@ -23,6 +23,7 @@ const { dataPath, reportingPath, configPath, getDataRoot } = require('./utils/da
 const { reviewAll } = require('./utils/llm-review');
 const { enrichAreas } = require('./utils/llm-enrich');
 const { createSpotsFromGold, buildSpotFromEntry } = require('./utils/spot-builder');
+const { resolveMissingTimes } = require('./utils/llm-resolve-times');
 
 // Logging setup
 const logDir = path.join(__dirname, '..', 'logs');
@@ -415,6 +416,76 @@ async function main() {
     }
   } catch (err) {
     log(`  ⚠️  LLM area enrichment failed: ${err.message}`);
+  }
+
+  // ── LLM fallback: resolve missing times ──────────────────────
+  let timeResolutionStats = { resolved: 0, unresolved: 0, unresolvedSpots: [] };
+  try {
+    const apiKey = process.env.GROK_API_KEY;
+    if (apiKey) {
+      const d = db.getDb();
+      const missingTimes = d.prepare(
+        "SELECT s.id, s.title, s.type, s.area, s.promotion_time, s.source_url, v.address, v.website " +
+        "FROM spots s LEFT JOIN venues v ON v.id = s.venue_id " +
+        "WHERE s.status = 'approved' AND s.time_start IS NULL AND s.time_end IS NULL " +
+        "AND s.type IN ('Happy Hour', 'Brunch') " +
+        "ORDER BY s.id DESC LIMIT 30",
+      ).all();
+
+      if (missingTimes.length > 0) {
+        log(`\n🕐 LLM time resolution: ${missingTimes.length} spot(s) missing start/end times...`);
+        const spotsForResolution = missingTimes.map(row => ({
+          id: row.id,
+          title: row.title,
+          type: row.type,
+          area: row.area,
+          promotionTime: row.promotion_time,
+          sourceUrl: row.source_url || row.website,
+          address: row.address,
+        }));
+        const { resolved, unresolved } = await resolveMissingTimes(spotsForResolution, apiKey, log);
+
+        if (resolved.length > 0) {
+          const updateStmt = d.prepare(
+            'UPDATE spots SET time_start = ?, time_end = ?, days = COALESCE(?, days), specific_date = ? WHERE id = ?',
+          );
+          for (const r of resolved) {
+            updateStmt.run(r.timeStart, r.timeEnd, r.days, r.specificDate, r.id);
+          }
+          log(`  ✅ LLM resolved times for ${resolved.length} spot(s)`);
+        }
+
+        timeResolutionStats = { resolved: resolved.length, unresolved: unresolved.length, unresolvedSpots: unresolved };
+      }
+    }
+  } catch (err) {
+    log(`  ⚠️  LLM time resolution failed: ${err.message}`);
+  }
+
+  // Write missing-times report for generate-report.js to pick up
+  try {
+    const missingTimesPath = reportingPath('missing-times.json');
+    const d = db.getDb();
+    const stillMissing = d.prepare(
+      "SELECT s.id, s.title, s.type, s.area, s.promotion_time, s.source_url, v.name as venue_name, v.website " +
+      "FROM spots s LEFT JOIN venues v ON v.id = s.venue_id " +
+      "WHERE s.status = 'approved' AND s.time_start IS NULL AND s.time_end IS NULL " +
+      "AND s.type IN ('Happy Hour', 'Brunch') ORDER BY s.id DESC",
+    ).all();
+    fs.writeFileSync(missingTimesPath, JSON.stringify({
+      generatedAt: new Date().toISOString(),
+      count: stillMissing.length,
+      llmResolved: timeResolutionStats.resolved,
+      spots: stillMissing.map(r => ({
+        id: r.id, title: r.title, type: r.type, area: r.area,
+        promotionTime: r.promotion_time, sourceUrl: r.source_url || r.website,
+      })),
+    }, null, 2), 'utf8');
+    if (stillMissing.length > 0) {
+      log(`\n⚠️  ${stillMissing.length} spot(s) still missing times after LLM resolution → ${missingTimesPath}`);
+    }
+  } catch (err) {
+    log(`  ⚠️  Missing times report write failed: ${err.message}`);
   }
 
   // Complete in-memory spots array: re-read from DB to include all preserved spots

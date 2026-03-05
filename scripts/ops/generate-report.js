@@ -646,6 +646,62 @@ function getPipelineData() {
     }
   } catch (e) { debugLog('confidenceReview', e); }
 
+  // 10. Spots with missing times (couldn't figure out start/end times)
+  result.missingTimesCount = 0;
+  result.missingTimesLlmResolved = 0;
+  try {
+    const missingTimesPath = reportingPath('missing-times.json');
+    if (fs.existsSync(missingTimesPath)) {
+      const mtData = JSON.parse(fs.readFileSync(missingTimesPath, 'utf8'));
+      result.missingTimesCount = mtData.count || 0;
+      result.missingTimesLlmResolved = mtData.llmResolved || 0;
+
+      if (mtData.spots && mtData.spots.length > 0) {
+        const spotList = mtData.spots.slice(0, 10);
+        result.actions.push({
+          severity: mtData.spots.length >= 5 ? 'medium' : 'low',
+          category: 'Missing Times',
+          title: `${mtData.spots.length} spot(s) missing start/end times`,
+          detail: spotList.map(s =>
+            `#${s.id} ${s.title} [${s.type}]${s.promotionTime ? ` — raw: "${s.promotionTime}"` : ' — no time data'}${s.area ? ` (${s.area})` : ''}`,
+          ).join('\n') + (mtData.spots.length > 10 ? `\n... and ${mtData.spots.length - 10} more` : ''),
+          instruction: `These spots are live but don't have parsed start/end times, so they won't show as "active now".\nLLM attempted resolution but couldn't find times.\nManually set times via admin or Telegram:\n  /edit <id> timeStart 16:00 timeEnd 19:00`,
+        });
+      }
+
+      if (mtData.llmResolved > 0) {
+        result.actions.push({
+          severity: 'low',
+          category: 'Missing Times',
+          title: `${mtData.llmResolved} spot(s) had times resolved by LLM fallback`,
+          detail: 'LLM successfully found times that regex parsing missed. No action needed.',
+          instruction: 'For reference only.',
+        });
+      }
+    } else {
+      // No missing-times.json — query DB directly as fallback
+      const database = db.getDb();
+      const missingFromDb = database.prepare(
+        "SELECT s.id, s.title, s.type, s.area, s.promotion_time " +
+        "FROM spots s WHERE s.status = 'approved' AND s.time_start IS NULL AND s.time_end IS NULL " +
+        "AND s.type IN ('Happy Hour', 'Brunch') ORDER BY s.id DESC LIMIT 20",
+      ).all();
+      result.missingTimesCount = missingFromDb.length;
+
+      if (missingFromDb.length > 0) {
+        result.actions.push({
+          severity: missingFromDb.length >= 5 ? 'medium' : 'low',
+          category: 'Missing Times',
+          title: `${missingFromDb.length} spot(s) missing start/end times`,
+          detail: missingFromDb.slice(0, 10).map(s =>
+            `#${s.id} ${s.title} [${s.type}]${s.promotion_time ? ` — raw: "${s.promotion_time}"` : ' — no time data'}${s.area ? ` (${s.area})` : ''}`,
+          ).join('\n'),
+          instruction: `These spots don't have parsed times. Set manually via admin or Telegram:\n  /edit <id> timeStart 16:00 timeEnd 19:00`,
+        });
+      }
+    }
+  } catch (e) { debugLog('missingTimes', e); }
+
   // Sort actions: high > medium > low
   const severityOrder = { high: 0, medium: 1, low: 2 };
   result.actions.sort((a, b) => (severityOrder[a.severity] ?? 3) - (severityOrder[b.severity] ?? 3));

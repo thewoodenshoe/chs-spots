@@ -14,6 +14,12 @@ const NON_HH_LABEL_KEYWORDS = /\b(market|mercato|cafe|café|coffee|bakery|breakf
 const EFFECTIVE_THRESHOLD = 50;
 const FLAG_THRESHOLD = 70;
 
+function parse24hHour(hhmm) {
+  if (!hhmm || typeof hhmm !== 'string') return null;
+  const m = hhmm.match(/^(\d{1,2}):(\d{2})$/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
 function parseStartHour(timeStr) {
   if (!timeStr) return null;
   const m = timeStr.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i);
@@ -36,9 +42,30 @@ function parseEndHour(timeStr) {
   return h;
 }
 
+function getStartHour(entry) {
+  const fromStructured = parse24hHour(entry.time_start);
+  if (fromStructured !== null) return fromStructured;
+  return parseStartHour(entry.times);
+}
+
+function getEndHour(entry) {
+  const fromStructured = parse24hHour(entry.time_end);
+  if (fromStructured !== null) return fromStructured;
+  return parseEndHour(entry.times);
+}
+
 function timeSpanHours(timeStr) {
   const start = parseStartHour(timeStr);
   const end = parseEndHour(timeStr);
+  if (start === null || end === null) return null;
+  let span = end - start;
+  if (span < 0) span += 24;
+  return span;
+}
+
+function entryTimeSpan(entry) {
+  const start = getStartHour(entry);
+  const end = getEndHour(entry);
   if (start === null || end === null) return null;
   let span = end - start;
   if (span < 0) span += 24;
@@ -57,15 +84,13 @@ function validateEntry(entry) {
   const type = entry.activityType || 'Happy Hour';
 
   if (type === 'Happy Hour') {
-    const startHour = parseStartHour(entry.times);
+    const startHour = getStartHour(entry);
 
-    // Rule 1: Happy hours starting before 11AM are almost certainly wrong
     if (startHour !== null && startHour < 11) {
-      flags.push(`starts-before-11am (${entry.times})`);
+      flags.push(`starts-before-11am (${entry.time_start || entry.times})`);
       score -= 40;
     }
 
-    // Rule 2: No alcohol keywords in specials → probably not a drink deal
     const specialsText = (entry.specials || []).join(' ');
     const labelText = entry.label || '';
     const allText = `${labelText} ${specialsText} ${entry.times || ''}`;
@@ -74,31 +99,26 @@ function validateEntry(entry) {
       score -= 10;
     }
 
-    // Boost: specials with $ prices are strong indicators of a real deal
     if (entry.specials && entry.specials.some(s => /\$\d/.test(s))) {
       score += 10;
     }
 
-    // Rule 3: Label contains market/cafe/breakfast keywords
     if (NON_HH_LABEL_KEYWORDS.test(labelText)) {
       flags.push(`non-hh-label: "${labelText}"`);
       score -= 30;
     }
 
-    // Rule 4: Time span > 8 hours looks like regular hours, not a promotion
-    const span = timeSpanHours(entry.times);
+    const span = entryTimeSpan(entry);
     if (span !== null && span >= 8) {
       flags.push(`long-span: ${span}h`);
       score -= 15;
     }
 
-    // Rule 5: "Close" as end time with no specials = just bar hours
     if (entry.times && /close/i.test(entry.times) && (!entry.specials || entry.specials.length === 0)) {
       flags.push('bar-hours-only (no specials)');
       score -= 25;
     }
 
-    // Rule 6: Vague specials like "Weekly drink special" without prices
     if (entry.specials && entry.specials.length > 0) {
       const hasPrice = entry.specials.some(s => /\$\d/.test(s));
       const allVague = entry.specials.every(s =>
@@ -114,7 +134,7 @@ function validateEntry(entry) {
   if (type === 'Brunch') {
     const specialsText = (entry.specials || []).join(' ');
     const labelText = entry.label || '';
-    const allText = `${labelText} ${specialsText} ${entry.days || ''} ${entry.times || ''}`;
+    const allText = `${labelText} ${specialsText} ${entry.days || ''} ${entry.times || ''} ${entry.label || ''}`;
 
     const hasBrunchSignal = /brunch|mimosa|bloody mary|bellini|benedic|french toast|pancake|omelet|eggs|waffle|breakfast/i.test(allText);
     if (!hasBrunchSignal) {

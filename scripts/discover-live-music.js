@@ -17,6 +17,7 @@ const path = require('path');
 const https = require('https');
 const db = require('./utils/db');
 const { parsePromotionTime } = require('./utils/time-parse');
+const { resolveMissingTimes } = require('./utils/llm-resolve-times');
 
 // ── Logging ─────────────────────────────────────────────────────
 
@@ -319,6 +320,43 @@ async function main() {
     existingTitles.add(venue.name.toLowerCase());
   }
 
+  // LLM fallback: resolve missing times for newly inserted spots
+  let timeResolved = 0;
+  let timeUnresolved = 0;
+  const unresolvedNames = [];
+  if (inserted > 0 && getApiKey()) {
+    try {
+      const missingTimes = database.prepare(
+        "SELECT id, title, type, promotion_time, source_url FROM spots " +
+        "WHERE type = 'Live Music' AND status = 'approved' AND time_start IS NULL AND time_end IS NULL " +
+        "AND last_update_date = ? LIMIT 20",
+      ).all(TODAY);
+
+      if (missingTimes.length > 0) {
+        log(`\n🕐 LLM time resolution: ${missingTimes.length} new Live Music spot(s) missing times...`);
+        const spotsForResolution = missingTimes.map(r => ({
+          id: r.id, title: r.title, type: r.type,
+          promotionTime: r.promotion_time, sourceUrl: r.source_url,
+        }));
+        const { resolved, unresolved } = await resolveMissingTimes(spotsForResolution, getApiKey(), log);
+
+        for (const r of resolved) {
+          database.prepare(
+            'UPDATE spots SET time_start = ?, time_end = ?, days = COALESCE(?, days) WHERE id = ?',
+          ).run(r.timeStart, r.timeEnd, r.days, r.id);
+        }
+        timeResolved = resolved.length;
+        timeUnresolved = unresolved.length;
+        unresolvedNames.push(...unresolved.map(u => u.title));
+
+        if (resolved.length > 0) log(`  ✅ Resolved times for ${resolved.length} spot(s)`);
+        if (unresolved.length > 0) log(`  ❌ Couldn't resolve times for ${unresolved.length} spot(s): ${unresolvedNames.join(', ')}`);
+      }
+    } catch (err) {
+      log(`  ⚠️  LLM time resolution failed: ${err.message}`);
+    }
+  }
+
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
   log(`\nDone: ${inserted} new venues added, ${grokVenues.length} checked. Elapsed: ${elapsed}s`);
 
@@ -328,6 +366,8 @@ async function main() {
     `Grok found: ${grokVenues.length} venues`,
     `New additions: ${inserted}`,
     inserted > 0 ? `\nNew: ${insertedNames.join(', ')}` : '',
+    timeResolved > 0 ? `\nTimes resolved by LLM: ${timeResolved}` : '',
+    timeUnresolved > 0 ? `\n⚠️ Couldn't find times: ${unresolvedNames.join(', ')}` : '',
     `\nElapsed: ${elapsed}s`,
   ].filter(Boolean).join('\n');
   await sendTelegram(msg);

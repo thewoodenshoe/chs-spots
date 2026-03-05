@@ -11,6 +11,12 @@ jest.mock('../scripts/utils/llm-client', () => ({
     fetchWithTimeout: jest.fn((url, options) => mockFetch(url, options)),
     CHAT_URL: 'https://api.x.ai/v1/chat/completions',
     DEFAULT_MODEL: 'grok-4-fast-reasoning',
+    webSearch: jest.fn(),
+}));
+
+// Mock logger to use console in tests
+jest.mock('../scripts/utils/logger', () => ({
+    createLogger: () => ({ log: console.log, error: console.error, warn: console.warn, close: () => {} }),
 }));
 
 // Mock database module
