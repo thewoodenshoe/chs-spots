@@ -12,6 +12,11 @@ export const createSpotSchema = z.object({
   photoUrl: z.string().max(1_500_000, 'Photo too large').optional(),
   area: z.string().max(100).optional(),
   venueId: z.string().max(200).optional(),
+  timeStart: z.string().max(5).optional(),
+  timeEnd: z.string().max(5).optional(),
+  days: z.array(z.number().min(0).max(6)).max(7).optional(),
+  specificDate: z.string().max(10).optional(),
+  promotionList: z.array(z.string().max(500)).max(20).optional(),
 }).refine(
   (data) => data.venueId || (data.lat != null && data.lng != null),
   { message: 'Either venueId or lat/lng coordinates are required' },

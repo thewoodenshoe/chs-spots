@@ -321,12 +321,21 @@ export default function HomeClient() {
     lng?: number;
     photo?: File;
     venueId?: string;
+    timeStart?: string;
+    timeEnd?: string;
+    days?: number[];
+    specificDate?: string;
+    deals?: string;
   }) => {
     try {
       let photoUrl: string | undefined;
       if (data.photo) {
         photoUrl = await compressImageForUpload(data.photo);
       }
+
+      const dealLines = data.deals
+        ? data.deals.split('\n').map(l => l.trim()).filter(Boolean)
+        : undefined;
 
       await addSpot({
         lat: data.lat ?? 0,
@@ -337,6 +346,11 @@ export default function HomeClient() {
         type: data.type,
         photoUrl,
         venueId: data.venueId,
+        timeStart: data.timeStart,
+        timeEnd: data.timeEnd,
+        days: data.days,
+        specificDate: data.specificDate,
+        promotionList: dealLines && dealLines.length > 0 ? dealLines : undefined,
       });
 
       setPinLocation(null);

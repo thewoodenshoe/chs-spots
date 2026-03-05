@@ -4,10 +4,12 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { SpotType } from './FilterModal';
 import { useActivities } from '@/contexts/ActivitiesContext';
 import { useToast } from './Toast';
+import useSheetDrag from '@/hooks/useSheetDrag';
 import VenuePicker, { VenueSearchResult } from './VenuePicker';
 import ActivityPicker from './submission/ActivityPicker';
 import PinStep from './submission/PinStep';
 import DetailsForm from './submission/DetailsForm';
+import type { ScheduleData } from './submission/DetailsForm';
 
 type SubmitPayload = {
   title: string;
@@ -18,6 +20,11 @@ type SubmitPayload = {
   lng?: number;
   photo?: File;
   venueId?: string;
+  timeStart?: string;
+  timeEnd?: string;
+  days?: number[];
+  specificDate?: string;
+  deals?: string;
 };
 
 interface SubmissionModalProps {
@@ -41,6 +48,7 @@ export default function SubmissionModal({
   const sheetRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { sheetHeight, startDrag } = useSheetDrag(isOpen);
 
   const [step, setStep] = useState<Step>('activity');
   const [selectedActivity, setSelectedActivity] = useState<SpotType>(defaultActivity || 'Happy Hour');
@@ -51,10 +59,6 @@ export default function SubmissionModal({
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [sheetHeight, setSheetHeight] = useState(460);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startY, setStartY] = useState(0);
-  const [startHeight, setStartHeight] = useState(0);
 
   const isVenueRequired = useCallback((activityName: string): boolean => {
     const act = activities.find(a => a.name === activityName);
@@ -94,7 +98,7 @@ export default function SubmissionModal({
     setStep('details');
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, schedule: ScheduleData) => {
     e.preventDefault();
     if (!selectedVenue && !pinLocation) {
       showToast('Please select a venue or drop a pin on the map', 'warning');
@@ -115,6 +119,11 @@ export default function SubmissionModal({
           ? { venueId: selectedVenue.id }
           : { lat: pinLocation!.lat, lng: pinLocation!.lng }),
         photo: selectedPhoto || undefined,
+        timeStart: schedule.timeStart || undefined,
+        timeEnd: schedule.timeEnd || undefined,
+        days: schedule.days.length > 0 ? schedule.days : undefined,
+        specificDate: schedule.specificDate || undefined,
+        deals: schedule.deals.trim() || undefined,
       });
       onClose();
     } catch {
@@ -129,32 +138,6 @@ export default function SubmissionModal({
     else if (step === 'details') setStep('pin');
     else if (step === 'venue' || step === 'pin') setStep('activity');
     else onClose();
-  };
-
-  useEffect(() => {
-    if (!isOpen || !isDragging) return;
-    const onMove = (e: MouseEvent | TouchEvent) => {
-      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-      setSheetHeight(Math.min(Math.max(340, startHeight + (startY - clientY)), window.innerHeight * 0.92));
-    };
-    const onEnd = () => setIsDragging(false);
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onEnd);
-    document.addEventListener('touchmove', onMove);
-    document.addEventListener('touchend', onEnd);
-    return () => {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onEnd);
-      document.removeEventListener('touchmove', onMove);
-      document.removeEventListener('touchend', onEnd);
-    };
-  }, [isOpen, isDragging, startY, startHeight]);
-
-  const startDrag = (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-    setStartY('touches' in e ? e.touches[0].clientY : e.clientY);
-    setStartHeight(sheetHeight);
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {

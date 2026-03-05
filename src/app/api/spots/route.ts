@@ -143,6 +143,11 @@ export async function POST(request: Request) {
       lng: spotData.lng ?? null,
       area: resolvedArea,
       venueId: resolvedVenueId,
+      timeStart: spotData.timeStart || null,
+      timeEnd: spotData.timeEnd || null,
+      days: spotData.days ? spotData.days.join(',') : null,
+      specificDate: spotData.specificDate || null,
+      promotionList: spotData.promotionList || null,
     });
 
     const venueLabel = resolvedVenueId

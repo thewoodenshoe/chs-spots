@@ -1,6 +1,12 @@
 'use client';
 
+import { useState, useCallback } from 'react';
 import type { VenueSearchResult } from '@/components/VenuePicker';
+import ScheduleFields, { type ScheduleData } from './ScheduleFields';
+
+export type { ScheduleData };
+
+const EMPTY_SCHEDULE: ScheduleData = { timeStart: '', timeEnd: '', days: [], specificDate: '', deals: '' };
 
 interface DetailsFormProps {
   selectedVenue: VenueSearchResult | null;
@@ -15,7 +21,7 @@ interface DetailsFormProps {
   onPhotoChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemovePhoto: () => void;
   isSubmitting: boolean;
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit: (e: React.FormEvent, schedule: ScheduleData) => void;
 }
 
 export default function DetailsForm({
@@ -23,8 +29,14 @@ export default function DetailsForm({
   description, setDescription, photoPreview, fileInputRef,
   onPhotoChange, onRemovePhoto, isSubmitting, onSubmit,
 }: DetailsFormProps) {
+  const [schedule, setSchedule] = useState<ScheduleData>(EMPTY_SCHEDULE);
+  const updateSchedule = useCallback(
+    (patch: Partial<ScheduleData>) => setSchedule(prev => ({ ...prev, ...patch })),
+    [],
+  );
+
   return (
-    <form onSubmit={onSubmit} className="space-y-3">
+    <form onSubmit={(e) => onSubmit(e, schedule)} className="space-y-3">
       {selectedVenue && (
         <div className="rounded-xl bg-teal-50 border border-teal-200 px-3 py-2.5">
           <div className="text-sm font-semibold text-teal-800">{selectedVenue.name}</div>
@@ -71,6 +83,8 @@ export default function DetailsForm({
           className="w-full rounded-xl border-2 border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 resize-none"
         />
       </div>
+
+      <ScheduleFields schedule={schedule} onChange={updateSchedule} />
 
       <div>
         <label htmlFor="photo-upload-detail" className="mb-1 block text-xs font-semibold text-gray-700">
