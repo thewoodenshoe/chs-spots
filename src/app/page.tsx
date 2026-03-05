@@ -52,20 +52,25 @@ export default function HomePage() {
       {/* Server-rendered content for search engine crawlers */}
       <article className="mx-auto max-w-3xl px-6 py-12 text-gray-800">
         <h1 className="text-3xl font-bold mb-4">
-          Charleston Finds &mdash; Happy Hours, Brunches, Live Music &amp; Deals
+          CHS Finds &mdash; Real-Time Happy Hours, Brunch, Rooftops &amp; Live Music in Charleston SC
         </h1>
         <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-          Discover {allSpots.length} verified deals from {allVenues.length} venues
-          in Charleston, SC. Happy hours, brunches, live music, newly opened
-          restaurants, coffee shops, rooftop bars, and more &mdash; sourced from
-          venue websites and updated nightly.
+          Discover {allSpots.length}+ verified deals from {allVenues.length}+ venues
+          in Charleston, SC with a real-time &ldquo;Active Right Now&rdquo; map.
+          Happy hours, brunches, rooftop bars, live music, coffee shops, landmarks,
+          and more &mdash; updated daily. Free, no ads.
         </p>
 
         <h2 className="text-xl font-bold mb-3">Browse by Activity</h2>
         <ul className="grid grid-cols-2 gap-3 mb-8">
           {activities.map(a => (
             <li key={a.name}>
-              <span className="font-semibold">{a.emoji} {a.name}</span>
+              <Link
+                href={`/explore/${slugify(a.name)}-in-downtown-charleston`}
+                className="text-teal-700 hover:underline font-semibold"
+              >
+                {a.emoji} {a.name}
+              </Link>
               <span className="text-gray-500 ml-1">
                 ({spotsByType[a.name] || 0} spots)
               </span>

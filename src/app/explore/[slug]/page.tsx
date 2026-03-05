@@ -119,17 +119,19 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const canonical = `https://chsfinds.com/explore/${slug}`;
   const robots = count === 0 ? { index: false, follow: true } : undefined;
 
+  const actLower = parsed.activity.toLowerCase();
+  const titleCount = count > 0 ? `${count} ` : '';
   return {
-    title: `Best ${parsed.activity} in ${parsed.area} — Charleston Finds`,
+    title: `${titleCount}${parsed.activity} in ${parsed.area} SC – Real-Time Active Now Map | CHS Finds`,
     description: count > 0
-      ? `Discover ${count} verified ${parsed.activity.toLowerCase()} spots in ${parsed.area}, Charleston SC. Updated daily from venue sites.`
-      : `${parsed.activity} in ${parsed.area}, Charleston SC — explore nearby areas on Charleston Finds.`,
-    keywords: [parsed.activity, parsed.area, 'Charleston SC', `best ${parsed.activity.toLowerCase()}`],
+      ? `Discover ${count} verified ${actLower} deals in ${parsed.area}, Charleston SC with real-time 'Active Right Now' filtering. Updated daily with latest times & promotions. Map, photos, and directions included.`
+      : `${parsed.activity} in ${parsed.area}, Charleston SC — explore nearby areas on CHS Finds.`,
+    keywords: [parsed.activity, parsed.area, 'Charleston SC', `best ${actLower}`, `${actLower} deals`, `${actLower} near me`],
     alternates: { canonical },
     robots,
     openGraph: {
-      title: `Best ${parsed.activity} in ${parsed.area}`,
-      description: `Discover the best ${parsed.activity.toLowerCase()} spots in ${parsed.area}, Charleston SC.`,
+      title: `${titleCount}${parsed.activity} in ${parsed.area} SC – Real-Time Map`,
+      description: `Discover the best ${actLower} spots in ${parsed.area}, Charleston SC. Updated daily.`,
       url: canonical,
     },
   };

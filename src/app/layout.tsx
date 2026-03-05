@@ -19,23 +19,23 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const seoDescription = "Discover over 1,000 Charleston, SC venues updated daily — happy hours, brunches, live music, newly opened restaurants, coffee shops, and more. Verified from venue sites and curated by locals.";
+const seoDescription = "Discover 600+ verified deals across 1,000+ Charleston SC venues — real-time happy hours, brunch, rooftop bars, live music & more. Updated daily with 'Active Right Now' map. Free, no ads.";
 
 export const metadata: Metadata = {
   title: {
-    default: "Charleston Finds — Happy Hours, Brunches, Live Music & Deals",
-    template: "%s | Charleston Finds",
+    default: "CHS Finds – Real-Time Happy Hours, Brunch, Rooftops & Live Music in Charleston SC",
+    template: "%s | CHS Finds",
   },
   description: seoDescription,
   keywords: [
     "Charleston SC happy hours", "Charleston brunch", "Charleston live music",
-    "Charleston deals", "Charleston restaurants", "Charleston coffee shops",
-    "Charleston new restaurants", "Charleston nightlife", "Charleston food deals",
-    "things to do in Charleston SC",
+    "Charleston rooftop bars", "Charleston deals map", "Charleston restaurants",
+    "Charleston coffee shops", "things to do in Charleston SC",
+    "active right now Charleston", "best happy hour Charleston SC",
   ],
   metadataBase: new URL("https://chsfinds.com"),
   openGraph: {
-    title: "Charleston Finds — Happy Hours, Brunches, Live Music & Deals",
+    title: "CHS Finds – Real-Time Happy Hours, Brunch, Rooftops & Live Music in Charleston SC",
     description: seoDescription,
     url: "https://chsfinds.com",
     siteName: "Charleston Finds",
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Charleston Finds — Happy Hours, Brunches, Live Music & Deals",
+    title: "CHS Finds – Real-Time Happy Hours, Brunch, Rooftops & Live Music in Charleston SC",
     description: seoDescription,
     images: ["/api/og-image"],
   },
@@ -84,12 +84,16 @@ export default function RootLayout({
   const umamiWebsiteId = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
   const umamiHost = process.env.NEXT_PUBLIC_UMAMI_HOST || '/u';
 
+  const today = new Date().toISOString().split('T')[0];
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'Charleston Finds',
+    name: 'CHS Finds',
     url: 'https://chsfinds.com',
-    description: seoDescription,
+    description: 'Hyper-local Charleston discovery platform – real-time deals, maps, and hidden gems',
+    datePublished: '2025-01-15',
+    dateModified: today,
+    keywords: 'Charleston happy hour map, real-time deals Charleston, rooftop bars Charleston SC, brunch Charleston updated daily',
     potentialAction: {
       '@type': 'SearchAction',
       target: 'https://chsfinds.com/?search={search_term_string}',
@@ -100,6 +104,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <meta name="revisit-after" content="1 day" />
+        <meta name="last-modified" content={today} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
