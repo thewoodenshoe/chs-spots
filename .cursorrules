@@ -1,7 +1,7 @@
 # Charleston Finds — Project Rules
 
 ## ⚠️ MANDATORY: EVERY TASK ENDS WITH DEPLOY + NOTIFY
-**No task is complete until you have: (1) git committed and pushed, (2) deployed to the server via rsync + PM2 restart, (3) sent a Telegram notification summarizing the change. ALWAYS add these as the final TODO items in every task list. If you are about to respond to the user without having done all three, STOP and do them first. See DEPLOYMENT WORKFLOW section for exact commands.**
+**No task is complete until you have: (1) git committed and pushed, (2) deployed to the server via git pull + build + PM2 restart, (3) sent a Telegram notification summarizing the change. ALWAYS add these as the final TODO items in every task list. If you are about to respond to the user without having done all three, STOP and do them first. See DEPLOYMENT WORKFLOW section for exact commands.**
 
 ## YOUR ROLE
 You are the expert architect and senior staff engineer for chs-spots.
@@ -92,11 +92,9 @@ If a script has more than 5 helper functions, extract them to a dedicated utils 
 1. **Run tests**: `npx jest --no-cache` — all tests must pass
 2. **Build locally**: `npm run build` — build must succeed with zero type errors
 3. **Git commit + push**: Stage, commit with a descriptive message, and `git push`
-4. **Deploy to server**:
-   - Rsync the build: `rsync -avz .next/ ubuntu:~/projects/chs-spots/.next/`
-   - Rsync source files: `rsync -avz --exclude='node_modules' --exclude='.next' --exclude='data' --exclude='.env.local' ./ ubuntu:~/projects/chs-spots/`
-   - Rsync scripts separately to ensure ETL has latest: `rsync -avz scripts/ ubuntu:~/projects/chs-spots/scripts/`
-   - Restart PM2: `ssh ubuntu "cd ~/projects/chs-spots && pm2 restart chs-spots"`
+4. **Deploy to server** (git pull + build on server):
+   - Pull latest: `ssh ubuntu "cd ~/projects/chs-spots && git pull"`
+   - Stop, build, restart: `ssh ubuntu "cd ~/projects/chs-spots && pm2 stop chs-spots && npm run build && pm2 restart chs-spots"`
    - Wait 8 seconds, then verify: `ssh ubuntu "curl -s http://localhost:3000/api/health"`
 5. **Verify ETL compatibility**: If any script in `scripts/` was changed, do a dry-run on the server:
    - `ssh ubuntu "cd ~/projects/chs-spots && node scripts/run-incremental-pipeline.js --dry-run"` (if supported)
@@ -110,7 +108,7 @@ If a script has more than 5 helper functions, extract them to a dedicated utils 
 
 Every TODO list you create MUST end with these three items (use these exact IDs):
 - `id: "git-push"` — "Git commit and push all changes"
-- `id: "deploy"` — "Deploy to server (rsync + PM2 restart + health check)"
+- `id: "deploy"` — "Deploy to server (git pull + build + PM2 restart + health check)"
 - `id: "telegram"` — "Send Telegram deployment notification"
 
 These are non-negotiable. If you create a TODO list without them, you are violating project rules.
@@ -120,9 +118,9 @@ These are non-negotiable. If you create a TODO list without them, you are violat
 - This is a dedicated server running Ubuntu. You have full control and are authorized to install packages if it improves the application.
 - Server alias: `ubuntu` (SSH config)
 - PM2 manages the production process via `ecosystem.config.cjs` → runs `next start`
-- NEVER run `next build` on the server — it has a known race condition that destroys the `.next` directory
-- The `chs-spots.service` systemd unit is DISABLED intentionally (ran `next build` as ExecStartPre, causing deployment issues)
-- Always build locally and rsync `.next/` to the server
+- Build on the server after `git pull` — always stop PM2 first (`pm2 stop chs-spots`), then build, then restart
+- The `chs-spots.service` systemd unit is DISABLED intentionally — use PM2 instead
+- NEVER use rsync for deployment — always use `git push` from laptop + `git pull` on server
 
 ## QUALITY GATE — BEFORE EVERY COMMIT
 
@@ -135,5 +133,5 @@ Before marking any task as done, verify:
 - [ ] README updated if applicable (see README MAINTENANCE section)
 - [ ] Changed scripts tested against live DB on server (read-only verification)
 - [ ] Git committed and pushed (see DEPLOYMENT WORKFLOW)
-- [ ] Deployed to server via rsync + PM2 restart (see DEPLOYMENT WORKFLOW)
+- [ ] Deployed to server via git pull + build + PM2 restart (see DEPLOYMENT WORKFLOW)
 - [ ] Telegram notification sent (see DEPLOYMENT WORKFLOW)
