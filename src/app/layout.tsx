@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     images: [
       {
-        url: "https://chsfinds.com/og-image.png",
+        url: "https://chsfinds.com/og-image.png?v=2",
         width: 1200,
         height: 630,
         alt: "CHS Finds – Real-Time Happy Hours, Brunch, Rooftops & Live Music in Charleston SC",
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "CHS Finds – Real-Time Happy Hours, Brunch, Rooftops & Live Music in Charleston SC",
     description: seoDescription,
-    images: ["https://chsfinds.com/og-image.png"],
+    images: ["https://chsfinds.com/og-image.png?v=2"],
   },
   icons: {
     icon: [
