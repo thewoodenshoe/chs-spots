@@ -36,8 +36,19 @@ export async function GET(request: Request) {
     const allVenues = venues.getAll();
     const venueMap = buildVenueMap(allVenues);
 
+    const statusTypes = new Set(['Coming Soon', 'Recently Opened']);
+    const venueStatusIds = new Set(
+      allVenues.filter(v => v.venue_status === 'coming_soon' || v.venue_status === 'recently_opened').map(v => v.id),
+    );
+
     const transformed = allSpots
-      .filter(s => s.type !== 'Coming Soon' && s.type !== 'Recently Opened')
+      .filter(s => {
+        if (!statusTypes.has(s.type)) return true;
+        // Keep legacy spots (no venue_id) that haven't been migrated to venue_status yet
+        if (!s.venue_id) return true;
+        // Skip spots whose venue already provides the status via synthesizeStatusSpots
+        return !venueStatusIds.has(s.venue_id);
+      })
       .map(s => transformSpot(s, venueMap));
 
     const statusSpots = synthesizeStatusSpots(allVenues);
