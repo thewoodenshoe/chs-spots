@@ -68,12 +68,24 @@ Keep the README concise. No prose paragraphs — use tables and bullet points. T
 
 ## SCRIPT MODULARITY
 
+### Data Architecture
+- **Master-detail**: `venues` is the single source of truth for geo data (lat, lng, area), address, phone, website, photo.
+  `spots` are activity-specific details (happy hour times, brunch deals) always linked to a venue via `venue_id`.
+- **Venue status**: "Coming Soon" and "Recently Opened" are `venue_status` values (not spot types). The API synthesizes them as spot-like objects for the frontend.
+- **Activity flags**: Boolean columns on `venues` (is_happy_hour, is_brunch, etc.) are auto-synced after every spot mutation via `syncActivityFlags()`.
+- **Hybrid photos**: spots can have their own `photo_url`; the venue's `photo_url` is the fallback.
+
 ### Shared Utilities (scripts/utils/)
-- `db.js` — DAL for all SQLite access
+- `db.js` — re-export hub for the split DAL modules below
+- `db-core.js` — getDb, closeDb, ensureSchema, logAudit, syncActivityFlags, transaction
+- `db-venues.js` — venues CRUD, upsert, updateStatus, updatePhotoUrl
+- `db-spots.js` — spots CRUD, upsertAutomated, archiveStaleAutomated (no lat/lng/area writes)
+- `db-support.js` — gold_extractions, areas, activities, watchlist, confidenceReviews
+- `db-pipeline.js` — pipeline_state, pipeline_runs, update_streaks, audit queries
 - `config.js` — pipeline state and watchlist
 - `data-dir.js` — path resolution
 - `normalize.js` — text normalization
-- `logger.js` — unified logging (create if missing)
+- `logger.js` — unified logging
 - New shared concerns go here. Never duplicate logic across scripts.
 
 ### Script Structure Pattern
@@ -121,6 +133,40 @@ These are non-negotiable. If you create a TODO list without them, you are violat
 - Build on the server after `git pull` — always stop PM2 first (`pm2 stop chs-spots`), then build, then restart
 - The `chs-spots.service` systemd unit is DISABLED intentionally — use PM2 instead
 - NEVER use rsync for deployment — always use `git push` from laptop + `git pull` on server
+
+## DATA INTEGRITY RULES — NEVER VIOLATE
+
+### DAL-Only Writes
+- NEVER use raw SQL for INSERT/UPDATE/DELETE on `spots` or `venues`. Always use the DAL (`db.spots.*`, `db.venues.*`).
+- The only exception is one-off migration scripts in `scripts/db/`.
+- The DAL is the single enforcement point for audit logging, manual_override protection, and activity flag sync.
+
+### Manual Override Protection
+- EVERY spot mutation from an automated source MUST check `manual_override` before overwriting.
+- `db.spots.upsertAutomated()` already respects this — always use it for pipeline writes.
+- `db.spots.update()` warns when modifying a `manual_override=1` spot without `{ force: true }`.
+- Scripts that intentionally set `manual_override=1` (like `verify-spot-times.js`) must pass `{ force: true }`.
+
+### Audit Logging
+- EVERY DAL write method calls `logAudit` with `change_source` and `script_name`.
+- Call `db.setAuditContext(changeSource, scriptName)` at script startup. Valid sources: `pipeline`, `admin`, `user`, `llm`, `migration`.
+- EVERY spot and venue mutation is wrapped in a transaction with its audit log write.
+
+### Venue ID Rules
+- Google Place IDs are stored in `google_place_id` column, not as the primary key.
+- All internally-generated venue IDs use `ven_NNNN` format via `db.venues.generateId()` or `generateVenueId()`.
+- NEVER generate venue IDs ad-hoc (`pin_*`, `manual_*`, `lm_*` patterns are banned).
+
+### LLM Integration Rules
+- LLM-resolved data is NEVER authoritative. Always write with `change_source='llm'`.
+- LLM writes MUST NOT overwrite `manual_override=1` data.
+- LLM writes MUST go through the DAL (no raw SQL).
+- All LLM queries that resolve times MUST filter `AND manual_override = 0`.
+
+### API Error Handling
+- All API routes MUST return `{ error: string, code: string }` for errors.
+- All API routes MUST log errors with request context (route, method).
+- Never return 500 with a raw error message — always sanitize.
 
 ## QUALITY GATE — BEFORE EVERY COMMIT
 

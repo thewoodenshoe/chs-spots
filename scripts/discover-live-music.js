@@ -9,54 +9,23 @@
  * Runs weekly (Wednesday 4am EST via cron).
  *
  * Usage: GOOGLE_PLACES_ENABLED=true node scripts/discover-live-music.js
- * Cost: ~$0.10/week (Grok API + geocoding)
  */
 
 const fs = require('fs');
 const path = require('path');
-const https = require('https');
 const db = require('./utils/db');
 const { parsePromotionTime } = require('./utils/time-parse');
 const { resolveMissingTimes } = require('./utils/llm-resolve-times');
+const { getPlacesApiKey, geocodePlace, downloadPlacePhoto, sendTelegram } = require('./utils/google-places');
+const { createLogger } = require('./utils/logger');
 
-// ── Logging ─────────────────────────────────────────────────────
+const { log, warn, close: closeLog } = createLogger('discover-live-music');
 
-const logDir = path.join(__dirname, '..', 'logs');
-if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
-const logPath = path.join(logDir, 'discover-live-music.log');
-fs.writeFileSync(logPath, '', 'utf8');
-
-function log(msg) {
-  const ts = new Date().toISOString();
-  console.log(msg);
-  fs.appendFileSync(logPath, `[${ts}] ${msg}\n`);
-}
-
-// ── Environment ─────────────────────────────────────────────────
-
-// dotenv is optional — env vars may already be set by the shell or PM2
 try {
   require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') });
-} catch { /* dotenv not installed in production; env vars set by PM2 */ }
-
-const GOOGLE_MAPS_API_KEY =
-  process.env.GOOGLE_PLACES_SERVER_KEY ||
-  process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY ||
-  process.env.GOOGLE_PLACES_KEY;
+} catch { /* dotenv not installed in production */ }
 
 const { webSearch, getApiKey } = require('./utils/llm-client');
-
-const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
-const TELEGRAM_CHAT = process.env.TELEGRAM_ADMIN_CHAT_ID || '';
-
-if (!GOOGLE_MAPS_API_KEY) {
-  log('Error: No Google Places API key found');
-  process.exit(1);
-}
-if (!getApiKey()) {
-  log('Error: No Grok API key found (GROK_API_KEY / XAI_API_KEY)');
-  process.exit(1);
-}
 
 const VALID_AREAS = [
   'Downtown Charleston', 'Mount Pleasant', 'Daniel Island',
@@ -64,93 +33,7 @@ const VALID_AREAS = [
 ];
 const TODAY = new Date().toISOString().split('T')[0];
 
-// ── Helpers ─────────────────────────────────────────────────────
-
-function fetchJson(url) {
-  return new Promise((resolve, reject) => {
-    https.get(url, (res) => {
-      let data = '';
-      res.on('data', (c) => (data += c));
-      res.on('end', () => {
-        try { resolve(JSON.parse(data)); }
-        catch (e) { reject(new Error(`JSON parse error: ${e.message}`)); }
-      });
-    }).on('error', reject);
-  });
-}
-
-function downloadFile(url, dest) {
-  return new Promise((resolve, reject) => {
-    const file = fs.createWriteStream(dest);
-    https.get(url, (res) => {
-      if (res.statusCode === 302 || res.statusCode === 301) {
-        file.close();
-        fs.unlinkSync(dest);
-        return downloadFile(res.headers.location, dest).then(resolve).catch(reject);
-      }
-      res.pipe(file);
-      file.on('finish', () => { file.close(); resolve(); });
-    }).on('error', (e) => { fs.unlinkSync(dest); reject(e); });
-  });
-}
-
-async function geocode(name, address) {
-  const query = encodeURIComponent(`${name} ${address || 'Charleston SC'}`);
-  const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&key=${GOOGLE_MAPS_API_KEY}`;
-  const data = await fetchJson(url);
-  if (!data.results?.length) return null;
-  const place = data.results[0];
-  return {
-    lat: place.geometry.location.lat,
-    lng: place.geometry.location.lng,
-    placeId: place.place_id,
-  };
-}
-
-async function fetchPlacePhoto(placeId, spotId) {
-  const spotsDir = path.join(__dirname, '..', 'public', 'spots');
-  if (!fs.existsSync(spotsDir)) fs.mkdirSync(spotsDir, { recursive: true });
-  const dest = path.join(spotsDir, `${spotId}.jpg`);
-  if (fs.existsSync(dest)) return `/spots/${spotId}.jpg`;
-
-  const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=photos&key=${GOOGLE_MAPS_API_KEY}`;
-  const detail = await fetchJson(detailUrl);
-  const photoRef = detail?.result?.photos?.[0]?.photo_reference;
-  if (!photoRef) return null;
-
-  const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${photoRef}&key=${GOOGLE_MAPS_API_KEY}`;
-  await downloadFile(photoUrl, dest);
-  log(`  Downloaded photo → /spots/${spotId}.jpg`);
-  return `/spots/${spotId}.jpg`;
-}
-
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-async function sendTelegram(text) {
-  if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT) return;
-  try {
-    const payload = JSON.stringify({ chat_id: TELEGRAM_CHAT, text, parse_mode: 'HTML' });
-    await new Promise((resolve, reject) => {
-      const req = https.request({
-        hostname: 'api.telegram.org',
-        path: `/bot${TELEGRAM_TOKEN}/sendMessage`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) },
-      }, (res) => {
-        let d = '';
-        res.on('data', c => d += c);
-        res.on('end', () => resolve(d));
-      });
-      req.on('error', reject);
-      req.write(payload);
-      req.end();
-    });
-  } catch (e) {
-    log(`  Telegram send failed: ${e.message}`);
-  }
-}
-
-// ── Grok Discovery ──────────────────────────────────────────────
 
 async function discoverViaGrok() {
   const prompt = `Search the web for bars, restaurants, breweries, distilleries, music halls, and other venues in the Charleston, South Carolina metro area that regularly host live music performances, concerts, or DJ sets.
@@ -166,13 +49,11 @@ Return a JSON array of objects with these columns:
 Only include venues in the greater Charleston SC area. Include bars with regular live music, dedicated music venues, breweries with live acts, restaurants with regular performers. Do NOT include one-time event spaces or venues that only occasionally host music. Maximum 40 results.`;
 
   log('Calling Grok API with web_search...');
-
   const result = await webSearch({ prompt, timeoutMs: 120000, log });
   if (!result?.parsed || !Array.isArray(result.parsed)) {
     log('Grok API returned no valid JSON array');
     return [];
   }
-
   const valid = result.parsed
     .filter(item => item.venue && item.description)
     .slice(0, 40)
@@ -184,23 +65,20 @@ Only include venues in the greater Charleston SC area. Include bars with regular
       schedule: (item.schedule || '').trim() || null,
       website: (item.website || '').trim() || null,
     }));
-
   log(`Grok API: ${result.parsed.length} results, ${valid.length} valid`);
   return valid;
 }
 
-// ── Main ────────────────────────────────────────────────────────
-
 async function main() {
   const { acquire: acquireLock, release: releaseLock } = require('./utils/pipeline-lock');
   const lock = acquireLock('discover-live-music');
-  if (!lock.acquired) {
-    log(`🔒 Pipeline locked by ${lock.holder} (PID ${lock.pid}). Waiting for next run.`);
-    process.exit(0);
-  }
+  if (!lock.acquired) { log(`Pipeline locked by ${lock.holder}. Exiting.`); process.exit(0); }
+
+  if (!getPlacesApiKey()) { log('Error: No Google Places API key'); releaseLock(); process.exit(1); }
+  if (!getApiKey()) { log('Error: No Grok API key'); releaseLock(); process.exit(1); }
 
   const startTime = Date.now();
-  log('=== Live Music Discovery ===\n');
+  log('=== Live Music Discovery ===');
 
   const database = db.getDb();
   db.activities.upsert({ name: 'Live Music', icon: 'Music', emoji: '🎵', color: '#e11d48', community_driven: 0 });
@@ -208,176 +86,110 @@ async function main() {
   const grokVenues = await discoverViaGrok();
   if (grokVenues.length === 0) {
     log('No venues found from Grok API');
-    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    await sendTelegram(`🎵 Live Music Discovery\nNo new venues found.\nElapsed: ${elapsed}s`);
-    releaseLock();
-    db.closeDb();
-    return;
+    await sendTelegram('🎵 Live Music Discovery\nNo new venues found.');
+    releaseLock(); closeLog(); db.closeDb(); return;
   }
 
-  // Load existing Live Music spots for dedup
-  const existingSpots = database.prepare(
-    "SELECT title FROM spots WHERE type = 'Live Music' AND status = 'approved'"
-  ).all();
+  const existingSpots = database.prepare("SELECT title FROM spots WHERE type = 'Live Music' AND status = 'approved'").all();
   const existingTitles = new Set(existingSpots.map(s => s.title.toLowerCase()));
-
-  // Load watchlist to skip excluded venues
   const excludedIds = db.watchlist.getExcludedIds();
-  const excludedNames = new Set(
-    db.watchlist.getExcluded().map(w => (w.name || '').toLowerCase().trim()).filter(Boolean)
-  );
-
-  // Also check venue names for photo reuse
+  const excludedNames = new Set(db.watchlist.getExcluded().map(w => (w.name || '').toLowerCase().trim()).filter(Boolean));
   const allVenues = db.venues.getAll();
   const venuesByName = new Map();
-  for (const v of allVenues) {
-    venuesByName.set(v.name?.toLowerCase(), v);
-  }
+  for (const v of allVenues) venuesByName.set(v.name?.toLowerCase(), v);
 
   let inserted = 0;
   const insertedNames = [];
 
   for (const venue of grokVenues) {
     if (existingTitles.has(venue.name.toLowerCase())) continue;
-    if (excludedNames.has(venue.name.toLowerCase())) {
-      log(`  SKIP (watchlist excluded): ${venue.name}`);
-      continue;
-    }
+    if (excludedNames.has(venue.name.toLowerCase())) { log(`  SKIP (excluded): ${venue.name}`); continue; }
 
-    // Try venue match for photo/coords reuse
     const existingVenue = venuesByName.get(venue.name.toLowerCase());
-    let lat, lng, placeId, photoUrl;
+    if (existingVenue && excludedIds.has(existingVenue.id)) { log(`  SKIP (venue excluded): ${venue.name}`); continue; }
 
-    if (existingVenue && excludedIds.has(existingVenue.id)) {
-      log(`  SKIP (venue watchlisted): ${venue.name}`);
-      continue;
-    }
-
+    let lat, lng, placeId;
     if (existingVenue) {
-      lat = existingVenue.lat;
-      lng = existingVenue.lng;
-      placeId = existingVenue.id;
-      if (existingVenue.photo_url) {
-        const fullPath = path.join(__dirname, '..', 'public', existingVenue.photo_url);
-        photoUrl = fs.existsSync(fullPath) ? existingVenue.photo_url : null;
-      }
+      lat = existingVenue.lat; lng = existingVenue.lng; placeId = existingVenue.id;
       log(`  REUSE: ${venue.name}`);
     } else {
-      if (process.env.GOOGLE_PLACES_ENABLED !== 'true') {
-        log(`  SKIP (no geocoding): ${venue.name}`);
-        continue;
-      }
-      const geo = await geocode(venue.name, venue.address);
-      if (!geo) {
-        log(`  SKIP (geocode failed): ${venue.name}`);
-        continue;
-      }
-      lat = geo.lat;
-      lng = geo.lng;
-      placeId = geo.placeId;
+      if (process.env.GOOGLE_PLACES_ENABLED !== 'true') { log(`  SKIP (no geocoding): ${venue.name}`); continue; }
+      const geo = await geocodePlace(venue.name, venue.address);
+      if (!geo) { log(`  SKIP (geocode failed): ${venue.name}`); continue; }
+      lat = geo.lat; lng = geo.lng; placeId = geo.placeId;
       log(`  GEOCODED: ${venue.name} → ${lat}, ${lng}`);
       await sleep(250);
     }
 
-    const area = venue.area || (existingVenue?.area) || 'Downtown Charleston';
-
-    const parsed = parsePromotionTime(venue.schedule);
-    const spotId = db.spots.insert({
-      venue_id: existingVenue?.id || null,
-      title: venue.name,
-      type: 'Live Music',
-      source: 'automated',
-      status: 'approved',
-      description: venue.description,
-      promotion_time: venue.schedule,
-      time_start: parsed.timeStart,
-      time_end: parsed.timeEnd,
-      days: parsed.days,
-      source_url: venue.website,
-      lat,
-      lng,
-      area,
-      last_update_date: TODAY,
-    });
-
-    if (!photoUrl && placeId) {
-      try {
-        photoUrl = await fetchPlacePhoto(placeId, spotId);
-        if (photoUrl) {
-          database.prepare("UPDATE spots SET photo_url = ? WHERE id = ?").run(photoUrl, spotId);
-        }
-        await sleep(300);
-      } catch (e) {
-        log(`  Photo failed for ${venue.name}: ${e.message}`);
-      }
-    } else if (photoUrl) {
-      database.prepare("UPDATE spots SET photo_url = ? WHERE id = ?").run(photoUrl, spotId);
+    const area = venue.area || existingVenue?.area || 'Downtown Charleston';
+    const venueId = existingVenue?.id || placeId || `lm_${venue.name.toLowerCase().replace(/\s+/g, '_').slice(0, 30)}`;
+    if (!existingVenue) {
+      db.venues.upsert({ id: venueId, name: venue.name, address: venue.address, lat, lng, area, website: venue.website });
     }
 
-    log(`  INSERT #${spotId}: ${venue.name} (${area})`);
+    if (!existingVenue?.photo_url && placeId) {
+      try {
+        const photoPath = await downloadPlacePhoto(placeId, venueId, log);
+        if (photoPath) db.venues.updatePhotoUrl(venueId, photoPath);
+        await sleep(300);
+      } catch (e) { log(`  Photo failed for ${venue.name}: ${e.message}`); }
+    }
+
+    const parsed = parsePromotionTime(venue.schedule);
+    db.spots.insert({
+      venue_id: venueId, title: venue.name, type: 'Live Music', source: 'automated', status: 'approved',
+      description: venue.description, promotion_time: venue.schedule,
+      time_start: parsed.timeStart, time_end: parsed.timeEnd, days: parsed.days,
+      source_url: venue.website, last_update_date: TODAY,
+    });
+    log(`  INSERT: ${venue.name} (${area})`);
     inserted++;
     insertedNames.push(venue.name);
     existingTitles.add(venue.name.toLowerCase());
   }
 
-  // LLM fallback: resolve missing times for newly inserted spots
   let timeResolved = 0;
-  let timeUnresolved = 0;
-  const unresolvedNames = [];
+  let unresolvedNames = [];
   if (inserted > 0 && getApiKey()) {
     try {
       const missingTimes = database.prepare(
-        "SELECT id, title, type, promotion_time, source_url FROM spots " +
-        "WHERE type = 'Live Music' AND status = 'approved' AND time_start IS NULL AND time_end IS NULL " +
-        "AND last_update_date = ? LIMIT 20",
+        "SELECT id, title, type, promotion_time, source_url FROM spots WHERE type = 'Live Music' AND status = 'approved' AND time_start IS NULL AND time_end IS NULL AND last_update_date = ? LIMIT 20",
       ).all(TODAY);
-
       if (missingTimes.length > 0) {
-        log(`\n🕐 LLM time resolution: ${missingTimes.length} new Live Music spot(s) missing times...`);
-        const spotsForResolution = missingTimes.map(r => ({
-          id: r.id, title: r.title, type: r.type,
-          promotionTime: r.promotion_time, sourceUrl: r.source_url,
-        }));
-        const { resolved, unresolved } = await resolveMissingTimes(spotsForResolution, getApiKey(), log);
-
+        log(`LLM time resolution: ${missingTimes.length} spot(s) missing times...`);
+        const { resolved, unresolved } = await resolveMissingTimes(
+          missingTimes.map(r => ({ id: r.id, title: r.title, type: r.type, promotionTime: r.promotion_time, sourceUrl: r.source_url })),
+          getApiKey(), log,
+        );
         for (const r of resolved) {
-          database.prepare(
-            'UPDATE spots SET time_start = ?, time_end = ?, days = COALESCE(?, days) WHERE id = ?',
-          ).run(r.timeStart, r.timeEnd, r.days, r.id);
+          db.spots.update(r.id, {
+            time_start: r.timeStart, time_end: r.timeEnd, days: r.days || null,
+          });
         }
         timeResolved = resolved.length;
-        timeUnresolved = unresolved.length;
-        unresolvedNames.push(...unresolved.map(u => u.title));
-
-        if (resolved.length > 0) log(`  ✅ Resolved times for ${resolved.length} spot(s)`);
-        if (unresolved.length > 0) log(`  ❌ Couldn't resolve times for ${unresolved.length} spot(s): ${unresolvedNames.join(', ')}`);
+        unresolvedNames = unresolved.map(u => u.title);
       }
-    } catch (err) {
-      log(`  ⚠️  LLM time resolution failed: ${err.message}`);
-    }
+    } catch (err) { warn(`LLM time resolution failed: ${err.message}`); }
   }
 
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-  log(`\nDone: ${inserted} new venues added, ${grokVenues.length} checked. Elapsed: ${elapsed}s`);
+  log(`Done: ${inserted} new, ${grokVenues.length} checked. Elapsed: ${elapsed}s`);
 
   const msg = [
-    '🎵 <b>Live Music Discovery</b>',
-    '',
-    `Grok found: ${grokVenues.length} venues`,
-    `New additions: ${inserted}`,
+    '🎵 <b>Live Music Discovery</b>', '',
+    `Grok found: ${grokVenues.length} venues`, `New additions: ${inserted}`,
     inserted > 0 ? `\nNew: ${insertedNames.join(', ')}` : '',
-    timeResolved > 0 ? `\nTimes resolved by LLM: ${timeResolved}` : '',
-    timeUnresolved > 0 ? `\n⚠️ Couldn't find times: ${unresolvedNames.join(', ')}` : '',
-    `\nElapsed: ${elapsed}s`,
+    timeResolved > 0 ? `Times resolved: ${timeResolved}` : '',
+    unresolvedNames.length > 0 ? `⚠️ No times: ${unresolvedNames.join(', ')}` : '',
+    `Elapsed: ${elapsed}s`,
   ].filter(Boolean).join('\n');
   await sendTelegram(msg);
 
-  releaseLock();
-  db.closeDb();
+  releaseLock(); closeLog(); db.closeDb();
 }
 
 main().catch(e => {
   console.error('Fatal:', e);
-  try { require('./utils/pipeline-lock').release(); } catch {}
+  try { require('./utils/pipeline-lock').release(); } catch (_err) { /* already released */ }
   process.exit(1);
 });

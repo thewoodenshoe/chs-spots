@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * One-shot backfill: scan existing "Recently Opened" and "Coming Soon" spots
+ * One-shot backfill: scan venues with venue_status='recently_opened'
  * for secondary activity-type signals and create cross-tagged spots.
  *
  * Usage: node scripts/backfill-cross-tags.js [--dry-run]
@@ -12,51 +12,45 @@ const { detectSecondaryTypes } = require('./utils/activity-tagger');
 const DRY_RUN = process.argv.includes('--dry-run');
 
 async function main() {
-  const spots = db.getDb().prepare(
-    "SELECT * FROM spots WHERE type = 'Recently Opened' AND source = 'automated'",
-  ).all();
-
-  console.log(`Scanning ${spots.length} spots for cross-tagging…`);
+  const venues = db.venues.getByStatus('recently_opened');
+  console.log(`Scanning ${venues.length} recently_opened venue(s) for cross-tagging…`);
 
   let created = 0;
   let skipped = 0;
 
-  for (const spot of spots) {
-    const text = `${spot.title} ${spot.description || ''}`;
-    const secondaryTypes = detectSecondaryTypes(text, spot.type);
+  for (const venue of venues) {
+    const text = `${venue.name} ${venue.types || ''}`;
+    const secondaryTypes = detectSecondaryTypes(text, 'Recently Opened');
 
     for (const secType of secondaryTypes) {
       const exists = db.getDb().prepare(
-        'SELECT id FROM spots WHERE venue_id = ? AND type = ? AND title = ?',
-      ).get(spot.venue_id, secType, spot.title);
+        'SELECT id FROM spots WHERE venue_id = ? AND type = ?',
+      ).get(venue.id, secType);
 
       if (exists) {
         skipped++;
-        console.log(`  ⏭️  ${spot.title} already has [${secType}] (#${exists.id})`);
+        console.log(`  ⏭️  ${venue.name} already has [${secType}] (#${exists.id})`);
         continue;
       }
 
       if (DRY_RUN) {
-        console.log(`  🏷️  [DRY] Would create: ${spot.title} [${secType}]`);
+        console.log(`  🏷️  [DRY] Would create: ${venue.name} [${secType}]`);
         created++;
         continue;
       }
 
       const newId = db.spots.insert({
-        venue_id: spot.venue_id,
-        title: spot.title,
+        venue_id: venue.id,
+        title: venue.name,
         type: secType,
         source: 'automated',
         status: 'approved',
-        description: spot.description,
-        source_url: spot.source_url,
-        lat: spot.lat,
-        lng: spot.lng,
-        area: spot.area,
-        last_update_date: spot.last_update_date,
+        description: null,
+        source_url: venue.website || null,
+        last_update_date: new Date().toISOString().slice(0, 10),
       });
       created++;
-      console.log(`  🏷️  #${newId}: ${spot.title} [${secType}]`);
+      console.log(`  🏷️  #${newId}: ${venue.name} [${secType}]`);
     }
   }
 

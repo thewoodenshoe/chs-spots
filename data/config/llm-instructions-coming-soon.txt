@@ -61,3 +61,7 @@ If the venue doesn't clearly fall into one of these areas, use the closest match
 4. Be thorough — aim for 30-50 results.
 5. Do NOT include venues that closed permanently.
 6. The address is critical — always try to find the full street address. Search Google Maps, permit filings, or news articles for the address even if the announcement doesn't include it.
+
+## Important context
+
+Results are stored as venue records with `venue_status` = "coming_soon" or "recently_opened". A nightly check re-queries each coming_soon venue to determine if it has opened (transitioning to recently_opened), and recently_opened venues age out to "active" after 90 days. Accurate classification and expected_open dates directly affect this lifecycle.

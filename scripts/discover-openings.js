@@ -57,8 +57,9 @@ async function discoverViaGrok() {
   return valid;
 }
 
-function upsertVenueFromGeocode(geocoded, area) {
+function upsertVenueFromGeocode(geocoded, area, classification, expectedOpen) {
   if (!geocoded.placeId) return null;
+  const venueStatus = classification === 'Recently Opened' ? 'recently_opened' : 'coming_soon';
   db.venues.upsert({
     id: geocoded.placeId,
     name: geocoded.name,
@@ -68,20 +69,23 @@ function upsertVenueFromGeocode(geocoded, area) {
     area: area || null,
     website: geocoded.website || null,
     types: Array.isArray(geocoded.types) ? geocoded.types.join(', ') : null,
+    venue_status: venueStatus,
+    venue_added_at: new Date().toISOString().slice(0, 10),
   });
+  if (expectedOpen) {
+    db.venues.updateStatus(geocoded.placeId, venueStatus, expectedOpen);
+  }
   return geocoded.placeId;
 }
 
-function cleanupExpiredSpots() {
-  const now = Date.now();
-  const recentExpiry = new Date(now - RECENTLY_OPENED_EXPIRY_DAYS * 86400000).toISOString().split('T')[0];
-  const soonExpiry = new Date(now - COMING_SOON_EXPIRY_DAYS * 86400000).toISOString().split('T')[0];
-  const roCount = db.spots.archiveByType('Recently Opened', 'last_update_date < ?', [recentExpiry]);
-  const csCount = db.spots.archiveByType('Coming Soon', 'last_update_date < ?', [soonExpiry]);
-  if (roCount > 0) log(`Archived ${roCount} expired "Recently Opened" spots`);
-  if (csCount > 0) log(`Archived ${csCount} expired "Coming Soon" spots`);
-  if (roCount === 0 && csCount === 0) log('No expired spots to archive');
-  return roCount + csCount;
+function ageOutOldVenueStatuses() {
+  const rawDb = db.getDb();
+  const threeMonthsAgo = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
+  const aged = rawDb.prepare(
+    "UPDATE venues SET venue_status = 'active', updated_at = datetime('now') WHERE venue_status = 'recently_opened' AND venue_added_at < ?",
+  ).run(threeMonthsAgo);
+  if (aged.changes > 0) log(`Aged out ${aged.changes} "recently_opened" venues to active`);
+  return aged.changes;
 }
 
 async function sendTelegram(stats) {
@@ -190,36 +194,26 @@ async function main() {
         if (!description && enriched.description) description = enriched.description;
       }
     }
-    const venueId = upsertVenueFromGeocode(spot, area);
+    const venueId = upsertVenueFromGeocode(spot, area, spot.classification, spot.expectedOpen);
     const spotTitle = spot.restaurantName || spot.placeName;
     try {
-      const newId = db.spots.insert({
-        venue_id: venueId, title: spotTitle, type: spot.classification,
-        source: 'automated', status: 'approved', description,
-        source_url: spot.website || null, lat: spot.lat, lng: spot.lng,
-        area: area || 'Downtown Charleston', last_update_date: today,
-      });
       if (spot.placeId) {
-        const photoPath = await fetchPlacePhoto(spot.placeId, newId);
-        if (photoPath) db.getDb().prepare('UPDATE spots SET photo_url = ? WHERE id = ?').run(photoPath, newId);
+        const photoPath = await fetchPlacePhoto(spot.placeId, spotTitle);
+        if (photoPath) db.venues.updatePhotoUrl(venueId, photoPath);
+      }
+      if (description) {
+        db.getDb().prepare(
+          "UPDATE venues SET submitter_name = COALESCE(submitter_name, 'discovery'), updated_at = datetime('now') WHERE id = ?",
+        ).run(venueId);
       }
       insertedCount++;
       insertedNames.push(`${spot.classification === 'Recently Opened' ? 'NEW' : 'SOON'} ${spotTitle} (${area || 'Downtown Charleston'})`);
-      log(`#${newId}: ${spotTitle} [${spot.classification}] -> ${area || 'Downtown Charleston'}`);
-      if (spot.classification === 'Recently Opened') {
-        for (const secType of detectSecondaryTypes(`${spotTitle} ${description}`, spot.classification)) {
-          try {
-            db.spots.insert({ venue_id: venueId, title: spotTitle, type: secType, source: 'automated',
-              status: 'approved', description, source_url: spot.website || null,
-              lat: spot.lat, lng: spot.lng, area: area || 'Downtown Charleston', last_update_date: today });
-          } catch (secErr) { warn(`Cross-tag "${secType}" failed for "${spotTitle}": ${secErr.message}`); }
-        }
-      }
-    } catch (err) { error(`Failed to insert "${spotTitle}": ${err.message}`); }
+      log(`Venue ${venueId}: ${spotTitle} [${spot.classification}] -> ${area || 'Downtown Charleston'}`);
+    } catch (err) { error(`Failed to process "${spotTitle}": ${err.message}`); }
   }
 
-  log(`Inserted ${insertedCount} new spot(s)`);
-  const cleanedUp = cleanupExpiredSpots();
+  log(`Processed ${insertedCount} new venue(s)`);
+  const cleanedUp = ageOutOldVenueStatuses();
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
   log(`Discovery complete in ${elapsed}s`);
 

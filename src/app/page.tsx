@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { spots, venues, activitiesDb, areasDb, type SpotRow, type VenueRow } from '@/lib/db';
+import { spots, venues, activitiesDb, areasDb, type VenueRow } from '@/lib/db';
+import { buildVenueMap } from '@/lib/transform-spot';
 import Link from 'next/link';
 import HomeClient from './HomeClient';
 import { slugify } from '@/utils/seo-helpers';
@@ -8,35 +9,31 @@ export const metadata: Metadata = {
   alternates: { canonical: 'https://chsfinds.com' },
 };
 
-function transformSpot(spot: SpotRow, venueMap: Map<string, VenueRow>) {
-  const venue = spot.venue_id ? venueMap.get(spot.venue_id) : undefined;
-  return {
-    id: spot.id,
-    title: spot.title,
-    type: spot.type,
-    area: venue?.area || spot.area || 'Charleston',
-    promotionTime: spot.promotion_time || null,
-    description: spot.description || '',
-  };
-}
-
 export default function HomePage() {
   const allSpots = spots.getAll({ visibleOnly: true });
   const allVenues = venues.getAll();
   const activities = activitiesDb.getAll().filter(a => !a.hidden);
   const areas = areasDb.getNames();
-
-  const venueMap = new Map<string, VenueRow>();
-  for (const v of allVenues) venueMap.set(v.id, v);
+  const venueMap = buildVenueMap(allVenues);
 
   const spotsByType: Record<string, number> = {};
   for (const s of allSpots) {
     spotsByType[s.type] = (spotsByType[s.type] || 0) + 1;
   }
+  const csCount = allVenues.filter(v => v.venue_status === 'coming_soon').length;
+  const roCount = allVenues.filter(v => v.venue_status === 'recently_opened').length;
+  if (csCount > 0) spotsByType['Coming Soon'] = csCount;
+  if (roCount > 0) spotsByType['Recently Opened'] = roCount;
 
-  const featured = allSpots
-    .slice(0, 30)
-    .map(s => transformSpot(s, venueMap));
+  const featured = allSpots.slice(0, 30).map(s => {
+    const v = s.venue_id ? venueMap.get(s.venue_id) : undefined;
+    return {
+      id: s.id, title: s.title, type: s.type,
+      area: v?.area || s.area || 'Charleston',
+      promotionTime: s.promotion_time || null,
+      description: s.description || '',
+    };
+  });
 
   const exploreLinks = activities.flatMap(a =>
     areas.slice(0, 3).map(area => ({
@@ -48,8 +45,6 @@ export default function HomePage() {
   return (
     <>
       <HomeClient />
-
-      {/* Server-rendered content for search engine crawlers */}
       <article className="mx-auto max-w-3xl px-6 py-12 text-gray-800">
         <h1 className="text-3xl font-bold mb-4">
           CHS Finds &mdash; Real-Time Happy Hours, Brunch, Rooftops &amp; Live Music in Charleston SC
@@ -65,15 +60,11 @@ export default function HomePage() {
         <ul className="grid grid-cols-2 gap-3 mb-8">
           {activities.map(a => (
             <li key={a.name}>
-              <Link
-                href={`/explore/${slugify(a.name)}-in-downtown-charleston`}
-                className="text-teal-700 hover:underline font-semibold"
-              >
+              <Link href={`/explore/${slugify(a.name)}-in-downtown-charleston`}
+                className="text-teal-700 hover:underline font-semibold">
                 {a.emoji} {a.name}
               </Link>
-              <span className="text-gray-500 ml-1">
-                ({spotsByType[a.name] || 0} spots)
-              </span>
+              <span className="text-gray-500 ml-1">({spotsByType[a.name] || 0} spots)</span>
             </li>
           ))}
         </ul>
@@ -86,14 +77,9 @@ export default function HomePage() {
                 <h3 className="font-semibold text-sm">{s.title}</h3>
               </Link>
               <p className="text-xs text-gray-500">
-                {s.type} in {s.area}
-                {s.promotionTime ? ` · ${s.promotionTime}` : ''}
+                {s.type} in {s.area}{s.promotionTime ? ` · ${s.promotionTime}` : ''}
               </p>
-              {s.description && (
-                <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">
-                  {s.description}
-                </p>
-              )}
+              {s.description && <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{s.description}</p>}
             </li>
           ))}
         </ul>
@@ -102,9 +88,7 @@ export default function HomePage() {
         <ul className="grid grid-cols-2 gap-2 mb-8 text-sm">
           {exploreLinks.map(l => (
             <li key={l.href}>
-              <Link href={l.href} className="text-teal-600 hover:underline">
-                {l.label}
-              </Link>
+              <Link href={l.href} className="text-teal-600 hover:underline">{l.label}</Link>
             </li>
           ))}
         </ul>

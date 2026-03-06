@@ -211,6 +211,8 @@ describe('DAL: watchlist', () => {
   });
 
   test('getFlaggedIds returns flagged venues', () => {
+    db.venues.upsert({ id: 'v1', name: 'V1', lat: 32.78, lng: -79.93 });
+    db.venues.upsert({ id: 'v2', name: 'V2', lat: 32.78, lng: -79.93 });
     db.watchlist.upsert({ venue_id: 'v1', name: 'Flagged', status: 'flagged' });
     db.watchlist.upsert({ venue_id: 'v2', name: 'Excluded', status: 'excluded' });
     expect(db.watchlist.getFlaggedIds().size).toBe(1);
@@ -241,6 +243,9 @@ describe('DAL: streaks', () => {
   });
 
   test('getAll ordered by streak desc', () => {
+    db.venues.upsert({ id: 'v1', name: 'V1', lat: 32.78, lng: -79.93 });
+    db.venues.upsert({ id: 'v2', name: 'V2', lat: 32.78, lng: -79.93 });
+    db.venues.upsert({ id: 'v3', name: 'V3', lat: 32.78, lng: -79.93 });
     db.streaks.upsert('v1', 'HH', 'A', '2026-02-11', 5);
     db.streaks.upsert('v2', 'HH', 'B', '2026-02-11', 2);
     db.streaks.upsert('v3', 'HH', 'C', '2026-02-11', 8);

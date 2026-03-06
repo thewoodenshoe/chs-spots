@@ -198,7 +198,7 @@ export default function SpotDetailSections({
         </div>
 
         {spot.photoUrl ? (
-          <div className="relative h-28 w-full overflow-hidden rounded-lg mb-2 bg-gray-100">
+          <div className="relative aspect-video w-full overflow-hidden rounded-lg mb-2 bg-gray-100">
             {spot.photoUrl.startsWith('data:') ? (
               // eslint-disable-next-line @next/next/no-img-element -- data URI preview
               <img src={spot.photoUrl} alt={spot.title} className="h-full w-full object-cover" />

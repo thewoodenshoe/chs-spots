@@ -31,7 +31,7 @@ A live map for discovering Charleston, SC — happy hours, brunch, live music, r
 | AI extraction | Grok API (xAI) — extraction + web search |
 | Admin | Telegram Bot API + local web admin UI |
 | Analytics | Umami (self-hosted) |
-| Hosting | Ubuntu server, PM2, Nginx, rsync deploys |
+| Hosting | Ubuntu server, PM2, Nginx, git-pull deploys |
 
 ## Quick Start
 
@@ -62,6 +62,8 @@ npm run admin        # Local admin UI: query/update spots (http://localhost:3456
 | `TELEGRAM_BOT_TOKEN` | Telegram bot token for admin notifications |
 | `TELEGRAM_ADMIN_CHAT_ID` | Admin Telegram chat ID |
 | `ADMIN_API_KEY` | Admin auth key for edit/delete |
+| `NEXT_PUBLIC_UMAMI_WEBSITE_ID` | Umami analytics website ID |
+| `NEXT_PUBLIC_UMAMI_URL` | Umami analytics script URL |
 
 ## Pages & Routes
 
@@ -172,7 +174,12 @@ chs-spots/
 │   │   ├── run-biweekly-seed.sh     # Cron: venue discovery (1 AM)
 │   │   └── run-monthly-hours.sh     # Cron: operating hours refresh
 │   ├── utils/
-│   │   ├── db.js                    # Script-side DAL
+│   │   ├── db.js                    # Script-side DAL (re-export hub)
+│   │   ├── db-core.js               # Connection, audit, syncActivityFlags, generateVenueId
+│   │   ├── db-venues.js             # Venue CRUD, upsert, updateStatus
+│   │   ├── db-spots.js              # Spot CRUD, upsertAutomated, manual_override guards
+│   │   ├── db-support.js            # Gold extractions, areas, activities, watchlist
+│   │   ├── db-pipeline.js           # Pipeline state, runs, streaks, audit queries
 │   │   ├── config.js                # Pipeline state + watchlist
 │   │   ├── data-dir.js              # Path resolution
 │   │   ├── normalize.js             # Text normalization
@@ -212,14 +219,24 @@ chs-spots/
 - Per-page canonical URLs, keywords, and OpenGraph metadata
 - WebSite schema with SearchAction on root layout
 
+## Data Architecture
+
+**Master-detail**: `venues` is the single source of truth for geo data, address, phone, website, photo. `spots` are activity-specific details always linked via `venue_id NOT NULL`.
+
+| Concept | Implementation |
+|---------|---------------|
+| Venue status | `venue_status` column: `active`, `coming_soon`, `recently_opened` |
+| Activity flags | Boolean columns on venues (`is_happy_hour`, `is_brunch`, etc.) auto-synced after spot mutations |
+| Audit trail | `audit_log` table with `change_source` (`pipeline`/`admin`/`user`/`llm`) and `script_name` |
+| Manual override | `manual_override=1` on spots protects human edits from automated overwrites |
+| Venue IDs | Sequential `ven_NNNN` format; Google Place IDs stored in `google_place_id` column |
+
 ## Deployment
 
 ```bash
-npm run build
-rsync -avz .next/ ubuntu:~/projects/chs-spots/.next/
-rsync -avz --exclude node_modules --exclude .next --exclude data --exclude .env.local ./ ubuntu:~/projects/chs-spots/
-rsync -avz scripts/ ubuntu:~/projects/chs-spots/scripts/
-ssh ubuntu "cd ~/projects/chs-spots && pm2 restart chs-spots"
+git push                                          # Push from laptop to GitHub
+ssh ubuntu "cd ~/projects/chs-spots && git pull"  # Pull on server
+ssh ubuntu "cd ~/projects/chs-spots && pm2 stop chs-spots && npm run build && pm2 restart chs-spots"
 ssh ubuntu "curl -s http://localhost:3000/api/health"
 ```
 

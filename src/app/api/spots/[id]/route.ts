@@ -3,7 +3,7 @@ import { sendEditApproval, sendDeleteApproval } from '@/lib/telegram';
 import { isAdminRequest } from '@/lib/auth';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import { updateSpotSchema, parseOrError } from '@/lib/validations';
-import { spots } from '@/lib/db';
+import { spots, venues } from '@/lib/db';
 import { invalidate } from '@/lib/cache';
 
 export async function DELETE(
@@ -89,9 +89,6 @@ export async function PUT(
         type: spotData.type || spotData.activity || existing.type || 'Happy Hour',
         photoUrl: spotData.photoUrl !== undefined ? spotData.photoUrl : existing.photo_url,
         editedAt: new Date().toISOString(),
-        lat: spotData.lat,
-        lng: spotData.lng,
-        area: spotData.area ?? existing.area,
         ...(existing.source === 'automated' ? { manualOverride: 1 } : {}),
       };
       if (spotData.promotionTime !== undefined) adminUpdate.promotion_time = spotData.promotionTime;
@@ -101,6 +98,15 @@ export async function PUT(
       if (spotData.days !== undefined) adminUpdate.days = Array.isArray(spotData.days) ? spotData.days.join(',') : (spotData.days || null);
       if (spotData.specificDate !== undefined) adminUpdate.specific_date = spotData.specificDate || null;
       if (spotData.sourceUrl !== undefined) adminUpdate.source_url = spotData.sourceUrl;
+
+      // Geo changes go to venue, not spot
+      if (existing.venue_id && (spotData.lat != null || spotData.lng != null || spotData.area != null)) {
+        const venueGeo: Record<string, unknown> = {};
+        if (spotData.lat != null) venueGeo.lat = spotData.lat;
+        if (spotData.lng != null) venueGeo.lng = spotData.lng;
+        if (spotData.area != null) venueGeo.area = spotData.area;
+        venues.update(existing.venue_id, venueGeo);
+      }
 
       spots.update(spotId, adminUpdate);
       invalidate('api:spots');
@@ -131,8 +137,9 @@ export async function PUT(
     if (pendingEdit.promotionTime && pendingEdit.promotionTime !== existing.promotion_time) changes.push(`When: ${pendingEdit.promotionTime}`);
     if (pendingEdit.promotionList) changes.push('Deals list updated');
     if (pendingEdit.sourceUrl && pendingEdit.sourceUrl !== existing.source_url) changes.push('Source link updated');
-    const oldLat = existing.lat ?? 0;
-    const oldLng = existing.lng ?? 0;
+    const existingVenue = existing.venue_id ? venues.getById(existing.venue_id) : null;
+    const oldLat = existingVenue?.lat ?? existing.lat ?? 0;
+    const oldLng = existingVenue?.lng ?? existing.lng ?? 0;
     if (pendingEdit.lat !== oldLat || pendingEdit.lng !== oldLng) {
       changes.push(`Location moved`);
     }

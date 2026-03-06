@@ -4,43 +4,18 @@ import { sendApprovalRequest } from '@/lib/telegram';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import { isAdminRequest } from '@/lib/auth';
 import { createSpotSchema, parseOrError } from '@/lib/validations';
-import { spots, venues, type SpotRow, type VenueRow } from '@/lib/db';
+import { spots, venues, type VenueRow } from '@/lib/db';
 import { findMatchingVenue } from '@/lib/venue-match';
-import { getCache, setCache, invalidate, safeJsonParse } from '@/lib/cache';
+import { getCache, setCache, invalidate } from '@/lib/cache';
+import { transformSpot, venueToSpot, buildVenueMap } from '@/lib/transform-spot';
 
 const SPOTS_CACHE_KEY = 'api:spots';
 const SPOTS_TTL = 30_000;
 
-function transformSpot(spot: SpotRow, venueMap: Map<string, VenueRow>) {
-  const venue = spot.venue_id ? venueMap.get(spot.venue_id) : undefined;
-  const transformed: any = {
-    id: spot.id,
-    lat: venue?.lat ?? spot.lat ?? 0,
-    lng: venue?.lng ?? spot.lng ?? 0,
-    title: spot.title,
-    description: spot.description || '',
-    type: spot.type || 'Happy Hour',
-    photoUrl: spot.photo_url || venue?.photo_url || undefined,
-    source: spot.source || 'automated',
-    status: spot.status || 'approved',
-    promotionTime: spot.promotion_time || undefined,
-    promotionList: spot.promotion_list ? safeJsonParse(spot.promotion_list) : undefined,
-    timeStart: spot.time_start || undefined,
-    timeEnd: spot.time_end || undefined,
-    days: spot.days ? spot.days.split(',').map(Number) : undefined,
-    specificDate: spot.specific_date || undefined,
-    sourceUrl: spot.source_url || undefined,
-    lastUpdateDate: spot.last_update_date || undefined,
-    lastVerifiedDate: spot.updated_at || spot.last_update_date || undefined,
-    venueId: spot.venue_id || undefined,
-    area: venue?.area || spot.area || undefined,
-    submitterName: spot.submitter_name || undefined,
-    venuePhone: venue?.phone || undefined,
-    venueAddress: venue?.address || undefined,
-    venueWebsite: venue?.website || undefined,
-    operatingHours: venue?.operating_hours ? safeJsonParse(venue.operating_hours) : undefined,
-  };
-  return transformed;
+function synthesizeStatusSpots(allVenues: VenueRow[]) {
+  return allVenues
+    .filter(v => v.venue_status === 'coming_soon' || v.venue_status === 'recently_opened')
+    .map(v => venueToSpot(v));
 }
 
 export async function GET(request: Request) {
@@ -54,30 +29,22 @@ export async function GET(request: Request) {
   try {
     if (!isAdmin) {
       const cached = getCache<any[]>(SPOTS_CACHE_KEY);
-      if (cached) {
-        return NextResponse.json(cached, {
-          headers: { 'X-Cache': 'HIT' },
-        });
-      }
+      if (cached) return NextResponse.json(cached, { headers: { 'X-Cache': 'HIT' } });
     }
 
-    const allSpots = isAdmin
-      ? spots.getAll()
-      : spots.getAll({ visibleOnly: true });
-
+    const allSpots = isAdmin ? spots.getAll() : spots.getAll({ visibleOnly: true });
     const allVenues = venues.getAll();
-    const venueMap = new Map<string, VenueRow>();
-    for (const v of allVenues) venueMap.set(v.id, v);
+    const venueMap = buildVenueMap(allVenues);
 
-    const transformed = allSpots.map(s => transformSpot(s, venueMap));
+    const transformed = allSpots
+      .filter(s => s.type !== 'Coming Soon' && s.type !== 'Recently Opened')
+      .map(s => transformSpot(s, venueMap));
 
-    if (!isAdmin) {
-      setCache(SPOTS_CACHE_KEY, transformed, SPOTS_TTL);
-    }
+    const statusSpots = synthesizeStatusSpots(allVenues);
+    const result = [...transformed, ...statusSpots];
 
-    return NextResponse.json(transformed, {
-      headers: { 'X-Cache': 'MISS' },
-    });
+    if (!isAdmin) setCache(SPOTS_CACHE_KEY, result, SPOTS_TTL);
+    return NextResponse.json(result, { headers: { 'X-Cache': 'MISS' } });
   } catch (error) {
     console.error('Error reading spots from database:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -125,13 +92,25 @@ export async function POST(request: Request) {
       if (venueMatch) {
         resolvedVenueId = venueMatch.venueId;
         venueName = venueMatch.venueName;
-        const matchedVenue = venues.getById(venueMatch.venueId);
-        resolvedArea = matchedVenue?.area || resolvedArea;
+        resolvedArea = venues.getById(venueMatch.venueId)?.area || resolvedArea;
+      } else {
+        const pinVenueId = `pin_${Date.now()}`;
+        venues.upsert({
+          id: pinVenueId,
+          name: spotData.title,
+          lat: spotData.lat,
+          lng: spotData.lng,
+          area: resolvedArea,
+        });
+        resolvedVenueId = pinVenueId;
+        venueName = spotData.title;
       }
     }
 
+    const spotTitle = resolvedVenueId ? (venueName || spotData.title) : spotData.title;
+
     const newId = spots.insert({
-      title: spotData.venueId ? (venueName || spotData.title) : spotData.title,
+      title: spotTitle,
       submitterName: spotData.submitterName,
       description: spotData.description || '',
       type: activityType,
@@ -139,9 +118,6 @@ export async function POST(request: Request) {
       source: 'manual',
       status: 'pending',
       submittedAt: new Date().toISOString(),
-      lat: spotData.lat ?? null,
-      lng: spotData.lng ?? null,
-      area: resolvedArea,
       venueId: resolvedVenueId,
       timeStart: spotData.timeStart || null,
       timeEnd: spotData.timeEnd || null,
@@ -157,7 +133,7 @@ export async function POST(request: Request) {
     try {
       await sendApprovalRequest({
         id: newId,
-        title: spotData.venueId ? (venueName || spotData.title) : spotData.title,
+        title: spotTitle,
         type: activityType,
         lat: spotData.lat ?? 0,
         lng: spotData.lng ?? 0,
@@ -169,18 +145,11 @@ export async function POST(request: Request) {
 
     invalidate(SPOTS_CACHE_KEY);
     return NextResponse.json({
-      id: newId,
-      title: spotData.venueId ? (venueName || spotData.title) : spotData.title,
-      type: activityType,
-      venueId: resolvedVenueId,
-      area: resolvedArea,
-      status: 'pending',
+      id: newId, title: spotTitle, type: activityType,
+      venueId: resolvedVenueId, area: resolvedArea, status: 'pending',
     }, { status: 201 });
   } catch (error) {
     console.error('Error adding spot:', error);
-    return NextResponse.json(
-      { error: 'Failed to add spot' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to add spot' }, { status: 500 });
   }
 }

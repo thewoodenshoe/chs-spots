@@ -140,7 +140,13 @@ async function main() {
       report.push({ title: seed.title, status: 'NO_MATCH', query: searchQuery });
 
       if (!dryRun) {
+        const venueId = `manual_${seed.title.toLowerCase().replace(/\s+/g, '_').slice(0, 30)}`;
+        db.venues.upsert({
+          id: venueId, name: seed.title, address: null,
+          lat: 0, lng: 0, area: seed.area || null,
+        });
         const spotId = db.spots.insert({
+          venue_id: venueId,
           title: seed.title,
           type: activityType,
           source: 'manual',
@@ -148,11 +154,8 @@ async function main() {
           description: seed.description || null,
           submitter_name: SUBMITTER,
           submitted_at: new Date().toISOString(),
-          lat: null,
-          lng: null,
-          area: seed.area || null,
         });
-        console.log(`  → Inserted without coords (id=${spotId})`);
+        console.log(`  → Inserted without coords (id=${spotId}, venue=${venueId})`);
         inserted++;
       }
       await delay(DELAY_MS);
@@ -180,7 +183,23 @@ async function main() {
       console.log(`     Photo: ${photoPath ? `${(photoBytes / 1024).toFixed(0)} KB` : 'none'}`);
       if (photoPath) fs.unlinkSync(photoPath);
     } else {
+      const venueId = place.placeId || `manual_${seed.title.toLowerCase().replace(/\s+/g, '_').slice(0, 30)}`;
+      db.venues.upsert({
+        id: venueId, name: place.name || seed.title,
+        address: place.address || null,
+        lat: place.lat, lng: place.lng,
+        area: seed.area || null,
+      });
+
+      if (photoPath) {
+        const finalDest = path.join(PHOTO_DIR, `${venueId}.jpg`);
+        fs.renameSync(photoPath, finalDest);
+        const relPath = `/spots/${venueId}.jpg`;
+        db.venues.updatePhotoUrl(venueId, relPath);
+      }
+
       const spotId = db.spots.insert({
+        venue_id: venueId,
         title: seed.title,
         type: activityType,
         source: 'manual',
@@ -188,20 +207,8 @@ async function main() {
         description: seed.description || null,
         submitter_name: SUBMITTER,
         submitted_at: new Date().toISOString(),
-        lat: place.lat,
-        lng: place.lng,
-        area: seed.area || null,
       });
-
-      if (photoPath) {
-        const finalDest = path.join(PHOTO_DIR, `${spotId}.jpg`);
-        fs.renameSync(photoPath, finalDest);
-        const relPath = `/spots/${spotId}.jpg`;
-        db.spots.update(spotId, { photo_url: relPath });
-        console.log(`${progress} ✅ ${seed.title} (id=${spotId}, ${(photoBytes / 1024).toFixed(0)} KB)`);
-      } else {
-        console.log(`${progress} ✅ ${seed.title} (id=${spotId}, no photo)`);
-      }
+      console.log(`${progress} ✅ ${seed.title} (id=${spotId}, venue=${venueId}${photoPath ? `, photo` : ''})`);
       inserted++;
     }
 
