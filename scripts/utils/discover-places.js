@@ -19,6 +19,8 @@ function getGoogleApiKey() {
     || process.env.GOOGLE_PLACES_KEY;
 }
 
+const DAY_MAP = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+
 function cleanWebsiteUrl(rawUrl) {
   try {
     const u = new URL(rawUrl);
@@ -27,13 +29,38 @@ function cleanWebsiteUrl(rawUrl) {
   } catch { return rawUrl; }
 }
 
-async function fetchPlaceWebsite(placeId) {
+function formatGoogleHours(periods) {
+  if (!Array.isArray(periods) || periods.length === 0) return null;
+  const result = {};
+  for (const p of periods) {
+    if (!p.open) continue;
+    const day = DAY_MAP[p.open.day];
+    if (!day) continue;
+    const open = p.open.time.replace(/(\d{2})(\d{2})/, '$1:$2');
+    const close = p.close ? p.close.time.replace(/(\d{2})(\d{2})/, '$1:$2') : '23:59';
+    result[day] = { open, close };
+  }
+  return Object.keys(result).length > 0 ? JSON.stringify(result) : null;
+}
+
+async function fetchPlaceDetails(placeId) {
   const apiKey = getGoogleApiKey();
-  const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=website&key=${apiKey}`;
+  const fields = 'website,formatted_phone_number,opening_hours,photos';
+  const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=${fields}&key=${apiKey}`;
   try {
     const text = await fetchWithRetry(url);
     const data = JSON.parse(text);
-    if (data.status === 'OK' && data.result?.website) return cleanWebsiteUrl(data.result.website);
+    if (data.status === 'OK' && data.result) {
+      const r = data.result;
+      return {
+        website: r.website ? cleanWebsiteUrl(r.website) : null,
+        phone: r.formatted_phone_number || null,
+        operatingHours: r.opening_hours?.periods
+          ? formatGoogleHours(r.opening_hours.periods)
+          : null,
+        photoRef: r.photos?.[0]?.photo_reference || null,
+      };
+    }
   } catch { /* logged by caller */ }
   return null;
 }
@@ -48,7 +75,7 @@ async function geocodeViaPlaces(name, address, log) {
     const data = JSON.parse(text);
     if (data.status === 'OK' && data.results?.length > 0) {
       const r = data.results[0];
-      const website = r.place_id ? await fetchPlaceWebsite(r.place_id) : null;
+      const details = r.place_id ? await fetchPlaceDetails(r.place_id) : null;
       return {
         placeId: r.place_id,
         name: r.name,
@@ -56,13 +83,32 @@ async function geocodeViaPlaces(name, address, log) {
         lat: r.geometry?.location?.lat,
         lng: r.geometry?.location?.lng,
         types: r.types || [],
-        website,
+        website: details?.website || null,
+        phone: details?.phone || null,
+        operatingHours: details?.operatingHours || null,
+        photoRef: details?.photoRef || null,
       };
     }
   } catch (err) {
     log(`  Geocode error for "${name}": ${err.message}`);
   }
   return null;
+}
+
+async function downloadPhoto(photoRef, filename) {
+  if (!photoRef) return null;
+  const apiKey = getGoogleApiKey();
+  try {
+    const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${photoRef}&key=${apiKey}`;
+    const res = await fetch(photoUrl, { redirect: 'follow' });
+    if (!res.ok) return null;
+    const buffer = Buffer.from(await res.arrayBuffer());
+    const destDir = path.join(__dirname, '..', '..', 'public', 'spots');
+    if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
+    const dest = path.join(destDir, `${filename}.jpg`);
+    fs.writeFileSync(dest, buffer);
+    return `/spots/${filename}.jpg`;
+  } catch { return null; }
 }
 
 async function fetchPlacePhoto(placeId, spotId) {
@@ -72,16 +118,7 @@ async function fetchPlacePhoto(placeId, spotId) {
     const text = await fetchWithRetry(detailUrl);
     const data = JSON.parse(text);
     if (data.status !== 'OK' || !data.result?.photos?.length) return null;
-    const photoRef = data.result.photos[0].photo_reference;
-    const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${photoRef}&key=${apiKey}`;
-    const res = await fetch(photoUrl, { redirect: 'follow' });
-    if (!res.ok) return null;
-    const buffer = Buffer.from(await res.arrayBuffer());
-    const destDir = path.join(__dirname, '..', '..', 'public', 'spots');
-    if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
-    const dest = path.join(destDir, `${spotId}.jpg`);
-    fs.writeFileSync(dest, buffer);
-    return `/spots/${spotId}.jpg`;
+    return downloadPhoto(data.result.photos[0].photo_reference, spotId);
   } catch { return null; }
 }
 
@@ -175,7 +212,8 @@ module.exports = {
   getGoogleApiKey,
   geocodeViaPlaces,
   fetchPlacePhoto,
-  fetchPlaceWebsite,
+  fetchPlaceDetails,
+  downloadPhoto,
   findAreaFromCoordinates,
   findAreaFromAddress,
   enrichViaGrok,

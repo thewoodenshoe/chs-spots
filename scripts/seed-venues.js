@@ -1,18 +1,17 @@
 /**
- * seed-venues.js - Manual Venue Seeding Script
- * 
- * ⚠️  WARNING: This script uses Google Maps API and can incur significant costs.
- * 
- * Venues are now treated as STATIC - this script should only be run manually when:
- * - You need to add new venues
- * - You need to update existing venue data
- * - You explicitly want to refresh venue information
- * 
- * This script is NOT part of the automated pipeline.
- * 
- * Usage: node scripts/seed-venues.js --confirm
- * 
- * The --confirm flag is REQUIRED to prevent accidental execution.
+ * seed-venues.js - DEPRECATED (2026-03-06)
+ *
+ * This script bootstrapped the initial venue database (~1,200 venues) using
+ * Google Places Nearby Search. It has reached full saturation: recent runs
+ * found 0-1 new venues across 200+ API calls. New venue discovery is now
+ * handled by discover-openings.js (RSS + Grok), which finds 10+ venues
+ * per nightly run at <5% of the cost.
+ *
+ * ONLY use this script to:
+ *   - Bootstrap a brand-new area (e.g., Folly Beach, Summerville)
+ *   - One-time recovery after data loss
+ *
+ * Usage: GOOGLE_PLACES_ENABLED=true node scripts/seed-venues.js --confirm
  */
 
 const fs = require('fs');

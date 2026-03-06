@@ -16,7 +16,7 @@ const { webSearch, getApiKey } = require('./utils/llm-client');
 const { delay, fetchWithRetry, parseRssItems, parseAtomEntries,
   isCharlestonRelated, classifyArticle, extractRestaurantName,
   extractDescription, isWithinDays, isVenueRelated } = require('./utils/discover-rss');
-const { VALID_AREAS, getGoogleApiKey, geocodeViaPlaces, fetchPlacePhoto,
+const { VALID_AREAS, getGoogleApiKey, geocodeViaPlaces, downloadPhoto,
   findAreaFromCoordinates, findAreaFromAddress, enrichViaGrok,
   isDuplicate } = require('./utils/discover-places');
 
@@ -49,6 +49,8 @@ async function discoverViaGrok() {
     grokDescription: (item.description || '').trim(),
     grokArea: VALID_AREAS.includes(item.area) ? item.area : null,
     grokAddress: (item.address || '').trim() || null,
+    grokPhone: (item.phone || '').trim() || null,
+    grokWebsite: (item.website || '').trim() || null,
     source: (item.source || 'Grok web search').trim(),
     expectedOpen: (item.expected_open || '').trim() || null,
     feed: 'Grok API',
@@ -60,6 +62,8 @@ async function discoverViaGrok() {
 function upsertVenueFromGeocode(geocoded, area, classification, expectedOpen) {
   if (!geocoded.placeId) return null;
   const venueStatus = classification === 'Recently Opened' ? 'recently_opened' : 'coming_soon';
+  const phone = geocoded.phone || geocoded.grokPhone || null;
+  const website = geocoded.website || geocoded.grokWebsite || null;
   db.venues.upsert({
     id: geocoded.placeId,
     name: geocoded.name,
@@ -67,7 +71,10 @@ function upsertVenueFromGeocode(geocoded, area, classification, expectedOpen) {
     lat: geocoded.lat,
     lng: geocoded.lng,
     area: area || null,
-    website: geocoded.website || null,
+    website,
+    phone,
+    operating_hours: geocoded.operatingHours || null,
+    hours_source: geocoded.operatingHours ? 'google_places' : null,
     types: Array.isArray(geocoded.types) ? geocoded.types.join(', ') : null,
     venue_status: venueStatus,
     venue_added_at: new Date().toISOString().slice(0, 10),
@@ -197,8 +204,8 @@ async function main() {
     const venueId = upsertVenueFromGeocode(spot, area, spot.classification, spot.expectedOpen);
     const spotTitle = spot.restaurantName || spot.placeName;
     try {
-      if (spot.placeId) {
-        const photoPath = await fetchPlacePhoto(spot.placeId, spotTitle);
+      if (spot.photoRef) {
+        const photoPath = await downloadPhoto(spot.photoRef, spotTitle);
         if (photoPath) db.venues.updatePhotoUrl(venueId, photoPath);
       }
       if (description) {

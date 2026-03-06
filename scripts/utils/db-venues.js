@@ -47,9 +47,11 @@ const venues = {
     db.transaction(() => {
       db.prepare(`
         INSERT INTO venues (id, name, address, lat, lng, area, website, photo_url, types,
-          raw_google_data, venue_added_at, venue_status, submitter_name, google_place_id, updated_at)
+          raw_google_data, venue_added_at, venue_status, submitter_name, google_place_id,
+          phone, operating_hours, hours_source, updated_at)
         VALUES (@id, @name, @address, @lat, @lng, @area, @website, @photo_url, @types,
-          @raw_google_data, @venue_added_at, @venue_status, @submitter_name, @google_place_id, datetime('now'))
+          @raw_google_data, @venue_added_at, @venue_status, @submitter_name, @google_place_id,
+          @phone, @operating_hours, @hours_source, datetime('now'))
         ON CONFLICT(id) DO UPDATE SET
           name=@name, address=COALESCE(@address, address), lat=@lat, lng=@lng,
           area=COALESCE(@area, area),
@@ -58,6 +60,9 @@ const venues = {
           types=@types, raw_google_data=@raw_google_data,
           venue_status=COALESCE(@venue_status, venue_status),
           google_place_id=COALESCE(@google_place_id, google_place_id),
+          phone=COALESCE(@phone, phone),
+          operating_hours=COALESCE(@operating_hours, operating_hours),
+          hours_source=COALESCE(@hours_source, hours_source),
           updated_at=datetime('now')
       `).run({
         id: v.id,
@@ -78,6 +83,11 @@ const venues = {
         venue_status: v.venue_status || 'active',
         submitter_name: v.submitter_name || v.submitterName || null,
         google_place_id: v.google_place_id || v.googlePlaceId || null,
+        phone: v.phone || null,
+        operating_hours: v.operating_hours
+          ? (typeof v.operating_hours === 'string' ? v.operating_hours : JSON.stringify(v.operating_hours))
+          : null,
+        hours_source: v.hours_source || null,
       });
       logAudit('venues', v.id, existing ? 'UPDATE' : 'INSERT', existing, v);
     })();
