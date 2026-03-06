@@ -9,7 +9,7 @@ import {
   AREA_DESCRIPTIONS, ACTIVITY_TIPS, STATUS_TYPE_MAP, formatSchedule,
 } from '@/utils/explore-helpers';
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 function parseSlug(slug: string): { area: string; activity: string } | null {
   const areas = areasDb.getNames();
@@ -97,18 +97,26 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const actLower = parsed.activity.toLowerCase();
   const titleCount = count > 0 ? `${count} ` : '';
 
+  const today = new Date().toISOString().split('T')[0];
+  const venueCount = new Set(areaSpots.map(s => s.id)).size;
+
   return {
     title: `${titleCount}${parsed.activity} in ${parsed.area} SC – Real-Time Active Now Map | CHS Finds`,
     description: count > 0
-      ? `Discover ${count} verified ${actLower} deals in ${parsed.area}, Charleston SC with real-time 'Active Right Now' filtering. Updated daily.`
+      ? `Discover ${count} verified ${actLower} deals across ${venueCount} venues in ${parsed.area}, Charleston SC with real-time 'Active Right Now' filtering. Updated daily with latest times & promotions. Last scan: ${today}.`
       : `${parsed.activity} in ${parsed.area}, Charleston SC — explore nearby areas on CHS Finds.`,
-    keywords: [parsed.activity, parsed.area, 'Charleston SC', `best ${actLower}`, `${actLower} deals`],
+    keywords: [parsed.activity, parsed.area, 'Charleston SC', `best ${actLower}`, `${actLower} deals`, `${actLower} near me`, `${parsed.area} restaurants`],
     alternates: { canonical },
     robots,
     openGraph: {
       title: `${titleCount}${parsed.activity} in ${parsed.area} SC – Real-Time Map`,
-      description: `Discover the best ${actLower} spots in ${parsed.area}, Charleston SC. Updated daily.`,
+      description: `Discover the best ${actLower} spots in ${parsed.area}, Charleston SC. ${count} deals updated daily.`,
       url: canonical,
+      siteName: 'CHS Finds',
+    },
+    other: {
+      'last-modified': today,
+      'revisit-after': '1 day',
     },
   };
 }

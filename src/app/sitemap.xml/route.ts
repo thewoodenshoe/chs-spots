@@ -1,5 +1,5 @@
 import { areasDb, activitiesDb, spots, venues } from '@/lib/db';
-import { slugify } from '@/utils/seo-helpers';
+import { slugify, venueSlug } from '@/utils/seo-helpers';
 
 interface SitemapEntry {
   url: string;
@@ -60,14 +60,14 @@ function buildEntries(): SitemapEntry[] {
 
     const spotsByVenue = new Set(allSpots.filter(s => s.venue_id).map(s => s.venue_id!));
     for (const v of allVenues) {
-      if (spotsByVenue.has(v.id)) {
-        entries.push({
-          url: `https://chsfinds.com/venues/${encodeURIComponent(v.id)}`,
-          lastmod: v.updated_at ? v.updated_at.split('T')[0] : today,
-          changefreq: 'weekly',
-          priority: 0.5,
-        });
-      }
+      if (!spotsByVenue.has(v.id)) continue;
+      const slug = venueSlug(v.name, v.area);
+      entries.push({
+        url: `https://chsfinds.com/venue/${slug}`,
+        lastmod: today,
+        changefreq: 'daily',
+        priority: 0.8,
+      });
     }
   } catch {
     // DB not available during build

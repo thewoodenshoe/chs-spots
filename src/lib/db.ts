@@ -260,6 +260,15 @@ export const venues = {
     return getDb().prepare('SELECT * FROM venues WHERE id = ?').get(id) as VenueRow | undefined;
   },
 
+  getBySlug(slug: string): VenueRow | undefined {
+    const all = this.getAll();
+    return all.find(v => {
+      const base = v.area ? `${v.name}-${v.area}` : v.name;
+      const s = base.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      return s === slug;
+    });
+  },
+
   getByArea(area: string): VenueRow[] {
     return getDb().prepare('SELECT * FROM venues WHERE LOWER(area) LIKE ? ORDER BY name')
       .all(`%${area.toLowerCase()}%`) as VenueRow[];
