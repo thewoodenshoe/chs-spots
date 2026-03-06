@@ -27,8 +27,33 @@ function buildEntries(): SitemapEntry[] {
     const venueMap = new Map<string, (typeof allVenues)[0]>();
     for (const v of allVenues) venueMap.set(v.id, v);
 
+    const STATUS_TYPE_MAP: Record<string, string> = {
+      'Coming Soon': 'coming_soon',
+      'Recently Opened': 'recently_opened',
+    };
+
     for (const area of areas) {
       for (const activity of activities) {
+        const venueStatus = STATUS_TYPE_MAP[activity];
+
+        if (venueStatus) {
+          const statusVenues = allVenues.filter(
+            v => v.venue_status === venueStatus && v.area === area,
+          );
+          if (statusVenues.length === 0) continue;
+          const latest = statusVenues.reduce((max, v) => {
+            const d = v.updated_at || '';
+            return d > max ? d : max;
+          }, '');
+          entries.push({
+            url: `https://chsfinds.com/explore/${slugify(activity)}-in-${slugify(area)}`,
+            lastmod: latest ? latest.split('T')[0] : today,
+            changefreq: 'daily',
+            priority: 0.7,
+          });
+          continue;
+        }
+
         const matching = allSpots.filter(s => {
           if (s.type !== activity) return false;
           const v = s.venue_id ? venueMap.get(s.venue_id) : undefined;

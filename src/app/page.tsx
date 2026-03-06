@@ -15,14 +15,24 @@ export async function generateMetadata(): Promise<Metadata> {
   const typeCounts: Record<string, number> = {};
   for (const s of allSpots) typeCounts[s.type] = (typeCounts[s.type] || 0) + 1;
 
-  const hh = typeCounts['Happy Hour'] || 0;
-  const br = typeCounts['Brunch'] || 0;
-  const rt = typeCounts['Rooftop Bars'] || 0;
-  const lm = typeCounts['Live Music'] || 0;
+  const highlights = [
+    { label: 'Happy Hours', count: typeCounts['Happy Hour'] || 0 },
+    { label: 'Brunches', count: typeCounts['Brunch'] || 0 },
+    { label: 'Rooftop Bars', count: typeCounts['Rooftop Bars'] || 0 },
+    { label: 'Live Music', count: typeCounts['Live Music'] || 0 },
+    { label: 'Coffee Shops', count: typeCounts['Coffee Shops'] || 0 },
+  ].filter(h => h.count > 0);
+
+  const roundDown = (n: number) => (n >= 100 ? `${Math.floor(n / 10) * 10}+` : `${n}`);
+  const titleParts = highlights.slice(0, 3).map(h => `${roundDown(h.count)} ${h.label}`);
+  const titleSuffix = highlights.length > 3 ? ' & More' : '';
+  const titleHighlights = titleParts.join(', ') + titleSuffix;
+
+  const descParts = highlights.map(h => `${roundDown(h.count)} ${h.label.toLowerCase()}`).join(', ');
 
   return {
-    title: `CHS Finds – ${hh} Happy Hours, ${br} Brunches, ${rt} Rooftop Bars & More in Charleston SC`,
-    description: `Discover ${spotCount}+ verified deals across ${venueCount} Charleston SC venues — ${hh} happy hours, ${br} brunches, ${rt} rooftop bars, ${lm} live music spots. Real-time 'Active Right Now' map. Updated ${today}. Free, no ads.`,
+    title: `CHS Finds – ${titleHighlights} in Charleston SC`,
+    description: `Discover ${roundDown(spotCount)} verified deals across ${roundDown(venueCount)} Charleston SC venues — ${descParts}. Real-time 'Active Right Now' map. Updated ${today}. Free, no ads.`,
     alternates: { canonical: 'https://chsfinds.com' },
     other: {
       'last-modified': today,
@@ -86,7 +96,9 @@ export default function HomePage() {
                 className="text-teal-700 hover:underline font-semibold">
                 {a.emoji} {a.name}
               </Link>
-              <span className="text-gray-500 ml-1">({spotsByType[a.name] || 0} spots)</span>
+              {(spotsByType[a.name] || 0) > 0 && (
+                <span className="text-gray-500 ml-1">({spotsByType[a.name]} spots)</span>
+              )}
             </li>
           ))}
         </ul>
