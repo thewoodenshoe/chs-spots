@@ -39,21 +39,8 @@ const path = require('path');
 const cheerio = require('cheerio');
 const crypto = require('crypto');
 const { dataPath } = require('./utils/data-dir');
-
-// Logging setup
-const logDir = path.join(__dirname, '..', 'logs');
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir, { recursive: true });
-}
-const logPath = path.join(logDir, 'trim-silver-html.log');
-
-fs.writeFileSync(logPath, '', 'utf8');
-
-function log(message) {
-  const ts = new Date().toISOString();
-  console.log(message);
-  fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
-}
+const { createLogger } = require('./utils/logger');
+const { log, close: closeLog } = createLogger('trim-silver-html');
 
 // Paths - Respect DATA_DIR
 const SILVER_MERGED_TODAY_DIR = dataPath('silver_merged', 'today');
@@ -740,7 +727,7 @@ function main() {
 // Run if called directly
 if (require.main === module) {
   main();
-  // Explicitly exit to ensure process terminates (important when called from pipeline)
+  closeLog();
   process.exit(0);
 }
 

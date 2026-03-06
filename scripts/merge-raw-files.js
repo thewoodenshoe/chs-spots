@@ -29,21 +29,8 @@ const fs = require('fs');
 const path = require('path');
 const { dataPath } = require('./utils/data-dir');
 const db = require('./utils/db');
-
-// Logging setup
-const logDir = path.join(__dirname, '..', 'logs');
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir, { recursive: true });
-}
-const logPath = path.join(logDir, 'merge-raw-files.log');
-
-fs.writeFileSync(logPath, '', 'utf8');
-
-function log(message) {
-  const ts = new Date().toISOString();
-  console.log(message);
-  fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
-}
+const { createLogger } = require('./utils/logger');
+const { log, close: closeLog } = createLogger('merge-raw-files');
 
 // Paths - Respect DATA_DIR
 const RAW_TODAY_DIR = dataPath('raw', 'today');
@@ -355,10 +342,10 @@ function main() {
 
 try {
   main();
-  // Explicitly exit to ensure process terminates (important when called from pipeline)
+  closeLog();
   process.exit(0);
 } catch (error) {
   log(`❌ Fatal error: ${error.message || error}`);
-  console.error(error);
+  closeLog();
   process.exit(1);
 }

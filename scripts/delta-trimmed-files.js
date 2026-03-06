@@ -21,21 +21,8 @@ const { normalizeText } = require('./utils/normalize');
 const { loadConfig, getRunDate, loadWatchlist } = require('./utils/config');
 const { dataPath } = require('./utils/data-dir');
 const db = require('./utils/db');
-
-// Logging setup
-const logDir = path.join(__dirname, '..', 'logs');
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir, { recursive: true });
-}
-const logPath = path.join(logDir, 'delta-trimmed-files.log');
-
-fs.writeFileSync(logPath, '', 'utf8');
-
-function log(message) {
-  const ts = new Date().toISOString();
-  console.log(message);
-  fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
-}
+const { createLogger } = require('./utils/logger');
+const { log, close: closeLog } = createLogger('delta-trimmed-files');
 
 // Paths - Respect DATA_DIR
 const SILVER_TRIMMED_TODAY_DIR = dataPath('silver_trimmed', 'today');
@@ -475,9 +462,10 @@ function generateDifferenceReports(newVenues, changedVenues) {
 
 try {
   main();
+  closeLog();
   process.exit(0);
 } catch (error) {
   log(`❌ Fatal error: ${error.message || error}`);
-  console.error(error);
+  closeLog();
   process.exit(1);
 }

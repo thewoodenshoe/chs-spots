@@ -16,6 +16,8 @@ const fs = require('fs');
 const path = require('path');
 const { dataPath, reportingPath, configPath } = require('../utils/data-dir');
 const db = require('../utils/db');
+const { createLogger } = require('../utils/logger');
+const { log, warn: logWarn, error: logError, close: closeLog } = createLogger('generate-report');
 
 // ── CLI args ────────────────────────────────────────────────────
 const args = process.argv.slice(2);
@@ -23,32 +25,10 @@ const sendTelegram = args.includes('--send-telegram');
 const reportDirArg = args.find((_, i, a) => a[i - 1] === '--report-dir');
 const REPORT_DIR = reportDirArg || process.env.REPORT_DIR || '/var/www/reports';
 
-// ── Structured logging ──────────────────────────────────────────
-const LOG_PATH = path.join(__dirname, '../../logs/generate-report.log');
-const _logStream = (() => {
-  try {
-    if (process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID) return null;
-    const logsDir = path.dirname(LOG_PATH);
-    if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
-    return fs.createWriteStream(LOG_PATH, { flags: 'a' });
-  } catch { return null; }
-})();
-function log(msg) {
-  const line = `[${new Date().toISOString()}] ${msg}`;
-  console.log(msg);
-  if (_logStream && !_logStream.destroyed) _logStream.write(line + '\n');
-}
-function logError(msg) {
-  const line = `[${new Date().toISOString()}] ERROR: ${msg}`;
-  console.error(msg);
-  if (_logStream && !_logStream.destroyed) _logStream.write(line + '\n');
-}
 const DEBUG = process.env.DEBUG === '1' || process.env.REPORT_DEBUG === '1';
 function debugLog(section, err) {
   if (!DEBUG) return;
-  const msg = `[report:${section}] skipped: ${err?.message || 'unknown'}`;
-  console.warn(msg);
-  if (_logStream && !_logStream.destroyed) _logStream.write(`[${new Date().toISOString()}] WARN: ${msg}\n`);
+  logWarn(`[report:${section}] skipped: ${err?.message || 'unknown'}`);
 }
 
 // ── Config ──────────────────────────────────────────────────────
@@ -80,7 +60,7 @@ async function umamiGet(token, endpoint) {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) {
-    console.warn(`  Umami GET ${endpoint} -> ${res.status}`);
+    logWarn(`  Umami GET ${endpoint} -> ${res.status}`);
     return null;
   }
   return res.json();
@@ -176,7 +156,7 @@ function getPipelineData() {
       "UPDATE pipeline_runs SET status = 'failed_stale', finished_at = datetime('now') WHERE status = 'running' AND started_at < ?",
     ).run(twoHoursAgo);
     if (staleFixed.changes > 0) {
-      console.log(`  Auto-fixed ${staleFixed.changes} stale pipeline run(s)`);
+      log(`  Auto-fixed ${staleFixed.changes} stale pipeline run(s)`);
       database.prepare(
         "UPDATE pipeline_state SET value = 'completed_successfully' WHERE key = 'last_run_status' AND value LIKE 'running%'",
       ).run();
@@ -462,10 +442,10 @@ function getPipelineData() {
   try {
     const database = db.getDb();
     result.recentlyOpenedSpots = database.prepare(
-      "SELECT id, title, area, description, source_url, lat, lng, finding_approved FROM spots WHERE type = 'Recently Opened' ORDER BY id DESC",
+      "SELECT id, name as title, area, venue_status, expected_open_date, lat, lng FROM venues WHERE venue_status = 'recently_opened' ORDER BY venue_added_at DESC",
     ).all();
     result.comingSoonSpots = database.prepare(
-      "SELECT id, title, area, description, source_url, lat, lng, finding_approved FROM spots WHERE type = 'Coming Soon' ORDER BY id DESC",
+      "SELECT id, name as title, area, venue_status, expected_open_date, lat, lng FROM venues WHERE venue_status = 'coming_soon' ORDER BY venue_added_at DESC",
     ).all();
   } catch (e) { debugLog('data', e); }
 
@@ -839,17 +819,15 @@ function buildHtml(data) {
       }).join('')
     : '<div class="all-clear"><span class="all-clear-icon">&#10003;</span> No actions needed. Everything looks healthy.</div>';
 
-  // ── Discovery spots table ──
-  const openingSpotsHtml = (spots, label) => {
-    if (!spots || spots.length === 0) return '';
+  // ── Discovery venues table ──
+  const openingSpotsHtml = (venues, label) => {
+    if (!venues || venues.length === 0) return '';
     return `
-    <h3>${label} (${spots.length})</h3>
-    <table class="small-table"><tr><th>Name</th><th>Area</th><th>Website</th></tr>
-    ${spots.map(s => {
-      const websiteCell = s.source_url
-        ? `<a href="${escHtml(s.source_url)}" target="_blank" style="color:#0d9488;text-decoration:none;">${new URL(s.source_url).hostname.replace('www.','')}</a>`
-        : '<span style="color:#94a3b8;">none</span>';
-      return `<tr><td>${escHtml(s.title)}</td><td>${escHtml(s.area || '—')}</td><td>${websiteCell}</td></tr>`;
+    <h3>${label} (${venues.length})</h3>
+    <table class="small-table"><tr><th>Name</th><th>Area</th><th>Added</th></tr>
+    ${venues.map(v => {
+      const addedAt = v.venue_added_at || '—';
+      return `<tr><td>${escHtml(v.title)}</td><td>${escHtml(v.area || '—')}</td><td>${escHtml(addedAt)}</td></tr>`;
     }).join('')}
     </table>`;
   };
@@ -1268,12 +1246,12 @@ async function main() {
   if (WEBSITE_ID) {
     try {
       token = await umamiLogin();
-      console.log('  Umami login OK');
+      log('  Umami login OK');
     } catch (err) {
-      console.warn('  Umami login failed:', err.message);
+      logWarn(`  Umami login failed: ${err.message}`);
     }
   } else {
-    console.warn('  No UMAMI_WEBSITE_ID set, skipping analytics');
+    logWarn('  No UMAMI_WEBSITE_ID set, skipping analytics');
   }
 
   if (token) {
@@ -1306,11 +1284,11 @@ async function main() {
 
     try {
       analytics.sessions24h = await fetchAllSessions(token, oneDayAgo.getTime(), now.getTime());
-    } catch (e) { console.warn('  sessions24h failed:', e.message); }
+    } catch (e) { logWarn(`  sessions24h failed: ${e.message}`); }
 
     try {
       analytics.allSessions30d = await fetchAllSessions(token, oneMonthAgo.getTime(), now.getTime());
-    } catch (e) { console.warn('  sessions30d failed:', e.message); }
+    } catch (e) { logWarn(`  sessions30d failed: ${e.message}`); }
 
     try {
       const events = await umamiGet(token, `/metrics?startAt=${oneWeekAgo.getTime()}&endAt=${now.getTime()}&type=event`);
@@ -1345,11 +1323,11 @@ async function main() {
       }
     } catch (e) { debugLog('data', e); }
 
-    console.log(`  Analytics fetched (${analytics.sessions24h.length} sessions 24h, ${analytics.allSessions30d.length} sessions 30d)`);
+    log(`  Analytics fetched (${analytics.sessions24h.length} sessions 24h, ${analytics.allSessions30d.length} sessions 30d)`);
   }
 
   const pipeline = getPipelineData();
-  console.log(`  Pipeline data: ${pipeline.totalSpots} spots, model: ${pipeline.llmModel}, actions: ${pipeline.actions.length}`);
+  log(`  Pipeline data: ${pipeline.totalSpots} spots, model: ${pipeline.llmModel}, actions: ${pipeline.actions.length}`);
 
   const html = buildHtml({ analytics, pipeline });
 
@@ -1357,7 +1335,7 @@ async function main() {
   const today = dateStr(new Date());
   const htmlPath = path.join(REPORT_DIR, `report-${today}.html`);
   fs.writeFileSync(htmlPath, html);
-  console.log(`  HTML saved: ${htmlPath}`);
+  log(`  HTML saved: ${htmlPath}`);
 
   // PDF (render all tabs expanded for print)
   let pdfPath = null;
@@ -1372,9 +1350,9 @@ async function main() {
     pdfPath = path.join(REPORT_DIR, `report-${today}.pdf`);
     await page.pdf({ path: pdfPath, format: 'A4', printBackground: true, margin: { top: '20px', bottom: '20px', left: '20px', right: '20px' } });
     await browser.close();
-    console.log(`  PDF saved: ${pdfPath}`);
+    log(`  PDF saved: ${pdfPath}`);
   } catch (err) {
-    console.warn(`  PDF skipped: ${err.message}`);
+    logWarn(`  PDF skipped: ${err.message}`);
   }
 
   // Telegram summary
@@ -1453,7 +1431,7 @@ async function main() {
       });
       const sendData = await sendRes.json();
       if (!sendData.ok) {
-        console.warn('  Telegram response:', JSON.stringify(sendData));
+        logWarn(`  Telegram response: ${JSON.stringify(sendData)}`);
       }
 
       if (pdfPath && fs.existsSync(pdfPath)) {
@@ -1474,20 +1452,20 @@ async function main() {
         });
       }
 
-      console.log('  Telegram notification sent');
+      log('  Telegram notification sent');
     } catch (err) {
-      console.error('  Telegram failed:', err.message);
+      logError(`  Telegram failed: ${err.message}`);
     }
   } else if (sendTelegram) {
-    console.warn('  Telegram skipped: missing TELEGRAM_BOT_TOKEN or TELEGRAM_ADMIN_CHAT_ID');
+    logWarn('  Telegram skipped: missing TELEGRAM_BOT_TOKEN or TELEGRAM_ADMIN_CHAT_ID');
   }
 
   log('═══ generate-report.js COMPLETE ═══');
-  if (_logStream) _logStream.end();
+  closeLog();
 }
 
 main().catch(err => {
   logError(`Report generation failed: ${err.message}`);
-  if (_logStream) _logStream.end();
+  closeLog();
   process.exit(1);
 });

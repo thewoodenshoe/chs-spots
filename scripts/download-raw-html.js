@@ -17,21 +17,8 @@ const { URL } = require('url');
 const { loadConfig, updateConfigField, getRunDate } = require('./utils/config');
 const { dataPath, configPath } = require('./utils/data-dir');
 const db = require('./utils/db');
-
-// Logging setup
-const logDir = path.join(__dirname, '..', 'logs');
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir, { recursive: true });
-}
-const logPath = path.join(logDir, 'download-raw-html.log');
-
-fs.writeFileSync(logPath, '', 'utf8');
-
-function log(message) {
-  const ts = new Date().toISOString();
-  console.log(message);
-  fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
-}
+const { createLogger } = require('./utils/logger');
+const { log, close: closeLog } = createLogger('download-raw-html');
 
 // Paths — resolved via data-dir utility (defaults to project data/)
 const RAW_DIR = dataPath('raw');
@@ -71,7 +58,8 @@ try {
         throw new Error('submenu-keywords.json must contain an array');
     }
 } catch (error) {
-    console.error(`Error reading submenu keywords from ${SUBMENU_KEYWORDS_PATH}: ${error.message}`);
+    log(`Error reading submenu keywords from ${SUBMENU_KEYWORDS_PATH}: ${error.message}`);
+    closeLog();
     process.exit(1);
 }
 
@@ -907,11 +895,11 @@ async function main() {
 (async () => {
   try {
     await main();
-    // Explicitly exit to ensure process terminates (important when called from pipeline)
+    closeLog();
     process.exit(0);
   } catch (error) {
     log(`❌ Fatal error: ${error.message || error}`);
-    console.error(error);
+    closeLog();
     process.exit(1);
   }
 })();
