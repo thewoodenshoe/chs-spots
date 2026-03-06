@@ -44,19 +44,23 @@ async function discoverViaGrok() {
   log('Calling Grok API with web_search...');
   const result = await webSearch({ prompt, timeoutMs: 120000, log });
   if (!result?.parsed || !Array.isArray(result.parsed)) { warn('Grok API returned no valid JSON array'); return []; }
-  const valid = result.parsed.filter(item => item.name && item.classification).slice(0, 50).map(item => ({
-    restaurantName: item.name.trim(),
-    classification: item.classification === 'Recently Opened' ? 'Recently Opened' : 'Coming Soon',
-    grokDescription: (item.description || '').trim(),
-    grokArea: VALID_AREAS.includes(item.area) ? item.area : null,
-    grokAddress: (item.address || '').trim() || null,
-    grokPhone: (item.phone || '').trim() || null,
-    grokWebsite: (item.website || '').trim() || null,
-    source: (item.source || 'Grok web search').trim(),
-    expectedOpen: (item.expected_open || '').trim() || null,
-    feed: 'Grok API',
-  }));
-  log(`Grok API: ${result.parsed.length} results, ${valid.length} valid`);
+  const MIN_GROK_SELF_CONFIDENCE = 80;
+  const valid = result.parsed
+    .filter(item => item.name && item.classification && (item.confidence || 0) >= MIN_GROK_SELF_CONFIDENCE)
+    .map(item => ({
+      restaurantName: item.name.trim(),
+      classification: item.classification === 'Recently Opened' ? 'Recently Opened' : 'Coming Soon',
+      grokDescription: (item.description || '').trim(),
+      grokArea: VALID_AREAS.includes(item.area) ? item.area : null,
+      grokAddress: (item.address || '').trim() || null,
+      grokPhone: (item.phone || '').trim() || null,
+      grokWebsite: (item.website || '').trim() || null,
+      source: (item.source || 'Grok web search').trim(),
+      expectedOpen: (item.expected_open || '').trim() || null,
+      feed: 'Grok API',
+    }));
+  const dropped = result.parsed.length - valid.length;
+  log(`Grok API: ${result.parsed.length} results, ${valid.length} high-confidence (${dropped} dropped below ${MIN_GROK_SELF_CONFIDENCE} confidence)`);
   return valid;
 }
 

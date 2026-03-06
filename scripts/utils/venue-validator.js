@@ -1,17 +1,21 @@
 /**
- * Venue validation for the discovery pipeline — prevents established
- * venues from being classified as "Recently Opened" or "Coming Soon".
+ * Venue validation for the discovery pipeline.
  *
- * Validation signals:
- *   1. Google Places review count (high reviews = established)
- *   2. Name quality (rejects generic/non-venue names)
- *   3. Grok LLM verification for borderline cases
+ * Philosophy: REJECT BY DEFAULT. A venue only gets listed as
+ * "Recently Opened" or "Coming Soon" if we have HIGH confidence
+ * it is genuinely new. False positives destroy credibility.
+ *
+ * Every candidate must pass ALL gates:
+ *   1. Name quality (no generic/vague names)
+ *   2. Google Places review count (established venues auto-rejected)
+ *   3. Grok LLM verification with minimum confidence 70
  */
 
 const { chat, getApiKey } = require('./llm-client');
 
-const MAX_REVIEWS_RECENTLY_OPENED = 50;
-const MAX_REVIEWS_COMING_SOON = 15;
+const MAX_REVIEWS_RECENTLY_OPENED = 30;
+const MAX_REVIEWS_COMING_SOON = 10;
+const MIN_GROK_CONFIDENCE = 70;
 
 const GENERIC_NAMES = new Set([
   'broad street', 'king street', 'market street', 'meeting street',
@@ -19,6 +23,7 @@ const GENERIC_NAMES = new Set([
   'downtown', 'charleston', 'north charleston', 'mount pleasant',
   'west ashley', 'james island', 'daniel island', 'folly beach',
   'restaurant', 'bar', 'cafe', 'coffee', 'ramen shop', 'pizza',
+  'food truck', 'food hall', 'hotel', 'inn', 'resort',
 ]);
 
 function isValidVenueName(name) {
@@ -29,6 +34,7 @@ function isValidVenueName(name) {
   if (/^(the |a )?(new |old )?(north |south |east |west )?\w+ (street|road|ave|blvd|drive|lane|way|hwy)$/i.test(name)) return false;
   const words = lower.split(/\s+/);
   if (words.length === 1 && lower.length < 4) return false;
+  if (/\b(ramen shop|pizza place|burger joint|taco stand)\b/i.test(name)) return false;
   return true;
 }
 
@@ -36,30 +42,40 @@ function checkReviewCount(userRatingsTotal, classification) {
   const threshold = classification === 'Recently Opened'
     ? MAX_REVIEWS_RECENTLY_OPENED
     : MAX_REVIEWS_COMING_SOON;
-  if (userRatingsTotal > threshold) return 'established';
-  if (userRatingsTotal > threshold * 0.5) return 'borderline';
-  return 'plausible';
+  return userRatingsTotal > threshold ? 'established' : 'passable';
 }
 
 async function verifyViaGrok(candidates, log) {
-  if (!getApiKey() || candidates.length === 0) return candidates;
+  if (!getApiKey() || candidates.length === 0) {
+    log('  No Grok API key — rejecting all candidates (cannot verify)');
+    return [];
+  }
 
-  const nameList = candidates.map(c => `- "${c.placeName}" at ${c.address || 'Charleston, SC'}`).join('\n');
+  const nameList = candidates.map(c =>
+    `- "${c.placeName}" at ${c.address || 'Charleston, SC'} (${c.userRatingsTotal || 0} Google reviews)`,
+  ).join('\n');
+
   const result = await chat({
     messages: [{
       role: 'user',
-      content: `For each venue below, determine if it is a GENUINELY NEW establishment in Charleston, SC that opened within the last 6 months, OR if it is a well-established venue that has been operating for longer.
+      content: `You are validating whether these Charleston, SC venues are GENUINELY NEW establishments. This data will be shown publicly — false positives damage our credibility.
 
-Venues:
+Venues to validate:
 ${nameList}
 
-Return ONLY a JSON array. Each object must have:
-- "name": exact venue name
-- "is_new": true if genuinely opened in last 6 months, false if established
-- "confidence": 0-100 confidence score
-- "reason": brief explanation (e.g. "opened March 2026" or "established since 2015")
+For each venue, determine:
+1. Did this venue LITERALLY open for the first time within the last 6 months?
+2. A venue getting a new menu, chef, patio, renovation, or media coverage does NOT count.
+3. Well-known Charleston institutions are NEVER new.
 
-Be STRICT. If unsure, mark is_new as false. Well-known Charleston institutions (Blind Tiger, Husk, FIG, Halls Chophouse, etc.) are NEVER new.`,
+Return ONLY a JSON array. Each object:
+- "name": exact venue name
+- "is_new": true ONLY if you have strong evidence it opened in the last 6 months
+- "confidence": 0-100 (how sure you are about is_new)
+- "opened_date": approximate opening date if known, or null
+- "reason": brief evidence (e.g. "opened Jan 2026 per Post & Courier" or "established since 2018")
+
+DEFAULT TO FALSE. If you cannot find clear evidence of a recent opening, is_new must be false.`,
     }],
     model: 'grok-3-mini-fast',
     timeoutMs: 60000,
@@ -67,8 +83,8 @@ Be STRICT. If unsure, mark is_new as false. Well-known Charleston institutions (
   });
 
   if (!result?.parsed || !Array.isArray(result.parsed)) {
-    log('  Grok verification returned no valid results — rejecting all borderline candidates');
-    return candidates.filter(c => c._reviewSignal === 'plausible');
+    log('  Grok verification failed — rejecting all candidates');
+    return [];
   }
 
   const verdicts = new Map();
@@ -79,20 +95,25 @@ Be STRICT. If unsure, mark is_new as false. Well-known Charleston institutions (
   return candidates.filter(c => {
     const verdict = verdicts.get(c.placeName.toLowerCase().trim());
     if (!verdict) {
-      log(`  No Grok verdict for "${c.placeName}" — ${c._reviewSignal === 'plausible' ? 'keeping' : 'rejecting'}`);
-      return c._reviewSignal === 'plausible';
+      log(`  REJECTED "${c.placeName}": no Grok verdict (default reject)`);
+      return false;
     }
-    if (!verdict.is_new || verdict.confidence < 60) {
-      log(`  REJECTED "${c.placeName}": ${verdict.reason} (confidence: ${verdict.confidence})`);
+    if (!verdict.is_new) {
+      log(`  REJECTED "${c.placeName}": ${verdict.reason}`);
+      return false;
+    }
+    if (verdict.confidence < MIN_GROK_CONFIDENCE) {
+      log(`  REJECTED "${c.placeName}": confidence ${verdict.confidence} < ${MIN_GROK_CONFIDENCE} (${verdict.reason})`);
       return false;
     }
     log(`  VERIFIED "${c.placeName}": ${verdict.reason} (confidence: ${verdict.confidence})`);
+    c.grokVerifiedDate = verdict.opened_date || null;
     return true;
   });
 }
 
 async function validateCandidates(geocoded, _unused, log) {
-  const validName = [];
+  const passedFilters = [];
 
   for (const c of geocoded) {
     if (!isValidVenueName(c.placeName)) {
@@ -105,23 +126,13 @@ async function validateCandidates(geocoded, _unused, log) {
       log(`  Review rejected: "${c.placeName}" (${c.userRatingsTotal} reviews — too many for ${cls})`);
       continue;
     }
-    c._reviewSignal = signal;
-    validName.push(c);
+    passedFilters.push(c);
   }
 
-  const borderline = validName.filter(c => c._reviewSignal === 'borderline');
-  if (borderline.length > 0) {
-    log(`  ${borderline.length} borderline candidates — verifying via Grok...`);
-  }
+  if (passedFilters.length === 0) return [];
 
-  const needsVerification = validName.filter(c => c._reviewSignal !== 'plausible');
-  const autoPass = validName.filter(c => c._reviewSignal === 'plausible');
-
-  if (needsVerification.length > 0) {
-    const verified = await verifyViaGrok(needsVerification, log);
-    return [...autoPass, ...verified];
-  }
-  return autoPass;
+  log(`  ${passedFilters.length} candidates passed filters — ALL require Grok verification...`);
+  return verifyViaGrok(passedFilters, log);
 }
 
 module.exports = {
@@ -129,6 +140,7 @@ module.exports = {
   checkReviewCount,
   verifyViaGrok,
   validateCandidates,
+  MIN_GROK_CONFIDENCE,
   MAX_REVIEWS_RECENTLY_OPENED,
   MAX_REVIEWS_COMING_SOON,
 };
