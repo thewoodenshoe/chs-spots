@@ -5,11 +5,7 @@
  * Example: node scripts/update-spot-field.js 5079 promotion_time "6pm-9pm • Saturday"
  */
 
-const path = require('path');
-const Database = require('better-sqlite3');
-
-const dbPath = process.env.DB_PATH || path.resolve(__dirname, '..', 'data', 'chs-spots.db');
-const db = new Database(dbPath);
+const db = require('./utils/db');
 
 const [id, field, ...valueParts] = process.argv.slice(2);
 const value = valueParts.join(' ');
@@ -29,13 +25,15 @@ if (!allowedFields.includes(field)) {
   process.exit(1);
 }
 
-const existing = db.prepare('SELECT id, title, type, promotion_time FROM spots WHERE id = ?').get(id);
+db.setAuditContext('admin', 'update-spot-field');
+
+const existing = db.spots.getById(id);
 if (!existing) {
   console.error('Spot', id, 'not found');
   process.exit(1);
 }
 
 const today = new Date().toISOString().split('T')[0];
-db.prepare(`UPDATE spots SET ${field} = ?, last_update_date = ?, updated_at = datetime('now') WHERE id = ?`).run(value, today, id);
+db.spots.update(id, { [field]: value, last_update_date: today }, { force: true });
 console.log('Updated spot', id, '|', field, '=', value, '| last_update_date =', today);
-db.close();
+db.closeDb();

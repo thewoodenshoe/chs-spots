@@ -162,6 +162,7 @@ async function main() {
   log('=== Daily Live Music Refresh ===\n');
 
   const database = db.getDb();
+  db.setAuditContext('pipeline', 'refresh-live-music');
 
   const existingSpots = database.prepare(
     "SELECT id, title, promotion_time, description FROM spots WHERE type = 'Live Music' AND status = 'approved'"
@@ -203,7 +204,7 @@ async function main() {
       if (!DRY_RUN) {
         const current = database.prepare("SELECT description FROM spots WHERE id = ?").get(spot.id);
         const combinedDesc = `${current.description} | ${event.performer}. ${event.description}`.trim();
-        database.prepare("UPDATE spots SET description = ? WHERE id = ?").run(combinedDesc, spot.id);
+        db.spots.update(spot.id, { description: combinedDesc });
       }
       matched++;
       matchedNames.push(`${spot.title}: ${event.performer} (multi-show)`);
@@ -215,9 +216,7 @@ async function main() {
     if (DRY_RUN) {
       log(`[refresh-live-music] DRY RUN: ${spot.title} → "${promoTime}" (${event.performer})`);
     } else {
-      database.prepare(
-        "UPDATE spots SET promotion_time = ?, time_start = ?, time_end = ?, days = ?, description = ?, updated_at = datetime('now') WHERE id = ?"
-      ).run(promoTime, timeStart, timeEnd, daysStr, desc, spot.id);
+      db.spots.update(spot.id, { promotion_time: promoTime, time_start: timeStart, time_end: timeEnd, days: daysStr, description: desc });
       log(`[refresh-live-music] UPDATED: ${spot.title} → "${promoTime}" (${event.performer})`);
     }
 
@@ -231,9 +230,7 @@ async function main() {
     for (const spot of existingSpots) {
       if (updatedSpotIds.has(spot.id)) continue;
       if (spot.promotion_time && /•\s*(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s*$/i.test(spot.promotion_time)) {
-        database.prepare(
-          "UPDATE spots SET promotion_time = NULL, time_start = NULL, time_end = NULL, days = NULL, updated_at = datetime('now') WHERE id = ?"
-        ).run(spot.id);
+        db.spots.update(spot.id, { promotion_time: null, time_start: null, time_end: null, days: null });
         cleared++;
       }
     }

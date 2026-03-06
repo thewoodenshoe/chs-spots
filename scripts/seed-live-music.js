@@ -131,6 +131,7 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 async function main() {
   const database = db.getDb();
+  db.setAuditContext('pipeline', 'seed-live-music');
 
   // Ensure Live Music activity exists
   db.activities.upsert({ name: 'Live Music', icon: 'Music', emoji: '🎵', color: '#e11d48', community_driven: 0 });
@@ -222,7 +223,7 @@ async function main() {
       try {
         photoUrl = await fetchPlacePhoto(placeId, spotId);
         if (photoUrl) {
-          database.prepare("UPDATE spots SET photo_url = ? WHERE id = ?").run(photoUrl, spotId);
+          db.spots.update(spotId, { photo_url: photoUrl });
           photoCount++;
         }
         await sleep(300);
@@ -230,7 +231,7 @@ async function main() {
         log(`  Photo download failed for ${venue.name}: ${e.message}`);
       }
     } else if (photoUrl) {
-      database.prepare("UPDATE spots SET photo_url = ? WHERE id = ?").run(photoUrl, spotId);
+      db.spots.update(spotId, { photo_url: photoUrl });
       photoCount++;
     }
 

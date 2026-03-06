@@ -12,9 +12,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const DB_PATH = process.env.DB_PATH || path.resolve(__dirname, '..', 'data', 'chs-spots.db');
-const Database = require('better-sqlite3');
-const db = new Database(DB_PATH);
+const db = require('./utils/db');
 
 const API_KEY = process.env.GOOGLE_PLACES_API_KEY;
 const dryRun = !process.argv.includes('--confirm');
@@ -60,6 +58,9 @@ async function downloadPhoto(photoRef, destPath) {
 }
 
 async function main() {
+  db.setAuditContext('pipeline', 'backfill-photos');
+  const database = db.getDb();
+
   let query = `
     SELECT s.id, s.title, s.type, s.area, s.venue_id, v.name as venue_name, v.area as venue_area
     FROM spots s
@@ -71,7 +72,7 @@ async function main() {
   if (typeFilter) query += ` AND s.type = '${typeFilter.replace(/'/g, "''")}'`;
   query += ' ORDER BY s.type, s.id';
 
-  const spots = db.prepare(query).all();
+  const spots = database.prepare(query).all();
   console.log(`Found ${spots.length} spots without photos${typeFilter ? ` (type: ${typeFilter})` : ''}`);
   if (dryRun) console.log('DRY RUN — add --confirm to save\n');
 
@@ -101,7 +102,7 @@ async function main() {
 
       const photoPath = path.join(PHOTO_DIR, `${s.id}.jpg`);
       const bytes = await downloadPhoto(place.photoRef, photoPath);
-      db.prepare("UPDATE spots SET photo_url = ? WHERE id = ?").run(`/spots/${s.id}.jpg`, s.id);
+      db.spots.update(s.id, { photo_url: `/spots/${s.id}.jpg` });
       console.log(`${progress} ✅ ${s.title} (${(bytes / 1024).toFixed(0)} KB)`);
       success++;
     } catch (err) {
