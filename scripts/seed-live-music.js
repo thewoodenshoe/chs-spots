@@ -16,6 +16,8 @@ const path = require('path');
 const https = require('https');
 const db = require('./utils/db');
 const { parsePromotionTime } = require('./utils/time-parse');
+const { createLogger } = require('./utils/logger');
+const { log, warn, error: logError, close: closeLog } = createLogger('seed-live-music');
 
 // dotenv is optional — env vars may already be set by the shell or PM2
 try {
@@ -29,8 +31,6 @@ const GOOGLE_MAPS_API_KEY =
 
 const DRY_RUN = process.argv.includes('--dry-run');
 const TODAY = new Date().toISOString().split('T')[0];
-
-function log(msg) { console.log(`[seed-live-music] ${msg}`); }
 
 const VENUES = [
   { name: "Charleston Music Hall", address: "37 John St, Charleston, SC 29403", area: "Downtown Charleston", description: "Beautiful historic hall hosting indie, Americana, jazz, symphonic tributes, and comedy.", schedule: "Almost nightly events", website: "https://charlestonmusichall.com" },
@@ -243,4 +243,4 @@ async function main() {
   if (DRY_RUN) log('(DRY RUN — nothing was written)');
 }
 
-main().catch(e => { console.error('Fatal:', e); process.exit(1); });
+main().catch(e => { logError('Fatal:', e); closeLog(); process.exit(1); });

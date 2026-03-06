@@ -26,21 +26,8 @@ const path = require('path');
 const crypto = require('crypto');
 const { dataPath } = require('./utils/data-dir');
 const db = require('./utils/db');
-
-// Logging setup
-const logDir = path.join(__dirname, '..', 'logs');
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir, { recursive: true });
-}
-const logPath = path.join(logDir, 'process-bulk-llm-results.log');
-
-fs.writeFileSync(logPath, '', 'utf8');
-
-function log(message) {
-  const ts = new Date().toISOString();
-  console.log(message);
-  fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
-}
+const { createLogger } = require('./utils/logger');
+const { log, warn, error: logError, close: closeLog } = createLogger('process-bulk-llm-results');
 
 // Paths - Respect DATA_DIR
 const GOLD_DIR = dataPath('gold');
@@ -221,8 +208,10 @@ function main() {
 
 try {
   main();
+  closeLog();
 } catch (error) {
   log(`❌ Fatal error: ${error.message || error}`);
   console.error(error);
+  closeLog();
   process.exit(1);
 }

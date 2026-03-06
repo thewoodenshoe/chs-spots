@@ -22,48 +22,12 @@
 
 const fs = require('fs');
 const path = require('path');
+const { createLogger } = require('./utils/logger');
+const { log, warn, error: logError, logPath, close: closeLog } = createLogger('seed-incremental');
 
-// Logging setup
-const logDir = path.join(__dirname, '..', 'logs');
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir, { recursive: true });
-}
-const logPath = path.join(logDir, 'seed-incremental.log');
-
-// Overwrite log file on each run
-fs.writeFileSync(logPath, '', 'utf8');
-
-/**
- * Logger function: logs to console (with emojis) and file (without emojis, with timestamp)
- */
-function log(message) {
-  console.log(message);
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
-  const timestamp = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}]`;
-  const messageWithoutEmojis = message.replace(/[\u{1F300}-\u{1F5FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
-  fs.appendFileSync(logPath, `${timestamp} ${messageWithoutEmojis}\n`, 'utf8');
-}
-
-/**
- * Verbose logger: writes detailed information to log file only
- */
 function logVerbose(message) {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
-  const timestamp = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}]`;
-  const messageWithoutEmojis = message.replace(/[\u{1F300}-\u{1F5FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
-  fs.appendFileSync(logPath, `${timestamp} ${messageWithoutEmojis}\n`, 'utf8');
+  const ts = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
+  fs.appendFileSync(logPath, `[${ts}] [seed-incremental:verbose] ${message}\n`);
 }
 
 // SAFETY CHECK: Require BOTH --confirm flag AND GOOGLE_PLACES_ENABLED=true
@@ -858,8 +822,9 @@ async function seedIncremental() {
   }
   
   log(`\n✨ Incremental seeding complete!`);
-  log(`Done! Log saved to logs/seed-incremental.log`);
-  
+  log(`Done! Log saved to ${logPath}`);
+  closeLog();
+
   return {
     newVenuesCount: newVenues.length,
     newVenues: newVenues
@@ -870,5 +835,6 @@ async function seedIncremental() {
 log('🔑 Using API key: ' + GOOGLE_MAPS_API_KEY.substring(0, 10) + '...\n');
 seedIncremental().catch((error) => {
   log('❌ Fatal error during seeding: ' + (error.message || error));
+  closeLog();
   process.exit(1);
 });

@@ -24,21 +24,8 @@ const { reviewAll } = require('./utils/llm-review');
 const { enrichAreas } = require('./utils/llm-enrich');
 const { createSpotsFromGold, buildSpotFromEntry } = require('./utils/spot-builder');
 const { resolveMissingTimes } = require('./utils/llm-resolve-times');
-
-// Logging setup
-const logDir = path.join(__dirname, '..', 'logs');
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir, { recursive: true });
-}
-const logPath = path.join(logDir, 'create-spots.log');
-
-fs.writeFileSync(logPath, '', 'utf8');
-
-function log(message) {
-  const ts = new Date().toISOString();
-  console.log(message);
-  fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
-}
+const { createLogger } = require('./utils/logger');
+const { log, warn, error: logError, close: closeLog } = createLogger('create-spots');
 
 // Paths — dual-write destinations, kept for backward compat during transition
 const REPORTING_VENUES_PATH = reportingPath('venues.json');
@@ -683,10 +670,12 @@ async function main() {
 
   log(`\n✨ Done!`);
   log(`   Total spots: ${spots.length} (${manualSpots.length} manual + ${totalAutomatedCount} automated)`);
+  closeLog();
 }
 
 main().catch(error => {
   log(`❌ Fatal error: ${error.message || error}`);
   console.error(error);
+  closeLog();
   process.exit(1);
 });

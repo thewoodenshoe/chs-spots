@@ -32,6 +32,8 @@ require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') });
 const db              = require('./utils/db');
 const { chat, webSearch, getApiKey } = require('./utils/llm-client');
 const { reportingPath }              = require('./utils/data-dir');
+const { createLogger } = require('./utils/logger');
+const { log, warn, error: logError, close: closeLog } = createLogger('backfill-missing-times');
 
 // ── CLI args ────────────────────────────────────────────────────
 const args    = process.argv.slice(2);
@@ -44,18 +46,6 @@ const LIMIT = (() => {
   const i = args.indexOf('--limit');
   return i !== -1 ? parseInt(args[i + 1]) || 200 : 200;
 })();
-
-// ── Logging ─────────────────────────────────────────────────────
-const logDir  = path.join(__dirname, '..', 'logs');
-if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
-const logPath = path.join(logDir, 'backfill-missing-times.log');
-fs.writeFileSync(logPath, '', 'utf8');
-
-function log(msg) {
-  const line = `[${new Date().toISOString()}] ${msg}`;
-  console.log(msg);
-  fs.appendFileSync(logPath, line + '\n');
-}
 
 // ── LLM prompts ─────────────────────────────────────────────────
 
@@ -320,12 +310,14 @@ async function main() {
   }
 
   log('\n=== backfill-missing-times.js DONE ===');
+  closeLog();
   db.closeDb();
 }
 
 main().catch(err => {
   log(`❌ Fatal: ${err.message}`);
   console.error(err);
+  closeLog();
   db.closeDb();
   process.exit(1);
 });

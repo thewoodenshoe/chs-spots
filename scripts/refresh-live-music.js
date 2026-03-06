@@ -12,22 +12,12 @@
  * Usage: node scripts/refresh-live-music.js [--dry-run]
  */
 
-const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const db = require('./utils/db');
 const { parseTimeRange, parseDayPart } = require('./utils/time-parse');
-
-const logDir = path.join(__dirname, '..', 'logs');
-if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
-const logPath = path.join(logDir, 'refresh-live-music.log');
-fs.writeFileSync(logPath, '', 'utf8');
-
-function log(msg) {
-  const ts = new Date().toISOString();
-  console.log(msg);
-  fs.appendFileSync(logPath, `[${ts}] ${msg}\n`);
-}
+const { createLogger } = require('./utils/logger');
+const { log, warn, error: logError, close: closeLog } = createLogger('refresh-live-music');
 
 // dotenv is optional — env vars may already be set by the shell or PM2
 try {
@@ -254,11 +244,14 @@ async function main() {
   await sendTelegram(msg);
 
   releaseLock();
+  closeLog();
   db.closeDb();
 }
 
 main().catch(e => {
-  console.error('Fatal:', e);
+  logError('Fatal:', e);
+  console.error(e);
+  closeLog();
   try { require('./utils/pipeline-lock').release(); } catch {}
   process.exit(1);
 });

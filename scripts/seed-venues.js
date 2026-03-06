@@ -18,39 +18,13 @@
 const fs = require('fs');
 const path = require('path');
 const db = require('./utils/db');
+const { createLogger } = require('./utils/logger');
+const { log, warn, error: logError, logPath, close: closeLog } = createLogger('seed-venues');
 
-// Logging setup
-const logDir = path.join(__dirname, '..', 'logs');
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir, { recursive: true });
+function logVerbose(message) {
+  const ts = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
+  fs.appendFileSync(logPath, `[${ts}] [seed-venues:verbose] ${message}\n`);
 }
-const logPath = path.join(logDir, 'seed-venues.log');
-
-// Overwrite log file on each run
-fs.writeFileSync(logPath, '', 'utf8');
-
-/**
- * Shared logger function: logs to console and file with ISO timestamp
- */
-function logToFileAndConsole(message, logPath) {
-  const ts = new Date().toISOString();
-  console.log(message);
-  fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
-}
-
-/**
- * File-only logger: logs verbose details only to file, not console
- */
-function logToFileOnly(message, logPath) {
-  const ts = new Date().toISOString();
-  fs.appendFileSync(logPath, `[${ts}] ${message}\n`);
-}
-
-// Alias for backward compatibility - console output + file
-const log = (message) => logToFileAndConsole(message, logPath);
-
-// Verbose logging - file only (for detailed diagnostics)
-const logVerbose = (message) => logToFileOnly(message, logPath);
 
 // SAFETY CHECK: Require BOTH --confirm flag AND GOOGLE_PLACES_ENABLED=true
 // Google Maps API costs can be high - this script should only run manually
@@ -1467,4 +1441,5 @@ async function fetchKnownVenuesByName(areaName, knownVenueNames) {
   
   log(`✨ Venue seeding complete for all areas from areas.json!`);
   log(`Done! Log saved to ${logPath}`);
+  closeLog();
 })();
