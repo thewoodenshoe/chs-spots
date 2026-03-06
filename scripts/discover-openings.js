@@ -185,10 +185,11 @@ async function main() {
 
   const existingSpots = db.spots.getAll({});
   const existingVenues = db.getDb().prepare('SELECT * FROM venues').all();
+  const statusVenues = existingVenues.filter(v => v.venue_status !== 'active');
   const excludedNames = new Set(db.watchlist.getExcluded().map(w => (w.name || '').toLowerCase().trim()).filter(Boolean));
   const deduped = geocoded.filter(c => {
     if (excludedNames.has(c.placeName.toLowerCase().trim())) return false;
-    return !isDuplicate(c, existingSpots, existingVenues);
+    return !isDuplicate(c, existingSpots, statusVenues);
   });
   log(`${deduped.length} candidates after dedup`);
 

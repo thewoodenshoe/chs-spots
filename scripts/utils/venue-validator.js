@@ -11,7 +11,7 @@
  *   3. Grok LLM verification with minimum confidence 70
  */
 
-const { chat, getApiKey } = require('./llm-client');
+const { webSearch, getApiKey } = require('./llm-client');
 
 const MAX_REVIEWS_RECENTLY_OPENED = 30;
 const MAX_REVIEWS_COMING_SOON = 10;
@@ -55,30 +55,26 @@ async function verifyViaGrok(candidates, log) {
     `- "${c.placeName}" at ${c.address || 'Charleston, SC'} (${c.userRatingsTotal || 0} Google reviews)`,
   ).join('\n');
 
-  const result = await chat({
-    messages: [{
-      role: 'user',
-      content: `You are validating whether these Charleston, SC venues are GENUINELY NEW establishments. This data will be shown publicly — false positives damage our credibility.
+  const result = await webSearch({
+    prompt: `Search the web and verify whether these Charleston, SC venues are GENUINELY NEW establishments. This data will be shown publicly — false positives damage our credibility.
 
 Venues to validate:
 ${nameList}
 
-For each venue, determine:
+For each venue, search for evidence of when it opened. Determine:
 1. Did this venue LITERALLY open for the first time within the last 6 months?
 2. A venue getting a new menu, chef, patio, renovation, or media coverage does NOT count.
 3. Well-known Charleston institutions are NEVER new.
 
 Return ONLY a JSON array. Each object:
 - "name": exact venue name
-- "is_new": true ONLY if you have strong evidence it opened in the last 6 months
+- "is_new": true ONLY if you found strong web evidence it opened in the last 6 months
 - "confidence": 0-100 (how sure you are about is_new)
 - "opened_date": approximate opening date if known, or null
-- "reason": brief evidence (e.g. "opened Jan 2026 per Post & Courier" or "established since 2018")
+- "reason": cite the specific source (e.g. "opened Jan 2026 per Post & Courier" or "established since 2018 per Google Maps")
 
-DEFAULT TO FALSE. If you cannot find clear evidence of a recent opening, is_new must be false.`,
-    }],
-    model: 'grok-3-mini-fast',
-    timeoutMs: 60000,
+DEFAULT TO FALSE. If you cannot find clear web evidence of a recent opening, is_new must be false.`,
+    timeoutMs: 120000,
     log: () => {},
   });
 
