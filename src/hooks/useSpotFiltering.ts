@@ -16,10 +16,11 @@ interface FilterParams {
   searchQuery: string;
   userLocation: { lat: number; lng: number } | null;
   venueAreaById: Map<string, string>;
+  venueNameById?: Map<string, string>;
 }
 
 export function useFilteredSpots({
-  spots, selectedArea, selectedActivity, searchQuery, userLocation, venueAreaById,
+  spots, selectedArea, selectedActivity, searchQuery, userLocation, venueAreaById, venueNameById,
 }: FilterParams): Spot[] {
   const isNearMe = selectedArea === NEAR_ME;
   const isAllVenues = selectedActivity === ALL_VENUES;
@@ -31,8 +32,10 @@ export function useFilteredSpots({
       if (spot.lat === 0 && spot.lng === 0) return false;
       const activityMatch = isAllVenues || spot.type === selectedActivity;
       if (query) {
+        const venueName = spot.venueId ? (venueNameById?.get(spot.venueId) || '') : '';
         const searchMatch = spot.title.toLowerCase().includes(query)
-          || (spot.description || '').toLowerCase().includes(query);
+          || (spot.description || '').toLowerCase().includes(query)
+          || venueName.toLowerCase().includes(query);
         return activityMatch && searchMatch;
       }
       if (isNearMe || isAreaBypass) return activityMatch;
@@ -52,7 +55,7 @@ export function useFilteredSpots({
     }
 
     return results;
-  }, [spots, selectedArea, selectedActivity, venueAreaById, searchQuery, isNearMe, isAllVenues, isAreaBypass, userLocation]);
+  }, [spots, selectedArea, selectedActivity, venueAreaById, venueNameById, searchQuery, isNearMe, isAllVenues, isAreaBypass, userLocation]);
 }
 
 export interface VenueSearchResult {

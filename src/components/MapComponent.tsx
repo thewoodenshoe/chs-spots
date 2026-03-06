@@ -63,6 +63,7 @@ export default function MapComponent({
   const { activities } = useActivities();
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
+  const [selectedSpots, setSelectedSpots] = useState<Spot[]>([]);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [bannerDismissedFor, setBannerDismissedFor] = useState<Set<string>>(new Set());
   const [emptyDismissedKey, setEmptyDismissedKey] = useState('');
@@ -99,6 +100,21 @@ export default function MapComponent({
     }
     return result;
   }, [filteredSpots, showOnlyVenueOpen, showOnlyActivityActive, venueMap]);
+
+  const venueGroupedMarkers = useMemo(() => {
+    const groups = new Map<string, Spot[]>();
+    for (const s of visibleSpots) {
+      const key = s.venueId || `solo_${s.id}`;
+      const arr = groups.get(key) || [];
+      arr.push(s);
+      groups.set(key, arr);
+    }
+    return Array.from(groups.values()).map(group => ({
+      representative: group[0],
+      spots: group,
+      hasActive: group.some(s => isSpotActiveNow(s)),
+    }));
+  }, [visibleSpots]);
 
   const [initialCenter] = useState(() =>
     mapCenter ? { lat: mapCenter.lat, lng: mapCenter.lng } : DEFAULT_CENTER
@@ -178,6 +194,7 @@ export default function MapComponent({
 
   const handleMapClick = useCallback((e: google.maps.MapMouseEvent) => {
     setSelectedSpot(null);
+    setSelectedSpots([]);
     setSelectedVenue(null);
     if (window.location.search) window.history.replaceState({}, '', window.location.pathname);
     if (isSubmissionMode && e.latLng && onMapClick) {
@@ -207,22 +224,31 @@ export default function MapComponent({
     map.panTo({ lat: desiredCenterLat, lng: position.lng });
   }, [map]);
 
-  const handleMarkerClick = useCallback((spot: Spot) => {
-    setSelectedSpot(spot);
+  const handleVenueGroupClick = useCallback((spotsAtVenue: Spot[]) => {
+    const first = spotsAtVenue[0];
+    if (spotsAtVenue.length === 1) {
+      setSelectedSpot(first);
+      setSelectedSpots([]);
+    } else {
+      setSelectedSpot(null);
+      setSelectedSpots(spotsAtVenue);
+    }
     setSelectedVenue(null);
-    smartPan({ lat: spot.lat, lng: spot.lng });
-    window.history.replaceState({}, '', `?spot=${spot.id}`);
+    smartPan({ lat: first.lat, lng: first.lng });
+    window.history.replaceState({}, '', `?spot=${first.id}`);
   }, [smartPan]);
 
   const handleVenueMarkerClick = useCallback((venue: Venue) => {
     setSelectedVenue(venue);
     setSelectedSpot(null);
+    setSelectedSpots([]);
     smartPan({ lat: venue.lat, lng: venue.lng });
     if (window.location.search) window.history.replaceState({}, '', window.location.pathname);
   }, [smartPan]);
 
   const handleInfoWindowClose = useCallback(() => {
     setSelectedSpot(null);
+    setSelectedSpots([]);
     setSelectedVenue(null);
     if (window.location.search) window.history.replaceState({}, '', window.location.pathname);
   }, []);
@@ -410,7 +436,7 @@ export default function MapComponent({
             gestureHandling: 'greedy',
           }}
         >
-        {visibleSpots.length > 0 && (
+        {venueGroupedMarkers.length > 0 && (
           <MarkerClusterer
             options={{
               enableRetinaIcons: true,
@@ -423,19 +449,16 @@ export default function MapComponent({
           >
             {(clusterer) => (
               <>
-                {visibleSpots.map((spot) => {
-                  const active = isSpotActiveNow(spot);
-                  return (
-                    <Marker
-                      key={spot.id}
-                      position={{ lat: spot.lat, lng: spot.lng }}
-                      icon={createMarkerIcon(spot, activities, active)}
-                      clusterer={clusterer}
-                      onClick={() => handleMarkerClick(spot)}
-                      zIndex={active ? 1100 : 1000}
-                    />
-                  );
-                })}
+                {venueGroupedMarkers.map(({ representative, spots: groupSpots, hasActive }) => (
+                  <Marker
+                    key={representative.venueId || representative.id}
+                    position={{ lat: representative.lat, lng: representative.lng }}
+                    icon={createMarkerIcon(representative, activities, hasActive)}
+                    clusterer={clusterer}
+                    onClick={() => handleVenueGroupClick(groupSpots)}
+                    zIndex={hasActive ? 1100 : 1000}
+                  />
+                ))}
               </>
             )}
           </MarkerClusterer>
@@ -501,6 +524,70 @@ export default function MapComponent({
               onReport={onReportSpot}
               onClose={handleInfoWindowClose}
             />
+          </InfoWindow>
+        )}
+
+        {selectedSpots.length > 0 && (
+          <InfoWindow
+            position={{ lat: selectedSpots[0].lat, lng: selectedSpots[0].lng }}
+            onCloseClick={handleInfoWindowClose}
+            options={{
+              pixelOffset: new google.maps.Size(0, -8),
+              maxWidth: 340,
+            }}
+          >
+            <div className="text-sm min-w-[220px] max-w-[320px]">
+              {(() => {
+                const venueId = selectedSpots[0].venueId;
+                const venue = venueId ? venueMap.get(venueId) : undefined;
+                return (
+                  <>
+                    <div className="font-bold text-gray-900 text-base mb-1">
+                      {venue?.name || selectedSpots[0].title}
+                    </div>
+                    {venue?.area && (
+                      <p className="text-xs text-gray-500 mb-2">{venue.area}, Charleston SC</p>
+                    )}
+                    <div className="space-y-2">
+                      {selectedSpots.map(s => {
+                        const cfg = activities.find(a => a.name === s.type);
+                        const active = isSpotActiveNow(s);
+                        return (
+                          <div
+                            key={s.id}
+                            className="rounded-lg border border-gray-200 p-2 cursor-pointer hover:border-teal-300 transition-colors"
+                            onClick={() => { setSelectedSpot(s); setSelectedSpots([]); }}
+                          >
+                            <div className="flex items-center gap-1.5">
+                              <span>{cfg?.emoji || '📍'}</span>
+                              <span className="font-semibold text-gray-800 text-xs">{s.type}</span>
+                              {active && (
+                                <span className="rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-bold text-green-700">Active</span>
+                              )}
+                            </div>
+                            {s.promotionTime && (
+                              <p className="text-[11px] text-gray-500 mt-0.5">{s.promotionTime}</p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="flex gap-2 mt-2">
+                      {venue && (
+                        <a
+                          href={`https://www.google.com/maps/dir/?api=1&destination=${venue.lat},${venue.lng}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 rounded-lg bg-indigo-100 px-3 py-1.5 text-xs font-semibold text-indigo-700 text-center hover:bg-indigo-200"
+                        >
+                          Directions
+                        </a>
+                      )}
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
           </InfoWindow>
         )}
 

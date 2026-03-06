@@ -238,12 +238,17 @@ export default function HomeClient() {
   };
 
   const venueAreaById = useVenueAreaMap(venues);
+  const venueNameById = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const v of venues) if (v.id && v.name) m.set(v.id, v.name);
+    return m;
+  }, [venues]);
   const isSearching = searchQuery.trim().length >= 2;
 
   const spotCountsByActivity = useSpotCounts(spots);
 
   const filteredSpots = useFilteredSpots({
-    spots, selectedArea, selectedActivity, searchQuery, userLocation, venueAreaById,
+    spots, selectedArea, selectedActivity, searchQuery, userLocation, venueAreaById, venueNameById,
   });
 
   const venueResults = useVenueSearchResults(venues, searchQuery, spots, userLocation, selectedActivity);
