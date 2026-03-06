@@ -12,7 +12,7 @@
 const {
   getDb, getDbPath, closeDb, ensureSchema,
   syncActivityFlags, ACTIVITY_FLAG_MAP,
-  transaction, setAuditContext, generateVenueId,
+  transaction, setAuditContext, generateVenueId, logAudit,
 } = require('./db-core');
 const venues = require('./db-venues');
 const spots = require('./db-spots');
@@ -22,7 +22,7 @@ const { config, pipelineRuns, streaks, audit } = require('./db-pipeline');
 module.exports = {
   getDb, getDbPath, closeDb, ensureSchema,
   syncActivityFlags, ACTIVITY_FLAG_MAP,
-  setAuditContext, generateVenueId,
+  setAuditContext, generateVenueId, logAudit,
   venues, spots, gold, areas, activities,
   watchlist, confidenceReviews, config,
   pipelineRuns, streaks, audit, transaction,
