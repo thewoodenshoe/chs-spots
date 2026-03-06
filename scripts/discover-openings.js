@@ -11,14 +11,13 @@ const fs = require('fs');
 const path = require('path');
 const db = require('./utils/db');
 const { createLogger } = require('./utils/logger');
-const { detectSecondaryTypes } = require('./utils/activity-tagger');
 const { webSearch, getApiKey } = require('./utils/llm-client');
 const { delay, fetchWithRetry, parseRssItems, parseAtomEntries,
   isCharlestonRelated, classifyArticle, extractRestaurantName,
-  extractDescription, isWithinDays, isVenueRelated } = require('./utils/discover-rss');
+  extractDescription, isWithinDays } = require('./utils/discover-rss');
 const { VALID_AREAS, getGoogleApiKey, geocodeViaPlaces, downloadPhoto,
-  findAreaFromCoordinates, findAreaFromAddress, enrichViaGrok,
-  isDuplicate } = require('./utils/discover-places');
+  fetchPlacePhoto, findAreaFromCoordinates, findAreaFromAddress,
+  enrichViaGrok, isDuplicate } = require('./utils/discover-places');
 const { validateCandidates } = require('./utils/venue-validator');
 
 const { log, warn, error, close: closeLog } = createLogger('discover-openings');
@@ -32,8 +31,6 @@ const RSS_FEEDS = [
 ];
 
 const MAX_ARTICLE_AGE_DAYS = 120;
-const RECENTLY_OPENED_EXPIRY_DAYS = 60;
-const COMING_SOON_EXPIRY_DAYS = 120;
 const GEOCODE_DELAY_MS = 500;
 
 async function discoverViaGrok() {
@@ -93,24 +90,22 @@ function upsertVenueFromGeocode(geocoded, area, classification, expectedOpen, de
 
 function ageOutOldVenueStatuses() {
   const rawDb = db.getDb();
-  const threeMonthsAgo = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
-  const aged = rawDb.prepare(
-    "UPDATE venues SET venue_status = 'active', updated_at = datetime('now') WHERE venue_status = 'recently_opened' AND venue_added_at < ?",
-  ).run(threeMonthsAgo);
-  if (aged.changes > 0) log(`Aged out ${aged.changes} "recently_opened" venues to active`);
-  return aged.changes;
+  const cutoff = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
+  const toAge = rawDb.prepare(
+    "SELECT id, description FROM venues WHERE venue_status = 'recently_opened' AND venue_added_at < ?",
+  ).all(cutoff);
+  const stmt = rawDb.prepare("UPDATE venues SET venue_status = 'active', description = ?, updated_at = datetime('now') WHERE id = ?");
+  for (const v of toAge) stmt.run((v.description || '').replace(/^Opened\s+[^.]+\.\s*/i, '').trim() || null, v.id);
+  if (toAge.length > 0) log(`Aged out ${toAge.length} recently_opened venues to active`);
+  return toAge.length;
 }
 
-async function sendTelegram(stats) {
+async function sendTelegram(s) {
   const token = process.env.TELEGRAM_BOT_TOKEN || '';
   const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID || '';
   if (!token || !chatId) return;
-  const lines = ['Opening Discovery', '', `RSS articles: ${stats.articlesScanned}`,
-    `Grok results: ${stats.grokCount || 0}`, `Candidates: ${stats.candidatesFound}`,
-    `Geocoded: ${stats.geocoded}`, `New spots: ${stats.insertedCount}`];
-  if (stats.insertedNames.length > 0) { lines.push(''); lines.push(...stats.insertedNames); }
-  if (stats.cleanedUp > 0) lines.push('', `Expired removed: ${stats.cleanedUp}`);
-  lines.push('', `Completed in ${stats.elapsed}s`);
+  const lines = [`Opening Discovery`, `RSS: ${s.articlesScanned} | Grok: ${s.grokCount || 0} | New: ${s.insertedCount} | Aged: ${s.cleanedUp || 0} | ${s.elapsed}s`];
+  if (s.insertedNames.length > 0) lines.push('', ...s.insertedNames);
   try {
     await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -204,7 +199,11 @@ async function main() {
   for (const spot of newSpots) {
     let area = findAreaFromAddress(spot.address) || spot.grokArea || findAreaFromCoordinates(spot.lat, spot.lng);
     let description = spot.grokDescription || extractDescription(spot.title, spot.description, spot.classification);
-    if (spot.expectedOpen) description = `${description || ''} Expected: ${spot.expectedOpen}.`.trim();
+    if (spot.classification === 'Recently Opened' && spot.grokVerifiedDate) {
+      description = `Opened ${spot.grokVerifiedDate}. ${description || ''}`.trim();
+    } else if (spot.expectedOpen) {
+      description = `${description || ''} Expected: ${spot.expectedOpen}.`.trim();
+    }
     if (!area || area === 'Unknown') {
       const enriched = await enrichViaGrok(spot.placeName, spot.address, log);
       if (enriched) {
@@ -215,10 +214,15 @@ async function main() {
     const venueId = upsertVenueFromGeocode(spot, area, spot.classification, spot.expectedOpen, description);
     const spotTitle = spot.restaurantName || spot.placeName;
     try {
+      let photoPath = null;
       if (spot.photoRef) {
-        const photoPath = await downloadPhoto(spot.photoRef, spotTitle);
-        if (photoPath) db.venues.updatePhotoUrl(venueId, photoPath);
+        photoPath = await downloadPhoto(spot.photoRef, spotTitle);
       }
+      if (!photoPath && spot.placeId) {
+        const safeName = spotTitle.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase().slice(0, 50);
+        photoPath = await fetchPlacePhoto(spot.placeId, safeName);
+      }
+      if (photoPath) db.venues.updatePhotoUrl(venueId, photoPath);
       insertedCount++;
       insertedNames.push(`${spot.classification === 'Recently Opened' ? 'NEW' : 'SOON'} ${spotTitle} (${area || 'Downtown Charleston'})`);
       log(`Venue ${venueId}: ${spotTitle} [${spot.classification}] -> ${area || 'Downtown Charleston'}`);
