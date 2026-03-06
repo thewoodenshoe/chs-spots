@@ -76,3 +76,16 @@ echo "Venue enrichment finished at $(date)" >> "$LOG_FILE"
 echo "--- Generating daily report ---" >> "$LOG_FILE"
 node scripts/ops/generate-report.js --send-telegram >> "$LOG_FILE" 2>&1 || true
 echo "Report generated at $(date)" >> "$LOG_FILE"
+
+# Revalidate all SEO pages (venue, explore, sitemap) so crawlers see fresh data
+echo "--- Revalidating SEO pages ---" >> "$LOG_FILE"
+REVALIDATE_SECRET="${REVALIDATE_SECRET:-}"
+if [ -n "$REVALIDATE_SECRET" ]; then
+  curl -s -X POST "http://localhost:3000/api/revalidate" \
+    -H "x-revalidate-secret: $REVALIDATE_SECRET" \
+    -H "Content-Type: application/json" >> "$LOG_FILE" 2>&1 || true
+  echo "" >> "$LOG_FILE"
+  echo "SEO revalidation triggered at $(date)" >> "$LOG_FILE"
+else
+  echo "REVALIDATE_SECRET not set — skipping SEO revalidation" >> "$LOG_FILE"
+fi

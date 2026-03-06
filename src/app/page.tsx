@@ -5,9 +5,31 @@ import Link from 'next/link';
 import HomeClient from './HomeClient';
 import { slugify } from '@/utils/seo-helpers';
 
-export const metadata: Metadata = {
-  alternates: { canonical: 'https://chsfinds.com' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const allSpots = spots.getAll({ visibleOnly: true });
+  const allVenues = venues.getAll();
+  const today = new Date().toISOString().split('T')[0];
+
+  const spotCount = allSpots.length;
+  const venueCount = allVenues.length;
+  const typeCounts: Record<string, number> = {};
+  for (const s of allSpots) typeCounts[s.type] = (typeCounts[s.type] || 0) + 1;
+
+  const hh = typeCounts['Happy Hour'] || 0;
+  const br = typeCounts['Brunch'] || 0;
+  const rt = typeCounts['Rooftop Bars'] || 0;
+  const lm = typeCounts['Live Music'] || 0;
+
+  return {
+    title: `CHS Finds – ${hh} Happy Hours, ${br} Brunches, ${rt} Rooftop Bars & More in Charleston SC`,
+    description: `Discover ${spotCount}+ verified deals across ${venueCount} Charleston SC venues — ${hh} happy hours, ${br} brunches, ${rt} rooftop bars, ${lm} live music spots. Real-time 'Active Right Now' map. Updated ${today}. Free, no ads.`,
+    alternates: { canonical: 'https://chsfinds.com' },
+    other: {
+      'last-modified': today,
+      'revisit-after': '1 day',
+    },
+  };
+}
 
 export default function HomePage() {
   const allSpots = spots.getAll({ visibleOnly: true });

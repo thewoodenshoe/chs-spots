@@ -100,17 +100,33 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const today = new Date().toISOString().split('T')[0];
   const venueCount = new Set(areaSpots.map(s => s.id)).size;
 
+  const activityHints: Record<string, string> = {
+    'Happy Hour': `with drink specials, food deals & daily schedules. See which are active right now`,
+    'Brunch': `with menus, weekend schedules & pricing. Find Saturday and Sunday brunch`,
+    'Live Music': `with tonight's shows, venues & schedules. Real-time live music happening now`,
+    'Rooftop Bars': `with views, cocktails & atmosphere. Best rooftop spots`,
+    'Coffee Shops': `with hours, specialties & locations. Find your morning coffee`,
+    'Dog-Friendly': `that welcome dogs — patios, parks & pet-friendly spots`,
+    'Landmarks & Attractions': `worth visiting — historic sites, gardens & must-see spots`,
+  };
+  const hint = activityHints[parsed.activity] || `with verified details and real-time status`;
+
   return {
     title: `${titleCount}${parsed.activity} in ${parsed.area} SC – Real-Time Active Now Map | CHS Finds`,
     description: count > 0
-      ? `Discover ${count} verified ${actLower} deals across ${venueCount} venues in ${parsed.area}, Charleston SC with real-time 'Active Right Now' filtering. Updated daily with latest times & promotions. Last scan: ${today}.`
+      ? `${count} verified ${actLower} spots across ${venueCount} venues in ${parsed.area}, Charleston SC ${hint}. Map, photos & directions included. Last updated: ${today}.`
       : `${parsed.activity} in ${parsed.area}, Charleston SC — explore nearby areas on CHS Finds.`,
-    keywords: [parsed.activity, parsed.area, 'Charleston SC', `best ${actLower}`, `${actLower} deals`, `${actLower} near me`, `${parsed.area} restaurants`],
+    keywords: [
+      parsed.activity, parsed.area, 'Charleston SC',
+      `best ${actLower} ${parsed.area}`, `${actLower} deals Charleston`,
+      `${actLower} near me`, `${parsed.area} ${actLower}`,
+      `Charleston ${actLower} map`, `${actLower} today`,
+    ],
     alternates: { canonical },
     robots,
     openGraph: {
       title: `${titleCount}${parsed.activity} in ${parsed.area} SC – Real-Time Map`,
-      description: `Discover the best ${actLower} spots in ${parsed.area}, Charleston SC. ${count} deals updated daily.`,
+      description: `${count > 0 ? count : 'No'} ${actLower} spots in ${parsed.area}, Charleston SC. Updated daily with times, menus & directions.`,
       url: canonical,
       siteName: 'CHS Finds',
     },
