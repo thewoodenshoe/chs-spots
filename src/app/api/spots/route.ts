@@ -4,7 +4,7 @@ import { sendApprovalRequest } from '@/lib/telegram';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import { isAdminRequest } from '@/lib/auth';
 import { createSpotSchema, parseOrError } from '@/lib/validations';
-import { spots, venues, type VenueRow } from '@/lib/db';
+import { spots, venues, generateVenueId, setAuditContext, type VenueRow } from '@/lib/db';
 import { findMatchingVenue } from '@/lib/venue-match';
 import { getCache, setCache, invalidate } from '@/lib/cache';
 import { transformSpot, venueToSpot, buildVenueMap } from '@/lib/transform-spot';
@@ -69,9 +69,12 @@ export async function POST(request: Request) {
     const spotData = parsed.data;
     const activityType = spotData.type || spotData.activity || 'Happy Hour';
 
+    setAuditContext('manual', 'api-spots-post');
+
     let resolvedVenueId: string | null = null;
     let resolvedArea: string | null = spotData.area || null;
     let venueName: string | null = null;
+    let isNewVenue = false;
 
     if (spotData.venueId) {
       const venue = venues.getById(spotData.venueId);
@@ -87,6 +90,22 @@ export async function POST(request: Request) {
       resolvedVenueId = venue.id;
       resolvedArea = venue.area || resolvedArea;
       venueName = venue.name;
+    } else if (spotData.newVenue) {
+      const newVenueId = generateVenueId();
+      venues.upsert({
+        id: newVenueId,
+        name: spotData.newVenue.name,
+        address: spotData.newVenue.address || undefined,
+        website: spotData.newVenue.website || undefined,
+        lat: spotData.lat ?? 0,
+        lng: spotData.lng ?? 0,
+        area: resolvedArea,
+        submitter_name: spotData.submitterName,
+      });
+      resolvedVenueId = newVenueId;
+      venueName = spotData.newVenue.name;
+      isNewVenue = true;
+      console.log(`[POST /api/spots] Created new venue ${newVenueId} "${spotData.newVenue.name}" via user submission`);
     } else if (spotData.lat != null && spotData.lng != null) {
       const venueMatch = findMatchingVenue(spotData.title, spotData.lat, spotData.lng);
       if (venueMatch) {
@@ -94,7 +113,7 @@ export async function POST(request: Request) {
         venueName = venueMatch.venueName;
         resolvedArea = venues.getById(venueMatch.venueId)?.area || resolvedArea;
       } else {
-        const pinVenueId = `pin_${Date.now()}`;
+        const pinVenueId = generateVenueId();
         venues.upsert({
           id: pinVenueId,
           name: spotData.title,
@@ -127,8 +146,9 @@ export async function POST(request: Request) {
     });
 
     const venueLabel = resolvedVenueId
-      ? `\n🔗 Venue: ${venueName} (${resolvedVenueId.slice(0, 20)}…)`
+      ? `\n🔗 Venue: ${venueName} (${resolvedVenueId})`
       : '';
+    const newVenueLabel = isNewVenue ? '\n🆕 NEW VENUE (needs enrichment)' : '';
 
     try {
       await sendApprovalRequest({
@@ -137,7 +157,7 @@ export async function POST(request: Request) {
         type: activityType,
         lat: spotData.lat ?? 0,
         lng: spotData.lng ?? 0,
-        description: `By: ${spotData.submitterName}\n${spotData.description || ''}${venueLabel}`,
+        description: `By: ${spotData.submitterName}\n${spotData.description || ''}${venueLabel}${newVenueLabel}`,
       });
     } catch (telegramError) {
       console.warn('Telegram notification failed (spot still saved):', telegramError);

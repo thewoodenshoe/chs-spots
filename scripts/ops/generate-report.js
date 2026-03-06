@@ -682,6 +682,46 @@ function getPipelineData() {
     }
   } catch (e) { debugLog('missingTimes', e); }
 
+  // 11. Venues missing key data (flagged for enrichment)
+  try {
+    const database = db.getDb();
+    const incompleteVenues = database.prepare(`
+      SELECT id, name, area,
+        CASE WHEN (website IS NULL OR website = '') THEN 1 ELSE 0 END as no_website,
+        CASE WHEN (phone IS NULL OR phone = '') THEN 1 ELSE 0 END as no_phone,
+        CASE WHEN (photo_url IS NULL OR photo_url = '') THEN 1 ELSE 0 END as no_photo,
+        CASE WHEN (address IS NULL OR address = '') THEN 1 ELSE 0 END as no_address,
+        CASE WHEN (lat IS NULL OR lat = 0) THEN 1 ELSE 0 END as no_coords
+      FROM venues
+      WHERE (website IS NULL OR website = '')
+         OR (phone IS NULL OR phone = '')
+         OR (photo_url IS NULL OR photo_url = '')
+         OR (address IS NULL OR address = '')
+         OR (lat IS NULL OR lat = 0)
+      ORDER BY created_at DESC
+    `).all();
+
+    result.incompleteVenuesCount = incompleteVenues.length;
+    if (incompleteVenues.length > 0) {
+      const missing = [];
+      for (const v of incompleteVenues.slice(0, 15)) {
+        const gaps = [];
+        if (v.no_website) gaps.push('website');
+        if (v.no_phone) gaps.push('phone');
+        if (v.no_photo) gaps.push('photo');
+        if (v.no_address) gaps.push('address');
+        if (v.no_coords) gaps.push('coords');
+        missing.push(`${v.name} (${v.area || 'no area'}): ${gaps.join(', ')}`);
+      }
+      result.actions.push({
+        severity: incompleteVenues.length >= 20 ? 'medium' : 'low',
+        category: 'Incomplete Venues',
+        title: `${incompleteVenues.length} venue(s) missing key data`,
+        detail: missing.join('\n') + (incompleteVenues.length > 15 ? `\n... and ${incompleteVenues.length - 15} more` : ''),
+      });
+    }
+  } catch (e) { debugLog('incompleteVenues', e); }
+
   // Sort actions: high > medium > low
   const severityOrder = { high: 0, medium: 1, low: 2 };
   result.actions.sort((a, b) => (severityOrder[a.severity] ?? 3) - (severityOrder[b.severity] ?? 3));

@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import type { VenueSearchResult } from '@/components/VenuePicker';
+import type { NewVenueData } from '@/components/SubmissionModal';
 import ScheduleFields, { type ScheduleData } from './ScheduleFields';
 
 export type { ScheduleData };
@@ -10,6 +11,7 @@ const EMPTY_SCHEDULE: ScheduleData = { timeStart: '', timeEnd: '', days: [], spe
 
 interface DetailsFormProps {
   selectedVenue: VenueSearchResult | null;
+  activityType?: string;
   title: string;
   setTitle: (v: string) => void;
   submitterName: string;
@@ -22,12 +24,16 @@ interface DetailsFormProps {
   onRemovePhoto: () => void;
   isSubmitting: boolean;
   onSubmit: (e: React.FormEvent, schedule: ScheduleData) => void;
+  isNewVenue?: boolean;
+  newVenue?: NewVenueData;
+  onNewVenueChange?: (v: NewVenueData) => void;
 }
 
 export default function DetailsForm({
-  selectedVenue, title, setTitle, submitterName, setSubmitterName,
+  selectedVenue, activityType, title, setTitle, submitterName, setSubmitterName,
   description, setDescription, photoPreview, fileInputRef,
   onPhotoChange, onRemovePhoto, isSubmitting, onSubmit,
+  isNewVenue, newVenue, onNewVenueChange,
 }: DetailsFormProps) {
   const [schedule, setSchedule] = useState<ScheduleData>(EMPTY_SCHEDULE);
   const updateSchedule = useCallback(
@@ -35,8 +41,70 @@ export default function DetailsForm({
     [],
   );
 
+  const inputClass = 'w-full rounded-xl border-2 border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20';
+
   return (
     <form onSubmit={(e) => onSubmit(e, schedule)} className="space-y-3">
+      {/* --- New Venue Section --- */}
+      {isNewVenue && newVenue && onNewVenueChange && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="h-5 w-1 rounded-full bg-teal-500" />
+            <span className="text-xs font-bold text-teal-700 uppercase tracking-wide">Venue Info</span>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-gray-700">
+              Venue Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={newVenue.name}
+              onChange={(e) => onNewVenueChange({ ...newVenue, name: e.target.value })}
+              placeholder="e.g., Stewart's Brewing"
+              className={inputClass}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-gray-700">
+              Address <span className="text-xs font-normal text-gray-400">(optional)</span>
+            </label>
+            <input
+              type="text"
+              value={newVenue.address || ''}
+              onChange={(e) => onNewVenueChange({ ...newVenue, address: e.target.value })}
+              placeholder="e.g., 123 King St, Charleston SC"
+              className={inputClass}
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-gray-700">
+              Website <span className="text-xs font-normal text-gray-400">(optional)</span>
+            </label>
+            <input
+              type="url"
+              value={newVenue.website || ''}
+              onChange={(e) => onNewVenueChange({ ...newVenue, website: e.target.value })}
+              placeholder="e.g., https://stewarts.com"
+              className={inputClass}
+            />
+          </div>
+
+          <div className="h-px bg-gray-100 my-1" />
+
+          <div className="flex items-center gap-2 mb-1">
+            <div className="h-5 w-1 rounded-full bg-cyan-500" />
+            <span className="text-xs font-bold text-cyan-700 uppercase tracking-wide">
+              {activityType || 'Activity'} Details
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* --- Existing venue badge --- */}
       {selectedVenue && (
         <div className="rounded-xl bg-teal-50 border border-teal-200 px-3 py-2.5">
           <div className="text-sm font-semibold text-teal-800">{selectedVenue.name}</div>
@@ -44,7 +112,8 @@ export default function DetailsForm({
         </div>
       )}
 
-      {!selectedVenue && (
+      {/* Spot name — only when no venue selected and not new venue flow */}
+      {!selectedVenue && !isNewVenue && (
         <div>
           <label className="mb-1 block text-xs font-semibold text-gray-700">
             Spot Name <span className="text-red-500">*</span>
@@ -54,7 +123,7 @@ export default function DetailsForm({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g., Best Sunset View"
-            className="w-full rounded-xl border-2 border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+            className={inputClass}
             required
           />
         </div>
@@ -69,7 +138,7 @@ export default function DetailsForm({
           value={submitterName}
           onChange={(e) => setSubmitterName(e.target.value)}
           placeholder="e.g., John D."
-          className="w-full rounded-xl border-2 border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+          className={inputClass}
         />
       </div>
 
@@ -78,9 +147,9 @@ export default function DetailsForm({
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Tell us about this spot..."
+          placeholder={isNewVenue ? `Tell us about the ${activityType?.toLowerCase() || 'activity'}...` : 'Tell us about this spot...'}
           rows={2}
-          className="w-full rounded-xl border-2 border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 resize-none"
+          className={`${inputClass} resize-none`}
         />
       </div>
 
@@ -112,9 +181,15 @@ export default function DetailsForm({
         )}
       </div>
 
+      {isNewVenue && (
+        <p className="text-[11px] text-gray-400 text-center">
+          Missing venue details will be automatically enriched overnight
+        </p>
+      )}
+
       <button
         type="submit"
-        disabled={isSubmitting || (!selectedVenue && !title.trim())}
+        disabled={isSubmitting || (isNewVenue ? !newVenue?.name.trim() : (!selectedVenue && !title.trim()))}
         className="w-full rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 px-4 py-3 text-sm font-bold text-white shadow-lg transition-all hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isSubmitting ? (
@@ -125,7 +200,7 @@ export default function DetailsForm({
             </svg>
             Submitting...
           </span>
-        ) : 'Submit'}
+        ) : isNewVenue ? 'Submit Venue + Listing' : 'Submit'}
       </button>
     </form>
   );

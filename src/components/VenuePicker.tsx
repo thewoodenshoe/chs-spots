@@ -18,6 +18,7 @@ interface VenuePickerProps {
   userLocation: { lat: number; lng: number } | null;
   onSelect: (venue: VenueSearchResult) => void;
   onCannotFind: () => void;
+  onCreateNew: (prefillName: string) => void;
 }
 
 export default function VenuePicker({
@@ -25,6 +26,7 @@ export default function VenuePicker({
   userLocation,
   onSelect,
   onCannotFind,
+  onCreateNew,
 }: VenuePickerProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<VenueSearchResult[]>([]);
@@ -69,6 +71,8 @@ export default function VenuePicker({
     return `${(meters / 1000).toFixed(1)}km`;
   }
 
+  const noResults = !loading && results.length === 0 && query.length >= 2;
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex-shrink-0 px-1 pb-3">
@@ -96,9 +100,31 @@ export default function VenuePicker({
           <div className="flex justify-center py-8">
             <div className="h-6 w-6 animate-spin rounded-full border-3 border-gray-200 border-t-teal-500" />
           </div>
-        ) : results.length === 0 ? (
-          <div className="text-center py-8 text-sm text-gray-400">
-            No venues found{query ? ` for "${query}"` : ''}
+        ) : noResults ? (
+          <div className="py-6 space-y-4">
+            <div className="text-center text-sm text-gray-400">
+              No venues found for &ldquo;{query}&rdquo;
+            </div>
+            <button
+              onClick={() => onCreateNew(query)}
+              className="w-full rounded-xl border-2 border-teal-200 bg-teal-50 px-4 py-4 text-left transition-all hover:border-teal-400 hover:shadow-sm active:scale-[0.99]"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-teal-500 text-white flex-shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-teal-800">
+                    Add &ldquo;{query}&rdquo; as a new venue
+                  </div>
+                  <div className="text-xs text-teal-600 mt-0.5">
+                    Create a new venue and add your {activityType.toLowerCase()} listing
+                  </div>
+                </div>
+              </div>
+            </button>
           </div>
         ) : (
           <div className="space-y-1.5">
@@ -143,10 +169,13 @@ export default function VenuePicker({
 
       <div className="flex-shrink-0 pt-3 border-t border-gray-100 mt-2">
         <button
-          onClick={onCannotFind}
-          className="w-full text-center text-xs text-teal-600 font-medium hover:text-teal-800 transition-colors py-2"
+          onClick={() => query.length >= 2 ? onCreateNew(query) : onCannotFind()}
+          className="w-full flex items-center justify-center gap-1.5 text-xs text-teal-600 font-medium hover:text-teal-800 transition-colors py-2"
         >
-          Can&apos;t find your venue? Add a new place →
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          {query.length >= 2 ? `Add "${query}" as a new venue` : "Can\u0027t find your venue? Add a new place"}
         </button>
       </div>
     </div>

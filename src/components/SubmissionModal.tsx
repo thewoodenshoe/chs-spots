@@ -11,7 +11,13 @@ import PinStep from './submission/PinStep';
 import DetailsForm from './submission/DetailsForm';
 import type { ScheduleData } from './submission/DetailsForm';
 
-type SubmitPayload = {
+export type NewVenueData = {
+  name: string;
+  address?: string;
+  website?: string;
+};
+
+export type SubmitPayload = {
   title: string;
   submitterName: string;
   description: string;
@@ -20,6 +26,7 @@ type SubmitPayload = {
   lng?: number;
   photo?: File;
   venueId?: string;
+  newVenue?: NewVenueData;
   timeStart?: string;
   timeEnd?: string;
   days?: number[];
@@ -37,7 +44,7 @@ interface SubmissionModalProps {
   onSubmit: (data: SubmitPayload) => void;
 }
 
-type Step = 'activity' | 'venue' | 'pin' | 'details';
+type Step = 'activity' | 'venue' | 'pin' | 'newVenue' | 'details';
 
 export default function SubmissionModal({
   isOpen, onClose, pinLocation, userLocation, defaultActivity, area, onSubmit,
@@ -53,6 +60,7 @@ export default function SubmissionModal({
   const [step, setStep] = useState<Step>('activity');
   const [selectedActivity, setSelectedActivity] = useState<SpotType>(defaultActivity || 'Happy Hour');
   const [selectedVenue, setSelectedVenue] = useState<VenueSearchResult | null>(null);
+  const [newVenue, setNewVenue] = useState<NewVenueData>({ name: '' });
   const [title, setTitle] = useState('');
   const [submitterName, setSubmitterName] = useState('');
   const [description, setDescription] = useState('');
@@ -70,6 +78,7 @@ export default function SubmissionModal({
       setStep('activity');
       setSelectedActivity(defaultActivity || activities[0]?.name || 'Happy Hour');
       setSelectedVenue(null);
+      setNewVenue({ name: '' });
       setTitle('');
       setSubmitterName('');
       setDescription('');
@@ -86,8 +95,16 @@ export default function SubmissionModal({
 
   const handleVenueSelect = (venue: VenueSearchResult) => {
     setSelectedVenue(venue);
+    setNewVenue({ name: '' });
     setTitle(venue.name);
     setStep('details');
+  };
+
+  const handleCreateNew = (prefillName: string) => {
+    setSelectedVenue(null);
+    setNewVenue({ name: prefillName });
+    setTitle(prefillName);
+    setStep('newVenue');
   };
 
   const handlePinContinue = () => {
@@ -100,31 +117,54 @@ export default function SubmissionModal({
 
   const handleSubmit = async (e: React.FormEvent, schedule: ScheduleData) => {
     e.preventDefault();
-    if (!selectedVenue && !pinLocation) {
+    const isNewVenueFlow = step === 'newVenue';
+
+    if (isNewVenueFlow && !newVenue.name.trim()) {
+      showToast('Please enter a venue name', 'warning');
+      return;
+    }
+    if (!isNewVenueFlow && !selectedVenue && !pinLocation) {
       showToast('Please select a venue or drop a pin on the map', 'warning');
       return;
     }
-    if (!selectedVenue && !title.trim()) {
+    if (!isNewVenueFlow && !selectedVenue && !title.trim()) {
       showToast('Please enter a title', 'warning');
       return;
     }
+
     setIsSubmitting(true);
     try {
-      await onSubmit({
-        title: selectedVenue ? selectedVenue.name : title.trim(),
+      const payload: SubmitPayload = {
+        title: selectedVenue ? selectedVenue.name : (newVenue.name.trim() || title.trim()),
         submitterName: submitterName.trim() || 'Anonymous',
         description: description.trim(),
         type: selectedActivity,
-        ...(selectedVenue
-          ? { venueId: selectedVenue.id }
-          : { lat: pinLocation!.lat, lng: pinLocation!.lng }),
         photo: selectedPhoto || undefined,
         timeStart: schedule.timeStart || undefined,
         timeEnd: schedule.timeEnd || undefined,
         days: schedule.days.length > 0 ? schedule.days : undefined,
         specificDate: schedule.specificDate || undefined,
         deals: schedule.deals.trim() || undefined,
-      });
+      };
+
+      if (selectedVenue) {
+        payload.venueId = selectedVenue.id;
+      } else if (isNewVenueFlow) {
+        payload.newVenue = {
+          name: newVenue.name.trim(),
+          address: newVenue.address?.trim() || undefined,
+          website: newVenue.website?.trim() || undefined,
+        };
+        if (pinLocation) {
+          payload.lat = pinLocation.lat;
+          payload.lng = pinLocation.lng;
+        }
+      } else {
+        payload.lat = pinLocation!.lat;
+        payload.lng = pinLocation!.lng;
+      }
+
+      await onSubmit(payload);
       onClose();
     } catch {
       // Parent handles error toast
@@ -136,6 +176,7 @@ export default function SubmissionModal({
   const handleBack = () => {
     if (step === 'details' && selectedVenue) setStep('venue');
     else if (step === 'details') setStep('pin');
+    else if (step === 'newVenue') setStep('venue');
     else if (step === 'venue' || step === 'pin') setStep('activity');
     else onClose();
   };
@@ -155,6 +196,7 @@ export default function SubmissionModal({
     activity: area ? `Add in ${area}` : 'Add to Charleston Finds',
     venue: 'Select Venue',
     pin: 'Drop a Pin',
+    newVenue: `New Venue + ${selectedActivity}`,
     details: selectedVenue ? `${selectedActivity} at ${selectedVenue.name}` : 'Add Details',
   }[step];
 
@@ -213,14 +255,41 @@ export default function SubmissionModal({
                 userLocation={userLocation}
                 onSelect={handleVenueSelect}
                 onCannotFind={() => { setSelectedVenue(null); setStep('pin'); }}
+                onCreateNew={handleCreateNew}
               />
             )}
             {step === 'pin' && (
               <PinStep pinLocation={pinLocation} onContinue={handlePinContinue} />
             )}
+            {step === 'newVenue' && (
+              <DetailsForm
+                isNewVenue
+                newVenue={newVenue}
+                onNewVenueChange={setNewVenue}
+                selectedVenue={null}
+                activityType={selectedActivity}
+                title={title}
+                setTitle={setTitle}
+                submitterName={submitterName}
+                setSubmitterName={setSubmitterName}
+                description={description}
+                setDescription={setDescription}
+                photoPreview={photoPreview}
+                fileInputRef={fileInputRef}
+                onPhotoChange={handlePhotoChange}
+                onRemovePhoto={() => {
+                  setSelectedPhoto(null);
+                  setPhotoPreview(null);
+                  if (fileInputRef.current) fileInputRef.current.value = '';
+                }}
+                isSubmitting={isSubmitting}
+                onSubmit={handleSubmit}
+              />
+            )}
             {step === 'details' && (
               <DetailsForm
                 selectedVenue={selectedVenue}
+                activityType={selectedActivity}
                 title={title}
                 setTitle={setTitle}
                 submitterName={submitterName}

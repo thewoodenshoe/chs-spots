@@ -28,6 +28,7 @@ export interface Spot {
   venueAddress?: string;
   venueWebsite?: string;
   operatingHours?: Record<string, { open: string; close: string }>;
+  newVenue?: { name: string; address?: string; website?: string };
 }
 
 interface SpotsContextType {

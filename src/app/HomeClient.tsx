@@ -321,6 +321,7 @@ export default function HomeClient() {
     lng?: number;
     photo?: File;
     venueId?: string;
+    newVenue?: { name: string; address?: string; website?: string };
     timeStart?: string;
     timeEnd?: string;
     days?: number[];
@@ -346,6 +347,7 @@ export default function HomeClient() {
         type: data.type,
         photoUrl,
         venueId: data.venueId,
+        newVenue: data.newVenue,
         timeStart: data.timeStart,
         timeEnd: data.timeEnd,
         days: data.days,

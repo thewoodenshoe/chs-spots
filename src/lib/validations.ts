@@ -1,5 +1,11 @@
 import { z } from 'zod';
 
+const newVenueSchema = z.object({
+  name: z.string().min(1, 'Venue name is required').max(200),
+  address: z.string().max(300).optional(),
+  website: z.string().max(500).optional(),
+});
+
 /** Schema for creating a new spot (POST /api/spots) */
 export const createSpotSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
@@ -12,14 +18,15 @@ export const createSpotSchema = z.object({
   photoUrl: z.string().max(1_500_000, 'Photo too large').optional(),
   area: z.string().max(100).optional(),
   venueId: z.string().max(200).optional(),
+  newVenue: newVenueSchema.optional(),
   timeStart: z.string().max(5).optional(),
   timeEnd: z.string().max(5).optional(),
   days: z.array(z.number().min(0).max(6)).max(7).optional(),
   specificDate: z.string().max(10).optional(),
   promotionList: z.array(z.string().max(500)).max(20).optional(),
 }).refine(
-  (data) => data.venueId || (data.lat != null && data.lng != null),
-  { message: 'Either venueId or lat/lng coordinates are required' },
+  (data) => data.venueId || data.newVenue || (data.lat != null && data.lng != null),
+  { message: 'Either venueId, newVenue, or lat/lng coordinates are required' },
 );
 
 /** Schema for updating a spot (PUT /api/spots/[id]) */
