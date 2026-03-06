@@ -92,11 +92,12 @@ function ageOutOldVenueStatuses() {
   const rawDb = db.getDb();
   const cutoff = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
   const toAge = rawDb.prepare(
-    "SELECT id, description FROM venues WHERE venue_status = 'recently_opened' AND venue_added_at < ?",
+    "SELECT id, description FROM venues WHERE venue_status IN ('recently_opened','coming_soon') AND venue_added_at < ?",
   ).all(cutoff);
+  const datePrefix = /^(Opened|Expected to open)\s+[^.]+\.\s*/i;
   const stmt = rawDb.prepare("UPDATE venues SET venue_status = 'active', description = ?, updated_at = datetime('now') WHERE id = ?");
-  for (const v of toAge) stmt.run((v.description || '').replace(/^Opened\s+[^.]+\.\s*/i, '').trim() || null, v.id);
-  if (toAge.length > 0) log(`Aged out ${toAge.length} recently_opened venues to active`);
+  for (const v of toAge) stmt.run((v.description || '').replace(datePrefix, '').trim() || null, v.id);
+  if (toAge.length > 0) log(`Aged out ${toAge.length} status venues to active`);
   return toAge.length;
 }
 
@@ -199,10 +200,11 @@ async function main() {
   for (const spot of newSpots) {
     let area = findAreaFromAddress(spot.address) || spot.grokArea || findAreaFromCoordinates(spot.lat, spot.lng);
     let description = spot.grokDescription || extractDescription(spot.title, spot.description, spot.classification);
-    if (spot.classification === 'Recently Opened' && spot.grokVerifiedDate) {
-      description = `Opened ${spot.grokVerifiedDate}. ${description || ''}`.trim();
-    } else if (spot.expectedOpen) {
-      description = `${description || ''} Expected: ${spot.expectedOpen}.`.trim();
+    const openDate = spot.grokVerifiedDate || spot.expectedOpen || null;
+    if (spot.classification === 'Recently Opened' && openDate) {
+      description = `Opened ${openDate}. ${description || ''}`.trim();
+    } else if (spot.classification === 'Coming Soon' && openDate) {
+      description = `Expected to open ${openDate}. ${description || ''}`.trim();
     }
     if (!area || area === 'Unknown') {
       const enriched = await enrichViaGrok(spot.placeName, spot.address, log);
