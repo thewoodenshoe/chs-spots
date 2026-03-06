@@ -12,6 +12,7 @@ const fs = require('fs');
 
 process.env.DB_PATH = process.env.DB_PATH || path.resolve(__dirname, '..', 'data', 'chs-spots.db');
 const db = require('./utils/db');
+db.setAuditContext('admin', 'serve-admin');
 
 const { reportingPath } = require('./utils/data-dir');
 
@@ -112,13 +113,9 @@ function handleUpdate(body) {
       toUpdate[k] = v === '' ? null : v;
     }
     if (Object.keys(toUpdate).length === 0) return { error: 'no valid fields to update' };
-    const setClauses = Object.keys(toUpdate).map(k => `${k} = @${k}`);
-    setClauses.push("updated_at = datetime('now')");
-    const params = { ...toUpdate, id: venueId };
-    const database = db.getDb();
-    const result = database.prepare(`UPDATE venues SET ${setClauses.join(', ')} WHERE id = @id`).run(params);
-    if (result.changes === 0) return { error: 'venue not found' };
-    const updated = database.prepare('SELECT * FROM venues WHERE id = ?').get(venueId);
+    db.venues.update(venueId, toUpdate);
+    const updated = db.venues.getById(venueId);
+    if (!updated) return { error: 'venue not found' };
     return { success: true, row: updated, table: 'venues' };
   }
 
@@ -151,27 +148,25 @@ function handleNeedsReview() {
   const database = db.getDb();
   const items = [];
 
-  // 1. Discovery Review — Recently Opened / Coming Soon spots missing data
-  const discoverySpots = database.prepare(
-    "SELECT * FROM spots WHERE type IN ('Recently Opened', 'Coming Soon') AND status = 'approved' AND (finding_approved IS NULL OR finding_approved = 0) ORDER BY id DESC"
+  // 1. Discovery Review — venues with coming_soon/recently_opened status missing data
+  const discoveryVenues = database.prepare(
+    "SELECT * FROM venues WHERE venue_status IN ('coming_soon', 'recently_opened') ORDER BY name",
   ).all();
-  for (const s of discoverySpots) {
+  for (const v of discoveryVenues) {
     const issues = [];
-    if (!s.lat || !s.lng) issues.push('no coordinates');
-    if (!s.area || s.area === 'Unknown') issues.push('no area assigned');
+    if (!v.lat || !v.lng) issues.push('no coordinates');
+    if (!v.area || v.area === 'Unknown') issues.push('no area assigned');
     if (issues.length === 0) continue;
-    const venue = s.venue_id ? database.prepare('SELECT name, address, website, phone, operating_hours FROM venues WHERE id = ?').get(s.venue_id) : null;
-    if (venue) { s._venue_name = venue.name; s._venue_address = venue.address; s._venue_website = venue.website; s._venue_phone = venue.phone; s._venue_hours = venue.operating_hours; }
     items.push({
       category: 'Discovery Review',
       severity: issues.includes('no coordinates') ? 'high' : 'medium',
       reason: `Missing: ${issues.join(', ')}. Verify on Google Maps and fill in location data.`,
-      spotId: s.id,
-      title: s.title,
-      type: s.type,
-      area: s.area || 'Unknown',
-      spot: s,
-      table: 'spots',
+      spotId: v.id,
+      title: v.name,
+      type: v.venue_status === 'recently_opened' ? 'Recently Opened' : 'Coming Soon',
+      area: v.area || 'Unknown',
+      spot: v,
+      table: 'venues',
     });
   }
 
@@ -293,10 +288,9 @@ const server = http.createServer(async (req, res) => {
   if (pathname === '/api/delete' && req.method === 'DELETE') {
     const id = parseInt(url.searchParams.get('id'), 10);
     if (!id) { sendJson(res, { error: 'Missing id' }, 400); return; }
-    const database = db.getDb();
-    const existing = database.prepare('SELECT id FROM spots WHERE id = ?').get(id);
+    const existing = db.spots.getById(id);
     if (!existing) { sendJson(res, { error: `Spot #${id} not found` }, 404); return; }
-    database.prepare('DELETE FROM spots WHERE id = ?').run(id);
+    db.spots.delete(id);
     sendJson(res, { ok: true, deleted: id });
     return;
   }

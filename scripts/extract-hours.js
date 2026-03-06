@@ -189,6 +189,7 @@ async function main() {
   if (dryRun) console.log('  DRY RUN: no database writes');
   if (tier1Only) console.log('  TIER 1 ONLY: no LLM calls');
 
+  db.setAuditContext('pipeline', 'extract-hours');
   db.ensureSchema();
   const database = db.getDb();
 
@@ -254,10 +255,11 @@ async function main() {
     const hours = regexParseHours(text);
     if (hours) {
       if (!dryRun) {
-        database.prepare(`
-          UPDATE venues SET operating_hours = ?, hours_source = 'regex', hours_updated_at = datetime('now')
-          WHERE id = ?
-        `).run(JSON.stringify(hours), venue.id);
+        db.venues.update(venue.id, {
+          operating_hours: JSON.stringify(hours),
+          hours_source: 'regex',
+          hours_updated_at: new Date().toISOString(),
+        });
       }
       metrics.tier1++;
       console.log(`  ✓ ${venue.name}: regex parsed (${Object.keys(hours).length} days)`);
@@ -285,10 +287,11 @@ async function main() {
         const hours = await llmExtractHours(venue.text, venue.name, venue.id);
         if (hours) {
           if (!dryRun) {
-            database.prepare(`
-              UPDATE venues SET operating_hours = ?, hours_source = 'llm-website', hours_updated_at = datetime('now')
-              WHERE id = ?
-            `).run(JSON.stringify(hours), venue.id);
+            db.venues.update(venue.id, {
+              operating_hours: JSON.stringify(hours),
+              hours_source: 'llm-website',
+              hours_updated_at: new Date().toISOString(),
+            });
           }
           metrics.tier2++;
           console.log(`  ✓ ${venue.name}: LLM extracted (${Object.keys(hours).length} days)`);
@@ -319,10 +322,11 @@ async function main() {
           const hours = results.get(venue.id);
           if (hours) {
             if (!dryRun) {
-              database.prepare(`
-                UPDATE venues SET operating_hours = ?, hours_source = 'llm-knowledge', hours_updated_at = datetime('now')
-                WHERE id = ?
-              `).run(JSON.stringify(hours), venue.id);
+              db.venues.update(venue.id, {
+                operating_hours: JSON.stringify(hours),
+                hours_source: 'llm-knowledge',
+                hours_updated_at: new Date().toISOString(),
+              });
             }
             metrics.tier3++;
             console.log(`  ✓ ${venue.name}: knowledge query`);

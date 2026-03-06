@@ -76,7 +76,6 @@ async function processBatch(batch, batchNum, totalBatches) {
     return { updated: 0, skipped: batch.length, errors: [] };
   }
 
-  const database = db.getDb();
   let updated = 0;
   const errors = [];
 
@@ -87,39 +86,31 @@ async function processBatch(batch, batchNum, totalBatches) {
       continue;
     }
 
-    const sets = [];
-    const vals = [];
+    const updateObj = {};
 
     if (item.website && !venue.website) {
       const url = item.website.trim();
       if (url !== 'n/a' && url.startsWith('http')) {
-        sets.push('website = ?');
-        vals.push(url);
+        updateObj.website = url;
       } else if (url === 'n/a') {
-        sets.push('website = ?');
-        vals.push('n/a');
+        updateObj.website = 'n/a';
       }
     }
 
     if (item.phone && !venue.phone) {
-      const ph = item.phone.trim();
-      sets.push('phone = ?');
-      vals.push(ph);
+      updateObj.phone = item.phone.trim();
     }
 
-    if (sets.length === 0) continue;
+    if (Object.keys(updateObj).length === 0) continue;
 
-    sets.push('updated_at = ?');
-    vals.push(new Date().toISOString());
-    vals.push(venue.id);
-
+    const fieldNames = Object.keys(updateObj).join(', ');
     if (DRY_RUN) {
-      console.log(`   [DRY] ${venue.name}: ${sets.join(', ')} → ${vals.slice(0, -1).join(', ')}`);
+      console.log(`   [DRY] ${venue.name}: ${fieldNames} → ${Object.values(updateObj).join(', ')}`);
       updated++;
     } else {
       try {
-        database.prepare(`UPDATE venues SET ${sets.join(', ')} WHERE id = ?`).run(...vals);
-        console.log(`   ✅ ${venue.name}: ${sets.filter(s => !s.startsWith('updated_at')).join(', ')}`);
+        db.venues.update(venue.id, updateObj);
+        console.log(`   ✅ ${venue.name}: ${fieldNames}`);
         updated++;
       } catch (err) {
         errors.push(`${venue.name}: ${err.message}`);
@@ -132,6 +123,7 @@ async function processBatch(batch, batchNum, totalBatches) {
 
 async function main() {
   requireApiKey('enrich-venues');
+  db.setAuditContext('llm', 'enrich-venues');
   const database = db.getDb();
 
   const venues = database.prepare(`
@@ -171,6 +163,24 @@ async function main() {
   if (totalErrors.length > 0) {
     console.log(`\nErrors:`);
     totalErrors.forEach(e => console.log(`   ⚠️  ${e}`));
+  }
+
+  // Re-geocode incomplete coming_soon venues (may not have had data at discovery time)
+  try {
+    const incomplete = database.prepare(
+      "SELECT id, name, address, area, lat, lng FROM venues WHERE venue_status = 'coming_soon' AND (lat IS NULL OR lat = 0 OR area IS NULL OR area = '' OR area = 'Unknown')",
+    ).all();
+    if (incomplete.length > 0) {
+      console.log(`\n🔄 ${incomplete.length} coming_soon venue(s) with incomplete geo data — flagged for re-geocode`);
+      for (const v of incomplete) {
+        const issues = [];
+        if (!v.lat || v.lat === 0) issues.push('no coords');
+        if (!v.area || v.area === 'Unknown') issues.push('no area');
+        console.log(`   📌 ${v.name} (${v.address || 'no address'}): ${issues.join(', ')}`);
+      }
+    }
+  } catch (err) {
+    console.log(`   ⚠️  CS re-geocode check failed: ${err.message}`);
   }
 
   const remaining = database.prepare(`

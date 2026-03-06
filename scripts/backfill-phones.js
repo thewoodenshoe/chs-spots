@@ -11,8 +11,9 @@
 
 const path = require('path');
 const fs = require('fs');
-const { getDb: initDb } = require('./utils/db');
+const dalDb = require('./utils/db');
 const { createLogger } = require('./utils/logger');
+dalDb.setAuditContext('pipeline', 'backfill-phones');
 
 const { log } = createLogger('backfill-phones');
 
@@ -60,7 +61,7 @@ function parseArgs() {
 
 async function main() {
   const { limit, dryRun, useGrok } = parseArgs();
-  const db = initDb();
+  const db = dalDb.getDb();
 
   const venues = db.prepare(`
     SELECT id, name, address, area FROM venues
@@ -86,7 +87,7 @@ async function main() {
       if (dryRun) {
         log(`[DRY] ${venue.name} -> ${phone}`);
       } else {
-        db.prepare("UPDATE venues SET phone = ?, updated_at = datetime('now') WHERE id = ?").run(phone, venue.id);
+        dalDb.venues.update(venue.id, { phone });
       }
       scraped++;
     } else {
@@ -127,7 +128,7 @@ async function main() {
                 if (dryRun) {
                   log(`[DRY/PLACES] ${venue.name} -> ${phone}`);
                 } else {
-                  db.prepare("UPDATE venues SET phone = ?, updated_at = datetime('now') WHERE id = ?").run(phone, venue.id);
+                  dalDb.venues.update(venue.id, { phone });
                 }
                 scraped++;
               } else {
@@ -153,8 +154,7 @@ async function main() {
                   }
                 }
                 if (Object.keys(hoursObj).length > 0) {
-                  db.prepare("UPDATE venues SET operating_hours = ?, hours_source = 'google_places', updated_at = datetime('now') WHERE id = ?")
-                    .run(JSON.stringify(hoursObj), venue.id);
+                  dalDb.venues.update(venue.id, { operating_hours: JSON.stringify(hoursObj), hours_source: 'google_places' });
                   log(`  [PLACES] ${venue.name} hours updated`);
                 }
               }
@@ -200,7 +200,7 @@ async function main() {
         if (dryRun) {
           log(`[DRY/GROK] ${venue.name} -> ${phone}`);
         } else {
-          db.prepare("UPDATE venues SET phone = ?, updated_at = datetime('now') WHERE id = ?").run(phone, venue.id);
+          dalDb.venues.update(venue.id, { phone });
         }
         scraped++;
       }

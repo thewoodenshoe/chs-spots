@@ -67,6 +67,7 @@ const createSpots = createSpotsFromGold;
 async function main() {
   log('🔄 Creating Spots from Gold Data\n');
 
+  db.setAuditContext('pipeline', 'create-spots');
   db.ensureSchema();
 
   // Ensure reporting directory exists (for dual-write during transition)
@@ -265,8 +266,9 @@ async function main() {
             continue;
           }
 
-          if (!spot.lat || !spot.lng) {
-            log(`  ⚠️  Skipping: Missing coordinates for ${goldData.venueName} (${venueId})`);
+          const venue = venueMap.get(venueId);
+          if (!venue?.lat || !venue?.lng) {
+            log(`  ⚠️  Skipping: Venue missing coordinates for ${goldData.venueName} (${venueId})`);
             skipped++;
             continue;
           }
@@ -376,41 +378,24 @@ async function main() {
   log(`💾 Upserted ${upsertedCount} automated spot(s) (IDs preserved)`);
   if (staleCount > 0) log(`📦 Archived ${staleCount} stale spot(s) no longer in pipeline (status=expired)`);
 
-  // Safety net: backfill any spots that ended up without an area from their venue
-  try {
-    const d = db.getDb();
-    const fixed = d.prepare(
-      "UPDATE spots SET area = (SELECT v.area FROM venues v WHERE v.id = spots.venue_id) " +
-      "WHERE (area IS NULL OR area = '' OR area = 'Unknown') AND venue_id IS NOT NULL " +
-      "AND EXISTS (SELECT 1 FROM venues v WHERE v.id = spots.venue_id AND v.area IS NOT NULL AND v.area != '')",
-    ).run();
-    if (fixed.changes > 0) {
-      log(`🔧 Area backfill: fixed ${fixed.changes} spot(s) with missing area from venue data`);
-    }
-  } catch (err) {
-    log(`  ⚠️  Area backfill check failed: ${err.message}`);
-  }
-
-  // LLM-powered area enrichment for spots still missing an area
+  // Safety net: backfill venues missing an area via LLM
   try {
     const apiKey = process.env.GROK_API_KEY;
     if (apiKey) {
       const d = db.getDb();
       const missingArea = d.prepare(
-        "SELECT s.id, s.title as name, s.lat, s.lng, v.address " +
-        "FROM spots s LEFT JOIN venues v ON v.id = s.venue_id " +
-        "WHERE (s.area IS NULL OR s.area = '' OR s.area = 'Unknown') LIMIT 50",
+        "SELECT id, name, lat, lng, address FROM venues " +
+        "WHERE (area IS NULL OR area = '' OR area = 'Unknown') LIMIT 50",
       ).all();
       if (missingArea.length > 0) {
         const validAreas = db.areas.getNames();
-        log(`🤖 LLM area enrichment: ${missingArea.length} spot(s) missing area...`);
+        log(`🤖 LLM area enrichment: ${missingArea.length} venue(s) missing area...`);
         const enriched = await enrichAreas(missingArea, validAreas, apiKey, log);
         if (enriched.length > 0) {
-          const updateStmt = d.prepare('UPDATE spots SET area = ? WHERE id = ?');
           for (const e of enriched) {
-            updateStmt.run(e.area, e.id);
+            db.venues.update(e.id, { area: e.area });
           }
-          log(`  ✅ LLM assigned areas to ${enriched.length} spot(s)`);
+          log(`  ✅ LLM assigned areas to ${enriched.length} venue(s)`);
         }
       }
     }
@@ -428,6 +413,7 @@ async function main() {
         "SELECT s.id, s.title, s.type, s.area, s.promotion_time, s.source_url, v.address, v.website " +
         "FROM spots s LEFT JOIN venues v ON v.id = s.venue_id " +
         "WHERE s.status = 'approved' AND s.time_start IS NULL AND s.time_end IS NULL " +
+        "AND s.manual_override = 0 " +
         "AND s.type IN ('Happy Hour', 'Brunch') " +
         "ORDER BY s.id DESC LIMIT 30",
       ).all();
@@ -446,11 +432,13 @@ async function main() {
         const { resolved, unresolved } = await resolveMissingTimes(spotsForResolution, apiKey, log);
 
         if (resolved.length > 0) {
-          const updateStmt = d.prepare(
-            'UPDATE spots SET time_start = ?, time_end = ?, days = COALESCE(?, days), specific_date = ? WHERE id = ?',
-          );
           for (const r of resolved) {
-            updateStmt.run(r.timeStart, r.timeEnd, r.days, r.specificDate, r.id);
+            db.spots.update(r.id, {
+              time_start: r.timeStart,
+              time_end: r.timeEnd,
+              days: r.days || null,
+              specific_date: r.specificDate || null,
+            });
           }
           log(`  ✅ LLM resolved times for ${resolved.length} spot(s)`);
         }
