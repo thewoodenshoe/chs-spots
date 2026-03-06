@@ -19,6 +19,7 @@ const { findMatchingVenue } = require('./utils/venue-match');
 const DRY_RUN = process.argv.includes('--dry-run');
 
 function main() {
+  db.setAuditContext('pipeline', 'backfill-venue-links');
   const database = db.getDb();
 
   const orphans = database.prepare(
@@ -44,9 +45,7 @@ function main() {
     if (DRY_RUN) {
       console.log(`  LINK #${spot.id} "${spot.title}" → "${match.venueName}" (${match.distance}m, score=${match.score.toFixed(2)})`);
     } else {
-      database.prepare(
-        "UPDATE spots SET venue_id = ?, area = COALESCE(?, area), updated_at = datetime('now') WHERE id = ?"
-      ).run(match.venueId, venueArea, spot.id);
+      db.spots.update(spot.id, { venue_id: match.venueId });
       console.log(`  LINKED #${spot.id} "${spot.title}" → "${match.venueName}" (${match.distance}m)`);
     }
     linked++;

@@ -126,6 +126,7 @@ async function processBatch(batch, batchNum, totalBatches) {
 
 async function main() {
   requireApiKey('verify-spot-times');
+  db.setAuditContext('llm', 'verify-spot-times');
   const spots = loadSpots();
   log(`Loaded ${spots.length} spots to verify (${APPLY ? 'APPLY mode' : 'DRY-RUN mode'})`);
   if (TYPE_FILTER) log(`Filtered to type: ${TYPE_FILTER}`);
@@ -151,18 +152,6 @@ async function main() {
 
   if (APPLY && allCorrections.length > 0) {
     log('\nApplying corrections...');
-    const d = db.getDb();
-    const updateStmt = d.prepare(
-      `UPDATE spots SET time_start=?, time_end=?, days=?, manual_override=1,
-       updated_at=datetime('now') WHERE id=?`
-    );
-    const expireStmt = d.prepare(
-      `UPDATE spots SET status='expired', manual_override=1,
-       updated_at=datetime('now') WHERE id=?`
-    );
-    const confirmStmt = d.prepare(
-      `UPDATE spots SET manual_override=1, updated_at=datetime('now') WHERE id=?`
-    );
 
     let applied = 0;
     let expired = 0;
@@ -170,19 +159,21 @@ async function main() {
 
     for (const c of allCorrections) {
       if (c.discontinued) {
-        expireStmt.run(c.id);
+        db.spots.update(c.id, { status: 'expired', manual_override: 1 }, { force: true });
         expired++;
       } else {
-        updateStmt.run(c.new.time_start, c.new.time_end, c.new.days, c.id);
+        db.spots.update(c.id, {
+          time_start: c.new.time_start, time_end: c.new.time_end,
+          days: c.new.days, manual_override: 1,
+        }, { force: true });
         applied++;
       }
     }
 
-    // Lock all confirmed spots too
     const correctedIds = new Set(allCorrections.map(c => c.id));
     for (const spot of spots) {
       if (!correctedIds.has(spot.id) && !spot.manual_override) {
-        confirmStmt.run(spot.id);
+        db.spots.update(spot.id, { manual_override: 1 }, { force: true });
         locked++;
       }
     }

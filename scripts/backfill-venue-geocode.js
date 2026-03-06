@@ -114,6 +114,7 @@ function findArea(lat, lng, address) {
 }
 
 async function main() {
+  db.setAuditContext('pipeline', 'backfill-venue-geocode');
   const d = db.getDb();
 
   let sql = "SELECT id, title, type, lat, lng, area FROM spots WHERE venue_id IS NULL AND status = 'approved' AND lat IS NOT NULL AND lng IS NOT NULL";
@@ -141,7 +142,7 @@ async function main() {
     const existing = d.prepare("SELECT id FROM venues WHERE name = ? AND ABS(lat - ?) < 0.005 AND ABS(lng - ?) < 0.005").get(spot.title, spot.lat, spot.lng);
     if (existing) {
       if (!DRY_RUN) {
-        d.prepare('UPDATE spots SET venue_id = ?, area = COALESCE(area, (SELECT area FROM venues WHERE id = ?)) WHERE id = ?').run(existing.id, existing.id, spot.id);
+        db.spots.update(spot.id, { venue_id: existing.id });
       }
       console.log(`${progress} ${spot.type.padEnd(22)} ${spot.title} → existing venue ${existing.id}`);
       linked++;
@@ -190,14 +191,20 @@ async function main() {
       });
 
       if (phone) {
-        d.prepare('UPDATE venues SET phone = ? WHERE id = ? AND phone IS NULL').run(phone, searchResult.place_id);
+        const venue = db.venues.getById(searchResult.place_id);
+        if (venue && !venue.phone) {
+          db.venues.update(searchResult.place_id, { phone });
+        }
       }
       if (hours) {
-        d.prepare("UPDATE venues SET operating_hours = ?, hours_source = 'google-places', hours_updated_at = datetime('now') WHERE id = ?")
-          .run(JSON.stringify(hours), searchResult.place_id);
+        db.venues.update(searchResult.place_id, {
+          operating_hours: JSON.stringify(hours),
+          hours_source: 'google-places',
+          hours_updated_at: new Date().toISOString(),
+        });
       }
 
-      d.prepare('UPDATE spots SET venue_id = ?, area = ? WHERE id = ?').run(searchResult.place_id, area, spot.id);
+      db.spots.update(spot.id, { venue_id: searchResult.place_id });
     }
 
     const hoursTag = hours ? 'HAS_HOURS' : 'NO_HOURS';

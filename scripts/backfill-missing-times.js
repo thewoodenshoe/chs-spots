@@ -134,6 +134,7 @@ async function main() {
     process.exit(1);
   }
 
+  db.setAuditContext('llm', 'backfill-missing-times');
   log(`=== backfill-missing-times.js START${DRY_RUN ? ' (DRY RUN)' : ''} ===`);
   if (TYPE_FILTER) log(`   Type filter: ${TYPE_FILTER}`);
   log(`   Limit: ${LIMIT}`);
@@ -155,6 +156,7 @@ async function main() {
     WHERE s.status = 'approved'
       AND s.time_start IS NULL
       AND s.time_end   IS NULL
+      AND s.manual_override = 0
       AND ${typeClause}
     ORDER BY s.type, s.title
     LIMIT ${LIMIT}
@@ -178,10 +180,6 @@ async function main() {
   let resolved  = 0;
   let unresolved = 0;
   const unresolvedList = [];
-
-  const updateStmt = DRY_RUN ? null : d.prepare(
-    'UPDATE spots SET time_start = ?, time_end = ?, days = ?, specific_date = ?, updated_at = datetime(\'now\') WHERE id = ?',
-  );
 
   for (let i = 0; i < rows.length; i++) {
     const row     = rows[i];
@@ -250,7 +248,7 @@ async function main() {
     if (timeStart || timeEnd || days) {
       log(`   ✅ Resolved (tier ${tier}): time_start=${timeStart || 'null'} time_end=${timeEnd || 'null'} days=${days || 'null'}${specificDate ? ' specific_date=' + specificDate : ''}`);
       if (!DRY_RUN) {
-        updateStmt.run(timeStart, timeEnd, days, specificDate, row.id);
+        db.spots.update(row.id, { time_start: timeStart, time_end: timeEnd, days, specific_date: specificDate });
       } else {
         log('   (DRY RUN — no DB write)');
       }
