@@ -41,7 +41,9 @@ function deduplicateStatusVenues() {
     if (match) {
       log(`Duplicate: "${sv.name}" (${sv.venue_status}) matches active venue "${match.name}" (${match.id})`);
       if (!DRY_RUN) {
-        raw.prepare("DELETE FROM venues WHERE id = ?").run(sv.id);
+        raw.prepare(
+          "UPDATE venues SET venue_status = 'active', updated_at = datetime('now') WHERE id = ?",
+        ).run(sv.id);
       }
       removed++;
     }
