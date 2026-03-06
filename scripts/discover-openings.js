@@ -59,7 +59,7 @@ async function discoverViaGrok() {
   return valid;
 }
 
-function upsertVenueFromGeocode(geocoded, area, classification, expectedOpen) {
+function upsertVenueFromGeocode(geocoded, area, classification, expectedOpen, description) {
   if (!geocoded.placeId) return null;
   const venueStatus = classification === 'Recently Opened' ? 'recently_opened' : 'coming_soon';
   const phone = geocoded.phone || geocoded.grokPhone || null;
@@ -73,6 +73,7 @@ function upsertVenueFromGeocode(geocoded, area, classification, expectedOpen) {
     area: area || null,
     website,
     phone,
+    description: description || null,
     operating_hours: geocoded.operatingHours || null,
     hours_source: geocoded.operatingHours ? 'google_places' : null,
     types: Array.isArray(geocoded.types) ? geocoded.types.join(', ') : null,
@@ -201,17 +202,12 @@ async function main() {
         if (!description && enriched.description) description = enriched.description;
       }
     }
-    const venueId = upsertVenueFromGeocode(spot, area, spot.classification, spot.expectedOpen);
+    const venueId = upsertVenueFromGeocode(spot, area, spot.classification, spot.expectedOpen, description);
     const spotTitle = spot.restaurantName || spot.placeName;
     try {
       if (spot.photoRef) {
         const photoPath = await downloadPhoto(spot.photoRef, spotTitle);
         if (photoPath) db.venues.updatePhotoUrl(venueId, photoPath);
-      }
-      if (description) {
-        db.getDb().prepare(
-          "UPDATE venues SET submitter_name = COALESCE(submitter_name, 'discovery'), updated_at = datetime('now') WHERE id = ?",
-        ).run(venueId);
       }
       insertedCount++;
       insertedNames.push(`${spot.classification === 'Recently Opened' ? 'NEW' : 'SOON'} ${spotTitle} (${area || 'Downtown Charleston'})`);

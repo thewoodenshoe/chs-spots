@@ -196,6 +196,7 @@ export interface VenueRow {
   area: string | null;
   website: string | null;
   phone: string | null;
+  description: string | null;
   photo_url: string | null;
   types: string | null;
   raw_google_data: string | null;
@@ -245,8 +246,8 @@ export interface ActivityRow {
 const VENUE_ALLOWED_COLUMNS = new Set([
   'name', 'address', 'lat', 'lng', 'area', 'website', 'photo_url',
   'types', 'raw_google_data', 'operating_hours', 'hours_source',
-  'hours_updated_at', 'phone', 'submitter_name', 'venue_added_at',
-  'venue_status', 'expected_open_date', 'google_place_id',
+  'hours_updated_at', 'phone', 'description', 'submitter_name',
+  'venue_added_at', 'venue_status', 'expected_open_date', 'google_place_id',
   'is_happy_hour', 'is_brunch', 'is_live_music', 'is_rooftop_bar',
   'is_coffee_shop', 'is_landmark', 'is_dog_friendly', 'is_waterfront',
 ]);

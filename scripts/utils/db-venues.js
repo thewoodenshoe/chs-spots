@@ -8,8 +8,8 @@ const { getDb, logAudit, generateVenueId, transaction } = require('./db-core');
 const ALLOWED_COLUMNS = new Set([
   'name', 'address', 'lat', 'lng', 'area', 'website', 'photo_url',
   'types', 'raw_google_data', 'operating_hours', 'hours_source',
-  'hours_updated_at', 'phone', 'submitter_name', 'venue_added_at',
-  'venue_status', 'expected_open_date', 'google_place_id',
+  'hours_updated_at', 'phone', 'description', 'submitter_name',
+  'venue_added_at', 'venue_status', 'expected_open_date', 'google_place_id',
   'is_happy_hour', 'is_brunch', 'is_live_music', 'is_rooftop_bar',
   'is_coffee_shop', 'is_landmark', 'is_dog_friendly', 'is_waterfront',
 ]);
@@ -47,11 +47,11 @@ const venues = {
     db.transaction(() => {
       db.prepare(`
         INSERT INTO venues (id, name, address, lat, lng, area, website, photo_url, types,
-          raw_google_data, venue_added_at, venue_status, submitter_name, google_place_id,
-          phone, operating_hours, hours_source, updated_at)
+          raw_google_data, venue_added_at, venue_status, description, submitter_name,
+          google_place_id, phone, operating_hours, hours_source, updated_at)
         VALUES (@id, @name, @address, @lat, @lng, @area, @website, @photo_url, @types,
-          @raw_google_data, @venue_added_at, @venue_status, @submitter_name, @google_place_id,
-          @phone, @operating_hours, @hours_source, datetime('now'))
+          @raw_google_data, @venue_added_at, @venue_status, @description, @submitter_name,
+          @google_place_id, @phone, @operating_hours, @hours_source, datetime('now'))
         ON CONFLICT(id) DO UPDATE SET
           name=@name, address=COALESCE(@address, address), lat=@lat, lng=@lng,
           area=COALESCE(@area, area),
@@ -59,6 +59,7 @@ const venues = {
           photo_url=COALESCE(@photo_url, photo_url),
           types=@types, raw_google_data=@raw_google_data,
           venue_status=COALESCE(@venue_status, venue_status),
+          description=COALESCE(@description, description),
           google_place_id=COALESCE(@google_place_id, google_place_id),
           phone=COALESCE(@phone, phone),
           operating_hours=COALESCE(@operating_hours, operating_hours),
@@ -81,6 +82,7 @@ const venues = {
           : null,
         venue_added_at: addedAt || null,
         venue_status: v.venue_status || 'active',
+        description: v.description || null,
         submitter_name: v.submitter_name || v.submitterName || null,
         google_place_id: v.google_place_id || v.googlePlaceId || null,
         phone: v.phone || null,

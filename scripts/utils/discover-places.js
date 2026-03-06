@@ -178,17 +178,27 @@ async function enrichViaGrok(name, address, log) {
   return null;
 }
 
+function fuzzyNameMatch(a, b) {
+  if (a === b) return true;
+  if (a.length < 4 || b.length < 4) return false;
+  const shorter = a.length < b.length ? a : b;
+  const longer = a.length < b.length ? b : a;
+  return longer.includes(shorter) && shorter.length / longer.length > 0.5;
+}
+
 function isDuplicate(candidate, existingSpots, existingVenues) {
   const candidateTitle = candidate.placeName.toLowerCase().trim();
+
   for (const spot of existingSpots) {
     const spotTitle = (spot.title || '').toLowerCase().trim();
-    if (spotTitle === candidateTitle) return true;
-    if (spotTitle.length > 5 && candidateTitle.length > 5) {
-      const shorter = spotTitle.length < candidateTitle.length ? spotTitle : candidateTitle;
-      const longer = spotTitle.length < candidateTitle.length ? candidateTitle : spotTitle;
-      if (longer.includes(shorter) && shorter.length / longer.length > 0.5) return true;
-    }
+    if (fuzzyNameMatch(spotTitle, candidateTitle)) return true;
   }
+
+  for (const venue of existingVenues) {
+    const venueName = (venue.name || '').toLowerCase().trim();
+    if (fuzzyNameMatch(venueName, candidateTitle)) return true;
+  }
+
   if (candidate.placeId) {
     for (const venue of existingVenues) {
       if (venue.id === candidate.placeId) return true;

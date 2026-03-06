@@ -87,13 +87,21 @@ const STATUS_DISPLAY: Record<string, string> = {
   recently_opened: 'Recently Opened',
 };
 
+function hashVenueId(venueId: string): number {
+  let hash = 5381;
+  for (let i = 0; i < venueId.length; i++) {
+    hash = ((hash << 5) + hash + venueId.charCodeAt(i)) | 0;
+  }
+  return -(Math.abs(hash) || 1);
+}
+
 export function venueToSpot(venue: VenueRow): TransformedSpot {
   return {
-    id: -venue.id.charCodeAt(0),
+    id: hashVenueId(venue.id),
     lat: venue.lat,
     lng: venue.lng,
     title: venue.name,
-    description: '',
+    description: venue.description || '',
     type: STATUS_DISPLAY[venue.venue_status] || 'Coming Soon',
     photoUrl: venue.photo_url || undefined,
     source: 'automated',

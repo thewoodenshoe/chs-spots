@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS venues (
   hours_source TEXT,
   hours_updated_at TEXT,
   phone TEXT,
+  description TEXT,
   submitter_name TEXT,
   venue_added_at TEXT DEFAULT '2001-01-01',
   venue_status TEXT NOT NULL DEFAULT 'active' CHECK(venue_status IN ('active','coming_soon','recently_opened')),
