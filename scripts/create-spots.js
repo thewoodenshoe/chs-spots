@@ -397,7 +397,7 @@ async function main() {
     if (apiKey) {
       const d = db.getDb();
       const missingTimes = d.prepare(
-        "SELECT s.id, s.title, s.type, s.area, s.promotion_time, s.source_url, v.address, v.website " +
+        "SELECT s.id, s.title, s.type, v.area, s.promotion_time, s.source_url, v.address, v.website " +
         "FROM spots s LEFT JOIN venues v ON v.id = s.venue_id " +
         "WHERE s.status = 'approved' AND s.time_start IS NULL AND s.time_end IS NULL " +
         "AND s.manual_override = 0 " +
@@ -442,10 +442,10 @@ async function main() {
     const missingTimesPath = reportingPath('missing-times.json');
     const d = db.getDb();
     const stillMissing = d.prepare(
-      "SELECT s.id, s.title, s.type, s.area, s.promotion_time, s.source_url, v.name as venue_name, v.website " +
-      "FROM spots s LEFT JOIN venues v ON v.id = s.venue_id " +
-      "WHERE s.status = 'approved' AND s.time_start IS NULL AND s.time_end IS NULL " +
-      "AND s.type IN ('Happy Hour', 'Brunch') ORDER BY s.id DESC",
+        "SELECT s.id, s.title, s.type, v.area, s.promotion_time, s.source_url, v.name as venue_name, v.website " +
+        "FROM spots s LEFT JOIN venues v ON v.id = s.venue_id " +
+        "WHERE s.status = 'approved' AND s.time_start IS NULL AND s.time_end IS NULL " +
+        "AND s.type IN ('Happy Hour', 'Brunch') ORDER BY s.id DESC",
     ).all();
     fs.writeFileSync(missingTimesPath, JSON.stringify({
       generatedAt: new Date().toISOString(),

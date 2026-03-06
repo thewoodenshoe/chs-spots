@@ -138,8 +138,8 @@ export async function PUT(
     if (pendingEdit.promotionList) changes.push('Deals list updated');
     if (pendingEdit.sourceUrl && pendingEdit.sourceUrl !== existing.source_url) changes.push('Source link updated');
     const existingVenue = existing.venue_id ? venues.getById(existing.venue_id) : null;
-    const oldLat = existingVenue?.lat ?? existing.lat ?? 0;
-    const oldLng = existingVenue?.lng ?? existing.lng ?? 0;
+    const oldLat = existingVenue?.lat ?? 0;
+    const oldLng = existingVenue?.lng ?? 0;
     if (pendingEdit.lat !== oldLat || pendingEdit.lng !== oldLng) {
       changes.push(`Location moved`);
     }

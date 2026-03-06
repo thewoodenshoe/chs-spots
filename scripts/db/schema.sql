@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS venues (
 );
 
 -- Spots: activity-specific details linked to a venue (master-detail).
--- Geo columns (lat, lng, area) are DEPRECATED; always read from venues.
+-- Geo data (lat, lng, area) lives on venues; spots carry activity-specific data only.
 CREATE TABLE IF NOT EXISTS spots (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   venue_id TEXT NOT NULL REFERENCES venues(id),
@@ -62,9 +62,6 @@ CREATE TABLE IF NOT EXISTS spots (
   pending_delete INTEGER DEFAULT 0,
   submitted_at TEXT,
   edited_at TEXT,
-  lat REAL,                             -- DEPRECATED: use venues.lat
-  lng REAL,                             -- DEPRECATED: use venues.lng
-  area TEXT,                            -- DEPRECATED: use venues.area
   finding_approved INTEGER DEFAULT 0,
   finding_rationale TEXT,
   created_at TEXT DEFAULT (datetime('now')),
@@ -181,7 +178,6 @@ CREATE INDEX IF NOT EXISTS idx_spots_type ON spots(type);
 CREATE INDEX IF NOT EXISTS idx_spots_source ON spots(source);
 CREATE INDEX IF NOT EXISTS idx_spots_status ON spots(status);
 CREATE INDEX IF NOT EXISTS idx_spots_venue_type ON spots(venue_id, type);
-CREATE INDEX IF NOT EXISTS idx_spots_area ON spots(area);
 CREATE INDEX IF NOT EXISTS idx_venues_area ON venues(area);
 CREATE INDEX IF NOT EXISTS idx_venues_status ON venues(venue_status);
 CREATE INDEX IF NOT EXISTS idx_venues_added_at ON venues(venue_added_at);

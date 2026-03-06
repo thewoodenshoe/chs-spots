@@ -136,7 +136,7 @@ async function main() {
   if (TYPE_FILTER) typeClause = `s.type = '${TYPE_FILTER.replace(/'/g, '')}'`;
 
   const rows = d.prepare(`
-    SELECT s.id, s.title, s.type, s.area,
+    SELECT s.id, s.title, s.type, v.area,
            s.promotion_time, s.source_url,
            v.name  AS venue_name,
            v.website,
@@ -282,8 +282,9 @@ async function main() {
 
     // Re-query DB to get the fresh unresolved count
     const stillMissing = d.prepare(`
-      SELECT s.id, s.title, s.type, s.area, s.promotion_time, s.source_url
+      SELECT s.id, s.title, s.type, v.area, s.promotion_time, s.source_url
       FROM spots s
+      LEFT JOIN venues v ON v.id = s.venue_id
       WHERE s.status = 'approved'
         AND s.time_start IS NULL AND s.time_end IS NULL
         AND s.type IN ('Happy Hour', 'Brunch', 'Live Music')

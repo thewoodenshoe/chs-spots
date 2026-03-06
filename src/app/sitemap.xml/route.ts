@@ -32,7 +32,7 @@ function buildEntries(): SitemapEntry[] {
         const matching = allSpots.filter(s => {
           if (s.type !== activity) return false;
           const v = s.venue_id ? venueMap.get(s.venue_id) : undefined;
-          return (v?.area || s.area) === area;
+          return v?.area === area;
         });
         if (matching.length === 0) continue;
         const latest = matching.reduce((max, s) => {

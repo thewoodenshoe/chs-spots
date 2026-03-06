@@ -46,8 +46,7 @@ function ensureCoreTables(db: Database.Database) {
       submitter_name TEXT, manual_override INTEGER DEFAULT 0, photo_url TEXT,
       last_update_date TEXT, pending_edit TEXT, pending_delete INTEGER DEFAULT 0,
       submitted_at TEXT, edited_at TEXT,
-      created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now')),
-      lat REAL, lng REAL, area TEXT
+      created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now'))
     );
     CREATE TABLE IF NOT EXISTS venues (
       id TEXT PRIMARY KEY, name TEXT NOT NULL, lat REAL, lng REAL,
@@ -86,9 +85,6 @@ function runMigrations(db: Database.Database) {
 
   const spotCols = db.prepare("PRAGMA table_info(spots)").all() as { name: string }[];
   const spotColNames = new Set(spotCols.map(c => c.name));
-  if (!spotColNames.has('lat')) db.prepare("ALTER TABLE spots ADD COLUMN lat REAL").run();
-  if (!spotColNames.has('lng')) db.prepare("ALTER TABLE spots ADD COLUMN lng REAL").run();
-  if (!spotColNames.has('area')) db.prepare("ALTER TABLE spots ADD COLUMN area TEXT").run();
 
   const actCols = db.prepare("PRAGMA table_info(activities)").all() as { name: string }[];
   const actColNames = new Set(actCols.map(c => c.name));
@@ -188,9 +184,6 @@ export interface SpotRow {
   edited_at: string | null;
   created_at: string;
   updated_at: string;
-  lat: number | null;
-  lng: number | null;
-  area: string | null;
 }
 
 export interface VenueRow {

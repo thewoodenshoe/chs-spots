@@ -140,7 +140,7 @@ function getPipelineData() {
     result.totalSpots = allSpots.length;
     for (const spot of allSpots) {
       const venue = venueMap[spot.venue_id];
-      const area = spot.area || venue?.area || 'Unknown';
+      const area = venue?.area || 'Unknown';
       const activity = spot.type || 'Unknown';
       result.spotsByArea[area] = (result.spotsByArea[area] || 0) + 1;
       result.spotsByActivity[activity] = (result.spotsByActivity[activity] || 0) + 1;
@@ -662,8 +662,9 @@ function getPipelineData() {
       // No missing-times.json — query DB directly as fallback
       const database = db.getDb();
       const missingFromDb = database.prepare(
-        "SELECT s.id, s.title, s.type, s.area, s.promotion_time " +
-        "FROM spots s WHERE s.status = 'approved' AND s.time_start IS NULL AND s.time_end IS NULL " +
+        "SELECT s.id, s.title, s.type, v.area, s.promotion_time " +
+        "FROM spots s LEFT JOIN venues v ON v.id = s.venue_id " +
+        "WHERE s.status = 'approved' AND s.time_start IS NULL AND s.time_end IS NULL " +
         "AND s.type IN ('Happy Hour', 'Brunch') ORDER BY s.id DESC LIMIT 20",
       ).all();
       result.missingTimesCount = missingFromDb.length;

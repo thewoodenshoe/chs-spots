@@ -122,9 +122,15 @@ export async function handleEditAction(action: string, spotId: number, cq: any, 
     pending_edit: null,
   };
   if (edit.photoUrl !== undefined) updates.photo_url = edit.photoUrl;
-  if (edit.lat != null) updates.lat = edit.lat;
-  if (edit.lng != null) updates.lng = edit.lng;
-  if (edit.area != null) updates.area = edit.area;
+  if (edit.lat != null || edit.lng != null || edit.area != null) {
+    if (spot.venue_id) {
+      const venueUpdates: Record<string, any> = {};
+      if (edit.lat != null) venueUpdates.lat = edit.lat;
+      if (edit.lng != null) venueUpdates.lng = edit.lng;
+      if (edit.area != null) venueUpdates.area = edit.area;
+      venues.update(spot.venue_id, venueUpdates);
+    }
+  }
   if (edit.promotionTime !== undefined) updates.promotion_time = edit.promotionTime;
   if (edit.promotionList !== undefined) updates.promotion_list = JSON.stringify(edit.promotionList);
   if (edit.timeStart !== undefined) updates.time_start = edit.timeStart;
@@ -265,14 +271,18 @@ export async function handleTextCommand(text: string, chatId: string | number): 
       await send(`❓ Spot #${spotId} not found.`);
       return true;
     }
-    const mapLink = `https://www.google.com/maps?q=${spot.lat},${spot.lng}`;
+    const venue = spot.venue_id ? venues.getById(spot.venue_id) : undefined;
+    const lat = venue?.lat ?? 0;
+    const lng = venue?.lng ?? 0;
+    const area = venue?.area || 'N/A';
+    const mapLink = `https://www.google.com/maps?q=${lat},${lng}`;
     const lines = [
       `📍 *${spot.title}* (ID: \`${spotId}\`)`,
       `🏷 Type: ${spot.type || 'N/A'}`,
       `📦 Source: ${spot.source || 'N/A'}`,
       `📌 Status: ${spot.status || 'N/A'}`,
-      `🗺 Area: ${spot.area || 'N/A'}`,
-      `📍 Coords: ${spot.lat}, ${spot.lng}`,
+      `🗺 Area: ${area}`,
+      `📍 Coords: ${lat}, ${lng}`,
       spot.venue_id ? `🔑 Venue ID: \`${spot.venue_id}\`` : '',
       spot.time_start ? `⏰ Schedule: ${spot.time_start}–${spot.time_end || '?'} days=${spot.days || 'all'}` : '',
       spot.promotion_time ? `⏰ Time (legacy): ${spot.promotion_time}` : '',
@@ -312,7 +322,7 @@ export async function handleTextCommand(text: string, chatId: string | number): 
 
   if (text === '/recent') {
     const db = getDb();
-    const recent = db.prepare("SELECT id, title, type, area, created_at FROM spots WHERE status = 'approved' ORDER BY id DESC LIMIT 10").all() as any[];
+    const recent = db.prepare("SELECT s.id, s.title, s.type, v.area, s.created_at FROM spots s LEFT JOIN venues v ON v.id = s.venue_id WHERE s.status = 'approved' ORDER BY s.id DESC LIMIT 10").all() as any[];
     if (recent.length === 0) {
       await send('No approved spots found.');
       return true;

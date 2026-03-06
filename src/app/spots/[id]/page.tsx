@@ -14,7 +14,7 @@ export async function generateMetadata(
   if (!spot || spot.status !== 'approved') return { title: 'Not Found' };
 
   const venue = spot.venue_id ? venues.getById(spot.venue_id) : undefined;
-  const area = venue?.area || spot.area || 'Charleston';
+  const area = venue?.area || 'Charleston';
   const title = `${spot.title} — ${spot.type} in ${area}`;
   const desc = spot.description
     ? `${spot.description.slice(0, 150)}${spot.description.length > 150 ? '...' : ''}`
@@ -48,9 +48,9 @@ export default async function SpotPage({ params }: { params: Promise<{ id: strin
     ? venues.getById(spot.venue_id)
     : undefined;
 
-  const area = venue?.area || spot.area || 'Charleston';
-  const lat = venue?.lat ?? spot.lat ?? 0;
-  const lng = venue?.lng ?? spot.lng ?? 0;
+  const area = venue?.area || 'Charleston';
+  const lat = venue?.lat ?? 0;
+  const lng = venue?.lng ?? 0;
   const promoList = parsePromoList(spot.promotion_list);
   const hours = parseHours(venue?.operating_hours ?? null);
   const formattedHours = hours ? formatFullWeekHours(hours) : null;

@@ -62,7 +62,7 @@ async function main() {
   const database = db.getDb();
 
   let query = `
-    SELECT s.id, s.title, s.type, s.area, s.venue_id, v.name as venue_name, v.area as venue_area
+    SELECT s.id, s.title, s.type, s.venue_id, v.name as venue_name, v.area as venue_area
     FROM spots s
     LEFT JOIN venues v ON s.venue_id = v.id
     WHERE (s.source = 'automated' OR s.status = 'approved' OR s.status IS NULL)
@@ -80,7 +80,7 @@ async function main() {
 
   for (let i = 0; i < spots.length; i++) {
     const s = spots[i];
-    const area = s.area || s.venue_area || 'Charleston SC';
+    const area = s.venue_area || 'Charleston SC';
     const searchQuery = `${s.title} ${area} Charleston SC`;
     const progress = `[${i + 1}/${spots.length}]`;
 

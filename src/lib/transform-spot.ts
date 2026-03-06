@@ -52,8 +52,8 @@ export function transformSpot(
   const venue = spot.venue_id ? venueMap.get(spot.venue_id) : undefined;
   return {
     id: spot.id,
-    lat: venue?.lat ?? spot.lat ?? 0,
-    lng: venue?.lng ?? spot.lng ?? 0,
+    lat: venue?.lat ?? 0,
+    lng: venue?.lng ?? 0,
     title: spot.title,
     description: spot.description || '',
     type: spot.type || 'Happy Hour',
@@ -70,7 +70,7 @@ export function transformSpot(
     lastUpdateDate: spot.last_update_date || undefined,
     lastVerifiedDate: spot.updated_at || spot.last_update_date || undefined,
     venueId: spot.venue_id || undefined,
-    area: venue?.area || spot.area || undefined,
+    area: venue?.area || undefined,
     submitterName: spot.submitter_name || undefined,
     venuePhone: venue?.phone || undefined,
     venueAddress: venue?.address || undefined,

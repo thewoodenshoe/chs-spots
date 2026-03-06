@@ -161,9 +161,9 @@ function isDuplicate(candidate, existingSpots, existingVenues) {
     }
   }
   if (candidate.lat && candidate.lng) {
-    for (const spot of existingSpots) {
-      if (!spot.lat || !spot.lng || spot.type !== candidate.classification) continue;
-      const dist = Math.sqrt((spot.lat - candidate.lat) ** 2 + (spot.lng - candidate.lng) ** 2);
+    for (const venue of existingVenues) {
+      if (!venue.lat || !venue.lng) continue;
+      const dist = Math.sqrt((venue.lat - candidate.lat) ** 2 + (venue.lng - candidate.lng) ** 2);
       if (dist < 0.0002) return true;
     }
   }

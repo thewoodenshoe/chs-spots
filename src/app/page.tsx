@@ -29,7 +29,7 @@ export default function HomePage() {
     const v = s.venue_id ? venueMap.get(s.venue_id) : undefined;
     return {
       id: s.id, title: s.title, type: s.type,
-      area: v?.area || s.area || 'Charleston',
+      area: v?.area || 'Charleston',
       promotionTime: s.promotion_time || null,
       description: s.description || '',
     };

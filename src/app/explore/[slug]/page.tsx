@@ -32,10 +32,10 @@ function spotToExplore(spot: SpotRow, venueMap: Map<string, VenueRow>): ExploreS
   const venue = spot.venue_id ? venueMap.get(spot.venue_id) : undefined;
   return {
     id: spot.id, title: spot.title, description: spot.description || '',
-    lat: venue?.lat ?? spot.lat ?? 0, lng: venue?.lng ?? spot.lng ?? 0,
+    lat: venue?.lat ?? 0, lng: venue?.lng ?? 0,
     photoUrl: spot.photo_url || venue?.photo_url || null,
     schedule: formatSchedule(spot),
-    area: venue?.area || spot.area || null,
+    area: venue?.area || null,
     lastUpdate: spot.last_update_date || spot.updated_at,
   };
 }
@@ -69,7 +69,7 @@ function loadAreaSpots(activity: string, area: string) {
     .filter(s => {
       if (s.type !== activity) return false;
       const v = s.venue_id ? venueMap.get(s.venue_id) : undefined;
-      return (v?.area || s.area) === area;
+      return v?.area === area;
     })
     .map(s => spotToExplore(s, venueMap))
     .filter(s => s.lat !== 0 || s.lng !== 0);
@@ -134,7 +134,7 @@ export default async function ExplorePage({ params }: { params: Promise<{ slug: 
       : allSpots.filter(s => {
         if (s.type !== activity) return false;
         const v = s.venue_id ? venueMap.get(s.venue_id) : undefined;
-        return (v?.area || s.area) === a;
+        return (v?.area) === a;
       }).length;
     return { area: a, count };
   }).filter(a => a.count > 0).sort((a, b) => b.count - a.count).slice(0, 5);
