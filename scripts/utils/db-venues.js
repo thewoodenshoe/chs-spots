@@ -51,7 +51,7 @@ const venues = {
         VALUES (@id, @name, @address, @lat, @lng, @area, @website, @photo_url, @types,
           @raw_google_data, @venue_added_at, @venue_status, @submitter_name, @google_place_id, datetime('now'))
         ON CONFLICT(id) DO UPDATE SET
-          name=@name, address=@address, lat=@lat, lng=@lng,
+          name=@name, address=COALESCE(@address, address), lat=@lat, lng=@lng,
           area=COALESCE(@area, area),
           website=COALESCE(@website, website),
           photo_url=COALESCE(@photo_url, photo_url),

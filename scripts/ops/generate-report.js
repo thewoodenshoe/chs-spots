@@ -233,8 +233,12 @@ function getPipelineData() {
       }
       const skippedMatches = logContent.match(/Skipping\b.*?\b(?:No meaningful changes|No changes|hash match|unchanged)/gi);
       if (skippedMatches) result.llmSkipped = skippedMatches.length;
-      const errorMatches = logContent.match(/Error calling Grok|Error processing:|LLM .* error|API error/gi);
-      if (errorMatches) result.llmErrors = errorMatches.length;
+      const errorRegex = /(?:Grok API failed|LLM chat failed|Error processing.*?:|extraction failed|API rate limit).*$/gim;
+      const errorMatches = logContent.match(errorRegex);
+      if (errorMatches) {
+        result.llmErrors = errorMatches.length;
+        result.llmErrorLines = errorMatches.slice(0, 5).map(l => l.trim());
+      }
 
       const filteredMatch = logContent.match(/Filtered to (\d+) venue/);
       if (filteredMatch) result.pipelineVenuesProcessed = parseInt(filteredMatch[1]);
@@ -532,12 +536,15 @@ function getPipelineData() {
 
   // 6. LLM errors
   if ((result.llmErrors ?? 0) > 0) {
+    const errorDetail = result.llmErrorLines?.length
+      ? result.llmErrorLines.join('\n')
+      : 'Some venues failed to get promotions extracted.';
     result.actions.push({
       severity: result.llmErrors >= 5 ? 'high' : 'medium',
       category: 'LLM Errors',
       title: `${result.llmErrors} LLM processing error(s) in last run`,
-      detail: `Some venues failed to get promotions extracted. May indicate API issues or rate limiting.`,
-      instruction: `Check extract-promotions log for details:\n  grep -i "error" ~/projects/chs-spots/logs/ops/nightly-pipeline-*.log | tail -20`,
+      detail: errorDetail,
+      instruction: `Review the full log:\n  cat ~/projects/chs-spots/logs/ops/nightly-pipeline-*.log | grep -A2 -i "failed\\|error processing"`,
     });
   }
 
@@ -692,33 +699,50 @@ function getPipelineData() {
         CASE WHEN (phone IS NULL OR phone = '') THEN 1 ELSE 0 END as no_phone,
         CASE WHEN (photo_url IS NULL OR photo_url = '') THEN 1 ELSE 0 END as no_photo,
         CASE WHEN (address IS NULL OR address = '') THEN 1 ELSE 0 END as no_address,
-        CASE WHEN (lat IS NULL OR lat = 0) THEN 1 ELSE 0 END as no_coords
+        CASE WHEN (lat IS NULL OR lat = 0) THEN 1 ELSE 0 END as no_coords,
+        CASE WHEN (operating_hours IS NULL OR operating_hours = '') THEN 1 ELSE 0 END as no_hours
       FROM venues
       WHERE (website IS NULL OR website = '')
          OR (phone IS NULL OR phone = '')
          OR (photo_url IS NULL OR photo_url = '')
          OR (address IS NULL OR address = '')
          OR (lat IS NULL OR lat = 0)
+         OR (operating_hours IS NULL OR operating_hours = '')
       ORDER BY created_at DESC
     `).all();
 
     result.incompleteVenuesCount = incompleteVenues.length;
     if (incompleteVenues.length > 0) {
+      const counts = { website: 0, phone: 0, photo: 0, address: 0, coords: 0, hours: 0 };
       const missing = [];
-      for (const v of incompleteVenues.slice(0, 15)) {
+      for (const v of incompleteVenues) {
+        if (v.no_website) counts.website++;
+        if (v.no_phone) counts.phone++;
+        if (v.no_photo) counts.photo++;
+        if (v.no_address) counts.address++;
+        if (v.no_coords) counts.coords++;
+        if (v.no_hours) counts.hours++;
+      }
+      for (const v of incompleteVenues.slice(0, 10)) {
         const gaps = [];
         if (v.no_website) gaps.push('website');
         if (v.no_phone) gaps.push('phone');
         if (v.no_photo) gaps.push('photo');
         if (v.no_address) gaps.push('address');
         if (v.no_coords) gaps.push('coords');
+        if (v.no_hours) gaps.push('hours');
         missing.push(`${v.name} (${v.area || 'no area'}): ${gaps.join(', ')}`);
       }
+      const breakdown = Object.entries(counts)
+        .filter(([, c]) => c > 0)
+        .map(([field, c]) => `${c} missing ${field}`)
+        .join(', ');
       result.actions.push({
         severity: incompleteVenues.length >= 20 ? 'medium' : 'low',
         category: 'Incomplete Venues',
         title: `${incompleteVenues.length} venue(s) missing key data`,
-        detail: missing.join('\n') + (incompleteVenues.length > 15 ? `\n... and ${incompleteVenues.length - 15} more` : ''),
+        detail: `Breakdown: ${breakdown}\n\n` + missing.join('\n') + (incompleteVenues.length > 10 ? `\n... and ${incompleteVenues.length - 10} more` : ''),
+        instruction: `Run venue enrichment (fills website, phone, photos, hours):\n  node scripts/enrich-venues.js\nOr backfill specific data:\n  node scripts/backfill-venue-photos.js\n  node scripts/extract-hours.js --missing-only`,
       });
     }
   } catch (e) { debugLog('incompleteVenues', e); }

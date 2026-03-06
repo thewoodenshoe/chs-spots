@@ -132,11 +132,14 @@ const SPOT_TYPES = ['Happy Hour', 'Brunch', 'Live Music', 'Coffee Shops', 'Rooft
 const SPOT_STATUSES = ['approved', 'pending', 'rejected', 'deleted'];
 const SPOT_SOURCES = ['llm', 'manual', 'google', 'yelp', 'user_submitted', 'web_scrape'];
 
+const VENUE_STATUSES = ['active', 'coming_soon', 'recently_opened'];
+
 const SEARCH_ENUMS = {
   type: SPOT_TYPES,
   status: SPOT_STATUSES,
   source: SPOT_SOURCES,
   finding_approved: ['0', '1'],
+  venue_status: VENUE_STATUSES,
 };
 
 const FIELD_HELP = {
@@ -176,26 +179,28 @@ const JSON_FIELDS = ['pending_edit', 'operating_hours'];
 
 const SPOT_FIELDS = {
   search: ['title', 'id', 'type', 'area', 'venue_id', 'status', 'source', 'description', 'promotion_time', 'source_url', 'submitter_name', 'finding_approved'],
-  display: ['id', 'venue_id', 'title', 'type', 'area', 'status', 'source', 'time_start', 'time_end', 'days', 'specific_date', 'promotion_time', 'description', 'source_url', 'manual_override', 'finding_approved', 'finding_rationale', 'last_update_date', 'lat', 'lng', 'created_at', 'updated_at'],
+  display: ['id', 'venue_id', 'title', 'type', 'area', 'status', 'source', 'time_start', 'time_end', 'days', 'specific_date', 'promotion_time', 'description', 'source_url', 'photo_url', 'manual_override', 'finding_approved', 'finding_rationale', 'last_update_date', 'submitted_at', 'edited_at', 'created_at', 'updated_at'],
   editGroups: {
     'Core': ['title', 'type', 'area', 'status', 'source'],
     'Schedule': ['time_start', 'time_end', 'days', 'specific_date'],
     'Promotion': ['promotion_time', 'promotion_list', 'description'],
     'Links & Media': ['source_url', 'photo_url'],
-    'Location': ['lat', 'lng'],
     'Flags': ['manual_override', 'finding_approved', 'finding_rationale'],
     'Venue (read-only)': ['_venue_name', '_venue_address', '_venue_website', '_venue_phone'],
-    'Meta': ['submitter_name', 'last_update_date', 'pending_edit', 'pending_delete'],
+    'Meta': ['submitter_name', 'last_update_date', 'pending_edit', 'pending_delete', 'submitted_at', 'edited_at'],
   },
 };
 
 const VENUE_FIELDS = {
-  search: ['name', 'id', 'address', 'area', 'website', 'phone'],
-  display: ['id', 'name', 'address', 'area', 'website', 'phone', 'lat', 'lng', 'operating_hours', 'hours_source', 'created_at', 'updated_at'],
+  search: ['name', 'id', 'address', 'area', 'website', 'phone', 'venue_status', 'google_place_id'],
+  display: ['id', 'name', 'address', 'area', 'venue_status', 'website', 'phone', 'photo_url', 'lat', 'lng', 'operating_hours', 'hours_source', 'is_happy_hour', 'is_brunch', 'is_live_music', 'is_rooftop_bar', 'is_coffee_shop', 'is_landmark', 'is_dog_friendly', 'is_waterfront', 'google_place_id', 'venue_added_at', 'created_at', 'updated_at'],
   editGroups: {
-    'Core': ['name', 'address', 'area', 'website', 'phone'],
+    'Core': ['name', 'address', 'area', 'website', 'phone', 'google_place_id'],
+    'Status': ['venue_status', 'expected_open_date', 'venue_added_at', 'submitter_name'],
     'Location': ['lat', 'lng'],
+    'Media': ['photo_url'],
     'Hours': ['operating_hours', 'hours_source'],
+    'Activity Flags': ['is_happy_hour', 'is_brunch', 'is_live_music', 'is_rooftop_bar', 'is_coffee_shop', 'is_landmark', 'is_dog_friendly', 'is_waterfront'],
   },
 };
 

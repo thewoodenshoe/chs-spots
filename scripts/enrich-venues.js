@@ -10,6 +10,7 @@
 
 const db = require('./utils/db');
 const { webSearch, requireApiKey, extractJsonArray } = require('./utils/llm-client');
+const { enrichPhotos, enrichHours } = require('./utils/venue-enrichment');
 
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes('--dry-run');
@@ -182,6 +183,21 @@ async function main() {
   } catch (err) {
     console.log(`   ⚠️  CS re-geocode check failed: ${err.message}`);
   }
+
+  // Sync activity flags for all venues with approved spots
+  const venuesWithSpots = database.prepare(
+    "SELECT DISTINCT venue_id FROM spots WHERE status = 'approved'",
+  ).all();
+  console.log(`\n🏷️  Syncing activity flags for ${venuesWithSpots.length} venues...`);
+  if (!DRY_RUN) {
+    for (const { venue_id } of venuesWithSpots) {
+      db.syncActivityFlags(venue_id);
+    }
+  }
+  console.log(`   Activity flags synced.`);
+
+  await enrichPhotos(DRY_RUN);
+  await enrichHours(DRY_RUN);
 
   const remaining = database.prepare(`
     SELECT COUNT(*) as c FROM venues

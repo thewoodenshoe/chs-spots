@@ -81,6 +81,8 @@ const ACTIVITY_FLAG_MAP = {
   'Waterfront Dining': 'is_waterfront',
 };
 
+let _flagSyncWarned = false;
+
 function syncActivityFlags(venueId) {
   if (!venueId) return;
   try {
@@ -92,8 +94,11 @@ function syncActivityFlags(venueId) {
       UPDATE venues SET ${setClauses.join(', ')}, updated_at = datetime('now')
       WHERE id = @vid
     `).run({ vid: venueId });
-  } catch (_err) {
-    // Safe to skip: flag columns may not exist pre-migration
+  } catch (err) {
+    if (!_flagSyncWarned) {
+      console.warn(`[db-core] syncActivityFlags failed for ${venueId}: ${err.message}`);
+      _flagSyncWarned = true;
+    }
   }
 }
 
