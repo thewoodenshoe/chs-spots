@@ -14,7 +14,7 @@
 const db = require('../utils/db');
 const { createLogger } = require('../utils/logger');
 
-const log = createLogger('migrate-003');
+const { log } = createLogger('migrate-003');
 const DRY_RUN = process.argv.includes('--dry-run');
 
 const STATUS_MAP = {
