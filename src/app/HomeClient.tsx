@@ -73,6 +73,15 @@ export default function HomeClient() {
   const { activities } = useActivities();
 
   useEffect(() => {
+    document.documentElement.classList.add('map-viewport-lock');
+    document.body.classList.add('map-viewport-lock');
+    return () => {
+      document.documentElement.classList.remove('map-viewport-lock');
+      document.body.classList.remove('map-viewport-lock');
+    };
+  }, []);
+
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         if (isReportOpen) {

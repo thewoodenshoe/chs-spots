@@ -51,8 +51,9 @@ body {
   animation: fadeInDown 0.2s ease-out forwards;
 }
 
-/* Prevent iOS overscroll / bounce and Safari layout shift */
-html, body {
+/* Applied by HomeClient via useEffect — only the map page locks viewport scroll.
+   SEO pages (explore, venue, spots) need normal document scrolling. */
+.map-viewport-lock {
   height: 100%;
   overflow: hidden;
   position: fixed;
