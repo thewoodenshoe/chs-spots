@@ -93,6 +93,23 @@ function fmtSessionDuration(totaltime) {
 }
 function escHtml(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
+// Known crawler/bot browser strings from user-agent (Umami parses to browser field)
+const BOT_BROWSER_PATTERNS = [
+  'googlebot', 'bingbot', 'slurp', 'duckduckbot', 'baiduspider', 'yandexbot',
+  'facebookexternalhit', 'twitterbot', 'linkedinbot', 'whatsapp', 'telegrambot',
+  'slackbot', 'discordbot', 'petalbot', 'ahrefsbot', 'semrushbot', 'mj12bot',
+  'dotbot', 'rogerbot', 'headless', 'phantom', 'selenium', 'puppeteer',
+  'python-requests', 'curl', 'go-http-client', 'java/', 'apache-httpclient',
+  'bytespider', 'ccbot', 'gptbot', 'claudebot', 'anthropic-ai',
+];
+
+function isLikelyBot(session) {
+  const browser = String(session?.browser || '').toLowerCase();
+  const os = String(session?.os || '').toLowerCase();
+  const combined = `${browser} ${os}`;
+  return BOT_BROWSER_PATTERNS.some(p => combined.includes(p));
+}
+
 // ── Fetch all sessions (paginated) ──────────────────────────────
 async function fetchAllSessions(token, startAt, endAt) {
   const all = [];
@@ -763,9 +780,11 @@ function buildHtml(data) {
   const { analytics, pipeline } = data;
   const sv = (obj, key) => (obj && typeof obj[key] === 'number' ? obj[key] : (obj?.[key]?.value ?? '\u2013'));
 
-  // ── User metrics ──
+  // ── User metrics (with bot filtering) ──
+  const humanSessions30d = analytics.humanSessions30d || (analytics.allSessions30d || []).filter(s => !isLikelyBot(s));
+
   const visitorMap = {};
-  for (const s of analytics.allSessions30d || []) {
+  for (const s of humanSessions30d) {
     const fp = `${s.browser}|${s.os}|${s.device}|${s.screen}|${s.language}|${s.country}`;
     if (!visitorMap[fp]) {
       visitorMap[fp] = { browser: s.browser, os: s.os, device: s.device, country: s.country, totalVisits: 0, totalViews: 0, sessions: [] };
@@ -779,14 +798,17 @@ function buildHtml(data) {
   const topReturning = [...allVisitors].sort((a, b) => b.totalVisits - a.totalVisits).slice(0, 5);
 
   const sessions24h = (analytics.sessions24h || []).sort((a, b) => new Date(b.lastAt || b.createdAt) - new Date(a.lastAt || a.createdAt));
+  const humanSessions24h = analytics.humanSessions24h || sessions24h.filter(s => !isLikelyBot(s));
+  const botSessions24h = analytics.botSessions24h || sessions24h.filter(s => isLikelyBot(s));
   const totalSessions24h = sessions24h.length;
-  const bouncedSessions24h = sessions24h.filter(s => (s.views || 0) <= 1 && (!s.totaltime || s.totaltime <= 0)).length;
-  const engagedSessions24h = sessions24h.filter(s => (s.views || 0) >= 2 || (s.totaltime && s.totaltime > 10)).length;
-  const avgDuration24h = totalSessions24h > 0
-    ? Math.round(sessions24h.reduce((sum, s) => sum + (s.totaltime || 0), 0) / totalSessions24h)
+  const humanSessions24hCount = humanSessions24h.length;
+  const bouncedSessions24h = humanSessions24h.filter(s => (s.views || 0) <= 1 && (!s.totaltime || s.totaltime <= 0)).length;
+  const engagedSessions24h = humanSessions24h.filter(s => (s.views || 0) >= 2 || (s.totaltime && s.totaltime > 10)).length;
+  const avgDuration24h = humanSessions24hCount > 0
+    ? Math.round(humanSessions24h.reduce((sum, s) => sum + (s.totaltime || 0), 0) / humanSessions24hCount) || 0
     : 0;
-  const bounceRate24h = totalSessions24h > 0 ? Math.round((bouncedSessions24h / totalSessions24h) * 100) : 0;
-  const engagementRate24h = totalSessions24h > 0 ? Math.round((engagedSessions24h / totalSessions24h) * 100) : 0;
+  const bounceRate24h = humanSessions24hCount > 0 ? Math.round((bouncedSessions24h / humanSessions24hCount) * 100) : 0;
+  const engagementRate24h = humanSessions24hCount > 0 ? Math.round((engagedSessions24h / humanSessions24hCount) * 100) : 0;
 
   const mobileCount = (analytics.devices || []).find(d => d.x === 'mobile')?.y || 0;
   const desktopCount = (analytics.devices || []).find(d => d.x === 'laptop' || d.x === 'desktop')?.y || 0;
@@ -1181,6 +1203,13 @@ function buildHtml(data) {
     </div>
   </div>
 
+  <h2>Real Users vs Bots (24h)</h2>
+  <div class="info-box">
+    <p>Umami is client-side: most crawlers don't run JS, so they never appear. Sessions that do run JS are classified by browser/OS.</p>
+    <p><strong>Real users:</strong> ${humanSessions24hCount} sessions &nbsp;|&nbsp; <strong>Likely bots:</strong> ${botSessions24h.length} sessions</p>
+    ${botSessions24h.length > 0 ? `<p class="muted">Bot browsers: ${[...new Set(botSessions24h.map(s => s.browser || 'unknown'))].slice(0, 8).join(', ')}</p>` : ''}
+  </div>
+
   <h2>Engagement Quality</h2>
   <div class="stats-grid">
     <div class="stat-card">
@@ -1388,7 +1417,11 @@ async function main() {
       }
     } catch (e) { debugLog('data', e); }
 
-    log(`  Analytics fetched (${analytics.sessions24h.length} sessions 24h, ${analytics.allSessions30d.length} sessions 30d)`);
+    analytics.humanSessions24h = (analytics.sessions24h || []).filter(s => !isLikelyBot(s));
+    analytics.botSessions24h = (analytics.sessions24h || []).filter(s => isLikelyBot(s));
+    analytics.humanSessions30d = (analytics.allSessions30d || []).filter(s => !isLikelyBot(s));
+    analytics.botSessions30d = (analytics.allSessions30d || []).filter(s => isLikelyBot(s));
+    log(`  Analytics fetched (${analytics.sessions24h.length} sessions 24h: ${analytics.humanSessions24h.length} human, ${analytics.botSessions24h.length} bots)`);
   }
 
   const pipeline = getPipelineData();
@@ -1429,8 +1462,9 @@ async function main() {
       const visitors7d = statVal(analytics.stats7d, 'visitors');
       const visitors30d = statVal(analytics.stats30d, 'visitors');
 
+      const humanSessions = analytics.humanSessions24h || [];
       const sessions = (analytics.sessions24h || []).length;
-      const engaged = (analytics.sessions24h || []).filter(s => (s.views || 0) >= 2 || (s.totaltime && s.totaltime > 10)).length;
+      const engaged = humanSessions.filter(s => (s.views || 0) >= 2 || (s.totaltime && s.totaltime > 10)).length;
 
       const pOk = pipeline.configStatus === 'completed_successfully' && !pipeline.limitHit;
       const pStatus = pipeline.configStatus?.startsWith('failed') ? 'FAILED' : pOk ? 'OK' : 'WARNING';
@@ -1446,9 +1480,10 @@ async function main() {
         : '\u2705 No actions needed';
 
       // Build stats block for both fallback and LLM context
+      const botCount = (analytics.botSessions24h || []).length;
       const statsBlock = [
         `\uD83D\uDC64 Users: ${visitors24h} today \u00B7 ${visitors7d} (7d) \u00B7 ${visitors30d} (30d)`,
-        `\uD83D\uDCA1 Sessions: ${sessions} total, ${engaged} engaged`,
+        `\uD83D\uDCA1 Sessions: ${sessions} total (${sessions - botCount} human, ${botCount} bots), ${engaged} engaged`,
         `\u2699\uFE0F Pipeline: ${pStatus}${pipeline.pipelineDuration ? ' \u00B7 ' + fmtDuration(pipeline.pipelineDuration) : ''}`,
         `\uD83D\uDCCD Content: ${pipeline.totalSpots} spots \u00B7 ${roCount} opened \u00B7 ${csCount} coming`,
         pipeline.llmProcessed != null ? `\uD83E\uDD16 LLM: ${pipeline.llmProcessed} processed, ${pipeline.llmErrors ?? 0} errors` : null,
