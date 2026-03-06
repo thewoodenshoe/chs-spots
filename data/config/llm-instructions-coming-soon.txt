@@ -58,9 +58,12 @@ If the venue doesn't clearly fall into one of these areas, use the closest match
 1. Only include the Charleston SC metro area (Charleston, Mount Pleasant, James Island, West Ashley, North Charleston, Daniel Island, Sullivan's Island, Isle of Palms, Folly Beach, Johns Island, Summerville, Goose Creek).
 2. No national chains unless it is their FIRST Charleston-area location.
 3. Each concept in a food hall or multi-tenant space gets its own entry.
-4. Be thorough — aim for 30-50 results.
+4. QUALITY OVER QUANTITY — only include venues you are confident about. 10 accurate results beats 50 sloppy ones.
 5. Do NOT include venues that closed permanently.
 6. The address is critical — always try to find the full street address. Search Google Maps, permit filings, or news articles for the address even if the announcement doesn't include it.
+7. **CRITICAL**: Do NOT include well-established venues. If a venue has been operating for more than 6 months, it is NOT "Recently Opened". Venues like Blind Tiger Pub, Husk, FIG, Halls Chophouse, Fleet Landing, The Darling, Poogan's Porch, etc. are NEVER new.
+8. A venue getting a new menu, new chef, renovation, new patio, or media coverage does NOT make it "Recently Opened". Only include venues that literally opened their doors for the first time within the last 90 days.
+9. Do NOT include generic names like street names, neighborhoods, or activity types (e.g. "Broad Street", "Brunches", "North Charleston ramen shop"). Every result must be a specific, real venue name.
 
 ## Important context
 

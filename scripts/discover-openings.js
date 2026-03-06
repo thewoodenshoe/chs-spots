@@ -19,6 +19,7 @@ const { delay, fetchWithRetry, parseRssItems, parseAtomEntries,
 const { VALID_AREAS, getGoogleApiKey, geocodeViaPlaces, downloadPhoto,
   findAreaFromCoordinates, findAreaFromAddress, enrichViaGrok,
   isDuplicate } = require('./utils/discover-places');
+const { validateCandidates } = require('./utils/venue-validator');
 
 const { log, warn, error, close: closeLog } = createLogger('discover-openings');
 
@@ -181,11 +182,15 @@ async function main() {
   const existingSpots = db.spots.getAll({});
   const existingVenues = db.getDb().prepare('SELECT * FROM venues').all();
   const excludedNames = new Set(db.watchlist.getExcluded().map(w => (w.name || '').toLowerCase().trim()).filter(Boolean));
-  const newSpots = geocoded.filter(c => {
+  const deduped = geocoded.filter(c => {
     if (excludedNames.has(c.placeName.toLowerCase().trim())) return false;
     return !isDuplicate(c, existingSpots, existingVenues);
   });
-  log(`${newSpots.length} new spots after dedup`);
+  log(`${deduped.length} candidates after dedup`);
+
+  log('Validating candidates (review count + Grok verification)...');
+  const newSpots = await validateCandidates(deduped, null, log);
+  log(`${newSpots.length} verified new spots (${deduped.length - newSpots.length} rejected)`);
 
   let insertedCount = 0;
   const insertedNames = [];
