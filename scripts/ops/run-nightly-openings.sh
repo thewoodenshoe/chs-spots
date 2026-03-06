@@ -15,5 +15,10 @@ set +a
 export GOOGLE_PLACES_ENABLED=true
 
 node scripts/discover-openings.js >> "$LOG_FILE" 2>&1
+echo "discover-openings completed at $(date)" >> "$LOG_FILE"
 
-echo "discover-openings completed at $(date)"
+echo "--- Checking Coming Soon lifecycle ---" >> "$LOG_FILE"
+node scripts/check-opening-status.js >> "$LOG_FILE" 2>&1
+echo "check-opening-status completed at $(date)" >> "$LOG_FILE"
+
+echo "nightly-openings completed at $(date)"

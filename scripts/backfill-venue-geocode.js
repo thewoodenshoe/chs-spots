@@ -34,7 +34,6 @@ const TYPE_FILTER = (() => {
   const idx = process.argv.indexOf('--type');
   return idx !== -1 && process.argv[idx + 1] ? process.argv[idx + 1] : null;
 })();
-const SKIP_TYPES = new Set(['Coming Soon', 'Recently Opened']);
 const DELAY_MS = 600;
 const MAX_DISTANCE_M = 1000;
 
@@ -126,8 +125,8 @@ async function main() {
   sql += ' ORDER BY type, title';
   const orphans = d.prepare(sql).all(...params);
 
-  const filtered = orphans.filter(s => !SKIP_TYPES.has(s.type));
-  console.log(`[backfill-venue-geocode] Found ${filtered.length} unlinked spots (excluded ${orphans.length - filtered.length} Coming Soon/Recently Opened)`);
+  const filtered = orphans;
+  console.log(`[backfill-venue-geocode] Found ${filtered.length} unlinked spots`);
   if (DRY_RUN) console.log('  (DRY RUN — no DB writes)\n');
 
   let created = 0;

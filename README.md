@@ -155,7 +155,8 @@ chs-spots/
 │   ├── extract-promotions.js        # Step 2: LLM extraction via Grok
 │   ├── create-spots.js              # Step 3: Create spots from gold data
 │   ├── extract-hours.js             # Operating hours extraction (3-tier)
-│   ├── discover-openings.js         # Nightly: find new/coming restaurants
+│   ├── discover-openings.js         # Nightly: find new/coming restaurants (venue-first)
+│   ├── check-opening-status.js     # Nightly: transition Coming Soon → Recently Opened
 │   ├── discover-live-music.js       # Weekly: find live music events
 │   ├── enrich-venues.js             # Fill missing venue data via LLM + Google
 │   ├── run-incremental-pipeline.js  # Orchestrates nightly ETL
@@ -175,7 +176,9 @@ chs-spots/
 │   │   ├── config.js                # Pipeline state + watchlist
 │   │   ├── data-dir.js              # Path resolution
 │   │   ├── normalize.js             # Text normalization
-│   │   └── logger.js                # Shared logging utility
+│   │   ├── logger.js                # Shared logging utility
+│   │   ├── discover-rss.js          # RSS parsing + article classification
+│   │   └── discover-places.js       # Google Places geocoding + area + dedup
 │   └── db/schema.sql                # SQLite schema
 ├── data/
 │   ├── chs-spots.db    # SQLite database (gitignored)
@@ -192,7 +195,7 @@ chs-spots/
 | Time | Job | Script |
 |------|-----|--------|
 | 1:00 AM | Venue discovery (Google Places) | `run-biweekly-seed.sh` |
-| 2:00 AM | Opening discovery (RSS + Grok) | `run-nightly-openings.sh` |
+| 2:00 AM | Opening discovery + Coming Soon lifecycle check | `run-nightly-openings.sh` |
 | 3:00 AM | ETL pipeline + venue enrichment + daily report | `run-nightly-pipeline.sh` |
 | 3:00 PM | Live music event refresh (Grok web search) | `run-daily-live-music.sh` |
 | 4:00 AM Wed | Live music venue discovery | `run-weekly-live-music.sh` |
