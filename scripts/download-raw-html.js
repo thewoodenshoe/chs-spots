@@ -576,8 +576,8 @@ async function processVenue(venue, saveToIncremental = false) {
   const venueId = venue.id || venue.place_id;
   const website = venue.website;
   
-  if (!website) {
-    log(`  ⏭️  Skipping ${venue.name}: No website`);
+  if (!website || !website.startsWith('http')) {
+    log(`  ⏭️  Skipping ${venue.name}: No valid website`);
     return { venue: venue.name, skipped: true, reason: 'no_website' };
   }
   
@@ -778,7 +778,7 @@ async function main() {
     // Filter to only new venues (venues with websites that don't have raw files)
     let newVenues = venues.filter(v => {
       const venueId = v.id || v.place_id;
-      return v.website && !existingVenueDirs.has(venueId);
+      return v.website && v.website.startsWith('http') && !existingVenueDirs.has(venueId);
     });
     
     // Apply area filter if specified
@@ -853,7 +853,7 @@ async function main() {
   }
   
   // Filter venues with websites
-  venuesToProcess = venuesToProcess.filter(v => v.website);
+  venuesToProcess = venuesToProcess.filter(v => v.website && v.website.startsWith('http'));
   log(`🌐 Processing ${venuesToProcess.length} venue(s) with websites\n`);
   
   // Process venues with parallel workers

@@ -10,7 +10,7 @@ const { chat, getApiKey } = require('./llm-client');
 
 const PHOTO_DIR = path.join(__dirname, '..', '..', 'public', 'venues');
 const DELAY_MS = 300;
-const PHOTO_LIMIT = 50;
+const PHOTO_LIMIT = 200;
 const HOURS_LIMIT = 30;
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -50,11 +50,14 @@ async function enrichPhotos(dryRun = false) {
 
   const database = db.getDb();
   const venues = database.prepare(`
-    SELECT v.id, v.name, v.google_place_id
+    SELECT v.id, v.name, COALESCE(v.google_place_id, v.id) AS place_id
     FROM venues v
     INNER JOIN spots s ON s.venue_id = v.id AND s.status = 'approved'
     WHERE (v.photo_url IS NULL OR v.photo_url = '')
-      AND v.google_place_id IS NOT NULL AND v.google_place_id != ''
+      AND (
+        (v.google_place_id IS NOT NULL AND v.google_place_id != '')
+        OR v.id LIKE 'ChIJ%'
+      )
     GROUP BY v.id
     ORDER BY v.created_at DESC
     LIMIT ?
@@ -64,7 +67,7 @@ async function enrichPhotos(dryRun = false) {
   let downloaded = 0, skipped = 0, failed = 0;
 
   for (const venue of venues) {
-    const placeId = venue.google_place_id;
+    const placeId = venue.place_id;
     const destFile = path.join(PHOTO_DIR, `${venue.id}.jpg`);
 
     if (fs.existsSync(destFile)) {

@@ -93,8 +93,6 @@ async function processBatch(batch, batchNum, totalBatches) {
       const url = item.website.trim();
       if (url !== 'n/a' && url.startsWith('http')) {
         updateObj.website = url;
-      } else if (url === 'n/a') {
-        updateObj.website = 'n/a';
       }
     }
 

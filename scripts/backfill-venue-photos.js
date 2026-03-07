@@ -87,9 +87,10 @@ async function main() {
       .all().map(r => r.venue_id),
   );
 
+  const hasPlaceId = v => v.google_place_id || (v.id && v.id.startsWith('ChIJ'));
   const candidateVenues = INCLUDE_ALL
-    ? allVenues.filter(v => !v.photo_url)
-    : allVenues.filter(v => !v.photo_url && spotVenueIds.has(v.id));
+    ? allVenues.filter(v => !v.photo_url && hasPlaceId(v))
+    : allVenues.filter(v => !v.photo_url && spotVenueIds.has(v.id) && hasPlaceId(v));
 
   log(`\n📷 Venue photo backfill`);
   log(`  Total venues: ${allVenues.length}`);
@@ -119,7 +120,8 @@ async function main() {
     }
 
     try {
-      const photoRef = await fetchPhotoReference(venue.id);
+      const placeId = venue.google_place_id || venue.id;
+      const photoRef = await fetchPhotoReference(placeId);
       if (!photoRef) {
         skippedNoPhoto++;
         log(`${progress} ⬜ ${venue.name} — no photo in Google Places`);
