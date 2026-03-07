@@ -11,12 +11,12 @@
  * Usage: GOOGLE_PLACES_ENABLED=true node scripts/discover-live-music.js
  */
 
-const fs = require('fs');
 const path = require('path');
 const db = require('./utils/db');
 const { parsePromotionTime } = require('./utils/time-parse');
 const { resolveMissingTimes } = require('./utils/llm-resolve-times');
-const { getPlacesApiKey, geocodePlace, downloadPlacePhoto, sendTelegram } = require('./utils/google-places');
+const { getPlacesApiKey, sendTelegram } = require('./utils/google-places');
+const { ensureVenue } = require('./utils/ensure-venue');
 const { createLogger } = require('./utils/logger');
 
 const { log, warn, close: closeLog } = createLogger('discover-live-music');
@@ -34,8 +34,6 @@ const VALID_AREAS = [
 ];
 const TODAY = new Date().toISOString().split('T')[0];
 
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
 async function discoverViaGrok() {
   const prompt = loadPrompt('llm-discover-live-music');
 
@@ -47,7 +45,6 @@ async function discoverViaGrok() {
   }
   const valid = result.parsed
     .filter(item => item.venue && item.description)
-    .slice(0, 40)
     .map(item => ({
       name: item.venue.trim(),
       address: (item.address || '').trim() || null,
@@ -99,41 +96,21 @@ async function main() {
     const existingVenue = venuesByName.get(venue.name.toLowerCase());
     if (existingVenue && excludedIds.has(existingVenue.id)) { log(`  SKIP (venue excluded): ${venue.name}`); continue; }
 
-    let lat, lng, placeId;
-    if (existingVenue) {
-      lat = existingVenue.lat; lng = existingVenue.lng; placeId = existingVenue.id;
-      log(`  REUSE: ${venue.name}`);
-    } else {
-      if (process.env.GOOGLE_PLACES_ENABLED !== 'true') { log(`  SKIP (no geocoding): ${venue.name}`); continue; }
-      const geo = await geocodePlace(venue.name, venue.address);
-      if (!geo) { log(`  SKIP (geocode failed): ${venue.name}`); continue; }
-      lat = geo.lat; lng = geo.lng; placeId = geo.placeId;
-      log(`  GEOCODED: ${venue.name} → ${lat}, ${lng}`);
-      await sleep(250);
-    }
+    const result = existingVenue
+      ? { venue: existingVenue, created: false }
+      : await ensureVenue({ name: venue.name, address: venue.address, website: venue.website, area: venue.area }, { db, log });
 
-    const area = venue.area || existingVenue?.area || 'Downtown Charleston';
-    const venueId = existingVenue?.id || placeId || `lm_${venue.name.toLowerCase().replace(/\s+/g, '_').slice(0, 30)}`;
-    if (!existingVenue) {
-      db.venues.upsert({ id: venueId, name: venue.name, address: venue.address, lat, lng, area, website: venue.website });
-    }
-
-    if (!existingVenue?.photo_url && placeId) {
-      try {
-        const photoPath = await downloadPlacePhoto(placeId, venueId, log);
-        if (photoPath) db.venues.updatePhotoUrl(venueId, photoPath);
-        await sleep(300);
-      } catch (e) { log(`  Photo failed for ${venue.name}: ${e.message}`); }
-    }
+    if (!result) continue;
+    const { venue: resolvedVenue } = result;
 
     const parsed = parsePromotionTime(venue.schedule);
     db.spots.insert({
-      venue_id: venueId, title: venue.name, type: 'Live Music', source: 'automated', status: 'approved',
+      venue_id: resolvedVenue.id, title: venue.name, type: 'Live Music', source: 'automated', status: 'approved',
       description: venue.description, promotion_time: venue.schedule,
       time_start: parsed.timeStart, time_end: parsed.timeEnd, days: parsed.days,
       source_url: venue.website, last_update_date: TODAY,
     });
-    log(`  INSERT: ${venue.name} (${area})`);
+    log(`  INSERT: ${venue.name} (${resolvedVenue.area || 'unknown'})`);
     inserted++;
     insertedNames.push(venue.name);
     existingTitles.add(venue.name.toLowerCase());

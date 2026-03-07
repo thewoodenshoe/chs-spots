@@ -348,7 +348,7 @@ export default function SpotListView({
               All Venues
             </button>
           </div>
-          <span className="text-[11px] text-gray-400">Updated daily 3pm</span>
+          <span className="text-[11px] text-gray-400">Updated daily 1pm</span>
         </div>
       )}
 
@@ -400,7 +400,7 @@ export default function SpotListView({
             <span className="text-3xl mb-3">🎵</span>
             <p className="text-sm font-semibold text-gray-700">No shows found today</p>
             <p className="mt-1 text-xs text-gray-500 max-w-[220px]">
-              Check back after 3pm for tonight&apos;s lineup, or browse all live music venues.
+              Check back after 1pm for today&apos;s lineup, or browse all live music venues.
             </p>
             <button
               onClick={() => setLiveMusicFilter('all')}
