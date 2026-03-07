@@ -3,11 +3,12 @@
 // Step 1 of live music pipeline. Runs daily at 1pm EST.
 // Usage: node scripts/refresh-live-music.js [--dry-run]
 
+const fs = require('fs');
 const path = require('path');
 const db = require('./utils/db');
 const { parseTimeRange, parseDayPart } = require('./utils/time-parse');
 const { ensureVenue } = require('./utils/ensure-venue');
-const { sendTelegram } = require('./utils/google-places');
+const { reportingPath } = require('./utils/data-dir');
 const { createLogger } = require('./utils/logger');
 const { log, warn, error: logError, close: closeLog } = createLogger('refresh-live-music');
 
@@ -78,15 +79,17 @@ async function fetchTodaysEvents(venueNames) {
   const result = await webSearch({ prompt, timeoutMs: 120000, log });
   if (!result?.parsed || !Array.isArray(result.parsed)) {
     log('[refresh-live-music] Grok returned no valid JSON array');
-    return [];
+    return { events: [], rawCount: 0, droppedCount: 0 };
   }
-  const events = result.parsed.filter(e => e.venue && e.start_time).map(e => ({
+  const raw = result.parsed;
+  const events = raw.filter(e => e.venue && e.start_time).map(e => ({
     venue: e.venue.trim(), performer: (e.performer || 'Live Music').trim(),
     startTime: e.start_time.trim(), endTime: (e.end_time || '').trim(),
     description: (e.description || '').trim(),
   }));
-  log(`[refresh-live-music] Found ${events.length} events`);
-  return events;
+  const droppedCount = raw.length - events.length;
+  log(`[refresh-live-music] Grok returned ${raw.length}, ${events.length} valid, ${droppedCount} dropped`);
+  return { events, rawCount: raw.length, droppedCount };
 }
 
 function matchEventToSpot(event, spotsByNorm) {
@@ -129,14 +132,12 @@ async function main() {
     venueNames.push(spot.title);
   }
 
-  const events = await fetchTodaysEvents(venueNames);
+  const { events, rawCount, droppedCount } = await fetchTodaysEvents(venueNames);
 
   let matched = 0;
   let created = 0;
   let skipped = 0;
-  const matchedNames = [];
-  const createdNames = [];
-  const skippedNames = [];
+  const details = { matched: [], created: [], skipped: [], multiShow: [] };
   const updatedSpotIds = new Set();
 
   for (const event of events) {
@@ -149,57 +150,52 @@ async function main() {
 
     const spot = matchEventToSpot(event, spotsByNorm);
 
+    const endEstimated = !event.endTime;
+    const row = { venue: event.venue, performer: event.performer, time: promoTime, endEstimated };
+
     if (spot) {
       if (updatedSpotIds.has(spot.id)) {
         log(`[refresh-live-music] MULTI-SHOW: ${spot.title} (${event.performer})`);
         if (!DRY_RUN) {
           const current = database.prepare("SELECT description FROM spots WHERE id = ?").get(spot.id);
-          const combinedDesc = `${current.description} | ${event.performer}. ${event.description}`.trim();
-          db.spots.update(spot.id, { description: combinedDesc });
+          db.spots.update(spot.id, { description: `${current.description} | ${desc}`.trim() });
         }
         matched++;
-        matchedNames.push(`${spot.title}: ${event.performer} (multi-show)`);
+        details.multiShow.push(row);
         continue;
       }
-
-      if (DRY_RUN) {
-        log(`[refresh-live-music] DRY RUN: ${spot.title} → "${promoTime}" (${event.performer})`);
-      } else {
+      if (!DRY_RUN) {
         db.spots.update(spot.id, {
           promotion_time: promoTime, time_start: timeStart, time_end: timeEnd,
           days: daysStr, specific_date: todayDate, description: desc,
         });
-        log(`[refresh-live-music] UPDATED: ${spot.title} → "${promoTime}" (${event.performer})`);
       }
+      log(`[refresh-live-music] ${DRY_RUN ? 'DRY RUN' : 'UPDATED'}: ${spot.title} → "${promoTime}"`);
       matched++;
       updatedSpotIds.add(spot.id);
-      matchedNames.push(`${spot.title}: ${event.performer}`);
+      details.matched.push(row);
       continue;
     }
 
-    // Unmatched: find or create venue, then create spot
     const venueResult = await ensureVenue({ name: event.venue }, { db, log });
     if (!venueResult) {
       skipped++;
-      skippedNames.push(event.venue);
+      details.skipped.push({ ...row, reason: 'Geocode failed or Places API disabled' });
       log(`[refresh-live-music] SKIP (no venue): ${event.venue}`);
       continue;
     }
-
-    if (DRY_RUN) {
-      log(`[refresh-live-music] DRY RUN NEW: ${event.venue} → "${promoTime}" (${event.performer})`);
-    } else {
+    if (!DRY_RUN) {
       db.spots.insert({
         venue_id: venueResult.venue.id, title: event.venue, type: 'Live Music',
         source: 'automated', status: 'approved', description: desc,
         promotion_time: promoTime, time_start: timeStart, time_end: timeEnd,
         days: daysStr, specific_date: todayDate, last_update_date: todayDate,
       });
-      log(`[refresh-live-music] CREATED: ${event.venue} → "${promoTime}" (${event.performer})`);
       spotsByNorm.set(normalizeVenueName(event.venue), { id: -1, title: event.venue });
     }
+    log(`[refresh-live-music] ${DRY_RUN ? 'DRY RUN NEW' : 'CREATED'}: ${event.venue} → "${promoTime}"`);
     created++;
-    createdNames.push(`${event.venue}: ${event.performer}`);
+    details.created.push({ ...row, venueCreated: venueResult.created });
   }
 
   if (!DRY_RUN) {
@@ -218,19 +214,20 @@ async function main() {
   log(`\n[refresh-live-music] Done: ${matched} matched, ${created} created, ${skipped} skipped, ${elapsed}s`);
   if (DRY_RUN) log('(DRY RUN — nothing written)');
 
-  const msg = [
-    `🎵 <b>Live Music Refresh</b> (${todayLabel})`,
-    '',
-    `Events found: ${events.length}`,
-    `Matched: ${matched}`,
-    created > 0 ? `New venues: ${created}` : '',
-    skipped > 0 ? `Skipped: ${skipped}` : '',
-    matched > 0 ? `\n<b>Today:</b>\n${matchedNames.join('\n')}` : '\nNo shows matched today.',
-    created > 0 ? `\n<b>New:</b>\n${createdNames.join('\n')}` : '',
-    skipped > 0 ? `\n<i>Could not resolve:</i> ${skippedNames.join(', ')}` : '',
-    `\nElapsed: ${elapsed}s`,
-  ].filter(Boolean).join('\n');
-  await sendTelegram(msg);
+  const summary = {
+    date: todayDate, dateLabel: todayLabel, elapsed, dryRun: DRY_RUN,
+    existingSpots: existingSpots.length,
+    acquisition: { raw: rawCount, valid: events.length, dropped: droppedCount },
+    results: { matched, created, skipped, staleCleared: 0 },
+    details,
+  };
+  if (!DRY_RUN) {
+    const cleared = existingSpots.filter(s => !updatedSpotIds.has(s.id) && s.promotion_time).length;
+    summary.results.staleCleared = cleared;
+  }
+  const summaryPath = reportingPath('live-music-summary.json');
+  fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2), 'utf8');
+  log(`[refresh-live-music] Summary written to ${summaryPath}`);
 
   releaseLock();
   closeLog();

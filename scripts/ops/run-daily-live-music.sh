@@ -30,9 +30,9 @@ echo "--- Step 3: Auto-fix pass ---" >> "$LOG_FILE"
 node scripts/ops/auto-fix.js >> "$LOG_FILE" 2>&1 || true
 echo "Auto-fix finished at $(date)" >> "$LOG_FILE"
 
-# Step 4: Report — generate daily quality report
-echo "--- Step 4: Generate report ---" >> "$LOG_FILE"
-node scripts/ops/generate-report.js >> "$LOG_FILE" 2>&1 || true
+# Step 4: Report — send live music pipeline report to Telegram
+echo "--- Step 4: Live music report ---" >> "$LOG_FILE"
+node scripts/ops/live-music-report.js >> "$LOG_FILE" 2>&1 || true
 echo "Report finished at $(date)" >> "$LOG_FILE"
 
 echo "=== Live Music Pipeline completed at $(date) ===" >> "$LOG_FILE"
