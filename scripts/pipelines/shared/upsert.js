@@ -48,7 +48,7 @@ function upsertSpots({ approved, staleIds, acquireError, todayDate, type }, { db
     for (const id of staleIds) {
       db.spots.update(id, {
         promotion_time: null, time_start: null, time_end: null,
-        days: null, specific_date: null, description: null,
+        days: null, specific_date: null,
       });
       staleCleared++;
     }
