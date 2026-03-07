@@ -163,6 +163,9 @@ export default async function ExplorePage({ params }: { params: Promise<{ slug: 
     return { area: a, count };
   }).filter(a => a.count > 0).sort((a, b) => b.count - a.count).slice(0, 5);
 
+  const REFRESH_TIMES: Record<string, string> = { 'Live Music': '1pm' };
+  const refreshTime = REFRESH_TIMES[activity] || '3am';
+
   const areaDesc = AREA_DESCRIPTIONS[area] || `A popular Charleston neighborhood with great ${activity.toLowerCase()} options.`;
   const activityTip = ACTIVITY_TIPS[activity] || '';
   const breadcrumbLd = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
@@ -184,7 +187,7 @@ export default async function ExplorePage({ params }: { params: Promise<{ slug: 
           : `We don\u2019t have any ${activity.toLowerCase()} spots in ${area} yet \u2014 check nearby areas below.`}
       </p>
       {lastUpdatedLabel && areaSpots.length > 0 && (
-        <p className="text-xs text-gray-400 mb-1">Last updated: {lastUpdatedLabel} &middot; Refreshes daily at 3am ET</p>
+        <p className="text-xs text-gray-400 mb-1">Last updated: {lastUpdatedLabel} &middot; Refreshes daily at {refreshTime} ET</p>
       )}
       {activityTip && <p className="text-xs text-gray-400 mb-6 italic">{activityTip}</p>}
 

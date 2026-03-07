@@ -21,4 +21,7 @@ echo "--- Checking Coming Soon lifecycle ---" >> "$LOG_FILE"
 node scripts/check-opening-status.js >> "$LOG_FILE" 2>&1
 echo "check-opening-status completed at $(date)" >> "$LOG_FILE"
 
+source "$(dirname "$0")/revalidate-pages.sh"
+revalidate_pages "$LOG_FILE"
+
 echo "nightly-openings completed at $(date)"

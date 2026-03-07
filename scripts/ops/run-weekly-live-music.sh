@@ -17,4 +17,9 @@ export GOOGLE_PLACES_ENABLED=true
 
 echo "=== Live Music Discovery started at $(date) ===" >> "$LOG_FILE"
 node scripts/discover-live-music.js >> "$LOG_FILE" 2>&1
+echo "Discovery completed at $(date)" >> "$LOG_FILE"
+
+source "$SCRIPT_DIR/revalidate-pages.sh"
+revalidate_pages "$LOG_FILE"
+
 echo "=== Completed at $(date) ===" >> "$LOG_FILE"

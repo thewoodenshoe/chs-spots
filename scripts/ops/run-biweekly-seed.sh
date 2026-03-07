@@ -33,4 +33,7 @@ export GOOGLE_PLACES_ENABLED=true
 node scripts/seed-venues.js --confirm >> "$LOG_FILE" 2>&1
 printf "%s" "$NOW_EPOCH" > "$STAMP_FILE"
 
+source "$(dirname "$0")/revalidate-pages.sh"
+revalidate_pages "$LOG_FILE"
+
 echo "seed-venues completed and stamp updated"

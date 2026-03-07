@@ -30,8 +30,12 @@ echo "--- Step 3: Auto-fix pass ---" >> "$LOG_FILE"
 node scripts/ops/auto-fix.js >> "$LOG_FILE" 2>&1 || true
 echo "Auto-fix finished at $(date)" >> "$LOG_FILE"
 
-# Step 4: Report — send live music pipeline report to Telegram
-echo "--- Step 4: Live music report ---" >> "$LOG_FILE"
+# Step 4: Revalidate — refresh all explore/venue ISR pages with latest data
+source "$SCRIPT_DIR/revalidate-pages.sh"
+revalidate_pages "$LOG_FILE"
+
+# Step 5: Report — send live music pipeline report to Telegram
+echo "--- Step 5: Live music report ---" >> "$LOG_FILE"
 node scripts/ops/live-music-report.js >> "$LOG_FILE" 2>&1 || true
 echo "Report finished at $(date)" >> "$LOG_FILE"
 

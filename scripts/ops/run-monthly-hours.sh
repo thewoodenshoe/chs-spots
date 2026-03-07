@@ -21,6 +21,10 @@ node scripts/extract-hours.js --force 2>&1 | tee -a "$LOG_FILE"
 EXIT_CODE=${PIPESTATUS[0]}
 
 echo "" | tee -a "$LOG_FILE"
+
+source "$(dirname "$0")/revalidate-pages.sh"
+revalidate_pages "$LOG_FILE"
+
 echo "=== Finished: $(date) (exit $EXIT_CODE) ===" | tee -a "$LOG_FILE"
 
 # Clean up logs older than 90 days
