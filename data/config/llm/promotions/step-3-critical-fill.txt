@@ -1,0 +1,23 @@
+Search the web for "{VENUE_NAME}" in Charleston, SC.
+
+I found they have a {ACTIVITY_TYPE} but I'm missing specific information.
+Their website is: {WEBSITE}
+
+I need:
+1. What time does their {ACTIVITY_TYPE} START?
+2. What time does their {ACTIVITY_TYPE} END?
+3. Which days of the week do they have {ACTIVITY_TYPE}?
+4. What specials do they offer? (drink deals, food specials, prices)
+
+Search their website, social media, and review sites to find this information.
+
+Return ONLY a JSON object:
+{{
+  "time_start": "HH:MM",
+  "time_end": "HH:MM",
+  "days": "0,1,2,3,4,5,6",
+  "specials": ["$5 draft beers", "Half off apps"]
+}}
+
+Use 24h format (e.g. "16:00" for 4pm). Day numbers: 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat.
+Use null for any field you truly cannot determine. If you find evidence of the promotion but can't confirm days/times, still return what you can.

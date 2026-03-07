@@ -1,0 +1,11 @@
+Search the web for the restaurant/bar/venue "{VENUE_NAME}" in Charleston, SC area (near {ADDRESS}).
+
+Return a JSON object with:
+- "name": the exact venue name
+- "address": full street address
+- "website": official website URL
+- "phone": phone number in (XXX) XXX-XXXX format, or null
+- "area": which Charleston neighborhood (Downtown Charleston, Mount Pleasant, North Charleston, West Ashley, James Island, Daniel Island, Sullivan's & IOP, or Other)
+- "description": one sentence about what it is
+
+Only return the JSON object, nothing else.

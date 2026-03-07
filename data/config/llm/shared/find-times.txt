@@ -1,0 +1,14 @@
+Search the web for "{VENUE_NAME}" in Charleston, SC.
+
+Find their {ACTIVITY_TYPE} schedule. Their website is: {WEBSITE}
+
+I need:
+- The start time of their {ACTIVITY_TYPE}
+- The end time of their {ACTIVITY_TYPE}
+- Which days of the week they have {ACTIVITY_TYPE}
+
+Return ONLY a JSON object:
+{{"time_start": "HH:MM", "time_end": "HH:MM", "days": "0,1,2,3,4,5,6"}}
+
+Use 24h format (e.g. "16:00" for 4pm). Day numbers: 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat.
+Use null for any field you truly cannot determine.

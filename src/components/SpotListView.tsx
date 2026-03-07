@@ -153,10 +153,20 @@ export default function SpotListView({
   }, [onFavoritesChange]);
 
   const isLiveMusicToday = selectedActivity === 'Live Music' && liveMusicFilter === 'today';
+
+  const isScheduledToday = useCallback((s: Spot) => {
+    if (!s.timeStart) return false;
+    const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    if (s.specificDate) return s.specificDate === todayStr;
+    if (s.days && s.days.length > 0) return s.days.includes(now.getDay());
+    return true;
+  }, []);
+
   const todayShowCount = useMemo(() => {
     if (selectedActivity !== 'Live Music') return 0;
-    return spots.filter(s => s.timeStart).length;
-  }, [spots, selectedActivity]);
+    return spots.filter(isScheduledToday).length;
+  }, [spots, selectedActivity, isScheduledToday]);
 
   const sortedSpots = useMemo(() => {
     let filtered = spots;
@@ -164,7 +174,7 @@ export default function SpotListView({
       filtered = filtered.filter((s) => favIds.has(s.id));
     }
     if (isLiveMusicToday) {
-      filtered = filtered.filter((s) => s.timeStart);
+      filtered = filtered.filter(isScheduledToday);
     }
 
     const withMeta = filtered.map((spot) => {
@@ -219,7 +229,7 @@ export default function SpotListView({
       default:
         return withMeta.sort((a, b) => a.spot.title.localeCompare(b.spot.title));
     }
-  }, [spots, sortMode, userLocation, showFavoritesOnly, favIds, venueMap, isLiveMusicToday]);
+  }, [spots, sortMode, userLocation, showFavoritesOnly, favIds, venueMap, isLiveMusicToday, isScheduledToday]);
 
   const getActivityConfig = (type: string) =>
     activities.find((a) => a.name === type);

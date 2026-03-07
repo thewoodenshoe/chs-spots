@@ -1,0 +1,15 @@
+I have a live music event at "{VENUE_NAME}" in Charleston, SC today ({TODAY_LABEL}).
+
+The performer is: {PERFORMER}
+
+I need the following specific information. Search the web — check the venue's website, social media, and event listings:
+
+1. What time does the show START? (exact time like "8:00 PM")
+2. What time does the show END? (exact time, or estimate based on typical show length)
+
+If you can find the venue's website, include that too.
+
+Return ONLY a JSON object:
+{{"start_time": "8:00 PM", "end_time": "11:00 PM", "website": "https://..."}}
+
+If you truly cannot find the start or end time, use null for that field.

@@ -47,7 +47,7 @@ npm run dev
 
 ```bash
 npm run dev          # Start local dev server
-npx jest --no-cache  # Run all tests (45 suites, 603 tests)
+npx jest --no-cache  # Run all tests (45 suites, 614 tests)
 npm run build        # Production build
 npm run admin        # Local admin UI: query/update spots (http://localhost:3456)
 ```
@@ -153,13 +153,38 @@ chs-spots/
 │   ├── lib/                 # DAL (db.ts), Telegram, rate-limit, cache
 │   └── utils/               # Active status, time, distance, favorites, SEO helpers
 ├── scripts/
+│   ├── pipelines/                   # Modular 9-step pipelines
+│   │   ├── shared/                  # Shared pipeline modules
+│   │   │   ├── pipeline-io.js       # JSON I/O between steps, date helpers
+│   │   │   ├── quality-gate.js      # Mandatory field checks per activity type
+│   │   │   ├── upsert.js            # Safe DB writer (LLM-error aware)
+│   │   │   ├── pre-report-check.js  # Post-upsert quality audit + LLM fix
+│   │   │   └── find-venue.js        # Venue sub-workflow (lookup/geocode/photo/enrich)
+│   │   ├── live-music/              # Daily live music pipeline
+│   │   │   ├── discover-today.js    # Step 1: Wide LLM web search
+│   │   │   ├── critical-fill.js     # Step 3: Targeted LLM for missing times
+│   │   │   ├── run.js               # Orchestrator (all steps)
+│   │   │   ├── report.js            # Telegram report
+│   │   │   └── orchestrator.sh      # Shell wrapper for cron
+│   │   ├── openings/                # Nightly openings pipeline
+│   │   │   ├── discover.js          # Step 1: RSS + wide LLM discovery
+│   │   │   ├── validate.js          # Step 3: Critical LLM verification
+│   │   │   ├── upsert-venues.js     # Step 5: Venue creation + photo download
+│   │   │   ├── lifecycle.js         # Step 6: coming_soon → recently_opened
+│   │   │   ├── run.js               # Orchestrator
+│   │   │   ├── report.js            # Telegram report
+│   │   │   └── orchestrator.sh      # Shell wrapper for cron
+│   │   └── promotions/              # HH/Brunch pipeline additions
+│   │       ├── critical-fill.js     # Targeted LLM for missing times/days
+│   │       ├── quality-check.js     # Post-upsert anomaly scan
+│   │       └── orchestrator.sh      # Standalone wrapper (optional)
 │   ├── download-raw-html.js         # Step 1: Download venue websites
 │   ├── extract-promotions.js        # Step 2: LLM extraction via Grok
 │   ├── create-spots.js              # Step 3: Create spots from gold data
 │   ├── extract-hours.js             # Operating hours extraction (3-tier)
-│   ├── discover-openings.js         # Nightly: find new/coming restaurants (venue-first)
-│   ├── check-opening-status.js     # Nightly: transition Coming Soon → Recently Opened
-│   ├── discover-live-music.js       # Weekly: find live music events
+│   ├── discover-openings.js         # Legacy: opening discovery (replaced by pipelines/openings/)
+│   ├── check-opening-status.js      # Legacy: lifecycle (replaced by pipelines/openings/)
+│   ├── discover-live-music.js       # Weekly: find live music venues
 │   ├── enrich-venues.js             # Fill missing venue data via LLM + Google
 │   ├── run-incremental-pipeline.js  # Orchestrates nightly ETL
 │   ├── seed-venues.js               # Google Places venue seeding
@@ -168,29 +193,32 @@ chs-spots/
 │   ├── ops/
 │   │   ├── generate-report.js       # Daily analytics + pipeline report
 │   │   ├── run-nightly-pipeline.sh  # Cron: ETL + enrichment + report (3 AM)
-│   │   ├── run-nightly-openings.sh  # Cron: opening discovery (2 AM)
-│   │   ├── run-daily-live-music.sh  # Cron: event refresh (3 PM daily)
+│   │   ├── run-nightly-openings.sh  # Cron: opening discovery → modular pipeline
+│   │   ├── run-daily-live-music.sh  # Cron: event refresh → modular pipeline
 │   │   ├── run-weekly-live-music.sh # Cron: venue discovery (Wed 4 AM)
 │   │   ├── run-biweekly-seed.sh     # Cron: venue discovery (1 AM)
-│   │   └── run-monthly-hours.sh     # Cron: operating hours refresh
-│   ├── utils/
-│   │   ├── db.js                    # Script-side DAL (re-export hub)
-│   │   ├── db-core.js               # Connection, audit, syncActivityFlags, generateVenueId
-│   │   ├── db-venues.js             # Venue CRUD, upsert, updateStatus
-│   │   ├── db-spots.js              # Spot CRUD, upsertAutomated, manual_override guards
-│   │   ├── db-support.js            # Gold extractions, areas, activities, watchlist
-│   │   ├── db-pipeline.js           # Pipeline state, runs, streaks, audit queries
-│   │   ├── config.js                # Pipeline state + watchlist
-│   │   ├── data-dir.js              # Path resolution
-│   │   ├── normalize.js             # Text normalization
-│   │   ├── logger.js                # Shared logging utility
+│   │   ├── run-monthly-hours.sh     # Cron: operating hours refresh
+│   │   └── revalidate-pages.sh      # Shared: ISR page revalidation
+│   ├── utils/                       # Shared script utilities
+│   │   ├── db.js, db-core.js, db-venues.js, db-spots.js, db-support.js, db-pipeline.js
+│   │   ├── llm-client.js            # Grok API (chat + webSearch)
+│   │   ├── load-prompt.js           # Load LLM prompts from data/config/llm/
+│   │   ├── logger.js                # Shared logging (stdout + file)
 │   │   ├── discover-rss.js          # RSS parsing + article classification
 │   │   └── discover-places.js       # Google Places geocoding + area + dedup
 │   └── db/schema.sql                # SQLite schema
 ├── data/
 │   ├── chs-spots.db    # SQLite database (gitignored)
-│   ├── config/         # Areas, activities, LLM prompts, watchlist
-│   └── seeds/          # Activity seed data (JSON)
+│   ├── config/
+│   │   ├── llm/                     # LLM prompt templates (editable without code changes)
+│   │   │   ├── live-music/          # Live music pipeline prompts
+│   │   │   ├── openings/            # Openings pipeline prompts
+│   │   │   ├── promotions/          # HH/Brunch pipeline prompts
+│   │   │   └── shared/              # Shared prompts (find-venue, find-times)
+│   │   ├── areas.json, activities.json, watchlist.json
+│   │   └── config.json
+│   ├── pipeline-runs/               # Step outputs (JSON, date-partitioned)
+│   └── seeds/                       # Activity seed data (JSON)
 ├── ecosystem.config.cjs  # PM2 config (chs-spots + chs-admin)
 ├── e2e/                  # Playwright E2E tests
 ├── logs/                 # Structured pipeline logs
@@ -208,7 +236,10 @@ chs-spots/
 | 4:00 AM Wed | Live music venue discovery | `run-weekly-live-music.sh` |
 | Monthly | Operating hours refresh | `run-monthly-hours.sh` |
 
-**ETL flow:** Download HTML → merge → trim → diff → extract via Grok (only changed venues) → enrich missing venue data → create spots → generate report → send Telegram summary. Typical daily cost: 5–15 LLM calls.
+**Universal pipeline pattern (9 steps):**
+1. Acquire (scrape/RSS/LLM) → 2. Open LLM (wide discovery) → 3. Critical LLM (fill mandatory fields) → 4. Quality Gate (mandatory field check) → 5. Upsert (safe DB write, LLM-error aware) → 6. Pre-Report Check (rule-based + targeted LLM fixes) → 7. SEO (ISR revalidation) → 8. Report → 9. Telegram
+
+All LLM prompts stored in `data/config/llm/` — editable without code changes. Pipeline step outputs saved as JSON in `data/pipeline-runs/` for debugging.
 
 ## SEO
 

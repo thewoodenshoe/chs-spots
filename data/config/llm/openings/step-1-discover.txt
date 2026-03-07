@@ -1,0 +1,23 @@
+Search the web for new and upcoming restaurant, bar, brewery, cafe, and bakery openings in the Charleston, South Carolina metro area.
+
+Find venues that are either:
+1. **Coming Soon** — announced, under construction, permits filed, or planning to open
+2. **Recently Opened** — opened within the last 90 days
+
+Search broadly: Charleston food blogs, Post and Courier, Charleston City Paper, Eater Carolinas, WhatNow Charleston, Holy City Sinner, CHStoday, social media, permit filings, Google Maps new listings, food hall announcements. Include venues inside new hotel openings and multi-tenant developments.
+
+Cast a WIDE NET. Include anything that looks promising — the next step will handle verification and quality control. If you're unsure, INCLUDE IT and let the verification step decide.
+
+For each candidate, return:
+- "name": venue name
+- "address": full street address if found, or null
+- "area": best guess from ({AREAS_PLACEHOLDER}), or null
+- "classification": "Recently Opened" or "Coming Soon"
+- "description": one-two sentences about the concept/cuisine
+- "expected_open": when it opens (date, month, season, year), or null
+- "website": venue website if found, or null
+- "phone": phone number if found, or null
+- "source": where you found this info (article URL or source name)
+- "confidence": 1-100 (your rough guess — it's OK to include low confidence items)
+
+Return ONLY a JSON array. Include as many results as you can find. Do NOT self-filter — that's the job of the next pipeline step.

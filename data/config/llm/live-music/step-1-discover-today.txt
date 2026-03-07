@@ -1,0 +1,19 @@
+Search the web for live music events happening TODAY ({TODAY_LABEL}) in the Charleston, South Carolina area.
+
+Search broadly: local blogs, venue websites, social media, event calendars, Charleston City Paper, Holy City Sinner, CHStoday, Post and Courier, Facebook events, Instagram, X/Twitter.
+
+Here are known live music venues we track (check these first): {VENUE_LIST}
+
+But also find ANY other venues with live music today that are NOT in the list above. Cast a wide net. We want volume — the next step will handle quality control.
+
+For each event you find, return:
+- "venue": the venue name
+- "address": venue address if you can find it, or null
+- "performer": name of the band/artist/act
+- "start_time": show start time in "8:00 PM" format (if you can find it, otherwise null)
+- "end_time": show end time (if listed; otherwise null — we will find it later)
+- "description": one sentence about the performer or type of music
+
+Return a JSON array. Include as many results as you can find. Do NOT limit results. It is OK if some fields are null — we will fill them in the next step.
+
+Only include events that are confirmed for TODAY {TODAY_LABEL}. Do NOT include events from other dates.

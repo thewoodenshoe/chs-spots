@@ -82,6 +82,16 @@ echo "--- Running auto-fix pass ---" >> "$LOG_FILE"
 node scripts/ops/auto-fix.js >> "$LOG_FILE" 2>&1 || true
 echo "Auto-fix finished at $(date)" >> "$LOG_FILE"
 
+# Critical fill: targeted LLM for HH/Brunch spots missing times/days
+echo "--- Critical fill (promotions) ---" >> "$LOG_FILE"
+node scripts/pipelines/promotions/critical-fill.js >> "$LOG_FILE" 2>&1 || true
+echo "Critical fill finished at $(date)" >> "$LOG_FILE"
+
+# Quality check: scan approved HH/Brunch spots for anomalies
+echo "--- Quality check (promotions) ---" >> "$LOG_FILE"
+node scripts/pipelines/promotions/quality-check.js >> "$LOG_FILE" 2>&1 || true
+echo "Quality check finished at $(date)" >> "$LOG_FILE"
+
 # Generate and send daily report (runs REGARDLESS of pipeline outcome)
 echo "--- Generating daily report ---" >> "$LOG_FILE"
 node scripts/ops/generate-report.js --send-telegram >> "$LOG_FILE" 2>&1 || true
