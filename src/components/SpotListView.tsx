@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { Spot } from '@/contexts/SpotsContext';
 import { NEAR_ME } from '@/components/AreaSelector';
 import { Activity } from '@/utils/activities';
 import { calculateDistanceMiles } from '@/utils/distance';
-import { isSpotActiveNow, formatScheduleLabel } from '@/utils/time-utils';
+import { isSpotActiveNow, formatScheduleLabel, extractCompactTime } from '@/utils/time-utils';
 import { toggleFavorite } from '@/utils/favorites';
 import { shareSpot } from '@/utils/share';
 import { useVenues } from '@/contexts/VenuesContext';
@@ -42,6 +42,13 @@ function getSubTag(title: string): string | null {
 }
 
 const MIXED_ACTIVITIES = new Set(['Dog-Friendly', 'Must-See Spots']);
+
+function extractPerformer(description: string | undefined): string | null {
+  if (!description) return null;
+  const dotIdx = description.indexOf('.');
+  if (dotIdx > 0 && dotIdx < 80) return description.slice(0, dotIdx).trim();
+  return description.length > 80 ? description.slice(0, 80).trim() : description;
+}
 
 interface SpotListViewProps {
   spots: Spot[];
@@ -94,6 +101,8 @@ export default function SpotListView({
     } catch { return new Set(); } // Corrupted localStorage — start fresh
   });
   const [shareToastId, setShareToastId] = useState<number | null>(null);
+  const [liveMusicFilter, setLiveMusicFilter] = useState<'today' | 'all'>('today');
+  useEffect(() => { setLiveMusicFilter('today'); }, [selectedActivity]);
   const [pullDistance, setPullDistance] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const touchStartY = useRef(0);
@@ -143,10 +152,19 @@ export default function SpotListView({
     });
   }, [onFavoritesChange]);
 
+  const isLiveMusicToday = selectedActivity === 'Live Music' && liveMusicFilter === 'today';
+  const todayShowCount = useMemo(() => {
+    if (selectedActivity !== 'Live Music') return 0;
+    return spots.filter(s => s.timeStart).length;
+  }, [spots, selectedActivity]);
+
   const sortedSpots = useMemo(() => {
     let filtered = spots;
     if (showFavoritesOnly) {
       filtered = filtered.filter((s) => favIds.has(s.id));
+    }
+    if (isLiveMusicToday) {
+      filtered = filtered.filter((s) => s.timeStart);
     }
 
     const withMeta = filtered.map((spot) => {
@@ -164,6 +182,15 @@ export default function SpotListView({
         fav: favIds.has(spot.id),
       };
     });
+
+    if (isLiveMusicToday) {
+      return withMeta.sort((a, b) => {
+        if (a.activeNow !== b.activeNow) return a.activeNow ? -1 : 1;
+        const aMin = a.spot.timeStart ? parseInt(a.spot.timeStart.split(':')[0]) * 60 + parseInt(a.spot.timeStart.split(':')[1]) : 9999;
+        const bMin = b.spot.timeStart ? parseInt(b.spot.timeStart.split(':')[0]) * 60 + parseInt(b.spot.timeStart.split(':')[1]) : 9999;
+        return aMin - bMin;
+      });
+    }
 
     switch (sortMode) {
       case 'nearest':
@@ -192,7 +219,7 @@ export default function SpotListView({
       default:
         return withMeta.sort((a, b) => a.spot.title.localeCompare(b.spot.title));
     }
-  }, [spots, sortMode, userLocation, showFavoritesOnly, favIds, venueMap]);
+  }, [spots, sortMode, userLocation, showFavoritesOnly, favIds, venueMap, isLiveMusicToday]);
 
   const getActivityConfig = (type: string) =>
     activities.find((a) => a.name === type);
@@ -245,24 +272,29 @@ export default function SpotListView({
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1">
-          <label htmlFor="sort-select" className="text-xs text-gray-500">
-            Sort:
-          </label>
-          <select
-            id="sort-select"
-            value={sortMode}
-            onChange={(e) => onSortChange(e.target.value as SortMode)}
-            className="rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 focus:border-teal-400 focus:outline-none"
-          >
-            <option value="alpha">A &ndash; Z</option>
-            {['Happy Hour', 'Brunch', 'Live Music'].includes(selectedActivity) && (
-              <option value="activityActive">{selectedActivity} Active</option>
-            )}
-            <option value="venueOpen">Open Now</option>
-            {userLocation && <option value="nearest">Nearest</option>}
-          </select>
-        </div>
+        {!isLiveMusicToday && (
+          <div className="flex items-center gap-1">
+            <label htmlFor="sort-select" className="text-xs text-gray-500">
+              Sort:
+            </label>
+            <select
+              id="sort-select"
+              value={sortMode}
+              onChange={(e) => onSortChange(e.target.value as SortMode)}
+              className="rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 focus:border-teal-400 focus:outline-none"
+            >
+              <option value="alpha">A &ndash; Z</option>
+              {['Happy Hour', 'Brunch', 'Live Music'].includes(selectedActivity) && (
+                <option value="activityActive">{selectedActivity} Active</option>
+              )}
+              <option value="venueOpen">Open Now</option>
+              {userLocation && <option value="nearest">Nearest</option>}
+            </select>
+          </div>
+        )}
+        {isLiveMusicToday && (
+          <span className="text-[11px] text-gray-400">Sorted by show time</span>
+        )}
       </div>
 
       {/* Active Now banner */}
@@ -293,7 +325,31 @@ export default function SpotListView({
       })()}
 
       {selectedActivity === 'Live Music' && !isAllVenues && (
-        <div className="px-4 py-1 text-[11px] text-gray-400 text-right">Events updated daily at 3pm</div>
+        <div className="flex items-center justify-between px-4 py-2">
+          <div className="flex rounded-lg bg-gray-100 p-0.5">
+            <button
+              onClick={() => setLiveMusicFilter('today')}
+              className={`rounded-md px-3 py-1 text-xs font-semibold transition-colors ${
+                liveMusicFilter === 'today'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Today{todayShowCount > 0 && ` (${todayShowCount})`}
+            </button>
+            <button
+              onClick={() => setLiveMusicFilter('all')}
+              className={`rounded-md px-3 py-1 text-xs font-semibold transition-colors ${
+                liveMusicFilter === 'all'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              All Venues
+            </button>
+          </div>
+          <span className="text-[11px] text-gray-400">Updated daily 3pm</span>
+        </div>
       )}
 
       {/* What's New strip */}
@@ -339,6 +395,22 @@ export default function SpotListView({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
+        {isLiveMusicToday && sortedSpots.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <span className="text-3xl mb-3">🎵</span>
+            <p className="text-sm font-semibold text-gray-700">No shows found today</p>
+            <p className="mt-1 text-xs text-gray-500 max-w-[220px]">
+              Check back after 3pm for tonight&apos;s lineup, or browse all live music venues.
+            </p>
+            <button
+              onClick={() => setLiveMusicFilter('all')}
+              className="mt-4 rounded-full bg-teal-500 px-5 py-2 text-xs font-semibold text-white shadow-sm hover:bg-teal-600 transition-colors active:scale-95"
+            >
+              View All Venues
+            </button>
+          </div>
+        )}
+
         {sortedSpots.map(({ spot, distance, activeNow, openStatus, venueHours, venueAddress, venuePhone, fav }) => {
           const cfg = getActivityConfig(spot.type);
           const emoji = cfg?.emoji || '📍';
@@ -383,14 +455,31 @@ export default function SpotListView({
                     )}
                   </div>
 
-                  {schedule && (
+                  {isLiveMusicToday && (() => {
+                    const performer = extractPerformer(spot.description);
+                    const timeLabel = extractCompactTime(spot);
+                    return (
+                      <>
+                        {performer && (
+                          <p className="mt-0.5 text-xs font-semibold text-indigo-700 truncate">
+                            Today: {performer}
+                          </p>
+                        )}
+                        {timeLabel && (
+                          <p className="mt-0.5 text-[11px] text-gray-500">{timeLabel}</p>
+                        )}
+                      </>
+                    );
+                  })()}
+
+                  {!isLiveMusicToday && schedule && (
                     <p className="mt-0.5 text-xs text-gray-500 truncate">
                       <span className="font-semibold text-gray-600">{spot.type}: </span>
                       {schedule}
                     </p>
                   )}
 
-                  {!schedule && spot.description && (
+                  {!isLiveMusicToday && !schedule && spot.description && (
                     <p className="mt-0.5 text-xs text-gray-400 truncate">{spot.description}</p>
                   )}
 
