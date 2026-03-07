@@ -1,0 +1,14 @@
+Search the web and check whether these Charleston, SC venues have live music events scheduled for TODAY ({TODAY_LABEL}):
+
+{VENUE_LIST}
+
+For each venue, determine if they have live music TODAY. Return a JSON array with one object per venue that HAS live music today:
+
+- "venue": exact venue name
+- "has_music": true
+- "performer": name of the performer/band playing today
+- "start_time": show start time in "2:00 PM" format
+- "end_time": show end time in "5:00 PM" format (estimate +3hrs if not listed)
+- "description": one sentence about the performer
+
+Only include venues that definitively have live music TODAY {TODAY_LABEL}. If a venue does NOT have music today, do NOT include it in the array. Return an empty array [] if none of them have music today.

@@ -1,10 +1,17 @@
-/**
- * Spot DAL — CRUD and lifecycle management for the spots table.
- * Geo data (lat, lng, area) lives on venues; spots carry activity-specific data.
- * After every mutation that affects type or status, venue activity flags are synced.
- */
-
+// Spot DAL — CRUD and lifecycle for spots. Syncs venue activity flags on mutation.
 const { getDb, logAudit, syncActivityFlags, transaction } = require('./db-core');
+
+const TIME_REQUIRED_TYPES = new Set(['Live Music', 'Happy Hour', 'Brunch']);
+
+function requireTimes(type, status, timeStart, timeEnd) {
+  if (status !== 'approved') return;
+  if (!TIME_REQUIRED_TYPES.has(type)) return;
+  if (!timeStart || !timeEnd) {
+    throw new Error(
+      `[db-spots] ${type} spot requires time_start and time_end when approved. Got start=${timeStart}, end=${timeEnd}`,
+    );
+  }
+}
 
 function serializeJson(val) {
   if (!val) return null;
@@ -43,6 +50,11 @@ const spots = {
   insert(s) {
     const db = getDb();
     const venueId = s.venue_id || s.venueId || null;
+    const type = s.type || 'Happy Hour';
+    const status = s.status || 'approved';
+    const timeStart = s.time_start || s.timeStart || null;
+    const timeEnd = s.time_end || s.timeEnd || null;
+    requireTimes(type, status, timeStart, timeEnd);
     const params = {
       venue_id: venueId,
       title: s.title,

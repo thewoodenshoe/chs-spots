@@ -84,6 +84,9 @@ export function isSpotActiveNow(spot: Spot): boolean {
       : nowMin >= start || nowMin <= end;
   }
 
+  // Live Music without explicit event times is never "active now"
+  if (spot.type === 'Live Music') return false;
+
   if (spot.operatingHours) return isVenueOpenNow(spot.operatingHours);
   return false;
 }

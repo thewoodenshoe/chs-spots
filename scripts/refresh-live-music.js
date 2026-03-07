@@ -1,50 +1,31 @@
 #!/usr/bin/env node
-// Daily Live Music Refresh — finds today's events, creates venues/spots for unmatched.
-// Step 1 of live music pipeline. Runs daily at 1pm EST.
+// Daily Live Music Refresh — finds today's events, verifies unmatched, clears stale.
 // Usage: node scripts/refresh-live-music.js [--dry-run]
-
 const fs = require('fs');
 const path = require('path');
 const db = require('./utils/db');
 const { parseTimeRange, parseDayPart } = require('./utils/time-parse');
 const { ensureVenue } = require('./utils/ensure-venue');
+const { verifyUnmatchedMusic } = require('./utils/verify-stale-music');
 const { reportingPath } = require('./utils/data-dir');
 const { createLogger } = require('./utils/logger');
 const { log, warn, error: logError, close: closeLog } = createLogger('refresh-live-music');
 
-try {
-  require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') });
-} catch { /* dotenv not installed in production */ }
+try { require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') }); } catch { /* */ }
 
 const { webSearch, getApiKey } = require('./utils/llm-client');
 const { loadPrompt } = require('./utils/load-prompt');
-
 const DRY_RUN = process.argv.includes('--dry-run');
+if (!getApiKey()) { log('Error: No Grok API key'); process.exit(1); }
 
-if (!getApiKey()) {
-  log('Error: No Grok API key found');
-  process.exit(1);
-}
-
-const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const DAY_ABBR = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-function getEstNow() {
-  return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
-}
-
+const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const DAY_ABBR = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-function getTodayLabel() {
-  const n = getEstNow();
-  return `${DAY_NAMES[n.getDay()]}, ${MONTHS[n.getMonth()]} ${n.getDate()}, ${n.getFullYear()}`;
-}
+function getEstNow() { return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })); }
 
-function getTodayDate() {
-  const n = getEstNow();
-  return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
-}
-
+function getTodayLabel() { const n = getEstNow(); return `${DAY_NAMES[n.getDay()]}, ${MONTHS[n.getMonth()]} ${n.getDate()}, ${n.getFullYear()}`; }
+function getTodayDate() { const n = getEstNow(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; }
 function normalizeVenueName(name) {
   return name.toLowerCase().replace(/['']/g, "'").replace(/^the\s+/i, '')
     .replace(/\s*[-–—]\s*charleston.*$/i, '').replace(/\s*\(.*\)$/i, '')
@@ -198,33 +179,52 @@ async function main() {
     details.created.push({ ...row, venueCreated: venueResult.created });
   }
 
-  if (!DRY_RUN) {
-    let cleared = 0;
-    for (const spot of existingSpots) {
-      if (updatedSpotIds.has(spot.id)) continue;
-      if (spot.promotion_time && /•\s*(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s*$/i.test(spot.promotion_time)) {
-        db.spots.update(spot.id, { promotion_time: null, time_start: null, time_end: null, days: null, specific_date: null });
-        cleared++;
-      }
+  // Quality Gate: verify unmatched spots via secondary LLM check
+  const unmatchedSpots = existingSpots.filter(s => !updatedSpotIds.has(s.id));
+  let verified = 0;
+  let staleCleared = 0;
+  details.verified = [];
+  details.staleCleared = [];
+
+  if (!DRY_RUN && unmatchedSpots.length > 0) {
+    const { confirmed, stale } = await verifyUnmatchedMusic(unmatchedSpots, todayLabel, log);
+    for (const c of confirmed) {
+      const effectiveEnd = c.endTime || estimateEndTime(c.startTime);
+      const promo = buildPromotionTime(dayAbbr, c.startTime, effectiveEnd || '');
+      const { timeStart, timeEnd } = parseTimeRange(promo);
+      if (!timeStart || !timeEnd) { log(`[verify] SKIP ${c.title}: could not parse times`); continue; }
+      const daysStr = (parseDayPart(dayAbbr) || []).sort((a, b) => a - b).join(',') || null;
+      const desc = `${c.performer}. ${c.description}`.trim();
+      db.spots.update(c.id, {
+        promotion_time: promo, time_start: timeStart, time_end: timeEnd,
+        days: daysStr, specific_date: todayDate, description: desc,
+      });
+      log(`[verify] CONFIRMED: ${c.title} → "${promo}" (${c.performer})`);
+      verified++;
+      details.verified.push({ venue: c.title, performer: c.performer, time: promo });
     }
-    if (cleared > 0) log(`[refresh-live-music] Cleared stale times from ${cleared} spots`);
+    for (const s of stale) {
+      db.spots.update(s.id, {
+        promotion_time: null, time_start: null, time_end: null,
+        days: null, specific_date: null, description: null,
+      });
+      staleCleared++;
+      details.staleCleared.push(s.title);
+    }
+    if (staleCleared > 0) log(`[refresh-live-music] Cleared ${staleCleared} stale spot(s) (incl. description)`);
   }
 
   const elapsed = ((Date.now() - startMs) / 1000).toFixed(1);
-  log(`\n[refresh-live-music] Done: ${matched} matched, ${created} created, ${skipped} skipped, ${elapsed}s`);
+  log(`\n[refresh-live-music] Done: ${matched} matched, ${created} created, ${verified} verified, ${staleCleared} cleared, ${elapsed}s`);
   if (DRY_RUN) log('(DRY RUN — nothing written)');
 
   const summary = {
     date: todayDate, dateLabel: todayLabel, elapsed, dryRun: DRY_RUN,
     existingSpots: existingSpots.length,
     acquisition: { raw: rawCount, valid: events.length, dropped: droppedCount },
-    results: { matched, created, skipped, staleCleared: 0 },
+    results: { matched, created, skipped, verified, staleCleared },
     details,
   };
-  if (!DRY_RUN) {
-    const cleared = existingSpots.filter(s => !updatedSpotIds.has(s.id) && s.promotion_time).length;
-    summary.results.staleCleared = cleared;
-  }
   const summaryPath = reportingPath('live-music-summary.json');
   fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2), 'utf8');
   log(`[refresh-live-music] Summary written to ${summaryPath}`);

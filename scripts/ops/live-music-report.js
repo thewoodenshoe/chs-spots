@@ -40,8 +40,9 @@ function buildReport(summary) {
   }
   lines.push(`• ${results.matched} matched to existing venues`);
   if (results.created > 0) lines.push(`• ${results.created} new venue(s) created`);
+  if (results.verified > 0) lines.push(`• ${results.verified} verified via secondary LLM check`);
   if (results.skipped > 0) lines.push(`• ${results.skipped} skipped (quality not guaranteed)`);
-  if (results.staleCleared > 0) lines.push(`• ${results.staleCleared} stale show(s) cleared`);
+  if (results.staleCleared > 0) lines.push(`• ${results.staleCleared} suppressed (no show confirmed)`);
   lines.push(`• ${existingSpots} total Live Music spots in DB`);
   lines.push(`• Pipeline: ${elapsed}s`);
   lines.push('');
@@ -63,8 +64,11 @@ function buildReport(summary) {
     if (results.skipped > 0) parts.push(`${results.skipped} failed venue resolution`);
     lines.push(`4. <b>Venue resolution</b> — ${parts.join(', ')}`);
   }
-  if (results.staleCleared > 0) {
-    lines.push(`5. <b>Cleanup</b> — cleared ${results.staleCleared} stale events from yesterday`);
+  if (results.verified > 0 || results.staleCleared > 0) {
+    const vParts = [];
+    if (results.verified > 0) vParts.push(`${results.verified} confirmed with times`);
+    if (results.staleCleared > 0) vParts.push(`${results.staleCleared} suppressed`);
+    lines.push(`5. <b>Verify unmatched</b> — ${vParts.join(', ')}`);
   }
   lines.push('');
 
@@ -88,6 +92,20 @@ function buildReport(summary) {
     lines.push('');
   }
 
+  // Verified via secondary check
+  if (details.verified?.length > 0) {
+    lines.push(`<b>✅ VERIFIED (${details.verified.length})</b>`);
+    lines.push(truncateList(details.verified, 10, formatShow));
+    lines.push('');
+  }
+
+  // Suppressed
+  if (details.staleCleared?.length > 0) {
+    lines.push(`<b>🚫 SUPPRESSED (${details.staleCleared.length})</b>`);
+    lines.push(`  ${details.staleCleared.join(', ')}`);
+    lines.push('');
+  }
+
   // Skipped
   if (details.skipped?.length > 0) {
     lines.push(`<b>⏭ SKIPPED (${details.skipped.length})</b>`);
@@ -97,7 +115,7 @@ function buildReport(summary) {
   }
 
   // No shows
-  if ((details.matched?.length || 0) === 0 && (details.created?.length || 0) === 0) {
+  if ((details.matched?.length || 0) === 0 && (details.created?.length || 0) === 0 && (details.verified?.length || 0) === 0) {
     lines.push('<i>No live music events found for today.</i>');
     lines.push('');
   }

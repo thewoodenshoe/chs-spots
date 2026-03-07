@@ -79,6 +79,7 @@ describe('DAL: spots', () => {
   test('update spot fields', () => {
     const id = db.spots.insert({
       venue_id: 'test-venue-1', title: 'Test Spot', type: 'Happy Hour', source: 'manual',
+      time_start: '16:00', time_end: '18:00',
     });
     const ok = db.spots.update(id, { title: 'Updated Spot', status: 'approved' });
     expect(ok).toBe(true);
@@ -88,9 +89,16 @@ describe('DAL: spots', () => {
   test('delete spot', () => {
     const id = db.spots.insert({
       venue_id: 'test-venue-1', title: 'To Delete', type: 'Happy Hour', source: 'manual',
+      time_start: '16:00', time_end: '18:00',
     });
     expect(db.spots.delete(id)).toBe(true);
     expect(db.spots.getById(id)).toBeUndefined();
+  });
+
+  test('insert throws without times for time-required types', () => {
+    expect(() => db.spots.insert({
+      venue_id: 'test-venue-1', title: 'No Times', type: 'Brunch', source: 'manual',
+    })).toThrow('requires time_start and time_end');
   });
 
   test('delete returns false for missing spot', () => {

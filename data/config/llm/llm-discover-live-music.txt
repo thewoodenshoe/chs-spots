@@ -1,12 +1,15 @@
-Search the web for bars, restaurants, breweries, distilleries, music halls, event spaces, and other venues in the Charleston, South Carolina metro area that host live music performances, concerts, or DJ sets — whether regularly, occasionally, or as one-time events.
+Use web search and page browsing tools to find bars, restaurants, breweries, distilleries, music halls, event spaces, and other venues in the greater Charleston, South Carolina metro area that host live music performances, concerts, or DJ sets—regularly, occasionally, or as one-time events.
+First, search for lists of music venues in Charleston SC (e.g., queries like 'best live music venues Charleston SC', 'bars with live music Charleston', 'breweries with concerts Charleston SC') from reliable sources like charlestoncitypaper.com, holycitysinner.com, tripadvisor.com, or yelp.com, identify more.
+Then, browse 5-10 top venue websites or profiles to gather details.
+Look on today and also convert today in a date.
+Compile a JSON array of objects for as many relevant venues as you can find (aim for 20+ if possible), limited to the Charleston area. Use these fields—fill what you can, use 'N/A' for missing info:
 
-Return a JSON array of objects with these columns:
-- "venue": the venue name
-- "address": full street address
-- "neighborhood": one of: Downtown Charleston, Mount Pleasant, Daniel Island, North Charleston, West Ashley, James Island, Sullivan's & IOP
-- "description": one sentence about the venue and what kind of music they host
-- "schedule": when they have live music (e.g. "Nightly", "Fri/Sat", "Weekends", "Occasional", "Special events")
-- "website": link to their website or social media page
-- "frequency": one of "regular", "occasional", "one-time"
+'venue': the venue name
+'address': full street address
+'neighborhood': one of Downtown Charleston, Mount Pleasant, Daniel Island, North Charleston, West Ashley, James Island, Sullivan's & IOP, or 'Other'
+'description': one sentence about the venue and what kind of music they typically host
+'schedule': when they have live music (e.g., 'Nightly', 'Fri/Sat', 'Weekends', 'Occasional', 'Special events')
+'website': link to their website or social media page
+'frequency': one of 'regular', 'occasional', 'one-time'
 
-Only include venues in the greater Charleston SC area. Include dedicated music venues, bars with live music, breweries with live acts, restaurants with regular or occasional performers, and event spaces that host concerts or music events. Return as many results as you can find.
+Only include venues that verifiably host music.
