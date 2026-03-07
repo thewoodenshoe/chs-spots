@@ -128,6 +128,10 @@ export async function PUT(
     };
     if (spotData.promotionTime !== undefined) pendingEdit.promotionTime = spotData.promotionTime;
     if (spotData.promotionList !== undefined) pendingEdit.promotionList = spotData.promotionList;
+    if (spotData.timeStart !== undefined) pendingEdit.timeStart = spotData.timeStart || null;
+    if (spotData.timeEnd !== undefined) pendingEdit.timeEnd = spotData.timeEnd || null;
+    if (spotData.days !== undefined) pendingEdit.days = Array.isArray(spotData.days) ? spotData.days.join(',') : (spotData.days || null);
+    if (spotData.specificDate !== undefined) pendingEdit.specificDate = spotData.specificDate || null;
     if (spotData.sourceUrl !== undefined) pendingEdit.sourceUrl = spotData.sourceUrl;
 
     spots.update(spotId, { pendingEdit });
@@ -139,6 +143,10 @@ export async function PUT(
     if (pendingEdit.description !== (existing.description || '')) changes.push('Description changed');
     if (pendingEdit.promotionTime && pendingEdit.promotionTime !== existing.promotion_time) changes.push(`When: ${pendingEdit.promotionTime}`);
     if (pendingEdit.promotionList) changes.push('Deals list updated');
+    if (pendingEdit.timeStart !== undefined && pendingEdit.timeStart !== existing.time_start) changes.push(`Start: ${existing.time_start || 'none'} → ${pendingEdit.timeStart || 'none'}`);
+    if (pendingEdit.timeEnd !== undefined && pendingEdit.timeEnd !== existing.time_end) changes.push(`End: ${existing.time_end || 'none'} → ${pendingEdit.timeEnd || 'none'}`);
+    if (pendingEdit.days !== undefined && pendingEdit.days !== existing.days) changes.push(`Days: ${existing.days || 'none'} → ${pendingEdit.days || 'none'}`);
+    if (pendingEdit.specificDate !== undefined && pendingEdit.specificDate !== existing.specific_date) changes.push(`Date: ${existing.specific_date || 'none'} → ${pendingEdit.specificDate || 'none'}`);
     if (pendingEdit.sourceUrl && pendingEdit.sourceUrl !== existing.source_url) changes.push('Source link updated');
     const existingVenue = existing.venue_id ? venues.getById(existing.venue_id) : null;
     const oldLat = existingVenue?.lat ?? 0;
