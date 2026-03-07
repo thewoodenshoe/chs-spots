@@ -440,29 +440,29 @@ export default function SpotListView({
                 className="flex w-full items-start gap-3 p-3 text-left"
               >
                 <span
-                  className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-lg"
+                  className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-base mt-0.5"
                   style={{ backgroundColor: color + '20' }}
                 >
                   {emoji}
                 </span>
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-900 text-sm truncate">{spot.title}</span>
-                    {(isSearching || selectedArea === NEAR_ME) && spot.area && (
-                      <span className="flex-shrink-0 rounded-full bg-teal-50 px-1.5 py-0.5 text-[11px] font-medium text-teal-600">
-                        {spot.area}
-                      </span>
-                    )}
-                    {MIXED_ACTIVITIES.has(spot.type) && (() => {
-                      const tag = getSubTag(spot.title);
-                      return tag ? (
-                        <span className="flex-shrink-0 rounded-full bg-gray-100 px-1.5 py-0.5 text-[11px] font-medium text-gray-500">{tag}</span>
-                      ) : null;
-                    })()}
-                    {spot.status === 'pending' && (
-                      <span className="flex-shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[11px] font-semibold text-amber-800">Pending</span>
-                    )}
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="font-semibold text-gray-900 text-[15px] leading-snug">{spot.title}</span>
+                    <div className="flex items-center gap-1 flex-shrink-0 mt-0.5">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleToggleFavorite(spot.id); }}
+                        className="p-0.5 transition-colors"
+                        aria-label={fav ? 'Remove from saved' : 'Save spot'}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 ${fav ? 'text-red-500' : 'text-gray-300'}`} viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                      </button>
+                      <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
                   </div>
 
                   {isLiveMusicToday && (() => {
@@ -471,79 +471,92 @@ export default function SpotListView({
                     return (
                       <>
                         {performer && (
-                          <p className="mt-0.5 text-xs font-semibold text-indigo-700 truncate">
-                            Today: {performer}
-                          </p>
+                          <p className="mt-0.5 text-sm font-semibold text-indigo-700">{performer}</p>
                         )}
-                        {timeLabel && (
-                          <p className="mt-0.5 text-[11px] text-gray-500">{timeLabel}</p>
-                        )}
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                          {timeLabel && (
+                            <span className="text-xs text-gray-600 font-medium">{timeLabel}</span>
+                          )}
+                          {activeNow && (
+                            <span className="rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-bold text-green-700 animate-pulse">Active Now</span>
+                          )}
+                          {!activeNow && openStatus && openStatus.label && (
+                            <span className={`rounded-full px-1.5 py-0.5 text-[11px] font-medium ${
+                              openStatus.isOpen ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'
+                            }`}>
+                              {openStatus.isOpen ? 'Open' : 'Closed'}
+                            </span>
+                          )}
+                          {(isSearching || selectedArea === NEAR_ME) && spot.area && (
+                            <span className="text-[11px] text-teal-600">{spot.area}</span>
+                          )}
+                          {distance !== null && (
+                            <span className="text-[11px] text-gray-400">
+                              {distance < 0.1 ? '<0.1 mi' : distance < 10 ? `${distance.toFixed(1)} mi` : `${Math.round(distance)} mi`}
+                            </span>
+                          )}
+                        </div>
                       </>
                     );
                   })()}
 
-                  {!isLiveMusicToday && schedule && (
-                    <p className="mt-0.5 text-xs text-gray-500 truncate">
-                      <span className="font-semibold text-gray-600">{spot.type}: </span>
-                      {schedule}
-                    </p>
+                  {!isLiveMusicToday && (
+                    <>
+                      {schedule && (
+                        <p className="mt-0.5 text-xs text-gray-500">
+                          <span className="font-semibold text-gray-600">{spot.type}: </span>
+                          {schedule}
+                        </p>
+                      )}
+                      {!schedule && spot.description && (
+                        <p className="mt-0.5 text-xs text-gray-400 line-clamp-1">{spot.description}</p>
+                      )}
+                      {!isExpanded && promoList.length > 0 && (
+                        <p className="mt-0.5 text-xs text-gray-400 line-clamp-1">
+                          {promoList.slice(0, 2).map((item) => {
+                            const m = item.match(/^\[([^\]]+)\]\s*(.*)/);
+                            return m ? m[2] : item;
+                          }).join(' · ')}
+                        </p>
+                      )}
+                      <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                        {activeNow && (
+                          <span className="rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-bold text-green-700 animate-pulse">Active Now</span>
+                        )}
+                        {!activeNow && openStatus && openStatus.label && (
+                          <span className={`rounded-full px-1.5 py-0.5 text-[11px] font-medium ${
+                            openStatus.isOpen ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'
+                          }`}>
+                            {openStatus.label === 'Closing soon'
+                              ? `Closes ${openStatus.closesAt}`
+                              : openStatus.isOpen ? `Open til ${openStatus.closesAt}` : 'Closed'}
+                          </span>
+                        )}
+                        {(isSearching || selectedArea === NEAR_ME) && spot.area && (
+                          <span className="rounded-full bg-teal-50 px-1.5 py-0.5 text-[11px] font-medium text-teal-600">{spot.area}</span>
+                        )}
+                        {MIXED_ACTIVITIES.has(spot.type) && (() => {
+                          const tag = getSubTag(spot.title);
+                          return tag ? (
+                            <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[11px] font-medium text-gray-500">{tag}</span>
+                          ) : null;
+                        })()}
+                        {distance !== null && (
+                          <span className="text-[11px] text-gray-400">
+                            {distance < 0.1 ? '<0.1 mi' : distance < 10 ? `${distance.toFixed(1)} mi` : `${Math.round(distance)} mi`}
+                          </span>
+                        )}
+                        {spot.lastUpdateDate && (() => {
+                          const days = Math.floor((Date.now() - new Date(spot.lastUpdateDate).getTime()) / 86400000);
+                          const label = days === 0 ? 'Verified today' : days === 1 ? '1d ago' : days <= 14 ? `${days}d ago` : null;
+                          return label ? <span className="text-[11px] text-gray-400">{label}</span> : null;
+                        })()}
+                        {spot.status === 'pending' && (
+                          <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[11px] font-semibold text-amber-800">Pending</span>
+                        )}
+                      </div>
+                    </>
                   )}
-
-                  {!isLiveMusicToday && !schedule && spot.description && (
-                    <p className="mt-0.5 text-xs text-gray-400 truncate">{spot.description}</p>
-                  )}
-
-                  {!isExpanded && promoList.length > 0 && (
-                    <p className="mt-0.5 text-xs text-gray-400 truncate">
-                      {promoList.slice(0, 2).map((item) => {
-                        const m = item.match(/^\[([^\]]+)\]\s*(.*)/);
-                        return m ? m[2] : item;
-                      }).join(' · ')}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                  {activeNow && (
-                    <span className="rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-bold text-green-700 whitespace-nowrap animate-pulse">
-                      Active Now
-                    </span>
-                  )}
-                  {!activeNow && openStatus && openStatus.label && (
-                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ${
-                      openStatus.isOpen ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'
-                    }`}>
-                      {openStatus.label === 'Closing soon'
-                        ? `Closes ${openStatus.closesAt}`
-                        : openStatus.isOpen ? `Open til ${openStatus.closesAt}` : 'Closed'}
-                    </span>
-                  )}
-                  {distance !== null && (
-                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600 whitespace-nowrap">
-                      {distance < 0.1 ? '<0.1 mi' : distance < 10 ? `${distance.toFixed(1)} mi` : `${Math.round(distance)} mi`}
-                    </span>
-                  )}
-                  {spot.lastUpdateDate && (() => {
-                    const days = Math.floor((Date.now() - new Date(spot.lastUpdateDate).getTime()) / 86400000);
-                    const label = days === 0 ? 'Verified today' : days === 1 ? 'Verified 1d ago' : days <= 14 ? `Verified ${days}d ago` : null;
-                    return label ? (
-                      <span className="text-[11px] text-gray-400 whitespace-nowrap">{label}</span>
-                    ) : null;
-                  })()}
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleToggleFavorite(spot.id); }}
-                      className="p-0.5 transition-colors"
-                      aria-label={fav ? 'Remove from saved' : 'Save spot'}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 ${fav ? 'text-red-500' : 'text-gray-300'}`} viewBox="0 0 24 24" fill={fav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                      </svg>
-                    </button>
-                    <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
                 </div>
               </button>
 
