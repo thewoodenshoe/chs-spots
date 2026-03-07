@@ -22,8 +22,8 @@ const TYPE = 'Live Music';
 function runStep(label, scriptPath) {
   log(`--- Step: ${label} ---`);
   return new Promise((resolve, reject) => {
-    const { fork } = require('child_process');
-    const child = fork(scriptPath, [], {
+    const { spawn } = require('child_process');
+    const child = spawn(process.execPath, [scriptPath], {
       env: { ...process.env },
       stdio: ['ignore', 'pipe', 'pipe'],
     });
