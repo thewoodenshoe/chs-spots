@@ -17,6 +17,7 @@ A live map for discovering Charleston, SC — happy hours, brunch, live music, r
 - **Weekly live music venue discovery** via Grok web search
 - **Venue data enrichment** — fills in missing address, phone, website via LLM + Google API
 - **Community submissions** — anyone can add or edit spots; admin approves via Telegram
+- **Map filters** — Venue Open Now, Live Music Now, and Live Music Today toggles on the map view
 - **Open/Closed status** — operating hours extracted from venue websites, shown on cards and map pins
 - **Share any spot** via deep link
 - **PWA-ready** — installable to home screen via manifest.json
@@ -159,7 +160,7 @@ chs-spots/
 │   │   │   ├── quality-gate.js      # Mandatory field checks per activity type
 │   │   │   ├── upsert.js            # Safe DB writer (LLM-error aware)
 │   │   │   ├── pre-report-check.js  # Post-upsert quality audit + LLM fix
-│   │   │   └── find-venue.js        # Venue sub-workflow (lookup/geocode/photo/enrich)
+│   │   │   └── find-venue.js        # Venue sub-workflow (lookup/geocode/photo/enrich/backfill)
 │   │   ├── live-music/              # Daily live music pipeline
 │   │   │   ├── discover-today.js    # Step 1: Wide LLM web search
 │   │   │   ├── critical-fill.js     # Step 3: Targeted LLM for missing times

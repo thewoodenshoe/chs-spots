@@ -73,6 +73,7 @@ export default function MapComponent({
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showOnlyVenueOpen, setShowOnlyVenueOpen] = useState(false);
   const [showOnlyActivityActive, setShowOnlyActivityActive] = useState(false);
+  const [showOnlyLiveMusicToday, setShowOnlyLiveMusicToday] = useState(false);
 
   const whatsHappening = ACTIVITY_GROUPS.find(g => g.label === "What's Happening");
   const discover = ACTIVITY_GROUPS.find(g => g.label === 'Discover');
@@ -80,12 +81,22 @@ export default function MapComponent({
   const isDiscover = discover?.activities.includes(selectedActivity) ?? false;
   const showVenueOpenToggle = !isDiscover;
   const showActivityToggle = isWhatsHappening;
+  const showLiveMusicTodayToggle = selectedActivity === 'Live Music';
 
   const venueMap = useMemo(() => {
     const m = new Map<string, (typeof venues)[number]>();
     for (const v of venues) m.set(v.id, v);
     return m;
   }, [venues]);
+
+  const isScheduledToday = useCallback((s: Spot) => {
+    if (!s.timeStart) return false;
+    const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    if (s.specificDate) return s.specificDate === todayStr;
+    if (s.days && s.days.length > 0) return s.days.includes(now.getDay());
+    return true;
+  }, []);
 
   const visibleSpots = useMemo(() => {
     let result = filteredSpots;
@@ -98,8 +109,11 @@ export default function MapComponent({
     if (showOnlyActivityActive) {
       result = result.filter(s => isSpotActiveNow(s));
     }
+    if (showOnlyLiveMusicToday) {
+      result = result.filter(isScheduledToday);
+    }
     return result;
-  }, [filteredSpots, showOnlyVenueOpen, showOnlyActivityActive, venueMap]);
+  }, [filteredSpots, showOnlyVenueOpen, showOnlyActivityActive, showOnlyLiveMusicToday, venueMap, isScheduledToday]);
 
   const venueGroupedMarkers = useMemo(() => {
     const groups = new Map<string, Spot[]>();
@@ -167,6 +181,7 @@ export default function MapComponent({
     setPrevAct(selectedActivity);
     setShowOnlyVenueOpen(false);
     setShowOnlyActivityActive(false);
+    setShowOnlyLiveMusicToday(false);
   }
 
   const AREA_BYPASS_ACTIVITIES = ['Recently Opened', 'Coming Soon'];
@@ -337,7 +352,7 @@ export default function MapComponent({
     }
   })();
 
-  const hasAnyToggle = showVenueOpenToggle || showActivityToggle;
+  const hasAnyToggle = showVenueOpenToggle || showActivityToggle || showLiveMusicTodayToggle;
 
   return (
     <div className="relative h-full w-full">
@@ -380,6 +395,19 @@ export default function MapComponent({
             >
               <span className={`inline-block h-2 w-2 rounded-full ${showOnlyActivityActive ? 'bg-green-300' : 'bg-gray-300'}`} />
               {activityToggleLabel}
+            </button>
+          )}
+          {showLiveMusicTodayToggle && (
+            <button
+              onClick={() => setShowOnlyLiveMusicToday(prev => !prev)}
+              className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-md transition-all ${
+                showOnlyLiveMusicToday
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-white/95 text-gray-700 border border-gray-200 backdrop-blur-sm'
+              }`}
+            >
+              <span className={`inline-block h-2 w-2 rounded-full ${showOnlyLiveMusicToday ? 'bg-indigo-300' : 'bg-gray-300'}`} />
+              Live Music Today
             </button>
           )}
         </div>

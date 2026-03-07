@@ -51,12 +51,32 @@ async function enrichVenueWebsite(venue, log) {
  *
  * @returns {{ venue, created, quality }} or null if unresolvable
  */
+async function backfillPhoto(venue, db, log) {
+  if (venue.photo_url) return venue;
+  const placeId = venue.google_place_id || (venue.id?.startsWith('ChIJ') ? venue.id : null);
+  if (!placeId) return venue;
+  if (!getPlacesApiKey() || process.env.GOOGLE_PLACES_ENABLED !== 'true') return venue;
+
+  try {
+    const photoUrl = await downloadPlacePhoto(placeId, venue.id, log);
+    if (photoUrl) {
+      db.venues.updatePhotoUrl(venue.id, photoUrl);
+      log(`[find-venue] BACKFILL photo: ${venue.name} → ${photoUrl}`);
+      return { ...venue, photo_url: photoUrl };
+    }
+  } catch (e) {
+    log(`[find-venue] Backfill photo failed for ${venue.name}: ${e.message}`);
+  }
+  return venue;
+}
+
 async function findVenue({ name, address, website, area }, { db, log }) {
   const existing = findExistingVenue(name, db);
   if (existing) {
-    log(`[find-venue] REUSE: ${existing.name} (${existing.id})`);
-    const hasBasics = existing.lat && existing.lng;
-    return { venue: existing, created: false, quality: hasBasics ? 'complete' : 'partial' };
+    const enriched = await backfillPhoto(existing, db, log);
+    log(`[find-venue] REUSE: ${enriched.name} (${enriched.id})`);
+    const hasBasics = enriched.lat && enriched.lng;
+    return { venue: enriched, created: false, quality: hasBasics ? 'complete' : 'partial' };
   }
 
   if (!getPlacesApiKey() || process.env.GOOGLE_PLACES_ENABLED !== 'true') {
