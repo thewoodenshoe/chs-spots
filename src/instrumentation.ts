@@ -8,8 +8,10 @@
  */
 
 export async function register() {
-  // Only run on the server (not during build or in Edge runtime)
   if (process.env.NEXT_RUNTIME === 'nodejs') {
+    const dns = await import('node:dns');
+    dns.setDefaultResultOrder('ipv4first');
+
     const { startTelegramPolling } = await import('./lib/telegram-poller');
     startTelegramPolling(5000);
   }
