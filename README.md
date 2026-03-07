@@ -167,15 +167,25 @@ chs-spots/
 │   │   │   ├── run.js               # Orchestrator (all steps)
 │   │   │   ├── report.js            # Telegram report
 │   │   │   └── orchestrator.sh      # Shell wrapper for cron
-│   │   ├── openings/                # Nightly openings pipeline
-│   │   │   ├── discover.js          # Step 1+2: RSS + wide LLM discovery
-│   │   │   ├── validate.js          # Step 3: Critical LLM verification
-│   │   │   ├── quality-gate.js      # Step 4: Mandatory venue field checks
-│   │   │   ├── upsert-venues.js     # Step 5: Venue creation + photo download
+│   │   ├── coming-soon/              # Nightly Coming Soon pipeline
+│   │   │   ├── discover.js          # Step 1: RSS + wide LLM ("what's opening soon?")
+│   │   │   ├── validate.js          # Step 3: Geocode, dedup, LLM verify (no review filter)
+│   │   │   ├── quality-gate.js      # Step 4: Name + description required
+│   │   │   ├── upsert-venues.js     # Step 5: Venue workflow + coming_soon status
 │   │   │   ├── lifecycle.js         # Step 6: coming_soon → recently_opened
-│   │   │   ├── pre-report-check.js  # Step 6.5: Audit + LLM fix missing data
+│   │   │   ├── pre-report-check.js  # Step 7: Audit + LLM fix
+│   │   │   ├── report.js            # Step 8+9: Telegram report
 │   │   │   ├── run.js               # Orchestrator
-│   │   │   ├── report.js            # Telegram report
+│   │   │   └── orchestrator.sh      # Shell wrapper for cron
+│   │   ├── recently-opened/          # Nightly Recently Opened pipeline
+│   │   │   ├── discover.js          # Step 1: RSS + wide LLM ("what recently opened?")
+│   │   │   ├── validate.js          # Step 3: Geocode, dedup, review count, LLM verify
+│   │   │   ├── quality-gate.js      # Step 4: Name + lat/lng/address required
+│   │   │   ├── upsert-venues.js     # Step 5: Venue workflow + recently_opened status
+│   │   │   ├── aging.js             # Step 6: recently_opened → active (90 days)
+│   │   │   ├── pre-report-check.js  # Step 7: Audit + LLM fix
+│   │   │   ├── report.js            # Step 8+9: Telegram report
+│   │   │   ├── run.js               # Orchestrator
 │   │   │   └── orchestrator.sh      # Shell wrapper for cron
 │   │   └── promotions/              # HH/Brunch pipeline additions
 │   │       ├── critical-fill.js     # Targeted LLM for missing times/days
@@ -185,8 +195,8 @@ chs-spots/
 │   ├── extract-promotions.js        # Step 2: LLM extraction via Grok
 │   ├── create-spots.js              # Step 3: Create spots from gold data
 │   ├── extract-hours.js             # Operating hours extraction (3-tier)
-│   ├── discover-openings.js         # Legacy: opening discovery (replaced by pipelines/openings/)
-│   ├── check-opening-status.js      # Legacy: lifecycle (replaced by pipelines/openings/)
+│   ├── discover-openings.js         # Legacy: replaced by pipelines/coming-soon/ + recently-opened/
+│   ├── check-opening-status.js      # Legacy: replaced by pipelines/coming-soon/lifecycle.js
 │   ├── discover-live-music.js       # Weekly: find live music venues
 │   ├── enrich-venues.js             # Fill missing venue data via LLM + Google
 │   ├── run-incremental-pipeline.js  # Orchestrates nightly ETL
@@ -196,7 +206,7 @@ chs-spots/
 │   ├── ops/
 │   │   ├── generate-report.js       # Daily analytics + pipeline report
 │   │   ├── run-nightly-pipeline.sh  # Cron: ETL + enrichment + report (3 AM)
-│   │   ├── run-nightly-openings.sh  # Cron: opening discovery → modular pipeline
+│   │   ├── run-nightly-openings.sh  # Cron: Coming Soon + Recently Opened pipelines
 │   │   ├── run-daily-live-music.sh  # Cron: event refresh → modular pipeline
 │   │   ├── run-weekly-live-music.sh # Cron: venue discovery (Wed 4 AM)
 │   │   ├── run-biweekly-seed.sh     # Cron: venue discovery (1 AM)
@@ -214,10 +224,11 @@ chs-spots/
 │   ├── chs-spots.db    # SQLite database (gitignored)
 │   ├── config/
 │   │   ├── llm/                     # LLM prompt templates (editable without code changes)
+│   │   │   ├── coming-soon/         # Coming Soon pipeline prompts
+│   │   │   ├── recently-opened/     # Recently Opened pipeline prompts
 │   │   │   ├── live-music/          # Live music pipeline prompts
-│   │   │   ├── openings/            # Openings pipeline prompts
 │   │   │   ├── promotions/          # HH/Brunch pipeline prompts
-│   │   │   └── shared/              # Shared prompts (find-venue, find-times)
+│   │   │   └── shared/              # Shared prompts (find-venue, enrichment, etc.)
 │   │   ├── areas.json, activities.json, watchlist.json
 │   │   └── config.json
 │   ├── pipeline-runs/               # Step outputs (JSON, date-partitioned)
@@ -233,7 +244,7 @@ chs-spots/
 | Time | Job | Script |
 |------|-----|--------|
 | 1:00 AM | Venue discovery (Google Places) | `run-biweekly-seed.sh` |
-| 2:00 AM | Opening discovery + Coming Soon lifecycle check | `run-nightly-openings.sh` |
+| 2:00 AM | Coming Soon + Recently Opened discovery | `run-nightly-openings.sh` |
 | 3:00 AM | ETL pipeline + venue enrichment + daily report | `run-nightly-pipeline.sh` |
 | 3:00 PM | Live music event refresh (Grok web search) | `run-daily-live-music.sh` |
 | 4:00 AM Wed | Live music venue discovery | `run-weekly-live-music.sh` |

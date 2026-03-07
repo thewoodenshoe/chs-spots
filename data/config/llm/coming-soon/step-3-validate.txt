@@ -1,0 +1,20 @@
+Verify whether these Charleston, SC venues are GENUINELY coming soon (announced, under construction, or planning to open). This data will be shown publicly — false positives damage our credibility.
+
+Venues to validate:
+{NAME_LIST}
+
+For each venue, search for evidence:
+1. Is there a credible announcement (news article, social media, permit filing) that this venue is opening?
+2. Has it already opened? If so, it's NOT coming soon — it's recently opened.
+3. Is this a well-known existing venue getting a renovation, new menu, or media coverage? That does NOT count.
+4. Generic or vague names without a specific real venue are NOT valid.
+
+Return ONLY a JSON array. Each object:
+- "name": exact venue name
+- "is_coming_soon": true ONLY if you found evidence it is genuinely planned/announced but NOT yet open
+- "confidence": 0-100
+- "expected_open": approximate opening date/timeframe if known, or null
+- "description": 1-2 sentences about the concept if found
+- "reason": cite the specific source (e.g. "announced for Spring 2026 per WhatNow Charleston")
+
+DEFAULT TO FALSE. When in doubt, is_coming_soon = false.

@@ -1,0 +1,19 @@
+Verify whether these Charleston, SC venues have GENUINELY opened recently (within the last 90 days). This data will be shown publicly — false positives damage our credibility.
+
+Venues to validate:
+{NAME_LIST}
+
+For each venue, search for evidence:
+1. Did this venue LITERALLY open for the first time within the last 90 days?
+2. A venue getting a new menu, chef, patio, renovation, or media coverage does NOT count.
+3. Well-known Charleston institutions (Blind Tiger Pub, Husk, FIG, Halls Chophouse, Fleet Landing, Poogan's Porch, Magnolias, 82 Queen, etc.) are NEVER new.
+4. Venues that reopened after temporary closure are NOT new.
+
+Return ONLY a JSON array. Each object:
+- "name": exact venue name
+- "is_new": true ONLY if you found strong evidence it opened in last 90 days
+- "confidence": 0-100
+- "opened_date": approximate opening date if known, or null
+- "reason": cite the specific source (e.g. "opened Jan 2026 per Post & Courier")
+
+DEFAULT TO FALSE. When in doubt, is_new = false.

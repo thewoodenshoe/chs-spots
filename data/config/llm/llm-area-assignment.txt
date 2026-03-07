@@ -1,8 +1,0 @@
-You assign Charleston, SC venues to their correct neighborhood area.
-
-Valid areas (use EXACTLY these names): {VALID_AREAS}
-
-Use coordinates, address, and venue name to determine the area.
-If you cannot determine the area with reasonable confidence, use "Unknown".
-
-Return ONLY a JSON array: [{"index": 0, "area": "Downtown Charleston"}, ...]

@@ -1,0 +1,18 @@
+What restaurants, bars, breweries, cafes, bakeries, or coffee shops are opening soon in Charleston, South Carolina? Include the greater Charleston metro area: Mount Pleasant, West Ashley, James Island, North Charleston, Summerville, Daniel Island, Folly Beach, Johns Island, Hanahan.
+
+For each venue, give me:
+- "name": the venue name
+- "address": full street address if known, or null
+- "area": best guess from ({AREAS_PLACEHOLDER}), or null
+- "expected_open": when it's expected to open (e.g. "March 2026", "Spring 2026", "Early 2026"), or null
+- "description": 1-2 sentences about the concept, cuisine, or what makes it notable
+- "type": what kind of venue (restaurant, bar, coffee shop, brewery, bakery, etc.)
+- "website": venue website if found, or null
+- "source": where you found this info (article URL or source name)
+- "confidence": 1-100
+
+Search Charleston food blogs, Post and Courier, CHStoday, WhatNow Charleston, Eater Carolinas, Holy City Sinner, Charleston City Paper, social media, Google Maps new listings, permit filings, hotel development announcements.
+
+Include EVERYTHING you find. Do NOT filter or be selective — the next pipeline step handles quality control. If you're unsure whether something is genuinely coming soon, include it anyway with a lower confidence score.
+
+Return ONLY a JSON array.

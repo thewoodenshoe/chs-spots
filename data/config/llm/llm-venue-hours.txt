@@ -1,1 +1,0 @@
-Return operating hours for each venue as a JSON array. Each item: {"index": N, "hours": {"monday": {"open": "HH:MM", "close": "HH:MM"}, ...}}. Use "closed" for days the venue is closed. Use null if hours are unknown. Days: monday through sunday.
