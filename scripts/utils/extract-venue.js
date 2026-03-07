@@ -3,8 +3,8 @@
  * Returns the normalized gold record result.
  */
 
-const { fetchWithTimeout, CHAT_URL, DEFAULT_MODEL, webSearch } = require('./llm-client');
-const { normalizeExtraction, resolveEntryTimes } = require('./extract-helpers');
+const { fetchWithTimeout, CHAT_URL, DEFAULT_MODEL } = require('./llm-client');
+const { normalizeExtraction } = require('./extract-helpers');
 
 const MAX_RETRIES = 3;
 const INITIAL_DELAY_MS = 1000;
@@ -74,8 +74,6 @@ async function processVenue(venueData, systemPrompt, apiKey, { isIncremental, up
       const data = await response.json();
       const text = data.choices[0]?.message?.content || '';
       result = normalizeExtraction(parseJsonResponse(text), venueData);
-
-      await resolveEntryTimes(result, venueData, apiKey, webSearch, log);
       break;
     } catch (error) {
       if (error && error.name === 'AbortError') {

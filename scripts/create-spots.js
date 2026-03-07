@@ -23,7 +23,7 @@ const { dataPath, reportingPath, configPath, getDataRoot } = require('./utils/da
 const { reviewAll } = require('./utils/llm-review');
 const { enrichAreas } = require('./utils/llm-enrich');
 const { createSpotsFromGold, buildSpotFromEntry } = require('./utils/spot-builder');
-const { resolveMissingTimes } = require('./utils/llm-resolve-times');
+const { findIncompleteSpots, enrichIncompleteSpots } = require('./utils/enrich-incomplete');
 const { createLogger } = require('./utils/logger');
 const { log, warn, error: logError, close: closeLog } = createLogger('create-spots');
 
@@ -390,77 +390,42 @@ async function main() {
     log(`  ⚠️  LLM area enrichment failed: ${err.message}`);
   }
 
-  // ── LLM fallback: resolve missing times ──────────────────────
-  let timeResolutionStats = { resolved: 0, unresolved: 0, unresolvedSpots: [] };
+  // ── LLM enrichment: fill incomplete required fields ──────────
+  let enrichStats = { enriched: 0, stillIncomplete: 0, incompleteSpots: [] };
   try {
-    const apiKey = process.env.GROK_API_KEY;
-    if (apiKey) {
-      const d = db.getDb();
-      const missingTimes = d.prepare(
-        "SELECT s.id, s.title, s.type, v.area, s.promotion_time, s.source_url, v.address, v.website " +
-        "FROM spots s LEFT JOIN venues v ON v.id = s.venue_id " +
-        "WHERE s.status = 'approved' AND s.time_start IS NULL AND s.time_end IS NULL " +
-        "AND s.manual_override = 0 " +
-        "AND s.type IN ('Happy Hour', 'Brunch') " +
-        "ORDER BY s.id DESC LIMIT 30",
-      ).all();
-
-      if (missingTimes.length > 0) {
-        log(`\n🕐 LLM time resolution: ${missingTimes.length} spot(s) missing start/end times...`);
-        const spotsForResolution = missingTimes.map(row => ({
-          id: row.id,
-          title: row.title,
-          type: row.type,
-          area: row.area,
-          promotionTime: row.promotion_time,
-          sourceUrl: row.source_url || row.website,
-          address: row.address,
-        }));
-        const { resolved, unresolved } = await resolveMissingTimes(spotsForResolution, apiKey, log);
-
-        if (resolved.length > 0) {
-          for (const r of resolved) {
-            db.spots.update(r.id, {
-              time_start: r.timeStart,
-              time_end: r.timeEnd,
-              days: r.days || null,
-              specific_date: r.specificDate || null,
-            });
-          }
-          log(`  ✅ LLM resolved times for ${resolved.length} spot(s)`);
-        }
-
-        timeResolutionStats = { resolved: resolved.length, unresolved: unresolved.length, unresolvedSpots: unresolved };
+    const incomplete = findIncompleteSpots(db.getDb());
+    if (incomplete.length > 0) {
+      log(`\n🔍 Column completeness: ${incomplete.length} spot(s) have missing/suspicious fields...`);
+      const { enriched, stillIncomplete } = await enrichIncompleteSpots(incomplete, log);
+      for (const r of enriched) {
+        db.spots.update(r.id, r.updates);
       }
+      if (enriched.length > 0) log(`  ✅ LLM enriched ${enriched.length} spot(s)`);
+      enrichStats = { enriched: enriched.length, stillIncomplete: stillIncomplete.length, incompleteSpots: stillIncomplete };
     }
   } catch (err) {
-    log(`  ⚠️  LLM time resolution failed: ${err.message}`);
+    log(`  ⚠️  LLM enrichment failed: ${err.message}`);
   }
 
-  // Write missing-times report for generate-report.js to pick up
+  // Write incomplete-spots report for generate-report.js
   try {
-    const missingTimesPath = reportingPath('missing-times.json');
-    const d = db.getDb();
-    const stillMissing = d.prepare(
-        "SELECT s.id, s.title, s.type, v.area, s.promotion_time, s.source_url, v.name as venue_name, v.website " +
-        "FROM spots s LEFT JOIN venues v ON v.id = s.venue_id " +
-        "WHERE s.status = 'approved' AND s.time_start IS NULL AND s.time_end IS NULL " +
-        "AND s.type IN ('Happy Hour', 'Brunch') ORDER BY s.id DESC",
-    ).all();
-    fs.writeFileSync(missingTimesPath, JSON.stringify({
+    const reportPath = reportingPath('incomplete-spots.json');
+    const remaining = findIncompleteSpots(db.getDb());
+    fs.writeFileSync(reportPath, JSON.stringify({
       generatedAt: new Date().toISOString(),
-      count: stillMissing.length,
-      llmResolved: timeResolutionStats.resolved,
-      spots: stillMissing.map(r => ({
-        id: r.id, title: r.title, type: r.type, area: r.area,
+      count: remaining.length,
+      llmEnriched: enrichStats.enriched,
+      spots: remaining.map(r => ({
+        id: r.id, title: r.title, type: r.type,
+        time_start: r.time_start, time_end: r.time_end, days: r.days,
         promotionTime: r.promotion_time, sourceUrl: r.source_url || r.website,
       })),
     }, null, 2), 'utf8');
-    if (stillMissing.length > 0) {
-      log(`\n⚠️  ${stillMissing.length} spot(s) still missing times after LLM resolution → ${missingTimesPath}`);
+    if (remaining.length > 0) {
+      log(`\n⚠️  ${remaining.length} spot(s) still incomplete after LLM enrichment → ${reportPath}`);
     }
   } catch (err) {
-    log(`  ⚠️  Missing times report write failed: ${err.message}`);
+    log(`  ⚠️  Incomplete spots report write failed: ${err.message}`);
   }
 
   // Complete in-memory spots array: re-read from DB to include all preserved spots

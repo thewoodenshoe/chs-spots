@@ -650,62 +650,53 @@ function getPipelineData() {
     }
   } catch (e) { debugLog('confidenceReview', e); }
 
-  // 10. Spots with missing times (couldn't figure out start/end times)
-  result.missingTimesCount = 0;
-  result.missingTimesLlmResolved = 0;
+  // 10. Spots with incomplete required fields (missing times, days, or suspicious data)
+  result.incompleteCount = 0;
+  result.llmEnriched = 0;
   try {
-    const missingTimesPath = reportingPath('missing-times.json');
-    if (fs.existsSync(missingTimesPath)) {
-      const mtData = JSON.parse(fs.readFileSync(missingTimesPath, 'utf8'));
-      result.missingTimesCount = mtData.count || 0;
-      result.missingTimesLlmResolved = mtData.llmResolved || 0;
-
-      if (mtData.spots && mtData.spots.length > 0) {
-        const spotList = mtData.spots.slice(0, 10);
-        result.actions.push({
-          severity: mtData.spots.length >= 5 ? 'medium' : 'low',
-          category: 'Missing Times',
-          title: `${mtData.spots.length} spot(s) missing start/end times`,
-          detail: spotList.map(s =>
-            `#${s.id} ${s.title} [${s.type}]${s.promotionTime ? ` — raw: "${s.promotionTime}"` : ' — no time data'}${s.area ? ` (${s.area})` : ''}`,
-          ).join('\n') + (mtData.spots.length > 10 ? `\n... and ${mtData.spots.length - 10} more` : ''),
-          instruction: `These spots are live but don't have parsed start/end times, so they won't show as "active now".\nLLM attempted resolution but couldn't find times.\nManually set times via admin or Telegram:\n  /edit <id> timeStart 16:00 timeEnd 19:00`,
-        });
-      }
-
-      if (mtData.llmResolved > 0) {
-        result.actions.push({
-          severity: 'low',
-          category: 'Missing Times',
-          title: `${mtData.llmResolved} spot(s) had times resolved by LLM fallback`,
-          detail: 'LLM successfully found times that regex parsing missed. No action needed.',
-          instruction: 'For reference only.',
-        });
-      }
+    const incompletePath = reportingPath('incomplete-spots.json');
+    let incompleteSpots = [];
+    if (fs.existsSync(incompletePath)) {
+      const data = JSON.parse(fs.readFileSync(incompletePath, 'utf8'));
+      incompleteSpots = data.spots || [];
+      result.incompleteCount = data.count || 0;
+      result.llmEnriched = data.llmEnriched || 0;
     } else {
-      // No missing-times.json — query DB directly as fallback
       const database = db.getDb();
-      const missingFromDb = database.prepare(
-        "SELECT s.id, s.title, s.type, v.area, s.promotion_time " +
+      incompleteSpots = database.prepare(
+        "SELECT s.id, s.title, s.type, v.area, s.time_start, s.time_end, s.days, s.promotion_time " +
         "FROM spots s LEFT JOIN venues v ON v.id = s.venue_id " +
-        "WHERE s.status = 'approved' AND s.time_start IS NULL AND s.time_end IS NULL " +
-        "AND s.type IN ('Happy Hour', 'Brunch') ORDER BY s.id DESC LIMIT 20",
+        "WHERE s.status = 'approved' AND s.manual_override = 0 AND s.type IN ('Happy Hour', 'Brunch') " +
+        "AND (s.time_start IS NULL OR s.time_end IS NULL OR s.days IS NULL " +
+        "OR (s.type = 'Brunch' AND s.days = '0,1,2,3,4,5,6')) ORDER BY s.id DESC LIMIT 50",
       ).all();
-      result.missingTimesCount = missingFromDb.length;
-
-      if (missingFromDb.length > 0) {
-        result.actions.push({
-          severity: missingFromDb.length >= 5 ? 'medium' : 'low',
-          category: 'Missing Times',
-          title: `${missingFromDb.length} spot(s) missing start/end times`,
-          detail: missingFromDb.slice(0, 10).map(s =>
-            `#${s.id} ${s.title} [${s.type}]${s.promotion_time ? ` — raw: "${s.promotion_time}"` : ' — no time data'}${s.area ? ` (${s.area})` : ''}`,
-          ).join('\n'),
-          instruction: `These spots don't have parsed times. Set manually via admin or Telegram:\n  /edit <id> timeStart 16:00 timeEnd 19:00`,
-        });
-      }
+      result.incompleteCount = incompleteSpots.length;
     }
-  } catch (e) { debugLog('missingTimes', e); }
+    if (incompleteSpots.length > 0) {
+      const detail = incompleteSpots.slice(0, 10).map(s => {
+        const gaps = [];
+        if (!s.time_start) gaps.push('no start time');
+        if (!s.time_end) gaps.push('no end time');
+        if (!s.days) gaps.push('no days');
+        else if (s.type === 'Brunch' && s.days === '0,1,2,3,4,5,6') gaps.push('days=daily (suspicious for brunch)');
+        return `#${s.id} ${s.title} [${s.type}] — ${gaps.join(', ')}`;
+      }).join('\n') + (incompleteSpots.length > 10 ? `\n... and ${incompleteSpots.length - 10} more` : '');
+      result.actions.push({
+        severity: incompleteSpots.length >= 5 ? 'medium' : 'low',
+        category: 'Incomplete Spots',
+        title: `${incompleteSpots.length} spot(s) with incomplete required fields`,
+        detail,
+        instruction: 'Scraped + LLM web search couldn\'t determine all fields.\nManually set via admin or Telegram:\n  /edit <id> timeStart 16:00 timeEnd 19:00 days 0,6',
+      });
+    }
+    if (result.llmEnriched > 0) {
+      result.actions.push({
+        severity: 'low', category: 'Incomplete Spots',
+        title: `${result.llmEnriched} spot(s) enriched by LLM web search`,
+        detail: 'LLM successfully filled missing fields. No action needed.', instruction: 'For reference only.',
+      });
+    }
+  } catch (e) { debugLog('incompleteSpots', e); }
 
   // 11. Venues missing key data (flagged for enrichment)
   try {

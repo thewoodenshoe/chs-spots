@@ -89,41 +89,6 @@ function normalizeExtraction(result, venueData) {
   return result;
 }
 
-/**
- * Web search fallback: resolve missing times for entries that lack time_start/time_end.
- */
-async function resolveEntryTimes(result, venueData, apiKey, webSearchFn, logFn) {
-  if (!result.found || !result.entries || !Array.isArray(result.entries)) return;
-  const needsTimes = result.entries.filter(e => e.confidence >= 60 && !e.time_start && !e.time_end);
-  if (needsTimes.length === 0 || !apiKey) return;
-
-  for (const entry of needsTimes) {
-    try {
-      const venueWebsite = venueData.pages?.[0]?.url || '';
-      const searchPrompt = `For the venue "${venueData.venueName}" in Charleston, SC` +
-        (venueWebsite ? ` (website: ${venueWebsite})` : '') +
-        `: find their ${entry.activityType || 'Happy Hour'} schedule.` +
-        (entry.label ? ` They call it "${entry.label}".` : '') +
-        ` Return ONLY JSON: {"time_start":"HH:MM","time_end":"HH:MM","days":"1,2,3"}` +
-        ` using 24h format and day numbers (0=Sun..6=Sat). null if truly unknown.`;
-      const wsResult = await webSearchFn({
-        prompt: searchPrompt,
-        timeoutMs: 30000,
-        apiKey,
-        log: (m) => logFn(`    ${m}`),
-      });
-      if (wsResult?.parsed) {
-        if (wsResult.parsed.time_start) entry.time_start = wsResult.parsed.time_start;
-        if (wsResult.parsed.time_end) entry.time_end = wsResult.parsed.time_end;
-        if (wsResult.parsed.days && !entry.days) entry.days = wsResult.parsed.days;
-        logFn(`    🌐 Web search resolved times for ${venueData.venueName} [${entry.activityType}]: ${entry.time_start}-${entry.time_end}`);
-      }
-    } catch (wsErr) {
-      logFn(`    ⚠️  Web search fallback failed for ${venueData.venueName}: ${wsErr.message}`);
-    }
-    await new Promise(r => setTimeout(r, 500));
-  }
-}
 
 /**
  * Append LLM candidate history for today's incremental run.
@@ -153,6 +118,5 @@ module.exports = {
   computeContentHashes,
   shouldSkipVenue,
   normalizeExtraction,
-  resolveEntryTimes,
   logCandidateHistory,
 };
