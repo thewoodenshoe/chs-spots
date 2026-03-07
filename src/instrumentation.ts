@@ -12,6 +12,18 @@ export async function register() {
     const dns = await import('node:dns');
     dns.setDefaultResultOrder('ipv4first');
 
+    const undici = await import('undici');
+    type LookupCb = (err: Error | null, address: string, family: number) => void;
+    undici.setGlobalDispatcher(new undici.Agent({
+      connect: {
+        lookup: (hostname: string, _options: unknown, cb: LookupCb) => {
+          dns.lookup(hostname, { family: 4 }, (err: Error | null, address: string) => {
+            cb(err, address, 4);
+          });
+        },
+      },
+    }));
+
     const { startTelegramPolling } = await import('./lib/telegram-poller');
     startTelegramPolling(5000);
   }
