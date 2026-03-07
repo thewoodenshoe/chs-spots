@@ -165,7 +165,7 @@ function findAreaFromAddress(address) {
 async function enrichViaGrok(name, address, log) {
   if (!getApiKey()) return null;
   const areaList = VALID_AREAS.map(a => `"${a}"`).join(', ');
-  const prompt = loadPrompt('llm-discover-places', {
+  const prompt = loadPrompt('shared/discover-places', {
     NAME: name,
     ADDRESS_NOTE: address ? ` (address: ${address})` : '',
     AREA_LIST: areaList,

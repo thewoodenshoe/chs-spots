@@ -51,7 +51,7 @@ async function fixFlaggedSpots(flagged) {
     issues: f.issues.map(iss => iss.msg).join('; '),
   }));
 
-  const prompt = loadPrompt('llm-outlier-verification', {
+  const prompt = loadPrompt('shared/outlier-verification', {
     FLAGGED_ITEMS: JSON.stringify(items, null, 2),
     ACTIVITY_TYPE: [...new Set(items.map(i => i.type))].join('/'),
   });

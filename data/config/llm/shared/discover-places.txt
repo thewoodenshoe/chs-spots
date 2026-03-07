@@ -1,0 +1,8 @@
+For the restaurant/bar "{NAME}" in Charleston, SC{ADDRESS_NOTE}:
+Return a JSON object with:
+- "area": which Charleston neighborhood? One of: {AREA_LIST}
+- "address": the full street address
+- "venueType": "restaurant", "bar", "cafe", "brewery", or "bakery"
+- "description": one sentence about what it is
+
+Only return the JSON object, nothing else.

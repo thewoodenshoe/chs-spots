@@ -31,7 +31,7 @@ function buildPrompt(venues) {
     needsPhone: !v.phone,
   }));
 
-  return loadPrompt('llm-venue-enrichment', {
+  return loadPrompt('shared/venue-enrichment', {
     ITEMS: JSON.stringify(items, null, 2),
   });
 }

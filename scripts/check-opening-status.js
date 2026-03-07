@@ -24,7 +24,7 @@ function delay(ms) {
 
 async function checkIfOpened(venue) {
   const address = venue.address || venue.area || 'Charleston, SC';
-  const prompt = loadPrompt('llm-opening-status-check', {
+  const prompt = loadPrompt('coming-soon/step-6-lifecycle', {
     VENUE_NAME: venue.name,
     ADDRESS: address,
   });

@@ -42,7 +42,7 @@ function buildPrompt(spot, missingFields) {
   if (missingFields.includes('days')) questions.push(`- What specific days of the week does ${spot.type} run?`);
 
   const websiteNote = spot.website ? ` (website: ${spot.website})` : '';
-  return loadPrompt('llm-field-completion', {
+  return loadPrompt('shared/field-completion', {
     VENUE_NAME: spot.venue_name || spot.title,
     WEBSITE_NOTE: websiteNote,
     ACTIVITY_TYPE: spot.type,

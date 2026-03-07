@@ -133,7 +133,7 @@ async function enrichHours(dryRun = false) {
     try {
       const result = await chat({
         messages: [
-          { role: 'system', content: loadPrompt('llm-venue-hours') },
+          { role: 'system', content: loadPrompt('shared/venue-hours') },
           { role: 'user', content: `Find operating hours for these Charleston, SC venues:\n${prompt}` },
         ],
         temperature: 0.1,

@@ -12,7 +12,7 @@ const { loadPrompt } = require('./load-prompt');
 const BATCH_SIZE = 10;
 const AUTO_APPLY_THRESHOLD = 80;
 
-const SYSTEM_PROMPT = loadPrompt('llm-review');
+const SYSTEM_PROMPT = loadPrompt('shared/review');
 
 function buildUserPrompt(entries) {
   const items = entries.map((e, i) => ({

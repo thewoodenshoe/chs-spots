@@ -24,7 +24,7 @@ const LLM_CANDIDATES_HISTORY_PATH = path.join(__dirname, '../logs/llm-candidates
 if (!fs.existsSync(GOLD_DIR)) fs.mkdirSync(GOLD_DIR, { recursive: true });
 
 function loadSystemPrompt() {
-  const raw = loadPrompt('llm-extract-promotions');
+  const raw = loadPrompt('promotions/step-1-extract');
   const marker = 'Here is the website content for';
   const idx = raw.indexOf(marker);
   return idx > 0 ? raw.substring(0, idx).trim() : raw.trim();

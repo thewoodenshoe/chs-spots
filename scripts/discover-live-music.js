@@ -35,7 +35,7 @@ const VALID_AREAS = [
 const TODAY = new Date().toISOString().split('T')[0];
 
 async function discoverViaGrok() {
-  const prompt = loadPrompt('llm-discover-live-music');
+  const prompt = loadPrompt('live-music/step-0-weekly-discover');
 
   log('Calling Grok API with web_search...');
   const result = await webSearch({ prompt, timeoutMs: 120000, log });

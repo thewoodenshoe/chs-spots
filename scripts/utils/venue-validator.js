@@ -56,7 +56,7 @@ async function verifyViaGrok(candidates, log) {
     `- "${c.placeName}" at ${c.address || 'Charleston, SC'} (${c.userRatingsTotal || 0} Google reviews)`,
   ).join('\n');
 
-  const prompt = loadPrompt('llm-validate-openings', { NAME_LIST: nameList });
+  const prompt = loadPrompt('shared/validate-openings', { NAME_LIST: nameList });
   const result = await webSearch({
     prompt,
     timeoutMs: 120000,

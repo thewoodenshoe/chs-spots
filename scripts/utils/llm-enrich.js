@@ -23,7 +23,7 @@ async function enrichAreas(items, validAreas, apiKey, log) {
     lat: item.lat || null, lng: item.lng || null, address: item.address || null,
   }));
 
-  const systemPrompt = loadPrompt('llm-area-assignment', {
+  const systemPrompt = loadPrompt('shared/area-assignment', {
     VALID_AREAS: validAreas.join(', '),
   });
   const result = await chat({

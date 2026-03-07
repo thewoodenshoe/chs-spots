@@ -22,7 +22,7 @@ const CHECK_DELAY_MS = 2000;
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 async function checkIfOpened(venue) {
-  const prompt = loadPrompt('llm-opening-status-check', {
+  const prompt = loadPrompt('coming-soon/step-6-lifecycle', {
     VENUE_NAME: venue.name, ADDRESS: venue.address || venue.area || 'Charleston, SC',
   });
   const result = await webSearch({ prompt, timeoutMs: 90000, log });
