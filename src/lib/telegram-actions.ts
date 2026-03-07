@@ -2,6 +2,7 @@
 import { answerCallbackQuery, editMessage } from './telegram';
 import { spots, activitiesDb, venues, ideas, getDb } from './db';
 import { invalidate } from './cache';
+import { logChange } from './change-log';
 
 function upsertWatchlist(venueId: string, name: string, area: string, reason: string) {
   getDb().prepare(`
@@ -96,6 +97,8 @@ export async function handleEditAction(action: string, spotId: number, cq: any, 
     return;
   }
   if (action === 'edtdeny') {
+    const rejected = spot.pending_edit ? JSON.parse(spot.pending_edit) : {};
+    logChange(spotId, 'reject_edit', rejected);
     spots.update(spotId, { pending_edit: null });
     await answerCallbackQuery(cq.id, 'Edit rejected');
     if (chatId && messageId) await editMessage(chatId, messageId, `❌ *Edit rejected* for: ${spot.title}`);
@@ -139,6 +142,7 @@ export async function handleEditAction(action: string, spotId: number, cq: any, 
   if (edit.specificDate !== undefined) updates.specific_date = edit.specificDate;
   if (edit.sourceUrl !== undefined) updates.source_url = edit.sourceUrl;
   if (spot.source === 'automated') updates.manual_override = 1;
+  logChange(spotId, 'approve_edit', edit);
   spots.update(spotId, updates);
   invalidate('api:spots');
   const newTitle = edit.title || spot.title;
@@ -154,11 +158,13 @@ export async function handleDeleteAction(action: string, spotId: number, cq: any
     return;
   }
   if (action === 'deldeny') {
+    logChange(spotId, 'reject_delete', { title: spot.title });
     spots.update(spotId, { pending_delete: 0 });
     await answerCallbackQuery(cq.id, 'Delete rejected');
     if (chatId && messageId) await editMessage(chatId, messageId, `❌ *Delete rejected*: ${spot.title}\n\nSpot is kept.`);
     return;
   }
+  logChange(spotId, 'approve_delete', { title: spot.title, type: spot.type, venue_id: spot.venue_id });
   if (spot.source === 'automated' && spot.venue_id) {
     const area = lookupArea(spot.venue_id);
     upsertWatchlist(spot.venue_id, spot.title, area, `Deleted via user request (spot #${spotId})`);

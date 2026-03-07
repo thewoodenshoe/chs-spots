@@ -5,6 +5,7 @@ import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import { updateSpotSchema, parseOrError } from '@/lib/validations';
 import { spots, venues } from '@/lib/db';
 import { invalidate } from '@/lib/cache';
+import { logChange } from '@/lib/change-log';
 
 export async function DELETE(
   request: Request,
@@ -34,6 +35,7 @@ export async function DELETE(
     }
 
     spots.update(spotId, { pendingDelete: 1 });
+    logChange(spotId, 'submit_delete', { title: spot.title, type: spot.type });
 
     try {
       await sendDeleteApproval({
@@ -129,6 +131,7 @@ export async function PUT(
     if (spotData.sourceUrl !== undefined) pendingEdit.sourceUrl = spotData.sourceUrl;
 
     spots.update(spotId, { pendingEdit });
+    logChange(spotId, 'submit_edit', { ...pendingEdit, previousTitle: existing.title, previousDescription: existing.description, previousType: existing.type });
 
     const changes: string[] = [];
     if (pendingEdit.title !== existing.title) changes.push(`Title: ${existing.title} → ${pendingEdit.title}`);

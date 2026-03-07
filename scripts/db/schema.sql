@@ -173,6 +173,16 @@ CREATE TABLE IF NOT EXISTS schema_version (
   description TEXT
 );
 
+-- Change audit log (tracks all spot edit submissions and approvals)
+CREATE TABLE IF NOT EXISTS change_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  spot_id INTEGER NOT NULL,
+  action TEXT NOT NULL,
+  changes_json TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (spot_id) REFERENCES spots(id) ON DELETE CASCADE
+);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_spots_venue ON spots(venue_id);
 CREATE INDEX IF NOT EXISTS idx_spots_type ON spots(type);
@@ -189,3 +199,5 @@ CREATE INDEX IF NOT EXISTS idx_audit_table ON audit_log(table_name, timestamp);
 CREATE INDEX IF NOT EXISTS idx_audit_source ON audit_log(change_source);
 CREATE INDEX IF NOT EXISTS idx_pipeline_runs_date ON pipeline_runs(run_date);
 CREATE INDEX IF NOT EXISTS idx_confidence_reviews_decision ON confidence_reviews(decision);
+CREATE INDEX IF NOT EXISTS idx_change_log_spot ON change_log(spot_id);
+CREATE INDEX IF NOT EXISTS idx_change_log_action ON change_log(action);
