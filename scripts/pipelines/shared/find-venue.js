@@ -101,7 +101,7 @@ async function findVenue({ name, address, website, area }, { db, log }) {
 
   venue = await enrichVenueWebsite(venue, log);
   if (venue.website && venue.website !== website) {
-    db.venues.upsert({ id: venueId, website: venue.website });
+    db.venues.update(venueId, { website: venue.website });
   }
 
   const quality = (venue.lat && venue.lng && venue.website) ? 'complete' : 'partial';
