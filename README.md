@@ -168,10 +168,12 @@ chs-spots/
 │   │   │   ├── report.js            # Telegram report
 │   │   │   └── orchestrator.sh      # Shell wrapper for cron
 │   │   ├── openings/                # Nightly openings pipeline
-│   │   │   ├── discover.js          # Step 1: RSS + wide LLM discovery
+│   │   │   ├── discover.js          # Step 1+2: RSS + wide LLM discovery
 │   │   │   ├── validate.js          # Step 3: Critical LLM verification
+│   │   │   ├── quality-gate.js      # Step 4: Mandatory venue field checks
 │   │   │   ├── upsert-venues.js     # Step 5: Venue creation + photo download
 │   │   │   ├── lifecycle.js         # Step 6: coming_soon → recently_opened
+│   │   │   ├── pre-report-check.js  # Step 6.5: Audit + LLM fix missing data
 │   │   │   ├── run.js               # Orchestrator
 │   │   │   ├── report.js            # Telegram report
 │   │   │   └── orchestrator.sh      # Shell wrapper for cron

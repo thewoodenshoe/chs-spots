@@ -51,15 +51,17 @@ function ageOutOldStatuses() {
 }
 
 async function main() {
-  const input = readStepOutput(PIPELINE, 'step-3-validated');
-  if (!input) { log('No step-3 output — aborting'); process.exit(1); }
-  log(`=== Openings Upsert: ${input.verified.length} verified venues ===`);
+  const input = readStepOutput(PIPELINE, 'step-4-quality')
+    || readStepOutput(PIPELINE, 'step-3-validated');
+  if (!input) { log('No step-4/step-3 output — aborting'); process.exit(1); }
+  const venues = input.approved || input.verified || [];
+  log(`=== Openings Upsert: ${venues.length} venues ===`);
   db.setAuditContext('pipeline', 'op-upsert');
 
   let inserted = 0;
   const insertedNames = [];
 
-  for (const spot of input.verified) {
+  for (const spot of venues) {
     let area = findAreaFromAddress(spot.address) || spot.area || findAreaFromCoordinates(spot.lat, spot.lng);
     let description = spot.description || extractDescription(spot.title, spot.description, spot.classification);
     const openDate = spot.grokVerifiedDate || spot.expectedOpen || null;

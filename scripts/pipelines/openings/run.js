@@ -35,8 +35,10 @@ async function main() {
 
   await runStep('Discover (RSS + LLM)', path.join(__dirname, 'discover.js'));
   await runStep('Validate (geocode + LLM verify)', path.join(__dirname, 'validate.js'));
-  await runStep('Upsert Venues + Lifecycle', path.join(__dirname, 'upsert-venues.js'));
+  await runStep('Quality Gate', path.join(__dirname, 'quality-gate.js'));
+  await runStep('Upsert Venues + Photo', path.join(__dirname, 'upsert-venues.js'));
   await runStep('Lifecycle Check', path.join(__dirname, 'lifecycle.js'));
+  await runStep('Pre-Report Check', path.join(__dirname, 'pre-report-check.js'));
   await runStep('Report', path.join(__dirname, 'report.js'));
 
   const elapsed = ((Date.now() - startMs) / 1000).toFixed(1);

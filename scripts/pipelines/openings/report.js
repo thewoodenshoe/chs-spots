@@ -22,9 +22,15 @@ function buildReport(s) {
   lines.push(`• RSS: ${s.articlesScanned || 0} articles → ${s.rssCandidates || 0} candidates`);
   lines.push(`• LLM: ${s.llmResults || 0} results${s.llmError ? ' (⚠️ LLM error)' : ''}`);
   lines.push(`• Geocoded: ${s.geocodedCount || 0} | Deduped: ${s.dedupedCount || 0} | Verified: ${s.verified?.length || 0}`);
+  if (s.qualityApproved != null || s.qualityRejected != null) {
+    lines.push(`• Quality gate: ${s.qualityApproved || 0} approved, ${s.qualityRejected || 0} rejected`);
+  }
   lines.push(`• Inserted: ${s.inserted || 0} new venue(s)`);
   if (s.agedOut > 0) lines.push(`• Aged out: ${s.agedOut}`);
   if (s.transitioned > 0) lines.push(`• Coming soon → opened: ${s.transitioned}`);
+  if (s.precheckFixed > 0 || s.precheckPhotoFixed > 0) {
+    lines.push(`• Pre-report fixes: ${s.precheckFixed || 0} data, ${s.precheckPhotoFixed || 0} photos`);
+  }
   lines.push('');
 
   if (s.insertedNames?.length > 0) {
@@ -37,6 +43,22 @@ function buildReport(s) {
   if (s.transitionedNames?.length > 0) {
     lines.push(`<b>🎉 NOW OPEN</b>`);
     for (const name of s.transitionedNames) lines.push(`  • ${name}`);
+    lines.push('');
+  }
+
+  if (s.rejected?.length > 0) {
+    lines.push(`<b>🚫 QUALITY REJECTED (${s.rejected.length})</b>`);
+    for (const r of s.rejected.slice(0, 10)) {
+      lines.push(`  • ${r.placeName || r.name}: ${r.reject_reason}`);
+    }
+    lines.push('');
+  }
+
+  if (s.precheckFlagged?.length > 0) {
+    lines.push(`<b>⚠️ NEEDS ATTENTION (${s.precheckFlagged.length})</b>`);
+    for (const f of s.precheckFlagged.slice(0, 10)) {
+      lines.push(`  • ${f.name} (${f.status}): ${f.issues.join(', ')}`);
+    }
     lines.push('');
   }
 
@@ -60,7 +82,8 @@ async function sendTelegram(text) {
 }
 
 async function main() {
-  const summary = readStepOutput(PIPELINE, 'step-6-lifecycle')
+  const summary = readStepOutput(PIPELINE, 'step-7-precheck')
+    || readStepOutput(PIPELINE, 'step-6-lifecycle')
     || readStepOutput(PIPELINE, 'step-5-upserted');
   if (!summary) { log('No summary found — skipping'); closeLog(); return; }
   log('[report] Building openings report');
