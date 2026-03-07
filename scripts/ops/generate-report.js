@@ -698,7 +698,34 @@ function getPipelineData() {
     }
   } catch (e) { debugLog('incompleteSpots', e); }
 
-  // 11. Venues missing key data (flagged for enrichment)
+  // 11. Logic check results (activity times / operating hours validation)
+  result.logicCheckFlagged = 0;
+  result.logicCheckFailed = 0;
+  result.logicAutoFixed = 0;
+  try {
+    const checkPath = reportingPath('logic-check.json');
+    if (fs.existsSync(checkPath)) {
+      const check = JSON.parse(fs.readFileSync(checkPath, 'utf8'));
+      result.logicCheckFlagged = check.summary?.flagged || 0;
+      result.logicCheckFailed = check.summary?.failed || 0;
+      result.logicAutoFixed = (check.autoFixed?.logic || 0) + (check.autoFixed?.enrichment || 0);
+      const allIssues = [...(check.flagged || []), ...(check.failed || [])];
+      if (allIssues.length > 0) {
+        const detail = allIssues.slice(0, 8).map(item =>
+          `#${item.id} ${item.title} [${item.type}]: ${item.issues.map(i => i.msg).join('; ')}`,
+        ).join('\n') + (allIssues.length > 8 ? `\n... and ${allIssues.length - 8} more` : '');
+        result.actions.push({
+          severity: (check.summary?.failed || 0) > 0 ? 'high' : 'medium',
+          category: 'Logic Check',
+          title: `${allIssues.length} spot(s) with suspicious times${result.logicAutoFixed > 0 ? ` (${result.logicAutoFixed} auto-fixed)` : ''}`,
+          detail,
+          instruction: 'Times may be incorrect (too early, too late, conflict with operating hours). Verify manually or wait for next pipeline run.',
+        });
+      }
+    }
+  } catch (e) { debugLog('logicCheck', e); }
+
+  // 12. Venues missing key data (flagged for enrichment)
   try {
     const database = db.getDb();
     const incompleteVenues = database.prepare(`

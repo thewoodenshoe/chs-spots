@@ -26,6 +26,7 @@ try {
 } catch { /* dotenv not installed in production */ }
 
 const { webSearch, getApiKey } = require('./utils/llm-client');
+const { loadPrompt } = require('./utils/load-prompt');
 
 const VALID_AREAS = [
   'Downtown Charleston', 'Mount Pleasant', 'Daniel Island',
@@ -36,17 +37,7 @@ const TODAY = new Date().toISOString().split('T')[0];
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 async function discoverViaGrok() {
-  const prompt = `Search the web for bars, restaurants, breweries, distilleries, music halls, and other venues in the Charleston, South Carolina metro area that regularly host live music performances, concerts, or DJ sets.
-
-Return a JSON array of objects with these columns:
-- "venue": the venue name
-- "address": full street address
-- "neighborhood": one of: ${VALID_AREAS.map(a => `"${a}"`).join(', ')}
-- "description": one sentence about the venue and what kind of music they host
-- "schedule": when they have live music (e.g. "Nightly", "Fri/Sat", "Weekends")
-- "website": link to their website or social media page
-
-Only include venues in the greater Charleston SC area. Include bars with regular live music, dedicated music venues, breweries with live acts, restaurants with regular performers. Do NOT include one-time event spaces or venues that only occasionally host music. Maximum 40 results.`;
+  const prompt = loadPrompt('llm-discover-live-music');
 
   log('Calling Grok API with web_search...');
   const result = await webSearch({ prompt, timeoutMs: 120000, log });

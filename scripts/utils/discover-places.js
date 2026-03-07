@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const { fetchWithRetry, delay } = require('./discover-rss');
 const { chat, getApiKey } = require('./llm-client');
+const { loadPrompt } = require('./load-prompt');
 
 const areasConfig = JSON.parse(
   fs.readFileSync(path.join(__dirname, '..', '..', 'data', 'config', 'areas.json'), 'utf8'),
@@ -164,11 +165,13 @@ function findAreaFromAddress(address) {
 async function enrichViaGrok(name, address, log) {
   if (!getApiKey()) return null;
   const areaList = VALID_AREAS.map(a => `"${a}"`).join(', ');
+  const prompt = loadPrompt('llm-discover-places', {
+    NAME: name,
+    ADDRESS_NOTE: address ? ` (address: ${address})` : '',
+    AREA_LIST: areaList,
+  });
   const result = await chat({
-    messages: [{
-      role: 'user',
-      content: `For the restaurant/bar "${name}" in Charleston, SC${address ? ` (address: ${address})` : ''}:\nReturn a JSON object with:\n- "area": which Charleston neighborhood? One of: ${areaList}\n- "address": the full street address\n- "venueType": "restaurant", "bar", "cafe", "brewery", or "bakery"\n- "description": one sentence about what it is\n\nOnly return the JSON object, nothing else.`,
-    }],
+    messages: [{ role: 'user', content: prompt }],
     model: 'grok-3-mini-fast',
     timeoutMs: 30000,
     log: () => {},

@@ -1,0 +1,12 @@
+Search the web for live music events happening TONIGHT ({TODAY_LABEL}) at venues in the Charleston, South Carolina area. Focus on these known live music venues: {VENUE_LIST}.
+
+Also include any other Charleston area venues with live music tonight that are not in the list above.
+
+Return a JSON array of objects with these fields:
+- "venue": exact venue name
+- "performer": name of the band/artist/act performing tonight
+- "start_time": show start time in "8:00 PM" format (use listed start time, not doors)
+- "end_time": estimated end time in "11:00 PM" format (if not listed, estimate: +3hrs for bar shows, +2hrs for concerts)
+- "description": one sentence about the performer or type of music
+
+Only include events confirmed for TONIGHT {TODAY_LABEL}. Do NOT include events from other dates. Maximum 40 results.

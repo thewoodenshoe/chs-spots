@@ -7,6 +7,8 @@
  */
 
 const { webSearch, getApiKey } = require('./llm-client');
+const { loadPrompt } = require('./load-prompt');
+const { logAgentDecision } = require('./agent-log');
 
 function validateTime(t) {
   if (!t || typeof t !== 'string') return null;
@@ -40,16 +42,12 @@ function buildPrompt(spot, missingFields) {
   if (missingFields.includes('days')) questions.push(`- What specific days of the week does ${spot.type} run?`);
 
   const websiteNote = spot.website ? ` (website: ${spot.website})` : '';
-  return `For "${spot.venue_name || spot.title}" in Charleston, SC${websiteNote}:
-Find their ${spot.type} schedule. I need:
-${questions.join('\n')}
-
-Search the web for the most current information.
-
-Return ONLY a JSON object:
-{"time_start":"HH:MM","time_end":"HH:MM","days":"0,1,2,3,4,5,6"}
-Use 24h format (e.g. "16:00" for 4pm). Day numbers: 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat.
-Use null for any field you truly cannot determine.`;
+  return loadPrompt('llm-field-completion', {
+    VENUE_NAME: spot.venue_name || spot.title,
+    WEBSITE_NOTE: websiteNote,
+    ACTIVITY_TYPE: spot.type,
+    QUESTIONS: questions.join('\n'),
+  });
 }
 
 /**
@@ -91,9 +89,14 @@ async function enrichIncompleteSpots(spots, log = console.log) {
     if (missing.length === 0) continue;
 
     log(`  🔍 ${spot.title} [${spot.type}] — missing: ${missing.join(', ')}`);
+    const startMs = Date.now();
     try {
       const result = await webSearch({ prompt: buildPrompt(spot, missing), timeoutMs: 45000, log: () => {} });
-      if (!result?.parsed) { stillIncomplete.push({ ...spot, missingFields: missing }); continue; }
+      if (!result?.parsed) {
+        logAgentDecision({ agent: 'enrich-incomplete', promptFile: 'llm-field-completion', action: 'fill_missing',
+          input: { venue: spot.title, type: spot.type, missing }, decision: 'no_result', applied: false, durationMs: Date.now() - startMs });
+        stillIncomplete.push({ ...spot, missingFields: missing }); continue;
+      }
 
       const updates = {};
       let resolved = false;
@@ -110,6 +113,10 @@ async function enrichIncompleteSpots(spots, log = console.log) {
         const v = validateDays(String(result.parsed.days));
         if (v) { updates.days = v; resolved = true; }
       }
+
+      logAgentDecision({ agent: 'enrich-incomplete', promptFile: 'llm-field-completion', action: 'fill_missing',
+        input: { venue: spot.title, type: spot.type, missing }, output: result.parsed,
+        decision: resolved ? 'enriched' : 'still_incomplete', applied: resolved, durationMs: Date.now() - startMs });
 
       if (resolved) {
         enriched.push({ id: spot.id, title: spot.title, type: spot.type, updates });

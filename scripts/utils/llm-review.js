@@ -7,34 +7,12 @@
  */
 
 const { chat, extractJsonArray } = require('./llm-client');
+const { loadPrompt } = require('./load-prompt');
 
 const BATCH_SIZE = 10;
 const AUTO_APPLY_THRESHOLD = 80;
 
-const SYSTEM_PROMPT = `You are a data quality reviewer for a Charleston, SC restaurant deals app.
-
-You will receive flagged entries that were extracted from restaurant websites and classified as "Happy Hour" or "Brunch" promotions. Each entry was flagged by heuristic rules because something looked suspicious.
-
-For each entry, decide whether it is a LEGITIMATE promotion or a MISCLASSIFICATION.
-
-Rules for Happy Hour:
-- Must involve discounted drinks or food specials during a specific time window
-- Regular operating hours are NOT happy hour
-- Food-only specials (wing night, taco tuesday) count IF they are time-limited promotions
-- All-day specials with no drink component are borderline — use judgment
-- Market/cafe/bakery hours are never happy hour
-
-Rules for Brunch:
-- Must be a dedicated brunch service, not just regular breakfast/lunch hours
-- Weekend brunch is most common but weekday brunch exists
-
-Return ONLY a JSON array. Each element must have:
-{
-  "index": <0-based position in the input array>,
-  "decision": "approve" | "reject",
-  "confidence": <0-100>,
-  "reasoning": "<one sentence>"
-}`;
+const SYSTEM_PROMPT = loadPrompt('llm-review');
 
 function buildUserPrompt(entries) {
   const items = entries.map((e, i) => ({

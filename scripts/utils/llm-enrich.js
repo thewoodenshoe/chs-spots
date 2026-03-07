@@ -4,6 +4,7 @@
  */
 
 const { chat } = require('./llm-client');
+const { loadPrompt } = require('./load-prompt');
 
 /**
  * Use LLM to assign areas to venues/spots that are missing one.
@@ -22,19 +23,12 @@ async function enrichAreas(items, validAreas, apiKey, log) {
     lat: item.lat || null, lng: item.lng || null, address: item.address || null,
   }));
 
+  const systemPrompt = loadPrompt('llm-area-assignment', {
+    VALID_AREAS: validAreas.join(', '),
+  });
   const result = await chat({
     messages: [
-      {
-        role: 'system',
-        content: `You assign Charleston, SC venues to their correct neighborhood area.
-
-Valid areas (use EXACTLY these names): ${validAreas.join(', ')}
-
-Use coordinates, address, and venue name to determine the area.
-If you cannot determine the area with reasonable confidence, use "Unknown".
-
-Return ONLY a JSON array: [{"index": 0, "area": "Downtown Charleston"}, ...]`,
-      },
+      { role: 'system', content: systemPrompt },
       { role: 'user', content: JSON.stringify(prompt) },
     ],
     timeoutMs: 30000,

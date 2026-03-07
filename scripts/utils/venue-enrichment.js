@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const db = require('./db');
 const { chat, getApiKey } = require('./llm-client');
+const { loadPrompt } = require('./load-prompt');
 
 const PHOTO_DIR = path.join(__dirname, '..', '..', 'public', 'venues');
 const DELAY_MS = 300;
@@ -132,7 +133,7 @@ async function enrichHours(dryRun = false) {
     try {
       const result = await chat({
         messages: [
-          { role: 'system', content: 'Return operating hours for each venue as a JSON array. Each item: {"index": N, "hours": {"monday": {"open": "HH:MM", "close": "HH:MM"}, ...}}. Use "closed" for days the venue is closed. Use null if hours are unknown. Days: monday through sunday.' },
+          { role: 'system', content: loadPrompt('llm-venue-hours') },
           { role: 'user', content: `Find operating hours for these Charleston, SC venues:\n${prompt}` },
         ],
         temperature: 0.1,

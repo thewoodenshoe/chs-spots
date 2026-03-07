@@ -77,6 +77,11 @@ echo "--- Enriching venue data (photos + hours) ---" >> "$LOG_FILE"
 node scripts/enrich-venue-data.js >> "$LOG_FILE" 2>&1 || true
 echo "Venue data enrichment finished at $(date)" >> "$LOG_FILE"
 
+# Auto-fix: attempt LLM corrections on flagged/incomplete items before report
+echo "--- Running auto-fix pass ---" >> "$LOG_FILE"
+node scripts/ops/auto-fix.js >> "$LOG_FILE" 2>&1 || true
+echo "Auto-fix finished at $(date)" >> "$LOG_FILE"
+
 # Generate and send daily report (runs REGARDLESS of pipeline outcome)
 echo "--- Generating daily report ---" >> "$LOG_FILE"
 node scripts/ops/generate-report.js --send-telegram >> "$LOG_FILE" 2>&1 || true

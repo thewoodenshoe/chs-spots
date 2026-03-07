@@ -1,0 +1,11 @@
+Search the web for bars, restaurants, breweries, distilleries, music halls, and other venues in the Charleston, South Carolina metro area that regularly host live music performances, concerts, or DJ sets.
+
+Return a JSON array of objects with these columns:
+- "venue": the venue name
+- "address": full street address
+- "neighborhood": one of: Downtown Charleston, Mount Pleasant, Daniel Island, North Charleston, West Ashley, James Island, Sullivan's & IOP
+- "description": one sentence about the venue and what kind of music they host
+- "schedule": when they have live music (e.g. "Nightly", "Fri/Sat", "Weekends")
+- "website": link to their website or social media page
+
+Only include venues in the greater Charleston SC area. Include bars with regular live music, dedicated music venues, breweries with live acts, restaurants with regular performers. Do NOT include one-time event spaces or venues that only occasionally host music. Maximum 40 results.

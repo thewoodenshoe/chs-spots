@@ -10,6 +10,8 @@
 const db = require('./utils/db');
 const { createLogger } = require('./utils/logger');
 const { webSearch, getApiKey } = require('./utils/llm-client');
+const { loadPrompt } = require('./utils/load-prompt');
+const { logAgentDecision } = require('./utils/agent-log');
 
 const { log, warn, error, close: closeLog } = createLogger('check-opening-status');
 
@@ -22,24 +24,24 @@ function delay(ms) {
 
 async function checkIfOpened(venue) {
   const address = venue.address || venue.area || 'Charleston, SC';
-  const prompt = `Has the restaurant/bar "${venue.name}" at ${address} in Charleston, South Carolina opened yet?
-
-Search for the latest information. Look for:
-- Google Maps listing showing as "open" or having reviews
-- Social media posts showing food/drinks being served
-- News articles announcing opening
-- Website showing hours or reservation availability
-
-Return ONLY a JSON object:
-{
-  "opened": true or false,
-  "evidence": "brief explanation of why you determined this",
-  "open_date": "YYYY-MM-DD if known, otherwise null",
-  "updated_description": "1-2 sentence updated description if available, otherwise null"
-}`;
-
+  const prompt = loadPrompt('llm-opening-status-check', {
+    VENUE_NAME: venue.name,
+    ADDRESS: address,
+  });
+  const start = Date.now();
   const result = await webSearch({ prompt, timeoutMs: 90000, log });
-  return result?.parsed || null;
+  const parsed = result?.parsed || null;
+  logAgentDecision({
+    agent: 'check-opening-status',
+    promptFile: 'llm-opening-status-check',
+    action: 'verify_opening',
+    input: { venue: venue.name, address },
+    output: parsed,
+    decision: parsed?.opened ? 'opened' : 'still_coming_soon',
+    applied: !!parsed,
+    durationMs: Date.now() - start,
+  });
+  return parsed;
 }
 
 function ageOutRecentlyOpened() {

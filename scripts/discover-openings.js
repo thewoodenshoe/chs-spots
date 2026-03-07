@@ -7,11 +7,10 @@
  * then creates Coming Soon / Recently Opened spots linked to those venues.
  */
 
-const fs = require('fs');
-const path = require('path');
 const db = require('./utils/db');
 const { createLogger } = require('./utils/logger');
 const { webSearch, getApiKey } = require('./utils/llm-client');
+const { loadPrompt } = require('./utils/load-prompt');
 const { delay, fetchWithRetry, parseRssItems, parseAtomEntries,
   isCharlestonRelated, classifyArticle, extractRestaurantName,
   extractDescription, isWithinDays } = require('./utils/discover-rss');
@@ -35,9 +34,9 @@ const GEOCODE_DELAY_MS = 500;
 
 async function discoverViaGrok() {
   if (!getApiKey()) { log('Grok API skipped: no GROK_API_KEY'); return []; }
-  const instructionsPath = path.join(__dirname, '..', 'data', 'config', 'llm-instructions-coming-soon.txt');
-  let prompt = fs.readFileSync(instructionsPath, 'utf8');
-  prompt = prompt.replace('{AREAS_PLACEHOLDER}', VALID_AREAS.map(a => `"${a}"`).join(', '));
+  let prompt = loadPrompt('llm-discover-openings', {
+    AREAS_PLACEHOLDER: VALID_AREAS.map(a => `"${a}"`).join(', '),
+  });
   log('Calling Grok API with web_search...');
   const result = await webSearch({ prompt, timeoutMs: 120000, log });
   if (!result?.parsed || !Array.isArray(result.parsed)) { warn('Grok API returned no valid JSON array'); return []; }

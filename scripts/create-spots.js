@@ -24,6 +24,7 @@ const { reviewAll } = require('./utils/llm-review');
 const { enrichAreas } = require('./utils/llm-enrich');
 const { createSpotsFromGold, buildSpotFromEntry } = require('./utils/spot-builder');
 const { findIncompleteSpots, enrichIncompleteSpots } = require('./utils/enrich-incomplete');
+const { runLogicChecks, checkOperatingHoursQuality } = require('./utils/logic-check');
 const { createLogger } = require('./utils/logger');
 const { log, warn, error: logError, close: closeLog } = createLogger('create-spots');
 
@@ -405,6 +406,62 @@ async function main() {
     }
   } catch (err) {
     log(`  ⚠️  LLM enrichment failed: ${err.message}`);
+  }
+
+  // ── Logic Check: validate activity times vs operating hours ─
+  let logicCheckResults = { passed: [], flagged: [], failed: [] };
+  try {
+    const allApproved = db.getDb().prepare(
+      `SELECT s.id, s.title, s.type, s.time_start, s.time_end, s.days, s.venue_id
+       FROM spots s WHERE s.status = 'approved' AND s.type IN ('Happy Hour', 'Brunch', 'Live Music')`,
+    ).all();
+
+    if (allApproved.length > 0) {
+      logicCheckResults = runLogicChecks(allApproved, venueMap);
+      if (logicCheckResults.flagged.length > 0 || logicCheckResults.failed.length > 0) {
+        log(`\n🔎 Logic Check: ${logicCheckResults.flagged.length} flagged, ${logicCheckResults.failed.length} failed`);
+        for (const { spot, issues } of logicCheckResults.failed) {
+          log(`  ❌ ${spot.title}: ${issues.map(i => i.msg).join('; ')}`);
+        }
+        for (const { spot, issues } of logicCheckResults.flagged.slice(0, 10)) {
+          log(`  ⚠️  ${spot.title}: ${issues.map(i => i.msg).join('; ')}`);
+        }
+      } else {
+        log(`\n✅ Logic Check: all ${allApproved.length} spots passed`);
+      }
+    }
+
+    const venueHoursIssues = [];
+    for (const [, v] of venueMap) {
+      const vi = checkOperatingHoursQuality(v);
+      if (vi.some(i => i.severity !== 'info')) venueHoursIssues.push({ venue: v, issues: vi });
+    }
+    if (venueHoursIssues.length > 0) {
+      log(`  ⚠️  ${venueHoursIssues.length} venue(s) with suspicious operating hours`);
+    }
+
+    const checkPath = reportingPath('logic-check.json');
+    fs.writeFileSync(checkPath, JSON.stringify({
+      generatedAt: new Date().toISOString(),
+      summary: {
+        passed: logicCheckResults.passed.length,
+        flagged: logicCheckResults.flagged.length,
+        failed: logicCheckResults.failed.length,
+        venueHoursIssues: venueHoursIssues.length,
+      },
+      flagged: logicCheckResults.flagged.map(({ spot, issues }) => ({
+        id: spot.id, title: spot.title, type: spot.type,
+        time_start: spot.time_start, time_end: spot.time_end, days: spot.days,
+        issues,
+      })),
+      failed: logicCheckResults.failed.map(({ spot, issues }) => ({
+        id: spot.id, title: spot.title, type: spot.type,
+        time_start: spot.time_start, time_end: spot.time_end, days: spot.days,
+        issues,
+      })),
+    }, null, 2), 'utf8');
+  } catch (err) {
+    log(`  ⚠️  Logic check failed: ${err.message}`);
   }
 
   // Write incomplete-spots report for generate-report.js

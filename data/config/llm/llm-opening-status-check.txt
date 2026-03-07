@@ -1,0 +1,15 @@
+Has the restaurant/bar "{VENUE_NAME}" at {ADDRESS} in Charleston, South Carolina opened yet?
+
+Search for the latest information. Look for:
+- Google Maps listing showing as "open" or having recent reviews
+- Social media posts showing food/drinks being served
+- News articles announcing opening
+- Website showing hours or reservation availability
+
+Return ONLY a JSON object:
+{
+  "opened": true or false,
+  "evidence": "brief explanation of why you determined this",
+  "open_date": "YYYY-MM-DD if known, otherwise null",
+  "updated_description": "1-2 sentence updated description if available, otherwise null"
+}

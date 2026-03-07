@@ -11,6 +11,7 @@
 const db = require('./utils/db');
 const { webSearch, requireApiKey, extractJsonArray } = require('./utils/llm-client');
 const { enrichPhotos, enrichHours } = require('./utils/venue-enrichment');
+const { loadPrompt } = require('./utils/load-prompt');
 
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes('--dry-run');
@@ -30,23 +31,9 @@ function buildPrompt(venues) {
     needsPhone: !v.phone,
   }));
 
-  return `I need you to find contact information for these venues in Charleston, SC.
-
-For each venue, search the web and return:
-- "website": the venue's official website URL. If it's a landmark, park, beach access, or public place without its own website, find the best relevant page (e.g. a tourism board page, city page, or well-known guide page about that place). Only use "n/a" if absolutely nothing relevant exists.
-- "phone": the venue's phone number in (XXX) XXX-XXXX format. If it's a landmark, public beach, park, or attraction that genuinely has no phone number, use "n/a".
-
-Return a JSON array with one object per venue:
-[
-  { "index": 0, "website": "https://...", "phone": "(843) 555-1234" },
-  { "index": 1, "website": "https://...", "phone": "n/a" }
-]
-
-Only include fields the venue is missing (check needsWebsite / needsPhone).
-Do NOT invent URLs — only return URLs you found via web search.
-
-Venues to look up:
-${JSON.stringify(items, null, 2)}`;
+  return loadPrompt('llm-venue-enrichment', {
+    ITEMS: JSON.stringify(items, null, 2),
+  });
 }
 
 async function processBatch(batch, batchNum, totalBatches) {

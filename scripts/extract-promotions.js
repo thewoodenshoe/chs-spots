@@ -17,14 +17,14 @@ const SILVER_TRIMMED_DIR = dataPath('silver_trimmed', 'today');
 const SILVER_TRIMMED_INCREMENTAL_DIR = dataPath('silver_trimmed', 'incremental');
 const GOLD_DIR = dataPath('gold');
 const BULK_COMPLETE_FLAG = path.join(GOLD_DIR, '.bulk-complete');
-const LLM_INSTRUCTIONS_PATH = configPath('llm-instructions.txt');
+const { loadPrompt } = require('./utils/load-prompt');
 const CONFIG_PATH = configPath('config.json');
 const LLM_CANDIDATES_HISTORY_PATH = path.join(__dirname, '../logs/llm-candidates-history.txt');
 
 if (!fs.existsSync(GOLD_DIR)) fs.mkdirSync(GOLD_DIR, { recursive: true });
 
 function loadSystemPrompt() {
-  const raw = fs.readFileSync(LLM_INSTRUCTIONS_PATH, 'utf8');
+  const raw = loadPrompt('llm-extract-promotions');
   const marker = 'Here is the website content for';
   const idx = raw.indexOf(marker);
   return idx > 0 ? raw.substring(0, idx).trim() : raw.trim();
@@ -71,7 +71,7 @@ async function extractHappyHours(isIncremental = false) {
   try {
     systemPrompt = loadSystemPrompt();
   } catch (error) {
-    console.error(`Error reading LLM instructions from ${LLM_INSTRUCTIONS_PATH}: ${error.message}`);
+    console.error(`Error reading LLM instructions: ${error.message}`);
     process.exit(1);
   }
 

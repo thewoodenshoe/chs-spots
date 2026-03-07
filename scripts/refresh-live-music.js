@@ -25,6 +25,7 @@ try {
 } catch { /* dotenv not installed in production; env vars set by PM2 */ }
 
 const { webSearch, getApiKey } = require('./utils/llm-client');
+const { loadPrompt } = require('./utils/load-prompt');
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_CHAT = process.env.TELEGRAM_ADMIN_CHAT_ID || '';
@@ -91,18 +92,10 @@ async function fetchTonightsEvents(venueNames) {
   const todayLabel = getTodayLabel();
   const venueList = venueNames.join(', ');
 
-  const prompt = `Search the web for live music events happening TONIGHT (${todayLabel}) at venues in the Charleston, South Carolina area. Focus on these known live music venues: ${venueList}.
-
-Also include any other Charleston area venues with live music tonight that are not in the list above.
-
-Return a JSON array of objects with these fields:
-- "venue": exact venue name
-- "performer": name of the band/artist/act performing tonight
-- "start_time": show start time in "8:00 PM" format (use listed start time, not doors)
-- "end_time": estimated end time in "11:00 PM" format (if not listed, estimate: +3hrs for bar shows, +2hrs for concerts)
-- "description": one sentence about the performer or type of music
-
-Only include events confirmed for TONIGHT ${todayLabel}. Do NOT include events from other dates. Maximum 40 results.`;
+  const prompt = loadPrompt('llm-refresh-live-music', {
+    TODAY_LABEL: todayLabel,
+    VENUE_LIST: venueList,
+  });
 
   log(`[refresh-live-music] Searching for events: ${todayLabel}`);
   log(`[refresh-live-music] Querying ${venueNames.length} venue names`);
